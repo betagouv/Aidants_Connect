@@ -1,13 +1,22 @@
 Bienvenue sur Aidants Connect !
 
-Nous avons validé la demande d’habilitation n° {{ organisation.data_pass_id }} concernant la structure {{ organisation.name }}. La prochaine étape est la formation des aidants : des financements sont possibles via Uniformation, le marché des conseillers numérique ou France Numérique Ensemble.
+La demande d’habilitation n° {{ organisation.data_pass_id }} concernant la structure {{ organisation.name }} a été validée par notre équipe.
 
-🧑‍🎓 Des sessions de formation sont organisées régulièrement. Pour inscrire un aidant à une session, retournez sur votre demande : {{ organisation_request_url }}
+En tant que référent de votre structure, vous pouvez dès à présent activer votre compte. Cette étape est indispensable pour inscrire en formation les aidants de votre structure.
 
-Cliquez sur « Inscrire à une formation » au niveau de son nom puis sélectionnez une date de session. L’organisme de formation concerné vous contactera par la suite pour confirmer l’inscription.
+Comment activer mon compte ?
 
-⚠️ Si vous avez sollicité un financement France Numérique Ensemble, le récipiendaire des fonds, après validation du financement, vous contactera pour l’organisation de la formation (vous n’aurez pas à inscrire individuellement les aidants à une session).
+👉 Connectez-vous depuis la page "Première connexion référent" (https://aidantsconnect.beta.gouv.fr/accounts/manager_first_login/) et renseignez les informations demandées. Un code de première connexion vous sera alors envoyé par SMS.
 
-🖥️ Vous êtes référent Aidants Connect de votre structure ? Assistez au webinaire dédié aux référents. Il vous permettra de mieux comprendre votre rôle et d’assister à la démonstration de l'espace référent sur Aidants Connect. Inscrivez-vous dès à présent via ce formulaire : https://app.livestorm.co/aidants-connect/webinaire-referent?type=detailed
+👉 Une fois connecté à votre espace, vous devrez activer la double authentification par application mobile en suivant les étapes décrites dans cette vidéo : https://tube.numerique.gouv.fr/w/pkamuvHJtg1LdcEtGV32a3
+
+Tout savoir sur le rôle de référent :
+
+Pour mieux comprendre le rôle de référent et assister à une démonstration de l'espace référent, participez au webinaire dédié. Plusieurs créneaux sont disponibles, inscrivez-vous via ce formulaire (https://app.livestorm.co/aidants-connect/webinaire-referent?type=detail).
+
+Nous contacter :
+
+Si vous rencontrez un problème pour activer votre compte, envoyez un e-mail à : contact@aidantsconnect.beta.gouv.fr en précisant votre numéro d’habilitation.
+
 
 Nous vous remercions de votre implication sur le dispositif et nous tenons à disposition pour toute demande.
