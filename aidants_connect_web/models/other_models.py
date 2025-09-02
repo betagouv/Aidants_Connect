@@ -130,6 +130,10 @@ class HabilitationRequest(models.Model):
     def origin_label(self):
         return self.ORIGIN_LABELS[self.origin]
 
+    @property
+    def connexion_mode_label(self):
+        return self.CONNEXION_MODE_LABELS[self.connexion_mode]
+
     def __str__(self):
         return f"{self.aidant_full_name} ({self.email})"
 

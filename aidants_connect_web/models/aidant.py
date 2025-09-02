@@ -346,6 +346,10 @@ class Aidant(AbstractUser):
         return self.totpdevice_set.filter(confirmed=True).exists()
 
     @cached_property
+    def has_a_totp_device_confirmed_or_not(self):
+        return self.totpdevice_set.exists()
+
+    @cached_property
     def has_a_carte_totp(self) -> bool:
         return hasattr(self, "carte_totp")
 
@@ -358,6 +362,19 @@ class Aidant(AbstractUser):
         if self.has_a_carte_totp:
             return self.carte_totp.serial_number
         return "Pas de Carte"
+
+    @cached_property
+    def connexion_mode(self) -> str:
+        from .other_models import HabilitationRequest
+
+        hr = (
+            HabilitationRequest.objects.filter(email=self.email)
+            .exclude(connexion_mode="")
+            .first()
+        )
+        if hr:
+            return hr.connexion_mode_label
+        return ""
 
     def remove_from_organisation(self, organisation: Organisation) -> Optional[bool]:
         if not self.is_in_organisation(organisation):

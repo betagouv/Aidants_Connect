@@ -6,6 +6,7 @@
       <tr>
         <th scope="col" class="fr-text--md fr-col-3">Nom</th>
         <th scope="col" class="fr-text--md fr-col-8">Carte(s) Aidants Connect</th>
+
         <th scope="col" class="fr-text--md fr-col-1">
           <div class="flex flex-right">Outils</div>
         </th>
@@ -29,40 +30,54 @@
           {% if aidant.status %}
             <p class="fr-badge {% referent_request_status_badge aidant.status %}">{{ aidant.get_status_display }}</p>
           {% else %}
-            {% if aidant.has_a_carte_totp %}
-              <div class="fr-text--md">
-                {{ aidant.number_totp_card }}
-                {% if not aidant.carte_totp.totp_device.confirmed and aidant.is_active %}
-                  <div class="fr-alert fr-alert--error fr-mt-2w">
-                    <p>
-                      Attention : Le fonctionnement de cette carte n’a pas été vérifié.
-                      Vous devez valider la carte pour permettre à {{ aidant.get_full_name }}
-                      de se connecter à Aidants Connect.
-                    </p>
+            {% if aidant.has_a_totp_device_confirmed_or_not %}
+                {% if aidant.has_a_carte_totp %}
+                  <div class="fr-text--md">
+                    {{ aidant.number_totp_card }}
+                    {% if not aidant.carte_totp.totp_device.confirmed and aidant.is_active %}
+                      <div class="fr-alert fr-alert--error fr-mt-2w">
+                        <p>
+                          Attention : Le fonctionnement de cette carte n’a pas été vérifié.
+                          Vous devez valider la carte pour permettre à {{ aidant.get_full_name }}
+                          de se connecter à Aidants Connect.
+                        </p>
+                      </div>
+                    {% endif %}
+                    {% if not aidant.is_active %}
+                      <div class="fr-alert fr-alert--error fr-mt-2w">
+                        <p>Attention, veillez à bien délier et récupérer la carte de cet aidant désactivé</p>
+                      </div>
+                    {% endif %}
                   </div>
-                {% endif %}
-                {% if not aidant.is_active %}
-                  <div class="fr-alert fr-alert--error fr-mt-2w">
-                    <p>Attention, veillez à bien délier et récupérer la carte de cet aidant désactivé</p>
-                  </div>
-                {% endif %}
-              </div>
-            {% else %}
-              <div class="fr-text--md">
-                {% if aidant.is_active %}
-                  <a
-                    id="manage-totp-cards-for-aidant-{{ aidant.id }}"
-                    href='{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}' class="fr-link"
-                  >
-                  Lier une carte
-                  </a>
                 {% else %}
-                  Pas de carte associée
+                  <div class="fr-text--md">
+                    {% if aidant.is_active %}
+                      <a
+                        id="manage-totp-cards-for-aidant-{{ aidant.id }}"
+                        href='{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}' class="fr-link"
+                      >
+                      Lier une carte
+                      </a>
+                    {% else %}
+                      Pas de carte associée
+                    {% endif %}
+                  </div>
                 {% endif %}
-              </div>
-            {% endif %}
-            {% if aidant.has_otp_app %}
-              <p>Une carte numérique est associée à ce profil</p>
+                {% if aidant.has_otp_app %}
+                  <p>Une carte numérique est associée à ce profil</p>
+                {% endif %}
+            {% else %}
+              {% if aidant.is_active %}
+                      <a
+                        id="manage-totp-cards-for-aidant-{{ aidant.id }}"
+                        href='{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}' class="fr-link"
+                      >
+                      Lier une carte
+                      </a>
+               {% if aidant.connexion_mode %}
+                           <br />  Moyen de connexion voulu : {{ aidant.connexion_mode }}
+                {% endif %}
+                    {% endif %}
             {% endif %}
           {% endif %}
         </td>

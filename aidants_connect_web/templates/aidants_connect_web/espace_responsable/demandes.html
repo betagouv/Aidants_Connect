@@ -56,7 +56,9 @@
           <tr>
             <th scope="col" class="fr-col-3 fr-text--md">Nom</th>
             <th scope="col" class="fr-col-3 fr-text--md">Email</th>
+            <th scope="col" class="fr-col-3 fr-text--md">Moyen de Connexion</th>
             <th scope="col" class="fr-col-3 fr-text--md">Formation</th>
+
             <th scope="col" class="fr-col-3 fr-text--md">
               <div class="flex flex-right">Action</div>
             </th>
@@ -72,6 +74,7 @@
                 </a>
               </td>
               <td class="fr-text--md">{{ validation.email }}</td>
+            <td class="fr-text--md">{{ validation.connexion_mode_label }}</td>
               <td class="fr-text--md">
                 <span class="fr-mr-1v">
                   {% if validation.status|lower == "processing" %}
