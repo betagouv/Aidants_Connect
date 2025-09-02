@@ -1217,6 +1217,41 @@ class AidantModelTests(TestCase):
         with self.assertRaises(IntegrityError):
             AidantFactory(referent_non_aidant=True, can_create_mandats=True)
 
+    def test_connexion_mode(self):
+        a_empty = AidantFactory(
+            email="testmodeemptyd@example.com", username="testmodeemptyd@example.com"
+        )
+        HabilitationRequestFactory(email="testmodeemptyd@example.com")
+        self.assertEqual(a_empty.connexion_mode, "")
+
+        a_card = AidantFactory(
+            email="testmodecard@example.com", username="testmodecard@example.com"
+        )
+        HabilitationRequestFactory(
+            email="testmodecard@example.com",
+            connexion_mode=HabilitationRequest.CONNEXION_MODE_CARD,
+        )
+        self.assertEqual(
+            a_card.connexion_mode,
+            HabilitationRequest.CONNEXION_MODE_LABELS[
+                HabilitationRequest.CONNEXION_MODE_CARD
+            ],
+        )
+
+        a_phone = AidantFactory(
+            email="testmodephone@example.com", username="testmodephone@example.com"
+        )
+        HabilitationRequestFactory(
+            email="testmodephone@example.com",
+            connexion_mode=HabilitationRequest.CONNEXION_MODE_PHONE,
+        )
+        self.assertEqual(
+            a_phone.connexion_mode,
+            HabilitationRequest.CONNEXION_MODE_LABELS[
+                HabilitationRequest.CONNEXION_MODE_PHONE
+            ],
+        )
+
 
 @tag("models", "aidant")
 class AidantModelMethodsTests(TestCase):
@@ -2133,6 +2168,21 @@ class HabilitationRequestTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         pass
+
+    def test_connexion_mode_label(self):
+        hr_card = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_PROCESSING.value,
+            connexion_mode=HabilitationRequest.CONNEXION_MODE_CARD,
+        )
+
+        self.assertEqual("Carte physique", hr_card.connexion_mode_label)
+
+        hr_phone = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_PROCESSING.value,
+            connexion_mode=HabilitationRequest.CONNEXION_MODE_PHONE,
+        )
+
+        self.assertEqual("Application mobile", hr_phone.connexion_mode_label)
 
     def test_validate_when_all_is_fine(self):
         for habilitation_request in (
