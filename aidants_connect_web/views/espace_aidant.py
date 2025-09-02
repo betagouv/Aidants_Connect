@@ -127,12 +127,12 @@ class Home(TemplateView):
                 },
                 *(
                     []
-                    if settings.SANDBOX_URL
+                    if not settings.SANDBOX_URL
                     else [
                         {
                             "title": "Site bac à sable",
                             "link": settings.SANDBOX_URL,
-                            "description": "aidantsconnect.beta.gouv.fr",
+                            "description": f"{settings.SANDBOX_URL}",
                             "new_tab": True,
                             "heading_tag": self.tiles_heading_tag,
                         }
