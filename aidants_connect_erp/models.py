@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Sum
+from django.utils.safestring import mark_safe
 
 from .constants import SendingStatusChoices
 
@@ -106,6 +107,22 @@ class CardSending(models.Model):
         return "NC"
 
     get_sending_year.short_description = "Année d'envoi"
+
+    def get_referents_info(self):
+        q_refs = self.organisation.responsables_is_active
+        if q_refs.count() == 0:
+            return "Pas de référent"
+        if q_refs.count() == 1:
+            ref = self.organisation.responsables.first()
+            return f"{ref.first_name} {ref.last_name} ({ref.email}, {ref.phone})"
+        if q_refs.count() > 1:
+            ref_str = "<ul>"
+            for ref in q_refs:
+                ref_str += f"<li>{ref.first_name} {ref.last_name} ({ref.email}, {ref.phone})</li>"  # noqa
+            ref_str += "</ul>"
+            return mark_safe(ref_str)
+
+    get_referents_info.short_description = "Info Référents"
 
     def get_referent_email(self):
         if self.referent:
