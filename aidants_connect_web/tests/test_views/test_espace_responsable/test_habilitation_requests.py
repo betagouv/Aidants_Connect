@@ -8,7 +8,10 @@ from django.utils.timezone import now
 
 from aidants_connect_common.models import Formation
 from aidants_connect_common.tests.factories import FormationFactory
-from aidants_connect_web.constants import ReferentRequestStatuses
+from aidants_connect_web.constants import (
+    HabilitationRequestCourseType,
+    ReferentRequestStatuses,
+)
 from aidants_connect_web.models import HabilitationRequest
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -69,6 +72,25 @@ class HabilitationRequestsTests(TestCase):
             response_content,
             "Confirmation message should be displayed.",
         )
+
+    def test_habilitation_request_p2p_processing_dont_display_formation_inscription(
+        self,
+    ):
+        HabilitationRequestFactory(
+            organisation=self.org_a,
+            email="p2ptest@example.com",
+            status=ReferentRequestStatuses.STATUS_PROCESSING_P2P,
+            course_type=HabilitationRequestCourseType.P2P,
+        )
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_responsable_demandes"))
+        response_content = response.content.decode("utf-8")
+        self.assertIn("Demandes validées", response_content)
+        self.assertIn("p2ptest@example.com", response_content)
+        self.assertIn("Pair à pair", response_content)
+        self.assertNotIn("non inscrit", response_content)
+        self.assertNotIn("Session", response_content)
+        self.assertNotIn("Inscrire à une formation", response_content)
 
     def test_add_aidant_allows_create_aidants_for_all_possible_organisations(self):
         self.client.force_login(self.responsable_tom)

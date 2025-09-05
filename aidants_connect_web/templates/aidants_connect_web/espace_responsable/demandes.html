@@ -79,28 +79,30 @@
                 <span class="fr-mr-1v">
                   {% if validation.status|lower == "processing" %}
                     Session
+                    {% if validation.formations.exists %}
+                      <span class="fr-badge fr-badge--success">inscrit</span>
+                    {% else %}
+                      <span class="fr-badge fr-badge--warning">non inscrit</span>
+                    {% endif %}
                   {% elif validation.status|lower == "processing_p2p" %}
                     Pair à pair
                   {% endif %}
                 </span>
-                {% if validation.formations.exists %}
-                  <span class="fr-badge fr-badge--success">inscrit</span>
-                {% else %}
-                  <span class="fr-badge fr-badge--warning">non inscrit</span>
 
-                {% endif %}
               </td>
               <td>
                 <div class="flex flex-right">
-                  {% if not validation.formations.exists %}
-                    <a
-                      id="register-habilitation-request-{{ validation.id }}"
-                      href="{% url 'espace_responsable_register_formation' request_id=validation.id %}"
-                      class="fr-mr-2w fr-btn fr-btn--secondary fr-text--sm"
-                    >
-                      Inscrire à une formation
-                    </a>
-                  {% endif %}
+                {% if validation.course_type == 1 %}
+                    {% if not validation.formations.exists %}
+                      <a
+                        id="register-habilitation-request-{{ validation.id }}"
+                        href="{% url 'espace_responsable_register_formation' request_id=validation.id %}"
+                        class="fr-mr-2w fr-btn fr-btn--secondary fr-text--sm"
+                      >
+                        Inscrire à une formation
+                      </a>
+                {% endif %}
+                    {% endif %}
                   {% if validation.status_cancellable_by_responsable %}
                     <div class="custom-dropdown">
                       <button class="fr-btn fr-btn--tertiary-no-outline fr-icon-more-line"
