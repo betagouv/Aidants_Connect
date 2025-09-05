@@ -49,7 +49,7 @@
               <tbody>
               {% if valid_mandats|length > 0 %}
                 {% for usager, mandats in valid_mandats.items %}
-                  {% include "aidants_connect_web/usagers/usager_row.html" with with_valid_mandate=True %}
+                  {% include "aidants_connect_web/usagers/usager_row_active_mandate.html" %}
                 {% endfor %}
               {% else %}
                 <tr>
@@ -82,11 +82,11 @@
               <tbody>
               {% if expired_mandats|length > 0 %}
                 {% for usager, mandats in expired_mandats.items %}
-                  {% include "aidants_connect_web/usagers/usager_row.html" with with_valid_mandate=False %}
+                  {% include "aidants_connect_web/usagers/usager_row_expired_mandate.html" %}
                 {% endfor %}
               {% else %}
                 <tr>
-                  <td colspan="5" class="fr-text-center">Vous n'avez pas de mandats expirés</td>
+                  <td colspan="4" class="fr-text-center">Vous n'avez pas de mandats expirés</td>
                 </tr>
               {% endif %}
               </tbody>
@@ -109,17 +109,16 @@
                 <th scope="col">Nom</th>
                 <th scope="col">Date de naissance</th>
                 <th scope="col">Périmètre</th>
-                <th scope="col">Actions</th>
               </tr>
               </thead>
               <tbody>
               {% if revoked_mandats|length > 0 %}
                 {% for usager, mandats in revoked_mandats.items %}
-                  {% include "aidants_connect_web/usagers/usager_row.html" with with_valid_mandate=False has_no_autorisations=True %}
+                  {% include "aidants_connect_web/usagers/usager_row_revoked_mandate.html" %}
                 {% endfor %}
               {% else %}
                 <tr>
-                  <td colspan="5" class="fr-text-center fr-background-alt--grey">
+                  <td colspan="3" class="fr-text-center fr-background-alt--grey">
                     Vous n'avez pas de mandats révoqués
                   </td>
                 </tr>
