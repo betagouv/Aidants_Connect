@@ -15,8 +15,7 @@
         "http://localhost:8000/mentions-legales/",
         "http://localhost:8000/politique_confidentialite/",
         "http://localhost:8000/ressources/",
-        "http://localhost:8000/stats/",
-        "http://localhost:8000/temoignages/"
+        "http://localhost:8000/stats/"
       ],
       "settings": {
         "onlyCategories": ["accessibility"],

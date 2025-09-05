@@ -1,12 +1,15 @@
 import logging
 
 from django.contrib.admin import ModelAdmin, TabularInline
+from django.db.models import QuerySet
 from django.forms import models
+from django.http import HttpRequest
 
 from import_export.admin import ImportMixin
 
 from aidants_connect.admin import VisibleToAdminMetier, admin_site
 
+from .constants import SendingStatusChoices
 from .models import CardSending, get_bizdev_users
 
 logger = logging.getLogger()
@@ -57,9 +60,7 @@ class CardSendingAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "sending_date",
         "get_organisation_data_pass_id",
         "organisation",
-        "referent",
-        "get_referent_email",
-        "get_referent_phone",
+        "get_referents_info",
         "get_organisation_address",
         "get_organisation_zipcode",
         "get_organisation_city",
@@ -87,7 +88,50 @@ class CardSendingAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
         "referent__last_name",
         "referent__email",
     )
+
+    actions = [
+        "set_in_preparing_state",
+        "set_in_sending_state",
+        "set_in_received_state",
+    ]
     inlines = (AidantInCardSendingInlineAdmin,)
+
+    def set_in_received_state(
+        self, request: HttpRequest, queryset: QuerySet, send_messages=True
+    ):
+        queryset.update(status=SendingStatusChoices.RECEIVED)
+        if send_messages:
+            self.message_user(
+                request, f"{queryset.count()} envois ont été passés en reçu"
+            )
+
+    set_in_received_state.short_description = "Passer en reçu les envois sélectionnés"
+
+    def set_in_preparing_state(
+        self, request: HttpRequest, queryset: QuerySet, send_messages=True
+    ):
+        queryset.update(status=SendingStatusChoices.PREPARING)
+        if send_messages:
+            self.message_user(
+                request, f"{queryset.count()} envois ont été passés en préparation"
+            )
+
+    set_in_preparing_state.short_description = (
+        "Passer en préparation les envois sélectionnés"
+    )
+
+    def set_in_sending_state(
+        self, request: HttpRequest, queryset: QuerySet, send_messages=True
+    ):
+        queryset.update(status=SendingStatusChoices.SENDING)
+        if send_messages:
+            self.message_user(
+                request, f"{queryset.count()} envois ont été passés en cours d'envoi"
+            )
+
+    set_in_sending_state.short_description = (
+        "Passer en cours d'envoi les envois sélectionnés"
+    )
 
 
 admin_site.register(CardSending, CardSendingAdmin)

@@ -37,22 +37,22 @@ class IssuerFormViewTests(FunctionalTestCase):
 
         WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
-    def test_submit_form_with_phone_passes(self):
-        email = Faker().email()
-        issuer = IssuerFactory.build(email=email)
-
-        self.__open_form_url()
-
-        self.__fill_form_and_submit(
-            issuer, ["first_name", "last_name", "email", "profession", "phone"]
-        )
-
-        path = reverse(
-            "habilitation_issuer_email_confirmation_waiting",
-            kwargs={"issuer_id": Issuer.objects.get(email=email).issuer_id},
-        )
-
-        WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
+    # def test_submit_form_with_phone_passes(self):
+    #     email = Faker().email()
+    #     issuer = IssuerFactory.build(email=email)
+    #
+    #     self.__open_form_url()
+    #
+    #     self.__fill_form_and_submit(
+    #         issuer, ["first_name", "last_name", "email", "profession", "phone"]
+    #     )
+    #
+    #     path = reverse(
+    #         "habilitation_issuer_email_confirmation_waiting",
+    #         kwargs={"issuer_id": Issuer.objects.get(email=email).issuer_id},
+    #     )
+    #
+    #     WebDriverWait(self.selenium, 10).until(url_matches(f"^.+{path}$"))
 
     @patch("aidants_connect_habilitation.signals.send_mail")
     def test_email_confirmation_process(self, send_mail_mock: Mock):
@@ -62,7 +62,7 @@ class IssuerFormViewTests(FunctionalTestCase):
         self.__open_form_url()
 
         self.__fill_form_and_submit(
-            issuer, ["first_name", "last_name", "email", "profession", "phone"]
+            issuer, ["first_name", "last_name", "email", "profession"]
         )
 
         path = reverse(

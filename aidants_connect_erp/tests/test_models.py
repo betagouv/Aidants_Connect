@@ -46,3 +46,30 @@ class CardSendingModelTests(TestCase):
             quantity=5, organisation=orga, status=SendingStatusChoices.PREPARING
         )
         self.assertEqual(12, CardSending.get_cards_stock_for_one_organisation(orga))
+
+
+@tag("models")
+class CardSendingModelMethodTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.orga_without_ref = OrganisationFactory()
+
+        cls.orga_with_one_ref = OrganisationFactory()
+        ref1 = AidantFactory(last_name="ref1", first_name="ref1", email="ref1@orga.com")
+        ref1.responsable_de.add(cls.orga_with_one_ref)
+
+        cls.orga_with_two_refs = OrganisationFactory()
+        ref2 = AidantFactory(last_name="ref2", first_name="ref2", email="ref2@orga.com")
+
+        ref1.responsable_de.add(cls.orga_with_two_refs)
+        ref2.responsable_de.add(cls.orga_with_two_refs)
+
+    def test_get_referents_info(self):
+        cs_without_ref = CardSendingFactory(organisation=self.orga_without_ref)
+        cs_orga_with_one_ref = CardSendingFactory(organisation=self.orga_with_one_ref)
+        cs_orga_with_two_refs = CardSendingFactory(organisation=self.orga_with_two_refs)
+
+        self.assertEqual("Pas de référent", cs_without_ref.get_referents_info())
+        self.assertTrue("ref1@orga.com" in cs_orga_with_one_ref.get_referents_info())
+        self.assertTrue("ref1@orga.com" in cs_orga_with_two_refs.get_referents_info())
+        self.assertTrue("ref2@orga.com" in cs_orga_with_two_refs.get_referents_info())
