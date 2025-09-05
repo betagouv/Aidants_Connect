@@ -15,7 +15,9 @@
     <td>{{ usager.birthdate|date:"d F" }}</td>
     {% if mandats|length > 1 %}
       <td></td>
-      <td></td>
+      {% if with_valid_mandate %}
+        <td></td>
+      {% endif %}
       <td></td>
     {% else %}
       {% for mandat in mandats %}
@@ -36,8 +38,6 @@
           <td {% if mandat.3 == True %}class="fr-icon-warning-fill"{% endif %}>
             <span>{{ mandat.2 }} jours</span>
           </td>
-        {% else %}
-          <td></td>
         {% endif %}
       {% endfor %}
       {% if has_no_autorisations %}
@@ -86,8 +86,6 @@
           <td {% if mandat.3 == True %}class="fr-icon-warning-fill fr-text-default--warning"{% endif %}>
             <span>{{ mandat.2 }} jours</span>
           </td>
-        {% else %}
-          <td></td>
         {% endif %}
         {% if has_no_autorisations %}
           <td></td>
