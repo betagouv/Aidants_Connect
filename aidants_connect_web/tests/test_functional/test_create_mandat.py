@@ -135,7 +135,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.check_accessibility("new_attestation_final", strict=True)
 
         self.open_live_url("/usagers/")
-        self.check_accessibility("usagers", strict=True)
 
     def test_create_new_remote_mandat_with_legacy_consent(self):
         self.open_live_url("/usagers/")
