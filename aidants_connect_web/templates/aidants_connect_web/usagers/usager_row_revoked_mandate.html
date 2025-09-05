@@ -27,7 +27,7 @@
       {% endfor %}
     {% endif %}
   </tr>
-  {% if mandats|length > 1 %}
+{% if mandats|length > 1 %}
     {% for mandat in mandats %}
       <tr data-search-target="item" data-search-terms="{{ usager.search_terms|json_attribute }}">
         <td>

@@ -144,9 +144,7 @@ def _get_mandats_dicts_from_queryset_mandats(mandats: Iterable[Mandat]) -> tuple
 
     for mandat in mandats:
         expired = mandat.expiration_date if mandat.expiration_date < now() else False
-        autorisations = (
-            mandat.autorisations.filter(revocation_date=None).all().order_by("pk")
-        )
+        autorisations = mandat.autorisations.all().order_by("pk")
 
         l_autorisations = list(autorisations.values_list("demarche", flat=True))
         has_no_autorisations = autorisations.count() == 0
