@@ -1,0 +1,92 @@
+[
+  {
+    "model": "aidants_connect_pico_cms.testimony",
+    "pk": 1,
+    "fields": {
+      "name": "Marie Dubois",
+      "job": "Conseillère numérique - Maison France Services",
+      "quote": "Aidants Connect me permet d'accompagner sereinement les usagers dans leurs démarches administratives en ligne.",
+      "body": "En tant que conseillère numérique dans une Maison France Services, j'accompagne quotidiennement des personnes en difficulté avec le numérique.\n\nAvant Aidants Connect, j'hésitais souvent à aider directement les usagers sur leurs comptes personnels par peur des responsabilités juridiques. Aujourd'hui, grâce au mandat sécurisé, je peux les accompagner en toute confiance.\n\n**Un outil rassurant**\n\nLe système de mandat me permet de :\n- Formaliser légalement mon intervention\n- Protéger l'usager et moi-même\n- Garder une trace de toutes les démarches effectuées\n\n**Des usagers rassurés**\n\nLes personnes que j'accompagne apprécient particulièrement :\n- La transparence du processus\n- La limitation dans le temps du mandat\n- Le fait de garder le contrôle sur leurs comptes\n\nAidants Connect a vraiment transformé ma pratique professionnelle et renforcé la confiance avec les usagers.",
+      "published": true,
+      "sort_order": 10,
+      "slug": "marie-dubois",
+      "created_at": "2024-01-15T10:00:00Z",
+      "updated_at": "2024-01-15T10:00:00Z"
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.testimony",
+    "pk": 2,
+    "fields": {
+      "name": "Ahmed Benali",
+      "job": "Agent d'accueil - CCAS",
+      "quote": "Grâce à Aidants Connect, je peux enfin aider concrètement les personnes âgées avec leurs démarches CAF et Pôle emploi.",
+      "body": "Travaillant au CCAS depuis 8 ans, je reçois beaucoup de personnes âgées qui peinent avec la dématérialisation des services publics.\n\n**Le défi du numérique**\n\nChaque jour, je vois des personnes désemparées face à :\n- La déclaration de revenus en ligne\n- Les demandes d'aide au logement\n- Les actualisation Pôle emploi\n- Les prises de rendez-vous médicaux\n\n**Une solution concrète**\n\nDepuis que j'utilise Aidants Connect :\n- Je peux réaliser les démarches directement avec eux\n- Les usagers repartent avec leurs démarches terminées\n- Plus besoin de les renvoyer chez eux avec des explications complexes\n\n**Un gain de temps pour tous**\n\nLe mandat numérique évite les allers-retours. En une seule visite, nous pouvons souvent régler plusieurs problématiques administratives.\n\nC'est un vrai plus pour l'inclusion numérique dans notre commune.",
+      "published": true,
+      "sort_order": 20,
+      "slug": "ahmed-benali",
+      "created_at": "2024-01-20T14:30:00Z",
+      "updated_at": "2024-01-20T14:30:00Z"
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.testimony",
+    "pk": 3,
+    "fields": {
+      "name": "Sophie Martin",
+      "job": "Médiatrice numérique - Association Emmaüs Connect",
+      "quote": "Aidants Connect sécurise juridiquement notre accompagnement et renforce la confiance avec les bénéficiaires.",
+      "body": "Dans notre association, nous accompagnons des personnes en précarité numérique vers l'autonomie digitale.\n\n**Un cadre sécurisé**\n\nAidants Connect nous apporte :\n- Un cadre légal clair pour nos interventions\n- Une protection juridique pour nos bénévoles\n- Une traçabilité de nos actions\n\n**Des situations variées**\n\nNous utilisons les mandats pour :\n- Créer des comptes France Connect\n- Faire des demandes de RSA\n- Inscrire à des formations\n- Prendre des rendez-vous médicaux\n\n**Un apprentissage progressif**\n\nL'avantage, c'est que nous pouvons :\n1. Faire avec la personne la première fois\n2. La guider la deuxième fois\n3. La laisser autonome ensuite\n\nLe mandat temporaire permet cet accompagnement progressif vers l'autonomie.\n\n**Résultats concrets**\n\nDepuis 2 ans d'utilisation :\n- 200+ mandats créés\n- 85% de nos bénéficiaires gagnent en autonomie\n- Zéro incident juridique\n\nC'est devenu indispensable à notre mission d'inclusion numérique.",
+      "published": true,
+      "sort_order": 30,
+      "slug": "sophie-martin",
+      "created_at": "2024-02-01T09:15:00Z",
+      "updated_at": "2024-02-01T09:15:00Z"
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.testimony",
+    "pk": 4,
+    "fields": {
+      "name": "Jean-Pierre Rousseau",
+      "job": "Responsable accueil - Mairie",
+      "quote": "Un outil indispensable pour notre service public de proximité face à la dématérialisation.",
+      "body": "Responsable de l'accueil en mairie d'une commune de 5000 habitants, j'ai vu l'impact de la dématérialisation sur nos administrés.\n\n**Le constat**\n\nDepuis la fermeture des guichets physiques :\n- 40% d'augmentation des demandes d'aide\n- Des personnes âgées en détresse\n- Des situations d'urgence (carte grise, passeport)\n\n**Notre réponse avec Aidants Connect**\n\nNous avons formé 3 agents qui peuvent maintenant :\n- Créer des comptes ANTS pour les cartes grises\n- Faire des pré-demandes de passeport\n- Aider aux déclarations d'impôts\n- Accompagner les demandes de logement social\n\n**Un service public renforcé**\n\nAidants Connect nous permet de :\n- Maintenir un service de proximité\n- Répondre aux besoins de tous nos administrés\n- Éviter la fracture numérique\n\n**Bilan après 18 mois**\n\n- 150 mandats créés\n- Satisfaction des usagers : 95%\n- Réduction des réclamations de 60%\n\nNos administrés savent qu'ils peuvent compter sur nous, même à l'ère du tout numérique.",
+      "published": true,
+      "sort_order": 40,
+      "slug": "jean-pierre-rousseau",
+      "created_at": "2024-02-10T16:45:00Z",
+      "updated_at": "2024-02-10T16:45:00Z"
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.testimony",
+    "pk": 5,
+    "fields": {
+      "name": "Fatima El Mansouri",
+      "job": "Coordinatrice - Centre social",
+      "quote": "Aidants Connect facilite l'accès aux droits pour les familles que nous accompagnons.",
+      "body": "Au centre social, nous accompagnons des familles dans leurs parcours d'insertion sociale et professionnelle.\n\n**Des besoins multiples**\n\nNos usagers ont souvent besoin d'aide pour :\n- Les démarches CAF (RSA, allocations familiales)\n- L'inscription des enfants à l'école\n- Les demandes de logement\n- La recherche d'emploi sur Pôle emploi\n\n**Un accompagnement global**\n\nAvec Aidants Connect, nous pouvons :\n- Traiter plusieurs démarches en un seul rendez-vous\n- Éviter les ruptures de droits\n- Accompagner vers l'autonomie numérique\n\n**L'exemple de Mme Durand**\n\nUne maman de 3 enfants, séparée :\n1. Mandat pour actualiser sa situation CAF\n2. Inscription scolaire de ses enfants\n3. Demande de logement social\n4. Inscription à une formation\n\nTout réglé en 2 rendez-vous au lieu de semaines de démarches.\n\n**Impact sur notre travail**\n\n- Moins de stress pour les familles\n- Plus de temps pour l'accompagnement social\n- Meilleure efficacité de nos interventions\n\nAidants Connect s'intègre parfaitement dans notre mission d'accompagnement global des familles.",
+      "published": true,
+      "sort_order": 50,
+      "slug": "fatima-el-mansouri",
+      "created_at": "2024-02-15T11:20:00Z",
+      "updated_at": "2024-02-15T11:20:00Z"
+    }
+  },
+  {
+    "model": "aidants_connect_pico_cms.testimony",
+    "pk": 6,
+    "fields": {
+      "name": "Thomas Leroy",
+      "job": "Médiateur numérique - Bibliothèque municipale",
+      "quote": "Un outil qui transforme nos ateliers numériques en véritable accompagnement personnalisé.",
+      "body": "Médiateur numérique en bibliothèque, j'anime des ateliers d'initiation au numérique pour tous les publics.\n\n**Au-delà de la formation**\n\nMes ateliers évoluent souvent vers des besoins concrets :\n- \"Comment faire ma déclaration d'impôts ?\"\n- \"Pouvez-vous m'aider à prendre un rendez-vous médical ?\"\n- \"Je n'arrive pas à actualiser mon dossier Pôle emploi\"\n\n**La révolution Aidants Connect**\n\nMaintenant, je peux :\n- Passer de la théorie à la pratique\n- Accompagner sur de vraies démarches\n- Créer des mandats pour les cas urgents\n\n**Pédagogie active**\n\nL'approche change complètement :\n1. **Démonstration** : je montre avec un mandat\n2. **Accompagnement** : nous faisons ensemble\n3. **Autonomie** : la personne fait seule\n\n**Exemples concrets**\n\n- Mme Petit, 78 ans : mandat pour sa première déclaration en ligne\n- M. Dubois, demandeur d'emploi : aide pour candidater en ligne\n- Famille Nguyen : inscription des enfants aux activités municipales\n\n**Résultats**\n\n- Fréquentation des ateliers +30%\n- Taux de satisfaction : 98%\n- Demandes de suivi individualisé +50%\n\nAidants Connect a donné une nouvelle dimension à mon métier de médiateur numérique.",
+      "published": true,
+      "sort_order": 60,
+      "slug": "thomas-leroy",
+      "created_at": "2024-02-20T13:10:00Z",
+      "updated_at": "2024-02-20T13:10:00Z"
+    }
+  }
+]

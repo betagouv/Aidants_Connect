@@ -8,6 +8,7 @@ from django.core import mail
 from django.test import tag
 from django.urls import reverse
 
+from axe_playwright_python.async_playwright import Axe
 from playwright.async_api import async_playwright
 
 
@@ -103,3 +104,53 @@ class AccessibilityTestCase(StaticLiveServerTestCase):
             .replace("chargement/code", "code", 1)
         )
         await self.page.goto(url)
+
+    async def check_accessibility(
+        self,
+        page_name="page",
+        strict=False,
+        options={
+            "exclude": [
+                ["nav[aria-label='Accès rapide']"],
+                ["header[role='banner']"],
+                ["nav[role='navigation']"],
+                ["footer[role='contentinfo']"],
+            ]
+        },
+    ):
+        """
+        Check accessibility of the current page using axe-core with Playwright
+
+        Args:
+            page_name: Name for the results file
+            strict: If True, fail the test on violations
+            options: Custom options for axe-core
+
+        Returns:
+            dict: axe-core results
+        """
+        if not hasattr(self, "axe") or self.axe is None:
+            self.axe = Axe()
+
+        try:
+            results = await self.axe.run(self.page, options=options)
+        except Exception:
+            self.axe = Axe()
+            results = await self.axe.run(self.page, options=options)
+
+        violations_count = results.violations_count
+        if violations_count > 0:
+            violation_message = results.generate_report()
+
+            if strict:
+                self.assertEqual(violations_count, 0, violation_message)
+            else:
+                print(
+                    f"\n{'=' * 100}\n",
+                    f"\n⚠️  ACCESSIBILITY WARNING [{page_name}]:",
+                    f"{violations_count} violation(s) detected",
+                )
+                print(f"{'=' * 100}\n")
+                print(violation_message)
+
+        return results
