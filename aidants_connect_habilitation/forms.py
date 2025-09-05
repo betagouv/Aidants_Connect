@@ -137,7 +137,7 @@ class AddressValidatableForm(DsfrBaseForm):
 class IssuerForm(ModelForm, CleanEmailMixin, DsfrBaseForm):
     template_name = "aidants_connect_habilitation/forms/issuer.html"
 
-    phone = AcPhoneNumberField(initial="", label="Téléphone", required=False)
+    # phone = AcPhoneNumberField(initial="", label="Téléphone", required=False)
 
     class Meta:
         model = models.Issuer
