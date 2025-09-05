@@ -132,7 +132,9 @@ class HabilitationRequest(models.Model):
 
     @property
     def connexion_mode_label(self):
-        return self.CONNEXION_MODE_LABELS[self.connexion_mode]
+        if self.connexion_mode:
+            return self.CONNEXION_MODE_LABELS[self.connexion_mode]
+        return ""
 
     def __str__(self):
         return f"{self.aidant_full_name} ({self.email})"
