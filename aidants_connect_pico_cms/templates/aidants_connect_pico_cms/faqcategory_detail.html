@@ -2,7 +2,7 @@
 {% load ac_common dsfr_tags static %}
 
 {% block title %}
-  Aidants Connect - FAQ {{ object.name }}
+  FAQ {{ object.name }} - Aidants Connect
 {% endblock title %}
 
 {% block nav %}
@@ -12,8 +12,7 @@
 {% block content %}
   <div class="fr-container">
     <section>
-      <p class="page-main-title">Aide</p>
-      <h1>Foire aux questions</h1>
+      <h1>Aide</h1>
     </section>
     <p class="subtitle">Vous trouverez ici les réponses aux questions les plus fréquemment posées à nos équipes.</p>
 
@@ -54,7 +53,7 @@
 
       {# Questions #}
       <div class="fr-col-12 fr-col-md-8">
-        <h3>{{ object.name }}</h3>
+        <h2 class="fr-h3">{{ object.name }}</h2>
         {% if object.body %}
           <section>{{ object.to_html }}</section>
         {% endif %}
@@ -62,13 +61,13 @@
         {% for question in questions %}
           {% ifchanged question.subcategory %}
             {% if question.subcategory %}
-              <h4>{{ question.subcategory.name }}</h4>
+              <h3 class="fr-h4">{{ question.subcategory.name }}</h3>
               {% if question.subcategory.body %}
                 <section class="fr-mb-8v">{{ question.subcategory.to_html }}</section>
               {% endif %}
             {% endif %}
           {% endifchanged %}
-          
+
           {% ifchanged question.subcategory %}<div class="fr-accordions-group">{% endifchanged %}
             {% withdict key="accordion-{{ question.pk }}" title=question.question content=question.to_html as data_dict %}
               {% dsfr_accordion data_dict %}
