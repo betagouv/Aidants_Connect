@@ -94,7 +94,7 @@
                     href="{% url 'usagers' %}"
                     {% if view_name|startswith:'usager' %}aria-current="true"{% endif %}
                   >
-                    Mes mandats
+                    Mandats
                   </a>
                 </li>
                 {% if request.user.can_create_mandats %}

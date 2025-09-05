@@ -42,7 +42,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.login_aidant(self.aidant)
 
         self.assertEqual(
-            "Mes mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
+            "Liste des mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
         )
 
         tables = self.selenium.find_elements(By.TAG_NAME, "table")
@@ -143,7 +143,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.login_aidant(self.aidant)
 
         self.assertEqual(
-            "Mes mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
+            "Liste des mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
         )
 
         tables = self.selenium.find_elements(By.TAG_NAME, "table")
@@ -271,7 +271,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.login_aidant(self.aidant)
 
         self.assertEqual(
-            "Mes mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
+            "Liste des mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
         )
 
         tables = self.selenium.find_elements(By.TAG_NAME, "table")

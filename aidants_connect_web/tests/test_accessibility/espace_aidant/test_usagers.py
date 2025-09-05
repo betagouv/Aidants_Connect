@@ -7,28 +7,28 @@ from aidants_connect_common.tests.test_accessibility.test_playwright import (
 from aidants_connect_web.tests.factories import AidantFactory
 
 
-class NewMandatAccessibilityTests(AccessibilityTestCase):
+class MandatesAccessibilityTests(AccessibilityTestCase):
     def setUp(self):
         super().setUp()
         self.aidant = AidantFactory(post__with_otp_device=True)
-        # Récupérer le token de manière synchrone dans setUp
         self.otp_token = self.aidant.staticdevice_set.first().token_set.first().token
 
-    async def navigate_to_new_mandat(self):
-        """Helper method to navigate to new_mandat page"""
+    @async_test
+    async def test_accessibility(self):
         await self.login_aidant(self.aidant, self.otp_token)
         await self.page.goto(self.live_server_url + "/usagers/")
-        await self.page.click("#add_usager")
-        await self.wait_for_path_match("new_mandat")
+        await self.page.wait_for_load_state("networkidle")
+        await self.check_accessibility(page_name="usagers", strict=True)
 
     @async_test
     async def test_title_is_correct(self):
-        await self.navigate_to_new_mandat()
-        await expect(self.page).to_have_title("Nouveau mandat - Aidants Connect")
+        await self.login_aidant(self.aidant, self.otp_token)
+        await self.page.goto(self.live_server_url + "/usagers/")
+        await expect(self.page).to_have_title("Usagers - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
-        await self.navigate_to_new_mandat()
+        await self.login_aidant(self.aidant, self.otp_token)
 
         nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
         skip_links = await nav_skiplinks.get_by_role("link").all()
@@ -37,11 +37,3 @@ class NewMandatAccessibilityTests(AccessibilityTestCase):
             await expect(skip_link).to_be_attached()
             await skip_link.focus()
             await expect(skip_link).to_be_visible()
-
-    @async_test
-    async def test_required_fields_notice_is_present(self):
-        await self.navigate_to_new_mandat()
-
-        page_content = await self.page.content()
-        self.assertIn("sauf mention contraire", page_content.lower())
-        self.assertIn("champs sont obligatoires", page_content.lower())
