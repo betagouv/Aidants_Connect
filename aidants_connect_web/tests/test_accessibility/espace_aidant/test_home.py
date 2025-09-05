@@ -7,11 +7,17 @@ from aidants_connect_common.tests.test_accessibility.test_playwright import (
 from aidants_connect_web.tests.factories import AidantFactory
 
 
-class EspaceAidantHomeAccessibilityTests(AccessibilityTestCase):
+class HomeAccessibilityTests(AccessibilityTestCase):
     def setUp(self):
         super().setUp()
         self.aidant = AidantFactory(post__with_otp_device=True)
         self.otp_token = self.aidant.staticdevice_set.first().token_set.first().token
+
+    @async_test
+    async def test_accessibility(self):
+        await self.login_aidant(self.aidant, self.otp_token)
+        await self.page.wait_for_load_state("networkidle")
+        await self.check_accessibility(page_name="espace_aidant_home", strict=True)
 
     @async_test
     async def test_title_is_correct(self):

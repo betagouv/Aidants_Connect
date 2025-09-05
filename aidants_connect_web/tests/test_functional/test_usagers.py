@@ -65,10 +65,10 @@ class UsagersTest(FunctionalTestCase):
         self.assertEqual(len(user_without_valid_mandate), 1)
 
         self.wait.until(
-            expected_conditions.visibility_of_element_located((By.ID, "filter-input"))
+            expected_conditions.visibility_of_element_located((By.ID, "search-input"))
         )
 
-        self.selenium.find_element(By.ID, "filter-input").send_keys("Anne")
+        self.selenium.find_element(By.ID, "search-input").send_keys("Anne")
 
         self.wait.until(
             invisibility_of_element_located(
