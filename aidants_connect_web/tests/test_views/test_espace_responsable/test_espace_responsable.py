@@ -187,7 +187,7 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
 
         response = self.client.get(self.get_aidant_url(aidant))
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "Changer les organisations de rattachement")
+        self.assertNotContains(response, "Modifier l'organisation de rattachement")
 
     def test_responsable_of_several_structures_can_see_the_form(self):
         responsable = self.responsable_of_2
@@ -198,7 +198,7 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Changer les organisations de rattachement")
+        self.assertContains(response, "Modifier l'organisation de rattachement")
 
     def test_organisations_are_modified(self):
         responsable = self.responsable_of_2
