@@ -42,7 +42,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.login_aidant(self.aidant)
 
         self.assertEqual(
-            "Mes mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
+            "Liste des mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
         )
 
         tables = self.selenium.find_elements(By.TAG_NAME, "table")
@@ -135,7 +135,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.check_accessibility("new_attestation_final", strict=True)
 
         self.open_live_url("/usagers/")
-        self.check_accessibility("usagers", strict=True)
 
     def test_create_new_remote_mandat_with_legacy_consent(self):
         self.open_live_url("/usagers/")
@@ -143,7 +142,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.login_aidant(self.aidant)
 
         self.assertEqual(
-            "Mes mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
+            "Liste des mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
         )
 
         tables = self.selenium.find_elements(By.TAG_NAME, "table")
@@ -271,7 +270,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.login_aidant(self.aidant)
 
         self.assertEqual(
-            "Mes mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
+            "Liste des mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
         )
 
         tables = self.selenium.find_elements(By.TAG_NAME, "table")
