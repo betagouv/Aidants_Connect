@@ -54,7 +54,7 @@
       </article>
     </div>
     {% include "aidants_connect_web/common/resources-block.html" %}
-    <h2 class="fr-mb-16v">Création de Mandat</h2>
+    <h2 class="fr-mb-8v">Création de Mandat</h2>
     <form
       method="post"
       data-controller="mandate-form-controller"
@@ -65,9 +65,7 @@
       {% endif %}
       {% csrf_token %}
 
-      <div class="fr-fieldset__element">
-        <p class="fr-text--sm">Sauf mention contraire, tous les champs sont obligatoires.</p>
-      </div>
+      <p class="fr-text">Sauf mention contraire, tous les champs sont obligatoires.</p>
 
       <section class="demarches-section">
         <div role="group" aria-label="Sélectionnez la ou les démarches (obligatoire)">
