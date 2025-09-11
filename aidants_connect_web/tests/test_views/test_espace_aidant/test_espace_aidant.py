@@ -298,7 +298,7 @@ class UsagersDetailsPageTests(TestCase):
         response = self.client.get(f"/usagers/{self.usager.id}/")
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "<title>Aidants Connect - Homer Simpson</title>", response_content
+            "<title>Homer Simpson - Aidants Connect</title>", response_content
         )
 
     def test_usager_details_renew_mandat(self):

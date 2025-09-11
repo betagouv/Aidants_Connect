@@ -99,7 +99,8 @@ def _get_usagers_dict_from_mandats(mandats: Iterable[Mandat]) -> dict:
             mandat.autorisations.filter(revocation_date=None).all().order_by("pk")
         )
 
-        has_no_autorisations = autorisations.count() == 0
+        has_autorisations = autorisations.count() > 0
+        has_no_autorisations = not has_autorisations
 
         if expired or has_no_autorisations:
             usagers[mandat.usager]["inactive_mandats"].append(
@@ -143,9 +144,7 @@ def _get_mandats_dicts_from_queryset_mandats(mandats: Iterable[Mandat]) -> tuple
 
     for mandat in mandats:
         expired = mandat.expiration_date if mandat.expiration_date < now() else False
-        autorisations = (
-            mandat.autorisations.filter(revocation_date=None).all().order_by("pk")
-        )
+        autorisations = mandat.autorisations.all().order_by("pk")
 
         l_autorisations = list(autorisations.values_list("demarche", flat=True))
         has_no_autorisations = autorisations.count() == 0

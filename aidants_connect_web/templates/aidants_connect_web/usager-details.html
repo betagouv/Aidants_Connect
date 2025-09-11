@@ -2,7 +2,7 @@
 
 {% load ac_common dsfr_tags static %}
 
-{% block title %}Aidants Connect - {{ usager.get_full_name }}{% endblock %}
+{% block title %}{{ usager.get_full_name }} - Aidants Connect{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/usager-details.css' %}" rel="stylesheet">
@@ -12,17 +12,6 @@
   <div class="fr-container">
     <div class="flex fr-mb-8v">
       <h1 class="fr-m-0">{{ usager.get_full_name }}</h1>
-
-      {% if aidant.can_create_mandats %}
-        <div class="spacer"></div>
-        <a
-          id="add-mandat"
-          class="fr-btn fr-btn--icon-left fr-icon-edit-fill"
-          href="{% url 'new_mandat' %}"
-        >
-          Créer un mandat
-        </a>
-      {% endif %}
     </div>
 
     {% if usager.birthdate %}
@@ -43,10 +32,10 @@
               <li>
                 <a
                   id="view-mandat-attestation-{{ mandat.pk }}"
-                  class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-printer-line"
+                  class="fr-btn fr-btn--secondary fr-btn--icon-left"
                   href="{% url 'mandat_visualisation' mandat_id=mandat.id %}"
                 >
-                  Voir l’attestation
+                  Voir le mandat
                 </a>
               </li>
               {% if mandat.is_active %}
@@ -70,7 +59,7 @@
                 </li>
               {% elif mandat.was_explicitly_revoked %}
                 <a
-                  class="fr-btn fr-btn--icon-left fr-icon-printer-fill fr-btn--sm auth-revocation-attestation"
+                  class="fr-btn fr-btn--icon-left fr-btn--sm auth-revocation-attestation"
                   href="{% url 'mandat_cancellation_attestation' mandat_id=mandat.pk %}"
                 >
                   Voir la révocation
