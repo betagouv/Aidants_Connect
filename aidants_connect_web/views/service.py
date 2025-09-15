@@ -203,6 +203,10 @@ def budget(request):
     return render(request, "public_website/budget.html")
 
 
+class SitemapView(TemplateView):
+    template_name = "public_website/plan_site.html"
+
+
 class AccessibiliteView(TemplateView):
     template_name = "public_website/accessibilite.html"
 
