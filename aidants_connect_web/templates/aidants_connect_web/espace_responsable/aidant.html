@@ -12,7 +12,7 @@
 
       <div>
         <div class="fr-btns-group fr-btns-group--inline fr-btns-group--md">
-        {% if aidant.pk != responsable.pk and aidant.is_active %}
+        {% if not is_aidant_referent_of_current_org %}
           <form method="post" action="{% url 'espace_responsable_aidants' %}">
             {% csrf_token %}
             <input type="hidden" name="candidate" value="{{ aidant.pk }}">
@@ -20,15 +20,12 @@
               Désigner comme référent
             </button>
           </form>
-
+        {% endif %}
+        {% if aidant.is_active %}
           <a href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
               class="fr-btn fr-btn--secondary"
               id="remove-aidant-{{ aidant.id }}-from-organisation">
-            {% if aidant.organisations.count > 1 %}
-              Retirer l'aidant de l'organisation
-            {% else %}
-              Désactiver l'aidant
-            {% endif %}
+          Désactiver l'aidant
           </a>
         {% endif %}
         </div>

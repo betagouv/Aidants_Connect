@@ -418,9 +418,12 @@ class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
             pk__in=aidant_orgs.values_list("pk", flat=True)
         )
 
-        # Créer la chaîne avec virgules
         org_names_list = [org.name for org in common_organisations]
         organisations_display = ", ".join(org_names_list)
+
+        is_aidant_referent_of_current_org = self.aidant.responsable_de.filter(
+            pk=self.referent.organisation.pk
+        ).exists()
 
         kwargs.update(
             {
@@ -429,6 +432,7 @@ class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
                 "organisation": self.referent.organisation,
                 "form": ChangeAidantOrganisationsForm(self.referent, self.aidant),
                 "organisations_display": organisations_display,
+                "is_aidant_referent_of_current_org": is_aidant_referent_of_current_org,
             }
         )
         return super().get_context_data(**kwargs)
