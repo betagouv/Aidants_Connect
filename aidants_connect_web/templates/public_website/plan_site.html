@@ -1,0 +1,58 @@
+{% extends 'layouts/main.html' %}
+
+{% load ac_common static %}
+
+{% block title %}Plan du site - Aidants Connect{% endblock %}
+
+{% block extracss %}
+<link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+<section class="section">
+  <div class="fr-container">
+    <h1 class="fr-mb-4w">Plan du site</h1>
+
+    <ul class="fr-mb-4w">
+      <li><a href="{% url 'home_page' %}" class="fr-link">Accueil</a></li>
+      <li>Habilitation et formation :</li>
+      <ul class="fr-ml-2w">
+        <li><a href="{% url 'habilitation_faq_habilitation' %}" class="fr-link">Habilitation</a></li>
+        <li><a href="{% url 'habilitation_faq_formation' %}" class="fr-link">Formation</a></li>
+        <li><a href="{% url 'habilitation_new' %}" class="fr-link">Nouvelle demande d'habilitation</a></li>
+      </ul>
+      <li><a href="{% url 'temoignages' %}" class="fr-link">Témoignages</a></li>
+      <li><a href="{% url 'ressources' %}" class="fr-link">Ressources</a></li>
+      <li><a href="{% url 'statistiques' %}" class="fr-link">Statistiques</a></li>
+      <li><a href="{% url 'faq_generale' %}" class="fr-link">Aide</a></li>
+      <li><a href="{% url 'sandbox_presentation' %}" class="fr-link">Site bac à sable</a></li>
+      <li><a href="{% url 'guide_utilisation' %}" class="fr-link">Guide d'utilisation</a></li>
+    </ul>
+
+    {% if user.is_authenticated and user.can_create_mandats %}
+    <ul class="fr-mb-4w">
+      <li>Espace aidant :</li>
+      <ul class="fr-ml-2w">
+        <li><a href="{% url 'espace_aidant_home' %}" class="fr-link">Accueil</a></li>
+        <li><a href="{% url 'usagers' %}" class="fr-link">Mandats</a></li>
+        <li><a href="{% url 'new_mandat' %}" class="fr-link">Créer un mandat</a></li>
+      </ul>
+    </ul>
+    {% endif %}
+
+    {% if user.is_authenticated and user.is_responsable_structure %}
+    <ul class="fr-mb-4w">
+      <li>Espace référent :</li>
+      <ul class="fr-ml-2w">
+        <li><a href="{% url 'espace_responsable' %}" class="fr-link">Accueil</a></li>
+        <li><a href="{% url 'espace_responsable_aidants' %}" class="fr-link">Aidants</a></li>
+        <li><a href="{% url 'espace_responsable_referents' %}" class="fr-link">Référents</a></li>
+        <li><a href="{% url 'espace_responsable_demandes' %}" class="fr-link">Demandes en cours</a></li>
+        <li><a href="{% url 'espace_responsable_organisation' %}" class="fr-link">Mon organisation</a></li>
+      </ul>
+    </ul>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock content %}

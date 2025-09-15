@@ -55,6 +55,15 @@
             >Budget</a
           >
         </li>
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'budget' %} fr-sidemenu__item--active{% endif %}">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="{% url 'sitemap' %}"
+            {% if request.resolver_match.url_name == 'sitemap' %}aria-current="page"{% endif %}
+            >Plan du site</a
+          >
+        </li>
       </ul>
     </div>
   </div>

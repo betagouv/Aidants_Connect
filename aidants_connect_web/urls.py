@@ -342,6 +342,7 @@ urlpatterns = [
         formations.FormationsListing.as_view(),
         name="listing_formations",
     ),
+    path("plan-du-site/", service.SitemapView.as_view(), name="sitemap"),
 ]
 
 urlpatterns.extend(magicauth_urls)
