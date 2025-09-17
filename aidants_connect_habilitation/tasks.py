@@ -8,6 +8,7 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from metabasepy import Client
 
+from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import HabilitationRequest
 
 from .insee_utils import get_client_insee_api
@@ -34,10 +35,17 @@ def update_pix_and_create_aidant(json_result):
 
         if aidants_a_former.exists():
             for aidant_a_former in aidants_a_former:
-                if not aidant_a_former.test_pix_passed:
+                if aidant_a_former.test_pix_passed:
                     aidant_a_former.test_pix_passed = True
                     aidant_a_former.date_test_pix = date_test_pix
+                    if (
+                        aidant_a_former.status
+                        == ReferentRequestStatuses.STATUS_PROCESSING_P2P
+                    ):
+                        aidant_a_former.formation_done = True
+                        aidant_a_former.date_formation = date_test_pix
                     aidant_a_former.save()
+
                     if aidant_a_former.formation_done:
                         aidant_a_former.validate_and_create_aidant()
 

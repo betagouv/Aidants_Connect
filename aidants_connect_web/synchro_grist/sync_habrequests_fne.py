@@ -115,11 +115,13 @@ def pull_hrequests_from_grist_fne():
             grist_siret = int(one_row.Numero_Siret.replace(" ", ""))
             orga_name = one_row.Nom_de_la_structure.strip()
 
+            orga = None
             if one_row.Numero_d_habilitation_Aidants_Connect.strip():
                 orga = Organisation.objects.filter(
                     data_pass_id=one_row.Numero_d_habilitation_Aidants_Connect.strip()
                 ).first()
-            else:
+
+            if orga is None:
                 orga = Organisation.objects.filter(
                     siret=grist_siret, name__iexact=orga_name
                 ).first()
