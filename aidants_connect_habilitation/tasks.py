@@ -35,9 +35,10 @@ def update_pix_and_create_aidant(json_result):
 
         if aidants_a_former.exists():
             for aidant_a_former in aidants_a_former:
-                if aidant_a_former.test_pix_passed:
+                if not aidant_a_former.test_pix_passed:
                     aidant_a_former.test_pix_passed = True
                     aidant_a_former.date_test_pix = date_test_pix
+
                     if (
                         aidant_a_former.status
                         == ReferentRequestStatuses.STATUS_PROCESSING_P2P
