@@ -814,28 +814,61 @@ def import_referent_formation_from_livestorm(*, logger=None):
 
 @shared_task
 def notifiy_organisation_having_formation_unregistered_habilitation_requests():
+    url_formulaire = settings.URL_WEBINAIRE_REFERENT
+
     for (
         org
     ) in Organisation.objects.having_formation_unregistered_habilitation_requests():
-        text_message, html_message = render_email(
+        text_message_with_connexion, html_message_with_connexion = render_email(
             "email/having_formation_unregistered_habilitation_requests.mjml",
             {
                 "habilitation_requests_url": build_url(
                     reverse("espace_responsable_demandes")
-                )
+                ),
+                "espace_referent_url": build_url(reverse("espace_responsable")),
+                "url_formulaire": url_formulaire,
             },
         )
 
-        if org.responsables_is_active.filter(created_by_fne=False).exists():
+        recipients_with_connexion_list = []
+        recipients_without_connexion_list = []
+
+        for one_rcpt in org.responsables_is_active.filter(created_by_fne=False):
+            if one_rcpt.has_a_totp_device_confirmed_or_not:
+                recipients_with_connexion_list.append(one_rcpt.email)
+            else:
+                recipients_without_connexion_list.append(one_rcpt.email)
+
+        if len(recipients_with_connexion_list) > 0:
             send_mail(
                 from_email=settings.SUPPORT_EMAIL,
-                subject="Sessions de formation à Aidants Connect",
-                recipient_list=org.responsables_is_active.filter(
-                    created_by_fne=False
-                ).values_list("email", flat=True),
-                message=text_message,
-                html_message=html_message,
+                subject="Inscription en formation des aidants",
+                recipient_list=recipients_with_connexion_list,
+                message=text_message_with_connexion,
+                html_message=html_message_with_connexion,
             )
+
+        if len(recipients_without_connexion_list) > 0:
+            orga_request = org.organisationrequest_set.all().first()
+            if orga_request:
+                text_message_without_connexion, html_message_without_connexion = (
+                    render_email(
+                        "email/having_formation_unregistered_manager_not_activated.mjml",  # noqa
+                        {
+                            "habilitation_requests_url": build_url(
+                                orga_request.get_absolute_url()
+                            ),
+                            "url_formulaire": url_formulaire,
+                        },
+                    )
+                )
+                send_mail(
+                    from_email=settings.SUPPORT_EMAIL,
+                    subject="Inscription des aidants à la formation Aidants Connect",
+                    recipient_list=recipients_with_connexion_list,
+                    message=text_message_without_connexion,
+                    html_message=html_message_without_connexion,
+                )
 
 
 @shared_task

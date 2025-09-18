@@ -370,3 +370,14 @@ class ReferentsFormation(models.Model):
         "A participé à la formation", default=False
     )
     replay_seen = models.BooleanField("A vu le replay", default=False)
+
+
+class LogEmailSending(models.Model):
+    created_at = models.DateTimeField("Date de création", auto_now_add=True)
+    updated_at = models.DateTimeField("Date de modification", auto_now=True)
+
+    last_sending_date = models.DateTimeField(
+        "Date de dernier envoi", null=True, blank=True
+    )
+    code_email = models.CharField("Code email", max_length=255)
+    aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE)

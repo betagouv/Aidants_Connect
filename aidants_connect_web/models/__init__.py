@@ -18,7 +18,12 @@ from .mandat import (
 )
 from .notification import Notification, NotificationType
 from .organisation import Organisation, OrganisationType, get_staff_organisation_name_id
-from .other_models import CoReferentNonAidantRequest, ExportRequest, HabilitationRequest
+from .other_models import (
+    CoReferentNonAidantRequest,
+    ExportRequest,
+    HabilitationRequest,
+    LogEmailSending,
+)
 from .stats import (
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
@@ -45,6 +50,7 @@ __all__ = [
     FirstConnexionManagerInfo,
     IdGenerator,
     Journal,
+    LogEmailSending,
     MobileAskingUser,
     Notification,
     NotificationType,

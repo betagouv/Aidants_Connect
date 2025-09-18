@@ -38,6 +38,7 @@ from aidants_connect_web.models import (
     Connection,
     HabilitationRequest,
     Journal,
+    LogEmailSending,
     Mandat,
     Notification,
     Organisation,
@@ -2617,3 +2618,16 @@ class FormationAttendantTests(TestCase):
             FormationAttendant.objects.create(
                 formation=formation, attendant=hab_request
             )
+
+
+class LogEmailSendingTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant = AidantFactory()
+
+    def test_i_can_create_a_log_email_sending(self):
+        self.assertEqual(0, LogEmailSending.objects.all().count())
+
+        LogEmailSending.objects.create(aidant=self.aidant, code_email="CODE")
+
+        self.assertEqual(1, LogEmailSending.objects.all().count())

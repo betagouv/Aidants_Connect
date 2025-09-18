@@ -25,6 +25,7 @@ from aidants_connect_web.models import (
     CoReferentNonAidantRequest,
     HabilitationRequest,
     Journal,
+    LogEmailSending,
     Mandat,
     Notification,
     Organisation,
@@ -288,3 +289,9 @@ class CoReferentNonAidantRequestFactory(DjangoModelFactory):
 
     class Meta:
         model = CoReferentNonAidantRequest
+
+
+class LogEmailSendingFactory(DjangoModelFactory):
+
+    class Meta:
+        model = LogEmailSending
