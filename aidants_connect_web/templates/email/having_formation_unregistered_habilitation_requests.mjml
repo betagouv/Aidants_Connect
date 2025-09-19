@@ -7,11 +7,29 @@
   <mj-column>
     <mj-text>Bonjour,</mj-text>
     <mj-text>
-      La prochaine étape de la procédure d’habilitation à Aidants Connect est la formation des aidants. Rendez-vous sur
-      votre demande d’habilitation, cliquez sur « Inscrire à une formation » en bas de page et choisissez une date
-      de formation pour chaque aidant.
-    </mj-text>
-    <mj-button href="{{ habilitation_requests_url }}">Aller sur ma demande d’habilitation</mj-button>
+    <p>🎉 Félicitations, votre compte Aidants Connect est actif ! Vous pouvez maintenant inscrire les aidants en formation. </p>
+
+   <h2>Comment inscrire les aidants en formation ?</h2>
+      <p> 👉 <a href="{{ espace_referent_url }}">Rendez-vous</a> sur votre espace référent </p>
+
+    <p>👉 Allez sur “Demandes en cours” et inscrivez individuellement les aidants à une formation depuis la liste des demandes validées. </p>
+
+    <p>👉  L’organisme de formation concerné vous contactera par la suite pour confirmer l’inscription. Notez que des financements sont possibles via Uniformation, le marché des conseillers numérique ou France Numérique Ensemble </p>
+
+    <p>⚠️ Si vous avez sollicité un financement France Numérique Ensemble et que celui-ci est validé, vous n’avez pas à inscrire les aidants en formation, c’est le récipiendaire des fonds qui se charge de l’organisation de la formation.  </p>
+
+       <h2>Tout savoir sur le rôle de référent</h2>
+
+    <p>Pour mieux comprendre le rôle de référent et assister à une démonstration de l'espace référent,
+participez au webinaire dédié. Plusieurs créneaux sont disponibles, inscrivez-vous via <a href="{{ url_formulaire }}">ce formulaire.</a> </p>
+
+        <h2>Nous contacter</h2>
+        <p>Si vous rencontrez un problème pour activer votre compte,
+        envoyez un e-mail à {% mailto AC_CONTACT_EMAIL %} en précisant votre numéro d’habilitation. </p>
+
+        <p>Nous vous remercions de votre implication sur le dispositif et nous tenons à disposition pour toute demande.</p>
+
+
   </mj-column>
 </mj-section>
 {% endblock email_body %}

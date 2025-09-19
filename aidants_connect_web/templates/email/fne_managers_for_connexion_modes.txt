@@ -1,0 +1,22 @@
+Bienvenue sur Aidants Connect !
+
+En tant que référent de votre structure, vous pouvez dès à présent activer votre compte. Cette étape est indispensable pour
+ensuite activer les comptes des aidants formés.
+
+Comment activer mon compte ?
+
+👉 Connectez-vous depuis la page <a href="{{ url_first_login }}">Première connexion référent</a> et renseignez les informations demandées.
+        Un code de première connexion vous sera alors envoyé par SMS.
+
+👉 Une fois connecté à votre espace, vous devrez activer la double authentification
+par application mobile en suivant <a href="{{ url_video }}">les étapes décrites dans cette vidéo.</a>
+
+Tout savoir sur le rôle de référent
+Pour mieux comprendre le rôle de référent et assister à une démonstration de l'espace référent,
+participez au webinaire dédié. Plusieurs créneaux sont disponibles, inscrivez-vous via <a href="{{ url_formulaire }}">ce formulaire.</a>
+
+Nous contacter
+Si vous rencontrez un problème pour activer votre compte,
+envoyez un e-mail à contact@aidantsconnect.beta.gouv.fr en précisant votre numéro d’habilitation.
+
+Nous vous remercions de votre implication sur le dispositif et nous tenons à disposition pour toute demande.
