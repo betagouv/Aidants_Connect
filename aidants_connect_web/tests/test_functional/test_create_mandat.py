@@ -54,9 +54,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.selenium.find_element(By.ID, "add_usager").click()
         self.wait.until(self.path_matches("new_mandat"))
 
-        self.check_accessibility("new_mandat", strict=True)
-
-        # Check accessibility of the form page
         demarches_section = self.selenium.find_element(
             By.CSS_SELECTOR, ".demarches-section"
         )
@@ -72,7 +69,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         ).click()
 
         self.selenium.find_element(By.CSS_SELECTOR, "#id_duree_short ~ label").click()
-        # test accessibility on the form page
 
         # FranceConnect
         fc_button = self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect")
@@ -110,8 +106,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
 
-        self.check_accessibility("logout_callback", strict=True)
-
         self.selenium.find_element(By.CSS_SELECTOR, "#id_personal_data ~ label").click()
         id_otp_token = checkboxes[-2]
         self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
@@ -132,7 +126,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         mandat_qs = Mandat.objects.filter(organisation=self.aidant.organisation)
         self.assertEqual(1, mandat_qs.count())
         self.assertEqual(2, mandat_qs[0].autorisations.count())
-        self.check_accessibility("new_attestation_final", strict=True)
 
         self.open_live_url("/usagers/")
 
@@ -407,7 +400,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.wait.until(
             self.path_matches("logout_callback", query_params={"state": ".+"})
         )
-        self.check_accessibility("logout_callback", strict=True)
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text

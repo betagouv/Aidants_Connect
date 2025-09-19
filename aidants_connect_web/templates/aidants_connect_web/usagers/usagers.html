@@ -10,12 +10,11 @@
 {% endblock extracss %}
 
 {% block content %}
+
+
   <div class="fr-container" data-controller="search">
     <div class="fr-grid-row flex-between fr-mb-6w">
-      <div>
-        <h1 class="fr-mb-2w">Liste des mandats</h1>
-      </div>
-      {% dsfr_django_messages %}
+      <h1 class="fr-mb-2w">Liste des mandats</h1>
       <div>
         <a
           href="{% url 'new_mandat' %}"
@@ -26,7 +25,11 @@
         </a>
       </div>
     </div>
-
+    {% if messages %}
+      <div class="fr-mb-4w">
+        {% dsfr_django_messages %}
+      </div>
+    {% endif %}
     {% include "aidants_connect_web/users_search_bar.html" %}
 
     <h2 class="fr-text-title">Mandats actifs</h2>

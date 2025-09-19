@@ -48,7 +48,7 @@ def home_page(request):
 @login_required
 def logout_page(request):
     logout(request)
-    django_messages.success(request, "Vous êtes maintenant déconnecté·e.")
+    django_messages.success(request, "Vous avez été déconnecté avec succès.")
     return redirect(settings.LOGOUT_REDIRECT_URL)
 
 
