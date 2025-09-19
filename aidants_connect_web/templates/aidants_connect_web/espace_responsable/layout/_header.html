@@ -16,7 +16,7 @@
       class="fr-nav__link"
       target="_self"
       href="{% url 'espace_responsable_aidants' %}"
-      {% if view_name == 'espace_responsable_aidants' %}aria-current="true"{% endif %}
+      {% if view_name|startswith:'espace_responsable_aidant' %}aria-current="true"{% endif %}
     >Aidants</a>
   </li>
   <li class="fr-nav__item">
