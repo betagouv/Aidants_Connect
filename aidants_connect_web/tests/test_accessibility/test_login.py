@@ -17,13 +17,13 @@ class LoginPageAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_title_is_correct(self):
         for path in self.login_paths:
-            await self.page.goto(self.live_server_url + path)
+            await self.navigate_to_url(path)
             await expect(self.page).to_have_title("Connectez-vous - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
         for path in self.login_paths:
-            await self.page.goto(self.live_server_url + path)
+            await self.navigate_to_url(path)
 
             nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
             skip_links = await nav_skiplinks.get_by_role("link").all()
@@ -36,7 +36,7 @@ class LoginPageAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_required_fields_notice_is_present(self):
         for path in self.login_paths:
-            await self.page.goto(self.live_server_url + path)
+            await self.navigate_to_url(path)
 
             page_content = await self.page.content()
             self.assertIn("sauf mention contraire", page_content.lower())

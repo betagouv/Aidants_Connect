@@ -17,14 +17,13 @@ class NewMandatAccessibilityTests(AccessibilityTestCase):
     async def navigate_to_new_mandat(self):
         """Helper method to navigate to new_mandat page"""
         await self.login_aidant(self.aidant, self.otp_token)
-        await self.page.goto(self.live_server_url + "/usagers/")
+        await self.navigate_to_url("/usagers/")
         await self.page.click("#add_usager")
         await self.wait_for_path_match("new_mandat")
 
     @async_test
     async def test_accessibility(self):
         await self.login_aidant(self.aidant, self.otp_token)
-        await self.page.wait_for_load_state("networkidle")
         await self.check_accessibility(page_name="new_mandat", strict=True)
 
     @async_test

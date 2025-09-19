@@ -22,26 +22,19 @@ class EndUserDetailsAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_accessibility(self):
         await self.login_aidant(self.aidant_thierry, "123456")
-        await self.page.goto(
-            self.live_server_url + f"/usagers/{self.mandat.usager.id}/"
-        )
-        await self.page.wait_for_load_state("networkidle")
+        await self.navigate_to_url(f"/usagers/{self.mandat.usager.id}/")
         await self.check_accessibility(page_name="usager_details", strict=True)
 
     @async_test
     async def test_title_is_correct(self):
         await self.login_aidant(self.aidant_thierry, "123456")
-        await self.page.goto(
-            self.live_server_url + f"/usagers/{self.mandat.usager.id}/"
-        )
+        await self.navigate_to_url(f"/usagers/{self.mandat.usager.id}/")
         await expect(self.page).to_have_title("Homer Simpson - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
         await self.login_aidant(self.aidant_thierry, "123456")
-        await self.page.goto(
-            self.live_server_url + f"/usagers/{self.mandat.usager.id}/"
-        )
+        await self.navigate_to_url(f"/usagers/{self.mandat.usager.id}/")
         nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
         skip_links = await nav_skiplinks.get_by_role("link").all()
 

@@ -206,7 +206,8 @@ class SwitchMainOrganisation(BaseFormView):
 
         django_messages.success(
             self.request,
-            f"Organisation {self.aidant.organisation.name} selectionnée",
+            f"L'organisation {self.aidant.organisation.name}"
+            "a été sélectionnée avec succès.",
         )
 
         self.next_url = form.cleaned_data["next_url"]

@@ -3,7 +3,7 @@
 
 {% partialdef messages %}
   {% include "aidants_connect_web/espace_aidant/notifications.html" with user=aidant %}
-  {% include "layouts/_messages.html" %}
+  {% dsfr_django_messages %}
   {% for notification in notifications %}
     <div
       class="fr-col-12 fr-my-4v"

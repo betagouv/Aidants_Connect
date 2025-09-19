@@ -14,19 +14,16 @@ class ActivityCheckAccessibilityTests(AccessibilityTestCase):
         # Récupérer le token de manière synchrone dans setUp
         self.otp_token = self.aidant.staticdevice_set.first().token_set.first().token
 
-    async def navigate_to_page(self):
-        """Helper method to navigate to new_mandat page"""
-        await self.login_aidant(self.aidant, self.otp_token)
-        await self.page.goto(self.live_server_url + "/activity_check/")
-
     @async_test
     async def test_title_is_correct(self):
-        await self.navigate_to_page()
+        await self.login_aidant(self.aidant, self.otp_token)
+        await self.navigate_to_url("/activity_check/")
         await expect(self.page).to_have_title("Session expirée - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
-        await self.navigate_to_page()
+        await self.login_aidant(self.aidant, self.otp_token)
+        await self.navigate_to_url("/activity_check/")
 
         nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
         skip_links = await nav_skiplinks.get_by_role("link").all()
@@ -39,7 +36,8 @@ class ActivityCheckAccessibilityTests(AccessibilityTestCase):
 
     @async_test
     async def test_required_fields_notice_is_present(self):
-        await self.navigate_to_page()
+        await self.login_aidant(self.aidant, self.otp_token)
+        await self.navigate_to_url("/activity_check/")
 
         page_content = await self.page.content()
         self.assertIn("sauf mention contraire", page_content.lower())
