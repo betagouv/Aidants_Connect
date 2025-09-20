@@ -105,8 +105,8 @@ class AddAppOTPToAidantTests(TestCase):
             fetch_redirect_response=False,
         )
         self.assertEqual(
-            "Il existe déjà une carte OTP numérique liée à ce profil. Si vous "
-            "voulez en attacher une nouvelle, veuillez supprimer l’anciennne.",
+            "Attention : il existe déjà une carte OTP numérique liée à ce profil. "
+            "Si vous voulez en attacher une nouvelle, veuillez supprimer l’anciennne.",
             list(django_messages.get_messages(response.wsgi_request))[0].message,
         )
         self.assertEqual(1, self.aidant_sarah.totpdevice_set.count())
@@ -345,8 +345,8 @@ class RemoveAppOTPToAidantTests(TestCase):
 
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            f"Le profil de {self.deactivated_aidant.get_full_name()} désactivé. "
-            "Il est impossible de lui lier attacher une nouvelle carte OTP "
-            "numérique.",
+            f"Attention : le profil de {self.deactivated_aidant.get_full_name()}"
+            " désactivé. Il est impossible de lui lier attacher une nouvelle "
+            "carte OTP numérique.",
             messages[0].message,
         )

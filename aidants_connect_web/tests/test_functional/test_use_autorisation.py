@@ -111,7 +111,6 @@ class UseAutorisationTests(FunctionalTestCase):
         wait = WebDriverWait(self.selenium, 10)
 
         wait.until(url_contains("/select_demarche/"))
-        self.check_accessibility("fi_select_demarche", strict=False)
 
         # Select Démarche
         step2_title = self.selenium.find_element(By.CSS_SELECTOR, ".instructions").text

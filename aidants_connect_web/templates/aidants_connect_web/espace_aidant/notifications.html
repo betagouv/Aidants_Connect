@@ -7,9 +7,9 @@
     </a>
   </div>
 {% elif user.must_validate_cgu %}
-  <div class="fr-alert fr-alert--warning fr-my-4v">
-    Nous vous prions de bien vouloir
+  <div class="fr-alert fr-alert--warning fr-my-8v">
+    Attention : avant de pouvoir effectuer une action sur Aidants Connect, vous devez
     <a class="fr-link" href="{% url "espace_aidant_cgu" %}">valider les conditions générales d’utilisation</a>
-    d’Aidants Connect.
+    .
   </div>
 {% endif %}

@@ -10,24 +10,15 @@
 
 {% block content %}
   <div class="fr-container">
-    {% include "layouts/_messages.html" %}
-
     <h1>
       Créer ou renouveler un mandat{% if aidant.organisations.count > 1 %} pour {{ aidant.organisation }}{% endif %}
     </h1>
+    {% dsfr_django_messages %}
+
     {% if aidant.organisations.count > 1 %}
-      <div class="fr-alert fr-alert--warning fr-my-8v">
-        <p>Attention, vous allez créer un mandat au nom de cette structure :</p>
-        <p><strong>{{ aidant.organisation }}</strong><br>{{ aidant.organisation.address }}</p>
-        <p>
-          Si ce n’est pas la bonne structure,
-          <a
-            href="{% url 'espace_aidant_switch_main_organisation' %}?next={{ request.get_full_path|urlencode:'' }}"
-            class="fr-link"
-          >
-            vous pouvez en changer
-          </a>.
-        </p>
+      <div class="fr-alert fr-alert--info fr-my-8v" role="alert">
+        <p>Vous allez créer un mandat au nom de <strong>{{ aidant.organisation }}</strong></p>
+          S'il ne s'agit pas de la bonne organisation, changez la depuis le menu en haut à droite.
       </div>
     {% endif %}
     <h2>Mentions à lire à l’usager</h2>
@@ -61,11 +52,22 @@
       data-mandate-form-controller-bdf-warning-value="{{ warn_scope.value }}"
     >
       {% if form.errors %}
-        <p class="fr-alert fr-alert--error" role="alert">Il y a des erreurs dans le formulaire.</p>
+        <div class="fr-alert fr-alert--error" role="alert">
+          <h3 class="fr-alert__title">Il y a des erreurs dans le formulaire</h3>
+          <div class="fr-alert__description">
+            <ul>
+              {% for field_name, errors in form.errors.items %}
+                {% for error in errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
       {% endif %}
       {% csrf_token %}
 
-      <p class="fr-text">Sauf mention contraire, tous les champs sont obligatoires.</p>
+      <p class="fr-text fr-mt-6w">Sauf mention contraire, tous les champs sont obligatoires.</p>
 
       <section class="demarches-section">
         <div role="group" aria-label="Sélectionnez la ou les démarches (obligatoire)">

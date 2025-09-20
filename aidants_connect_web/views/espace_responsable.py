@@ -60,8 +60,9 @@ class ReferentCannotManageAidantResponseMixin:
     def referent_cannot_manage_aidant_response(self):
         django_messages.error(
             self.request,
-            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
-            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "Ce profil aidant nʼexiste pas ou nʼest pas membre "
+            "de votre organisation active. "
+            "Si ce profil existe et que vous faites partie de ses référents, "
             "veuillez changer dʼorganisation pour le gérer.",
         )
         return redirect("espace_responsable_organisation")
@@ -165,7 +166,7 @@ class ReferentsView(DetailView, FormView):
 
         if not self.organisation:
             django_messages.error(
-                self.request, "Vous n'êtes pas rattaché à une organisation."
+                self.request, "Erreur : vous n'êtes pas rattaché à une organisation."
             )
             return redirect("espace_aidant_home")
         return self.organisation
@@ -247,7 +248,7 @@ class AidantsView(DetailView, FormView):
 
         if not self.organisation:
             django_messages.error(
-                self.request, "Vous n'êtes pas rattaché à une organisation."
+                self.request, "Erreur : vous n'êtes pas rattaché à une organisation."
             )
             return redirect("espace_aidant_home")
         return self.organisation
@@ -280,8 +281,8 @@ class AidantsView(DetailView, FormView):
             django_messages.success(
                 self.request,
                 (
-                    f"Tout s’est bien passé, {new_responsable} est maintenant "
-                    f"responsable de l’organisation {self.organisation}."
+                    f"{new_responsable} a été désigné comme "
+                    f"responsable de l’organisation {self.organisation} avec succès."
                 ),
             )
         return super().form_valid(form)
@@ -306,7 +307,7 @@ class DemandesView(DetailView, FormView):
 
         if not self.organisation:
             django_messages.error(
-                self.request, "Vous n'êtes pas rattaché à une organisation."
+                self.request, "Erreur : vous n'êtes pas rattaché à une organisation."
             )
             return redirect("espace_aidant_home")
         return self.organisation
@@ -375,17 +376,20 @@ class OrganisationResponsables(FormView):
             django_messages.success(
                 self.request,
                 (
-                    f"Tout s’est bien passé, {new_responsable} est maintenant "
-                    f"responsable de l’organisation {self.organisation}."
+                    f"{new_responsable} a été désigné comme "
+                    f"responsable de l’organisation {self.organisation} avec succès."
                 ),
             )
         else:
             instance = form.save()
             django_messages.success(
                 self.request,
-                f"Votre demande pour ajouter {instance.get_full_name()} au "
-                f"poste de referent non-aidant de {self.organisation} a été prise en "
-                f"compte. Elle va faire l'objet d'un examen de la part de nos équipes.",
+                (
+                    f"Votre demande pour ajouter {instance.get_full_name()} au "
+                    f"poste de referent non-aidant de {self.organisation} a été "
+                    "transmise avec succès. Elle va faire l'objet d'un examen "
+                    "de la part de nos équipes."
+                ),
             )
         return super().form_valid(form)
 
@@ -457,8 +461,8 @@ class RemoveCardFromAidant(ReferentCannotManageAidantResponseMixin, FormView):
         django_messages.success(
             self.request,
             (
-                f"Tout s’est bien passé, la carte {sn} a été séparée du compte "
-                f"de l’aidant {self.aidant.get_full_name()}."
+                f"La carte {sn} a été séparée du compte "
+                f"de l’aidant {self.aidant.get_full_name()} avec succès."
             ),
         )
 
@@ -481,7 +485,7 @@ class AddAppOTPToAidant(ReferentCannotManageAidantResponseMixin, FormView):
         if self.aidant.has_otp_app:
             django_messages.warning(
                 request,
-                "Il existe déjà une carte OTP numérique liée à ce profil. "
+                "Attention : il existe déjà une carte OTP numérique liée à ce profil. "
                 "Si vous voulez en attacher une nouvelle, veuillez supprimer "
                 "l’anciennne.",
             )
@@ -490,7 +494,7 @@ class AddAppOTPToAidant(ReferentCannotManageAidantResponseMixin, FormView):
         if not self.aidant.is_active:
             django_messages.warning(
                 request,
-                f"Le profil de {self.aidant.get_full_name()} désactivé. "
+                f"Attention : le profil de {self.aidant.get_full_name()} désactivé. "
                 "Il est impossible de lui lier attacher une nouvelle carte OTP "
                 "numérique.",
             )
@@ -624,12 +628,18 @@ class RemoveAidantFromOrganisationView(
         if result is True:
             django_messages.success(
                 request,
-                f"{self.aidant.get_full_name()} ne fait maintenant plus partie de "
-                f"{self.organisation.name}.",
+                (
+                    f"{self.aidant.get_full_name()} a été retirée de "
+                    f"{self.organisation.name} avec succès."
+                ),
             )
         else:
             django_messages.success(
-                request, f"Le profil de {self.aidant.get_full_name()} a été désactivé."
+                request,
+                (
+                    f"Le profil de {self.aidant.get_full_name()}"
+                    "a été désactivé avec succès."
+                ),
             )
 
         return redirect("espace_responsable_aidants")
@@ -672,10 +682,10 @@ class ChangeAidantOrganisations(ReferentCannotManageAidantResponseMixin, FormVie
         )
 
         message = _(
-            "Tout s’est bien passé, le compte de %(u)s "
-            "a été rattaché aux organisations %(org)s",
-            "Tout s’est bien passé, le compte de %(u)s "
-            "a été rattaché aux organisations %(org)s",
+            "Le compte de %(u)s "
+            "a été rattaché aux organisations %(org)s avec succès",
+            "Le compte de %(u)s "
+            "a été rattaché aux organisations %(org)s avec succès",
             len(posted_organisations),
         ) % {
             "u": self.aidant,
@@ -748,9 +758,9 @@ class AssociateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView
             django_messages.error(
                 request,
                 (
-                    f"Le compte de {self.aidant.get_full_name()} est déjà lié à une "
-                    f"carte Aidants Connect. Vous devez d’abord retirer la carte de "
-                    f"son compte avant de pouvoir en lier une nouvelle."
+                    f"Le compte de {self.aidant.get_full_name()} est déjà "
+                    f"lié à une carte Aidants Connect. Vous devez d’abord retirer la "
+                    f"carte de son compte avant de pouvoir en lier une nouvelle."
                 ),
             )
 
@@ -760,8 +770,8 @@ class AssociateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView
             django_messages.error(
                 request,
                 (
-                    f"Le compte de {self.aidant.get_full_name()} est désactivé. "
-                    "Il est impossible de lui attacher une nouvelle carte "
+                    f"Le compte de {self.aidant.get_full_name()} est désactivé"
+                    ". Il est impossible de lui attacher une nouvelle carte "
                     "Aidant Connect"
                 ),
             )
@@ -817,8 +827,8 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
             django_messages.error(
                 request,
                 (
-                    "Impossible de trouver une carte Aidants Connect associée au "
-                    f"compte de {self.aidant.get_full_name()}."
+                    "Impossible de trouver une carte Aidants Connect "
+                    f"associée au compte de {self.aidant.get_full_name()}."
                     "Vous devez d’abord lier une carte à son compte."
                 ),
             )
@@ -829,9 +839,9 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
             django_messages.error(
                 request,
                 (
-                    f"Le profil de {self.aidant.get_full_name()} est désactivé. "
-                    "Il est impossible de valider la carte Aidants Connect qui lui est "
-                    "associée."
+                    f"Le profil de {self.aidant.get_full_name()} est désactivé"
+                    ". Il est impossible de valider la carte Aidants Connect "
+                    "qui lui est associée."
                 ),
             )
 
@@ -878,8 +888,8 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
         django_messages.success(
             self.request,
             (
-                "Tout s’est bien passé, le compte de "
-                f"{self.aidant.get_full_name()} est prêt !"
+                "Le compte de "
+                f"{self.aidant.get_full_name()} a été préparé avec succès"
             ),
         )
 
@@ -920,8 +930,11 @@ class NewHabilitationRequest(FormView):
         django_messages.success(
             self.request,
             ngettext(
-                "La demande d’habilitation pour %(person)s a bien été enregistrée.",
-                "%(len)s demandes d’habilitation ont bien été enregistrées.",
+                (
+                    "La demande d’habilitation pour %(person)s "
+                    "a été enregistrée avec succès."
+                ),
+                "Les %(len)s demandes d’habilitation ont été enregistrées avec succès.",
                 len(result),
             )
             % {"person": result[0].get_full_name(), "len": len(result)},

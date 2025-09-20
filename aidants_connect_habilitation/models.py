@@ -50,7 +50,7 @@ def _new_uuid():
 class PersonEmailField(models.EmailField):
     def __init__(self, **kwargs):
         kwargs["max_length"] = 150
-        kwargs["verbose_name"] = "Email nominatif"
+        kwargs["verbose_name"] = "e-mail nominatif"
         super().__init__(**kwargs)
 
 

@@ -45,11 +45,11 @@
                     {% endif %}
                     {% if not aidant.is_active %}
                       <div class="fr-alert fr-alert--error fr-mt-2w">
-                        <p>Attention, veillez à bien délier et récupérer la carte de cet aidant désactivé</p>
+                        <p>Attention, veillez à bien délier et récupérer la carte de {{ aidant.get_full_name }}</p>
                       </div>
                     {% endif %}
                   </div>
-                {% else %}
+                  {% else %}
                   <div class="fr-text--md">
                     {% if aidant.is_active %}
                       <a
