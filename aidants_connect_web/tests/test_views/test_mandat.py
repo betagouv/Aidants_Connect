@@ -245,15 +245,13 @@ class NewMandatTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         response = self.client.get("/creation_mandat/")
         self.assertNotContains(
-            response, "Attention, vous allez créer un mandat au nom de cette structure"
+            response, "Vous allez créer un mandat au nom de cette structure"
         )
 
     def test_warning_displayed_for_multi_structure_aidant(self):
         self.client.force_login(self.aidant_nour)
         response = self.client.get("/creation_mandat/")
-        self.assertContains(
-            response, "Attention, vous allez créer un mandat au nom de cette structure"
-        )
+        self.assertContains(response, "Vous allez créer un mandat au nom de")
 
     def test_badly_formatted_form_triggers_original_template(self):
         self.client.force_login(self.aidant_thierry)

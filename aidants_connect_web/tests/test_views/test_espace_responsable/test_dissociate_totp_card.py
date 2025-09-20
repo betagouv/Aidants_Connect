@@ -50,7 +50,7 @@ class DissociateCarteTOTPTests(TestCase):
         )
         response = self.client.get(response.url, follow=True)
         response_content = response.content.decode("utf-8")
-        self.assertIn("Tout s’est bien passé", response_content)
+        self.assertIn("succès", response_content)
         # Check card still exists but that TOTP Device doesn't
         carte = CarteTOTP.objects.last()
         self.assertEqual(carte.serial_number, self.carte.serial_number)
