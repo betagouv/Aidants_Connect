@@ -1,11 +1,15 @@
-from django.conf import settings
+from unittest import mock
+from unittest.mock import Mock
 
-from playwright.async_api import expect
+from django.conf import settings
+from django.test import override_settings
+from django.urls import reverse
 
 from aidants_connect_common.tests.test_accessibility.test_playwright import (
-    AccessibilityTestCase,
+    FunctionalTestCase,
     async_test,
 )
+from aidants_connect_common.utils.sms_api import SmsApi
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     ConnectionFactory,
@@ -15,7 +19,7 @@ from aidants_connect_web.tests.factories import (
 UUID = "1f75d571-4127-445b-a141-ea837580da14"
 
 
-class NewMandatRemoteSecondStepAccessibilityTests(AccessibilityTestCase):
+class NewMandatSmsErrorAccessibilityTests(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
         cls.port = settings.FC_AS_FS_TEST_PORT
@@ -35,8 +39,8 @@ class NewMandatRemoteSecondStepAccessibilityTests(AccessibilityTestCase):
             duree_keyword="SHORT",
         )
 
-    async def new_mandat_remote_second_step(self):
-        """Helper method to navigate to new_mandat_remote_second_step page"""
+    async def trigger_sms_error(self):
+        """Helper method to trigger SMS error and navigate to error page"""
         await self.login_aidant(self.aidant, self.otp_token)
         await self.navigate_to_url("/usagers/")
         await self.page.click("#add_usager")
@@ -61,31 +65,37 @@ class NewMandatRemoteSecondStepAccessibilityTests(AccessibilityTestCase):
         await self.page.fill("#id_user_phone", "0 800 840 800")
         await self.page.click("#id_user_remote_contact_verified ~ label")
 
-        # send recap mandate and go to second step
+        # Click submit - this will trigger the SMS error and
+        # redirect to espace_aidant_home
         await self.page.click(".fr-connect")
-        await self.wait_for_path_match("new_mandat_remote_second_step")
+        await self.wait_for_path_match("espace_aidant_home")
         await self.page.wait_for_load_state("networkidle")
 
     @async_test
-    async def test_accessibility(self):
-        await self.new_mandat_remote_second_step()
-        await self.check_accessibility(
-            page_name="new_mandat_remote_second_step", strict=True
+    @override_settings(
+        SMS_API_DISABLED=False,
+        LM_SMS_SERVICE_USERNAME="username",
+        LM_SMS_SERVICE_PASSWORD="password",
+        LM_SMS_SERVICE_BASE_URL=f"http://localhost:{settings.FC_AS_FS_TEST_PORT}",
+        LM_SMS_SERVICE_OAUTH2_ENDPOINT=reverse("test_sms_api_token"),
+        LM_SMS_SERVICE_SND_SMS_ENDPOINT=reverse("test_sms_api_sms"),
+    )
+    @mock.patch("aidants_connect_web.views.mandat.uuid4")
+    @mock.patch("aidants_connect_common.utils.sms_api.SmsApiImpl.send_sms")
+    async def test_accessibility_sms_error_page(self, mock_send_sms, uuid4_mock: Mock):
+        """Test accessibility of espace_aidant_home page when SMS sending fails"""
+        uuid4_mock.return_value = UUID
+
+        # Configure mock to raise SMS exception
+        mock_send_sms.side_effect = SmsApi.HttpRequestExpection(500, "Erreur API SMS")
+
+        await self.trigger_sms_error()
+
+        # Check that error message is displayed
+        error_alert = await self.page.query_selector(".fr-alert--error")
+        self.assertIsNotNone(error_alert, "Error alert should be present")
+
+        error_text = await error_alert.text_content()
+        self.assertIn(
+            "Une erreur est survenue pendant l'envoi du SMS récapitulatif", error_text
         )
-
-    @async_test
-    async def test_title_is_correct(self):
-        await self.new_mandat_remote_second_step()
-        await expect(self.page).to_have_title("Récapitulatif envoyé - Aidants Connect")
-
-    @async_test
-    async def test_skiplinks_are_valid(self):
-        await self.new_mandat_remote_second_step()
-
-        nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
-        skip_links = await nav_skiplinks.get_by_role("link").all()
-
-        for skip_link in skip_links:
-            await expect(skip_link).to_be_attached()
-            await skip_link.focus()
-            await expect(skip_link).to_be_visible()

@@ -212,7 +212,7 @@ class RemoteMandateMixin:
             django_messages.error(
                 self.request,
                 format_html(
-                    "Une erreur est survenue pendant l'envoi du SMS de "
+                    "Une erreur est survenue pendant l'envoi du SMS "
                     "récapitulatif. Merci de réessayer plus tard. Si l'erreur "
                     "persiste, merci de nous la signaler {}.",
                     mailto(

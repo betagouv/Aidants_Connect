@@ -23,11 +23,10 @@ def async_test(func):
     return wrapper
 
 
-@tag("accessibility")
-class AccessibilityTestCase(StaticLiveServerTestCase):
+@tag("functional")
+class FunctionalTestCase(StaticLiveServerTestCase):
     """
-    Classe de base pour les tests d'accessibilité avec Playwright.
-    Utilise un décorateur @async_test pour une syntaxe élégante.
+    Classe de base pour les tests fonctionnales avec Playwright.
     """
 
     @classmethod
@@ -115,6 +114,14 @@ class AccessibilityTestCase(StaticLiveServerTestCase):
         )
         await self.page.goto(url)
         await self.page.wait_for_load_state("networkidle")
+
+
+@tag("accessibility")
+class AccessibilityTestCase(FunctionalTestCase):
+    """
+    Classe de base pour les tests d'accessibilité avec Playwright.
+    Utilise un décorateur @async_test pour une syntaxe élégante.
+    """
 
     async def check_accessibility(
         self,

@@ -186,7 +186,7 @@ class SwitchMainOrganisation(BaseFormView):
     def form_invalid(self, form):
         django_messages.error(
             self.request,
-            "Il est impossible de sélectionner cette organisation.",
+            "Erreur : il est impossible de sélectionner cette organisation.",
         )
 
         logger.error(
@@ -206,7 +206,7 @@ class SwitchMainOrganisation(BaseFormView):
 
         django_messages.success(
             self.request,
-            f"L'organisation {self.aidant.organisation.name}"
+            f"L'organisation {self.aidant.organisation.name} "
             "a été sélectionnée avec succès.",
         )
 
