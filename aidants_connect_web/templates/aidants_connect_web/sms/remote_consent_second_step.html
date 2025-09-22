@@ -1,12 +1,11 @@
 {% extends 'layouts/main-habilitation.html' %}
-{% load form_extras %}
-{% load static ac_common %}
+{% load ac_common form_extras static %}
 
-{% block title %}Aidants Connect - Récapitulatif envoyé{% endblock %}
+{% block title %}Récapitulatif envoyé - Aidants Connect{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/mandate-elements.css' %}" rel="stylesheet">
-{% endblock %}
+{% endblock extracss %}
 
 {% block content %}
   <div class="fr-container">

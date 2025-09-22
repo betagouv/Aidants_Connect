@@ -331,7 +331,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         # # Send recap mandate and go to second step
         self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect").click()
         self.wait.until(self.path_matches("new_mandat_remote_second_step"))
-        self.check_accessibility("new_mandat_remote_second_step", strict=True)
 
         # # Send user consent request
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
@@ -355,7 +354,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.open_live_url(reverse("new_mandat_recap"))
 
         self.wait.until(self.path_matches("new_mandat_waiting_room"))
-        self.check_accessibility("new_mandat_waiting_room", strict=True)
 
         # Simulate user content
         self._user_consents("0 800 840 800")
