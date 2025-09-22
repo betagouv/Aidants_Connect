@@ -958,7 +958,7 @@ class AttestationVisualisationTests(TestCase):
 
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Ce mandat est introuvable ou inaccessible.",
+            "Erreur : ce mandat est introuvable ou inaccessible.",
             messages[0].message,
         )
 
@@ -973,7 +973,7 @@ class AttestationVisualisationTests(TestCase):
 
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Ce mandat est introuvable ou inaccessible.",
+            "Erreur : ce mandat est introuvable ou inaccessible.",
             messages[0].message,
         )
 
@@ -1150,7 +1150,7 @@ class AttestationFinalTests(TestCase):
 
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Ce mandat est introuvable ou inaccessible.",
+            "Erreur : ce mandat est introuvable ou inaccessible.",
             messages[0].message,
         )
 

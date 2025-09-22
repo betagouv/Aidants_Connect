@@ -207,9 +207,9 @@ class HabilitationRequestsTests(TestCase):
             "email",
             errors=[
                 (
-                    "Une demande d’habilitation est déjà en cours pour l’adresse "
-                    "e-mail. Vous n’avez pas besoin de déposer une "
-                    "nouvelle demande pour cette adresse-ci."
+                    "Erreur : une demande d’habilitation est déjà en cours "
+                    "pour l’adresse e-mail. Vous n’avez pas besoin de déposer "
+                    "une nouvelle demande pour cette adresse-ci."
                 )
             ],
         )
@@ -242,9 +242,9 @@ class HabilitationRequestsTests(TestCase):
             "email",
             errors=[
                 (
-                    "Il existe déjà un compte aidant pour cette adresse e-mail. "
-                    "Vous n’avez pas besoin de déposer une nouvelle demande pour cette "
-                    "adresse-ci."
+                    "Erreur : il existe déjà un compte aidant pour cette "
+                    "adresse e-mail. Vous n’avez pas besoin de déposer une "
+                    "nouvelle demande pour cette adresse-ci."
                 )
             ],
         )

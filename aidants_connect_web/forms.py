@@ -164,7 +164,7 @@ class AidantChangeForm(forms.ModelForm):
                 .exists()
             ):
                 self.add_error(
-                    "email", forms.ValidationError("This email is already taken")
+                    "email", forms.ValidationError("Erreur : cet e-mail existe déjà")
                 )
             else:
                 cleaned_data["username"] = data_email
@@ -181,7 +181,7 @@ class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
         user_email = super().clean_email()
         if not Aidant.objects.filter(email__iexact=user_email, is_active=True).exists():
             raise ValidationError(
-                "Votre compte a été désactivé. "
+                "Erreur : votre compte a été désactivé. "
                 "Si vous pensez que c’est une erreur, prenez contact avec votre "
                 "référent ou avec Aidants Connect."
             )
@@ -214,21 +214,22 @@ class ManagerFirstLoginForm(DsfrBaseForm):
         aidant = Aidant.objects.filter(email__iexact=user_email, is_active=True).first()
         if aidant and aidant.has_a_totp_device:
             raise ValidationError(
-                "Vous avez déjà un moyen de configuration configuré. "
+                "Erreur : vous avez déjà un moyen de configuration configuré. "
                 "Vous devez utiliser le formulaire de connexion classique "
                 "et non pas le formulaire de première connexion référent."
             )
 
         if aidant is None:
             raise ValidationError(
-                "Votre compte a été désactivé. "
+                "Erreur : votre compte a été désactivé. "
                 "Si vous pensez que c’est une erreur, prenez contact avec "
                 "Aidants Connect."
             )
 
         if not user_mobile == aidant.phone:
             raise ValidationError(
-                "Votre compte n'existe pas ou nous ne trouvons pas la correspondance "
+                "Erreur : votre compte n'existe pas ou nous ne trouvons pas "
+                "la correspondance "
                 "entre celui-ci et les informations que vous avez saisi."
                 "Si vous pensez que c’est une erreur, prenez contact avec "
                 "Aidants Connect."
@@ -331,14 +332,14 @@ class MandatForm(PatchedForm):
         required=False,
         error_messages={
             "required": _(
-                "Veuillez sélectionner la méthode de consentement à distance."
+                "Erreur : veuillez sélectionner la méthode de consentement à distance."
             )
         },
         widget=DetailedRadioSelect,
     )
 
     user_phone = AcPhoneNumberField(
-        label="Numéro de téléphone de la personne accompagnée (facultatif)",
+        label="Numéro de téléphone de la personne accompagnée",
         label_suffix=" :",
         initial="",
         required=False,
@@ -348,7 +349,7 @@ class MandatForm(PatchedForm):
         required=False,
         label=(
             "Je certifie avoir validé l’identité de l’usager répondant au numéro de "
-            "téléphone qui recevra la demande de consentement par SMS (facultatif)."
+            "téléphone qui recevra la demande de consentement par SMS."
         ),
         label_suffix="",
     )
@@ -365,6 +366,7 @@ class MandatForm(PatchedForm):
         if not self.cleaned_data["is_remote"]:
             return ""
 
+        # the form errors only triggers if html novalidate is set in form
         if not self.cleaned_data.get("remote_constent_method"):
             self.add_error(
                 "remote_constent_method",
@@ -435,7 +437,7 @@ class OTPForm(DsfrBaseForm):
         if good_token:
             return otp_token
         else:
-            raise ValidationError("Ce code n'est pas valide.")
+            raise ValidationError("Erreur : ce code n'est pas valide.")
 
 
 class RecapMandatForm(OTPForm):
@@ -468,10 +470,10 @@ class CarteOTPSerialNumberForm(forms.Form):
             carte = CarteTOTP.objects.get(serial_number=serial_number)
         except CarteTOTP.DoesNotExist:
             raise ValidationError(
-                "Aucune carte n'a été trouvée avec ce numéro de série."
+                "Erreur : aucune carte n'a été trouvée avec ce numéro de série."
             )
         if carte.aidant:
-            raise ValidationError("Cette carte est déjà associée à un aidant.")
+            raise ValidationError("Erreur : cette carte est déjà associée à un aidant.")
         return serial_number
 
 
@@ -516,7 +518,8 @@ class RemoveCardFromAidantForm(DsfrBaseForm):
             self.add_error(
                 "other_reason",
                 ValidationError(
-                    "Vous devez remplir ce champ si la raison indiquée est autre.",
+                    "Erreur : vous devez remplir ce champ si la raison "
+                    "indiquée est autre.",
                     code="required",
                 ),
             )
@@ -553,7 +556,8 @@ class ChangeAidantOrganisationsForm(forms.Form):
         queryset=Organisation.objects.none(),
         widget=forms.CheckboxSelectMultiple,
         error_messages={
-            "required": "Vous devez rattacher l’aidant à au moins une organisation."
+            "required": "Erreur : vous devez rattacher l’aidant "
+            "à au moins une organisation."
         },
     )
 
@@ -596,7 +600,7 @@ class HabilitationRequestCreationForm(
             organisation__in=self.referent.responsable_de.all(),
         ).exists():
             raise ValidationError(
-                "Il existe déjà un compte aidant pour cette adresse e-mail. "
+                "Erreur : il existe déjà un compte aidant pour cette adresse e-mail. "
                 "Vous n’avez pas besoin de déposer une "
                 "nouvelle demande pour cette adresse-ci."
             )
@@ -606,7 +610,8 @@ class HabilitationRequestCreationForm(
             organisation__in=self.referent.responsable_de.all(),
         ).exists():
             raise ValidationError(
-                "Une demande d’habilitation est déjà en cours pour l’adresse e-mail. "
+                "Erreur : une demande d’habilitation est déjà "
+                "en cours pour l’adresse e-mail. "
                 "Vous n’avez pas besoin de déposer une "
                 "nouvelle demande pour cette adresse-ci.",
             )
@@ -629,8 +634,9 @@ class HabilitationRequestCreationForm(
         error_messages = {
             NON_FIELD_ERRORS: {
                 "unique_together": (
-                    "Une demande d’habilitation est déjà en cours pour cette adresse "
-                    "e-mail. Vous n’avez pas besoin d’en déposer une nouvelle."
+                    "Erreur : une demande d’habilitation est déjà en cours "
+                    "pour cette adresse e-mail. "
+                    "Vous n’avez pas besoin d’en déposer une nouvelle."
                 ),
             }
         }
@@ -735,7 +741,7 @@ class MassEmailActionForm(forms.Form):
     def clean_email_list(self):
         email_list = self.cleaned_data.get("email_list")
         validate_email = EmailValidator(
-            message="Veuillez saisir uniquement des adresses e-mail valides."
+            message="Erreur : veuillez saisir uniquement des adresses e-mail valides."
         )
 
         def is_email_valid(value):
@@ -756,7 +762,7 @@ class AuthorizeSelectUsagerForm(DsfrBaseForm, ErrorCodesManipulationMixin):
         error_messages={
             "required": (
                 required_msg := (
-                    "Aucun profil n'a été trouvé."
+                    "Erreur : aucun profil n'a été trouvé. "
                     "Veuillez taper le nom d'une personne et la barre de recherche et "
                     "sélectionner parmis les propositions dans la liste déroulante"
                 )
@@ -778,7 +784,8 @@ class AuthorizeSelectUsagerForm(DsfrBaseForm, ErrorCodesManipulationMixin):
             return user
         except (Usager.DoesNotExist, Usager.MultipleObjectsReturned):
             raise ValidationError(
-                "La personne sélectionnée ne semble pas exister", code="invalid"
+                "Erreur : la personne sélectionnée ne semble pas exister",
+                code="invalid",
             )
 
 
@@ -1052,7 +1059,7 @@ class AddAppOTPToAidantForm(PatchedForm):
         try:
             token = int(self.cleaned_data["otp_token"])
         except Exception:
-            raise ValidationError("Le code OTP doit être composé de chiffres")
+            raise ValidationError("Erreur : le code OTP doit être composé de chiffres")
 
         totp = TOTP(
             self.otp_device.bin_key,
@@ -1062,7 +1069,7 @@ class AddAppOTPToAidantForm(PatchedForm):
             self.otp_device.drift,
         )
         if not totp.verify(token):
-            raise ValidationError("La vérification du code OTP a échoué")
+            raise ValidationError("Erreur : la vérification du code OTP a échoué")
 
         return token
 

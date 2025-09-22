@@ -224,7 +224,7 @@ class AidantChangeFormTests(TestCase):
         self.assertEqual(self.aidant2.first_name, "Armand")
         self.assertEqual(self.aidant2.email, "abernart@domain.user")
         self.assertEqual(self.aidant2.username, "abernart@domain.user")
-        self.assertEqual(form.errors["email"], ["This email is already taken"])
+        self.assertEqual(form.errors["email"], ["Erreur : cet e-mail existe déjà"])
 
     def test_you_can_update_email_to_match_username(self):
         aidant = AidantFactory(
@@ -326,7 +326,6 @@ class MandatFormTests(TestCase):
             form_2.errors["demarche"],
             ["Vous devez sélectionner au moins une démarche."],
         )
-
         form_3 = MandatForm(
             self.organisation, data={"demarche": ["travail"], "duree": ""}
         )
@@ -562,7 +561,7 @@ class MassEmailHabilitatonFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["email_list"],
-            ["Veuillez saisir uniquement des adresses e-mail valides."],
+            ["Erreur : veuillez saisir uniquement des adresses e-mail valides."],
         )
 
     def test_reject_invalid_emails(self):
@@ -575,7 +574,7 @@ class MassEmailHabilitatonFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["email_list"],
-            ["Veuillez saisir uniquement des adresses e-mail valides."],
+            ["Erreur : veuillez saisir uniquement des adresses e-mail valides."],
         )
 
 
@@ -622,13 +621,38 @@ class TestAddAppOTPToAidantForm(TestCase):
 
         self.assertFalse(form.is_valid())
         self.assertEqual(
-            ["La vérification du code OTP a échoué"], form.errors["otp_token"]
+            ["Erreur : la vérification du code OTP a échoué"], form.errors["otp_token"]
         )
 
         mock_verify.return_value = True
         form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "123456"})
 
         self.assertTrue(form.is_valid())
+
+    def test_clean_otp_token_non_numeric_error(self):
+        form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "abc123"})
+        self.assertFalse(form.is_valid())
+        self.assertIn("otp_token", form.errors)
+        self.assertEqual(
+            form.errors["otp_token"][0],
+            "Erreur : le code OTP doit être composé de chiffres",
+        )
+
+        form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "12-34-56"})
+        self.assertFalse(form.is_valid())
+        self.assertIn("otp_token", form.errors)
+        self.assertEqual(
+            form.errors["otp_token"][0],
+            "Erreur : le code OTP doit être composé de chiffres",
+        )
+
+        form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "12 34 56"})
+        self.assertFalse(form.is_valid())
+        self.assertIn("otp_token", form.errors)
+        self.assertEqual(
+            form.errors["otp_token"][0],
+            "Erreur : le code OTP doit être composé de chiffres",
+        )
 
 
 @tag("forms")

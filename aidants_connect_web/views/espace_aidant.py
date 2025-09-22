@@ -162,7 +162,7 @@ class ValidateCGU(FormView):
         self.aidant.validated_cgu_version = settings.CGU_CURRENT_VERSION
         self.aidant.save(update_fields={"validated_cgu_version"})
         django_messages.success(
-            self.request, "Merci d’avoir validé les CGU Aidants Connect."
+            self.request, "Les CGU Aidants Connect ont été validées avec succès."
         )
         return super().form_valid(form)
 
