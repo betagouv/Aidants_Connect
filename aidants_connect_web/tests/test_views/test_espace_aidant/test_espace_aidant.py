@@ -222,7 +222,7 @@ class SwitchOrganisationTests(TestCase):
         self.assertEqual(self.aidant_with_orgs.organisation.id, orgas[0].id)
 
     def test_aidant_cannot_switch_to_an_org_they_dont_belong(self):
-        orgas = self.aidant_with_orgs.organisations.all()
+        orgas = self.aidant_with_orgs.organisations.all().order_by("id")
         unrelated_org = OrganisationFactory(name="Totally unrelated people")
         self.client.force_login(self.aidant_with_orgs)
         response = self.client.post(

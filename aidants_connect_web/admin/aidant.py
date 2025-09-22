@@ -286,7 +286,8 @@ class AidantMassDeactivateFromMailFormView(FormView):
             )
 
             message = ngettext(
-                "Nous n’avons trouvé aucun aidant à désactiver portant l’email "
+                "Attention :"
+                "nous n’avons trouvé aucun aidant à désactiver portant l’email "
                 "suivant :%(emails)s.<br/>Ce profil n’a été désactivé.",
                 "Nous n’avons trouvé aucun aidant à désactiver pour les %(count)d "
                 "emails suivants :%(emails)s Ces profils n’ont pas été désactivés.",
@@ -302,7 +303,8 @@ class AidantMassDeactivateFromMailFormView(FormView):
             django_messages.success(
                 self.request,
                 ngettext(
-                    "Le profil correspondant à l’email %(email)s a été désactivé.",
+                    "Le profil correspondant à l’email %(email)s"
+                    "a été désactivé avec succès.",
                     "Nous avons désactivé %(count)d profils.",
                     nb_processed_emails,
                 )

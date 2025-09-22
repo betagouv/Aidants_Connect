@@ -60,7 +60,7 @@ class ReferentCannotManageAidantResponseMixin:
     def referent_cannot_manage_aidant_response(self):
         django_messages.error(
             self.request,
-            "Ce profil aidant nʼexiste pas ou nʼest pas membre "
+            "Erreur : ce profil aidant nʼexiste pas ou nʼest pas membre "
             "de votre organisation active. "
             "Si ce profil existe et que vous faites partie de ses référents, "
             "veuillez changer dʼorganisation pour le gérer.",
@@ -758,7 +758,7 @@ class AssociateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView
             django_messages.error(
                 request,
                 (
-                    f"Le compte de {self.aidant.get_full_name()} est déjà "
+                    f"Erreur : le compte de {self.aidant.get_full_name()} est déjà "
                     f"lié à une carte Aidants Connect. Vous devez d’abord retirer la "
                     f"carte de son compte avant de pouvoir en lier une nouvelle."
                 ),
@@ -770,7 +770,7 @@ class AssociateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView
             django_messages.error(
                 request,
                 (
-                    f"Le compte de {self.aidant.get_full_name()} est désactivé"
+                    f"Erreur : le compte de {self.aidant.get_full_name()} est désactivé"
                     ". Il est impossible de lui attacher une nouvelle carte "
                     "Aidant Connect"
                 ),
@@ -827,7 +827,7 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
             django_messages.error(
                 request,
                 (
-                    "Impossible de trouver une carte Aidants Connect "
+                    "Erreur : impossible de trouver une carte Aidants Connect "
                     f"associée au compte de {self.aidant.get_full_name()}."
                     "Vous devez d’abord lier une carte à son compte."
                 ),
@@ -839,7 +839,7 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
             django_messages.error(
                 request,
                 (
-                    f"Le profil de {self.aidant.get_full_name()} est désactivé"
+                    f"Erreur : le profil de {self.aidant.get_full_name()} est désactivé"
                     ". Il est impossible de valider la carte Aidants Connect "
                     "qui lui est associée."
                 ),

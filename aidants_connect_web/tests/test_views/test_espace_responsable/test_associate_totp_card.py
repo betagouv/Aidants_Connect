@@ -117,7 +117,8 @@ class AssociateCarteTOTPTests(TestCase):
 
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            f"Le compte de {self.deactivated_aidant.get_full_name()} est désactivé. "
+            f"Erreur : le compte de {self.deactivated_aidant.get_full_name()} "
+            "est désactivé. "
             f"Il est impossible de lui attacher une nouvelle carte Aidant Connect",
             messages[0].message,
         )

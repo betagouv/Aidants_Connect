@@ -265,7 +265,8 @@ class Organisation(models.Model):
             if request:
                 django_messages.error(
                     request,
-                    "Vous ne pouvez pas supprimer une organisation avec des aidants.",
+                    "Erreur : vous ne pouvez pas supprimer une "
+                    "organisation avec des aidants.",
                 )
             return False
 
