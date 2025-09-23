@@ -261,12 +261,14 @@ class Organisation(models.Model):
         delete_mandats_and_clean_journal(self, str_today)
 
         # we need migrate aidants before delete organisations
+        message = (
+            "Erreur : vous ne pouvez pas supprimer une organisation avec des aidants."
+        )
         if self.aidants.count() > 0:
             if request:
                 django_messages.error(
                     request,
-                    "Erreur : vous ne pouvez pas supprimer une "
-                    "organisation avec des aidants.",
+                    message,
                 )
             return False
 
