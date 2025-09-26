@@ -2,39 +2,52 @@
 {% load ac_common dsfr_tags form_extras static %}
 
 {% block title %}
-  Structure - Aidants Connect
+  Vérification Siret - Aidants Connect
 {% endblock title %}
 
 {% block content %}
   <div class="fr-container">
     {% include "layouts/_js-unavailable-alert.html" %}
-    <h1 class="fr-mb-0">Formulaire d’habilitation</h1>
+    <div class="fr-mb-1w">
+      <h1 class="fr-mb-2w">Formulaire d’habilitation</h1>
+      <p class="fr-text--lg">
+        Sauf mention contraire, tous les champs sont obligatoires.
+      </p>
+    </div>
     <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col-12 fr-col-md-6">
+      <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
         {% include "layouts/_breadcrumbs.html" %}
-        <form
-          method="post"
-          class="fr-my-8v"
-          data-controller="dynamic-form"
-        >
+        <form method="post" action="{% url 'habilitation_siret_verification' issuer_id=issuer_id %}">
           {% csrf_token %}
-          {{ form }}
-          <ul class="fr-btns-group fr-btns-group--inline-md fr-my-6w">
-            <li>
-              <a
-                class="fr-btn fr-btn--secondary"
-                href="{% url 'habilitation_issuer_page' issuer_id=issuer_id %}"
-              >
-                Revenir à l’étape précédente
-              </a>
-            </li>
-            <li>
-              <input type="submit" class="fr-btn" value="Valider votre SIRET">
-            </li>
-          </ul>
+          {% include "aidants_connect_habilitation/_siret_search.html" %}
         </form>
-
-        {% dsfr_alert type="info" extra_classes="fr-alert--sm" content="Les informations saisies sont sauvegardées à chaque étape. Vous pouvez revenir plus tard en cliquant sur le lien reçu par email." %}
+        {% if not siret_verified %}
+          {% include "aidants_connect_habilitation/_bottom_buttons_navigation.html" %}
+        {% else %}
+          <form
+            method="post"
+            class="fr-mt-8v"
+            action="{% url 'habilitation_siret_navigation' issuer_id=issuer_id %}"
+            data-controller="organisation-choice"
+          >
+            {% csrf_token %}
+              <input
+                type="hidden"
+                name="siret"
+                value="{{ siret_value }}"
+                data-organisation-choice-target="siretInput"
+              />
+            {% if not siret_is_new %}
+              {% include "aidants_connect_habilitation/_organisations_list.html" %}
+            {% else %}
+              <div class="fr-alert fr-alert--info fr-mt-0v">
+                <h3 class="fr-alert__title">Votre structure n'est pas encore habilitée</h3>
+                <p>Vous pouvez déposer une nouvelle demande en saisissant les informations de votre structure à l'étape suivante.</p>
+              </div>
+            {% endif %}
+            {% include "aidants_connect_habilitation/_bottom_buttons_navigation.html" %}
+          </form>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -42,4 +55,5 @@
 
 {% block extrajs %}
   <script type="module" src="{% static 'js/organisation-form.mjs' %}"></script>
+  <script type="module" src="{% static 'js/organisation-choice.mjs' %}"></script>
 {% endblock extrajs %}

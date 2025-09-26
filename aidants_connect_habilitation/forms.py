@@ -147,32 +147,21 @@ class IssuerForm(ModelForm, CleanEmailMixin, DsfrBaseForm):
         exclude = ["issuer_id", "email_verified"]
 
 
-class OrganisationSiretVerificationTwoRequestForm(DsfrBaseForm):
-    template_name = (
-        "aidants_connect_habilitation/forms/organisation_siret_verification-two.html"
-    )
-
-    siret = CharField(label="N° de SIRET", required=False)
-
-    organisations_choices = ChoiceField(
-        label="Résultat de la recherche",
-        widget=RadioSelect,
-        choices=[],
-        help_text="Si votre structure se trouve dans la liste suivante, veuillez la sélectionner",  # noqa
-    )
-
-
 class OrganisationSiretVerificationRequestForm(DsfrBaseForm):
     template_name = (
         "aidants_connect_habilitation/forms/organisation_siret_verification.html"
     )
 
-    siret = CharField(label="N° de SIRET", required=True)
+    siret = CharField(
+        label="Renseignez le numéro Siret de votre structure",
+        help_text="Format attendu : 14 chiffres",
+        required=True,
+    )
 
     def clean_siret(self):
         siret = self.data["siret"].replace(" ", "")
         if len(siret) != 14:
-            raise ValidationError("Le siret n'est pas valide")
+            raise ValidationError("Erreur: le siret n'est pas valide")
         try:
             api = get_client_insee_api()
             res = api.siret(siret).get()
@@ -180,7 +169,7 @@ class OrganisationSiretVerificationRequestForm(DsfrBaseForm):
         except Exception as e:
             sentry_sdk.capture_message(e)
             raise ValidationError(
-                "Nous ne trouvons pas votre SIRET dans la base SIRENE"
+                "Erreur: nous ne trouvons pas votre SIRET dans la base SIRENE"
             )
         return siret
 

@@ -23,8 +23,7 @@ class NewMandatAccessibilityTests(AccessibilityTestCase):
 
     @async_test
     async def test_accessibility(self):
-        await self.login_aidant(self.aidant, self.otp_token)
-        await self.page.wait_for_load_state("networkidle")
+        await self.navigate_to_new_mandat()
         await self.check_accessibility(page_name="new_mandat", strict=True)
 
     @async_test

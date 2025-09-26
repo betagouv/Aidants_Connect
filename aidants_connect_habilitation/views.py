@@ -24,7 +24,6 @@ from aidants_connect_habilitation.forms import (
     IssuerForm,
     OrganisationRequestForm,
     OrganisationSiretVerificationRequestForm,
-    OrganisationSiretVerificationTwoRequestForm,
     ReferentForm,
     ValidationForm,
 )
@@ -46,6 +45,7 @@ __all__ = [
     "ModifyIssuerFormView",
     "NewOrganisationRequestFormView",
     "ModifyOrganisationRequestFormView",
+    "NewOrganisationSiretNavigationView",
     "PersonnelRequestFormView",
     "ValidationRequestFormView",
     "ReadonlyRequestView",
@@ -287,28 +287,20 @@ class NewOrganisationSiretVerificationRequestFormView(
 
     @property
     def step(self) -> HabilitationFormStep:
-        return HabilitationFormStep.SIRET_VERIFICATION_STEP_ONE
+        return HabilitationFormStep.SIRET_VERIFICATION
 
     def form_valid(self, form):
         self.form = form
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        orgas = Organisation.objects.filter(siret=self.form.cleaned_data["siret"])
-        if not orgas.exists():
-            return reverse(
-                "habilitation_new_organisation",
-                kwargs={
-                    "issuer_id": self.issuer.issuer_id,
-                    "siret": self.form.cleaned_data["siret"],
-                },
+        siret = self.form.cleaned_data["siret"]
+        orgas = Organisation.objects.filter(siret=siret)
+        return self.render_to_response(
+            self.get_context_data(
+                form=form,
+                siret_verified=True,
+                siret_value=siret,
+                existing_organisations=orgas,
+                siret_is_new=not orgas.exists(),
             )
-        return reverse(
-            "habilitation_siret_verification_two",
-            kwargs={
-                "issuer_id": self.issuer.issuer_id,
-                "siret": self.form.cleaned_data["siret"],
-            },
         )
 
     def get_context_data(self, **kwargs):
@@ -318,50 +310,46 @@ class NewOrganisationSiretVerificationRequestFormView(
         }
 
 
-class NewOrganisationSiretVerificationTwoRequestFormView(
-    HabilitationStepMixin, VerifiedEmailIssuerView, FormView
+class NewOrganisationSiretNavigationView(
+    HabilitationStepMixin, VerifiedEmailIssuerView, View
 ):
-    template_name = "aidants_connect_habilitation/organisation-siret-verification-two-form-view.html"  # noqa
-    form_class = OrganisationSiretVerificationTwoRequestForm
+    """
+    Vue de navigation pour rediriger vers la création d'organisation
+    dans les cas autorisés.
+    """
 
     @property
     def step(self) -> HabilitationFormStep:
-        return HabilitationFormStep.SIRET_VERIFICATION_STEP_TWO
+        return HabilitationFormStep.SIRET_VERIFICATION
 
-    def get_organisation_with_same_siret(self):
-        siret = self.kwargs.get("siret")
-        return Organisation.objects.filter(siret=siret)
+    def post(self, request, *args, **kwargs):
+        siret = request.POST.get("siret")
+        choice = request.POST.get("organisation_choice")
 
-    def get_initial(self):
-        return {
-            "siret": self.kwargs.get("siret"),
-        }
+        orgas = Organisation.objects.filter(siret=siret)
 
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "issuer_id": f"{self.issuer.issuer_id}",
-        }
+        # Cas de sécurité : ne devrait jamais arriver
+        if not siret:
+            return redirect(
+                "habilitation_siret_verification",
+                issuer_id=f"{self.issuer.issuer_id}",
+            )
 
-    def get_form(self, form_class=None):
-
-        orgas = self.get_organisation_with_same_siret()
-        if form_class is None:
-            form_class = self.get_form_class()
-        form = form_class(**self.get_form_kwargs())
-        choices_list = list(orgas.values_list("id", "name"))
-        choices_list.append((0, "Ma structure n'apparait pas dans la liste"))
-        form.fields["organisations_choices"].choices = choices_list
-        return form
-
-    def get_success_url(self):
-        return reverse(
-            "habilitation_new_organisation",
-            kwargs={
-                "issuer_id": self.issuer.issuer_id,
-                "siret": self.kwargs.get("siret"),
-            },
-        )
+        if not orgas.exists() or (choice and choice == "0"):
+            # Cas 1: SIRET nouveau (pas d'organisations en base)
+            # Cas 2: Choix explicite "Ma structure n'apparaît pas"
+            return redirect(
+                "habilitation_new_organisation",
+                issuer_id=f"{self.issuer.issuer_id}",
+                siret=siret,
+            )
+        else:
+            # Cas de sécurité : ne devrait jamais arriver
+            # si le template fonctionne correctement
+            return redirect(
+                "habilitation_siret_verification",
+                issuer_id=f"{self.issuer.issuer_id}",
+            )
 
 
 class NewOrganisationRequestFormView(
@@ -375,6 +363,11 @@ class NewOrganisationRequestFormView(
         return HabilitationFormStep.ORGANISATION
 
     def get_initial(self):
+        if "name" in self.request.GET:
+            return {
+                "siret": self.kwargs.get("siret"),
+                "name": self.request.GET.get("name"),
+            }
         return {
             "siret": self.kwargs.get("siret"),
         }

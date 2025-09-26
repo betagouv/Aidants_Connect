@@ -7,17 +7,15 @@
 
 {% block content %}
   <div class="fr-container">
-    <div class="fr-mb-8v">
-      <h1 class="fr-mb-2v">Formulaire d’habilitation</h1>
+    <div class="fr-mb-1w">
+      <h1 class="fr-mb-2w">Formulaire d’habilitation</h1>
       <p class="fr-text--lg">
-        Vous vous êtes informé sur l’habilitation et vous avez pris connaissance des
-        <a href="{% url 'habilitation_faq_formation' %}" class="fr-link">modalités de financement</a> ?
+        Sauf mention contraire, tous les champs sont obligatoires.
       </p>
     </div>
-    {% dsfr_alert type="warning" extra_classes="fr-alert--sm" content="Nous vous rappelons que les demandes d’habilitation faites par des particuliers ne sont pas prises en compte." %}
 
     <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col-12 fr-col-md-6">
+      <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
         {% include "layouts/_breadcrumbs.html" %}
         <form method="post" class="fr-my-8v">
           {% csrf_token %}
