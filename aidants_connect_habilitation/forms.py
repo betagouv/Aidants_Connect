@@ -22,6 +22,7 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext as _
 
+import sentry_sdk
 from dsfr.forms import DsfrBaseForm
 
 from aidants_connect.utils import strtobool
@@ -45,6 +46,8 @@ from aidants_connect_habilitation.models import (
 from aidants_connect_habilitation.presenters import ProfileCardAidantRequestPresenter2
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import HabilitationRequest, OrganisationType
+
+from .insee_utils import get_client_insee_api
 
 
 class AddressValidatableForm(DsfrBaseForm):
@@ -142,6 +145,44 @@ class IssuerForm(ModelForm, CleanEmailMixin, DsfrBaseForm):
     class Meta:
         model = models.Issuer
         exclude = ["issuer_id", "email_verified"]
+
+
+class OrganisationSiretVerificationTwoRequestForm(DsfrBaseForm):
+    template_name = (
+        "aidants_connect_habilitation/forms/organisation_siret_verification-two.html"
+    )
+
+    siret = CharField(label="N° de SIRET", required=False)
+
+    organisations_choices = ChoiceField(
+        label="Résultat de la recherche",
+        widget=RadioSelect,
+        choices=[],
+        help_text="Si votre structure se trouve dans la liste suivante, veuillez la sélectionner",  # noqa
+    )
+
+
+class OrganisationSiretVerificationRequestForm(DsfrBaseForm):
+    template_name = (
+        "aidants_connect_habilitation/forms/organisation_siret_verification.html"
+    )
+
+    siret = CharField(label="N° de SIRET", required=True)
+
+    def clean_siret(self):
+        siret = self.data["siret"].replace(" ", "")
+        if len(siret) != 14:
+            raise ValidationError("Le siret n'est pas valide")
+        try:
+            api = get_client_insee_api()
+            res = api.siret(siret).get()
+            res["etablissement"]["uniteLegale"]["denominationUniteLegale"]
+        except Exception as e:
+            sentry_sdk.capture_message(e)
+            raise ValidationError(
+                "Nous ne trouvons pas votre SIRET dans la base SIRENE"
+            )
+        return siret
 
 
 class OrganisationRequestForm(ModelForm, AddressValidatableForm):

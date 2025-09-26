@@ -1,0 +1,45 @@
+{% extends 'layouts/main.html' %}
+{% load ac_common dsfr_tags form_extras static %}
+
+{% block title %}
+  Structure - Aidants Connect
+{% endblock title %}
+
+{% block content %}
+  <div class="fr-container">
+    {% include "layouts/_js-unavailable-alert.html" %}
+    <h1 class="fr-mb-0">Formulaire d’habilitation</h1>
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-6">
+        {% include "layouts/_breadcrumbs.html" %}
+        <form
+          method="post"
+          class="fr-my-8v"
+          data-controller="dynamic-form"
+        >
+          {% csrf_token %}
+          {{ form }}
+          <ul class="fr-btns-group fr-btns-group--inline-md fr-my-6w">
+            <li>
+              <a
+                class="fr-btn fr-btn--secondary"
+                href="{% url 'habilitation_issuer_page' issuer_id=issuer_id %}"
+              >
+                Revenir à l’étape précédente
+              </a>
+            </li>
+            <li>
+              <input type="submit" class="fr-btn" value="Passer à l'étape suivante">
+            </li>
+          </ul>
+        </form>
+
+        {% dsfr_alert type="info" extra_classes="fr-alert--sm" content="Les informations saisies sont sauvegardées à chaque étape. Vous pouvez revenir plus tard en cliquant sur le lien reçu par email." %}
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block extrajs %}
+  <script type="module" src="{% static 'js/organisation-form.mjs' %}"></script>
+{% endblock extrajs %}
