@@ -23,11 +23,10 @@ def async_test(func):
     return wrapper
 
 
-@tag("accessibility")
-class AccessibilityTestCase(StaticLiveServerTestCase):
+@tag("functional")
+class FunctionalTestCase(StaticLiveServerTestCase):
     """
-    Classe de base pour les tests d'accessibilité avec Playwright.
-    Utilise un décorateur @async_test pour une syntaxe élégante.
+    Classe de base pour les tests fonctionnales avec Playwright.
     """
 
     @classmethod
@@ -90,6 +89,16 @@ class AccessibilityTestCase(StaticLiveServerTestCase):
         pattern = self.path_matches(viewname, kwargs=kwargs, query_params=query_params)
         await self.page.wait_for_url(re.compile(pattern))
 
+    async def navigate_to_url(self, url_path: str):
+        """
+        Navigation standardisée vers une URL avec attente networkidle
+
+        Args:
+            url_path: Chemin relatif de l'URL (ex: "/", "/activity_check/")
+        """
+        await self.page.goto(self.live_server_url + url_path)
+        await self.page.wait_for_load_state("networkidle")
+
     async def login_aidant(self, aidant, otp_code: str):
         await self.page.goto(self.live_server_url + "/accounts/login/")
         await self.page.fill("#id_email", aidant.email)
@@ -104,6 +113,15 @@ class AccessibilityTestCase(StaticLiveServerTestCase):
             .replace("chargement/code", "code", 1)
         )
         await self.page.goto(url)
+        await self.page.wait_for_load_state("networkidle")
+
+
+@tag("accessibility")
+class AccessibilityTestCase(FunctionalTestCase):
+    """
+    Classe de base pour les tests d'accessibilité avec Playwright.
+    Utilise un décorateur @async_test pour une syntaxe élégante.
+    """
 
     async def check_accessibility(
         self,

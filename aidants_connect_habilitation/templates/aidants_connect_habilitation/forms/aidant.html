@@ -8,7 +8,9 @@
 	{{ field }}
 {% endfor %}
 
-{% dsfr_alert type="warning" extra_classes="fr-alert--sm" content="Si vous utilisez une adresse mail laposte.net et laposte.fr et que vous n’avez pas configuré votre identité numérique, vous pourriez rencontrer des problèmes de réception des emails de validation de compte." %}
+<div class="fr-mb-4w">
+  {% dsfr_alert type="warning" extra_classes="fr-alert--sm" content="Si vous utilisez une adresse mail laposte.net et laposte.fr et que vous n’avez pas configuré votre identité numérique, vous pourriez rencontrer des problèmes de réception des emails de validation de compte." %}
+</div>
 
 {% dsfr_form_field form.email %}
 {% dsfr_form_field form.first_name %}

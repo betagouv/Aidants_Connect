@@ -9,12 +9,12 @@ from aidants_connect_common.tests.test_accessibility.test_playwright import (
 class HomePageAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_title_is_correct(self):
-        await self.page.goto(self.live_server_url + "/")
+        await self.navigate_to_url("/")
         await expect(self.page).to_have_title("Accueil - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
-        await self.page.goto(self.live_server_url + "/")
+        await self.navigate_to_url("/")
 
         nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
         skip_links = await nav_skiplinks.get_by_role("link").all()

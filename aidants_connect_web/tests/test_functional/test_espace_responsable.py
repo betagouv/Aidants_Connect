@@ -823,7 +823,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
             By.CSS_SELECTOR, "#main-modal #profile-edit-submit"
         ).click()
         self.assertNormalizedStringEqual(
-            "Une demande d’habilitation est déjà en cours pour "
+            "Erreur : une demande d’habilitation est déjà en cours pour "
             "l’adresse e-mail. Vous n’avez pas besoin de déposer une nouvelle "
             "demande pour cette adresse-ci.",
             self.selenium.find_element(

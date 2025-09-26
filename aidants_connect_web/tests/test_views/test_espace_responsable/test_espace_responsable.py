@@ -151,8 +151,9 @@ class EspaceResponsableAidantPage(TestCase):
         self.assertRedirects(response, reverse("espace_responsable_organisation"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
-            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "Erreur : ce profil aidant nʼexiste pas ou nʼest pas membre "
+            "de votre organisation active. "
+            "Si ce profil existe et que vous faites partie de ses référents, "
             "veuillez changer dʼorganisation pour le gérer.",
             messages[0].message,
         )
@@ -283,8 +284,9 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
         self.assertRedirects(response, reverse("espace_responsable_organisation"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
-            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "Erreur : ce profil aidant nʼexiste pas ou nʼest pas membre "
+            "de votre organisation active. "
+            "Si ce profil existe et que vous faites partie de ses référents, "
             "veuillez changer dʼorganisation pour le gérer.",
             messages[0].message,
         )

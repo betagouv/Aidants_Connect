@@ -127,7 +127,10 @@ class HabilitationRequestsTests(TestCase):
             response = self.client.get(reverse("espace_responsable_demandes"))
             response_content = response.content.decode("utf-8")
             self.assertIn(
-                "La demande d’habilitation pour Angela Dubois a bien été enregistrée.",
+                (
+                    "La demande d’habilitation pour Angela Dubois "
+                    "a été enregistrée avec succès."
+                ),
                 response_content,
                 "Confirmation message should be displayed.",
             )
@@ -204,9 +207,9 @@ class HabilitationRequestsTests(TestCase):
             "email",
             errors=[
                 (
-                    "Une demande d’habilitation est déjà en cours pour l’adresse "
-                    "e-mail. Vous n’avez pas besoin de déposer une "
-                    "nouvelle demande pour cette adresse-ci."
+                    "Erreur : une demande d’habilitation est déjà en cours "
+                    "pour l’adresse e-mail. Vous n’avez pas besoin de déposer "
+                    "une nouvelle demande pour cette adresse-ci."
                 )
             ],
         )
@@ -239,9 +242,9 @@ class HabilitationRequestsTests(TestCase):
             "email",
             errors=[
                 (
-                    "Il existe déjà un compte aidant pour cette adresse e-mail. "
-                    "Vous n’avez pas besoin de déposer une nouvelle demande pour cette "
-                    "adresse-ci."
+                    "Erreur : il existe déjà un compte aidant pour cette "
+                    "adresse e-mail. Vous n’avez pas besoin de déposer une "
+                    "nouvelle demande pour cette adresse-ci."
                 )
             ],
         )
@@ -276,7 +279,7 @@ class HabilitationRequestsTests(TestCase):
         response = self.client.get(reverse("espace_responsable_demandes"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "La demande d’habilitation pour Bob Dubois a bien été enregistrée.",
+            "La demande d’habilitation pour Bob Dubois a été enregistrée avec succès.",
             response_content,
             "Confirmation message should be displayed.",
         )
@@ -316,7 +319,7 @@ class HabilitationRequestsTests(TestCase):
         response = self.client.get(reverse("espace_responsable_demandes"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "La demande d’habilitation pour Bob Dubois a bien été enregistrée.",
+            "La demande d’habilitation pour Bob Dubois a été enregistrée avec succès.",
             response_content,
             "Confirmation message should be displayed.",
         )

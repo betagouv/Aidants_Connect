@@ -179,7 +179,8 @@ class ValidateCarteTOTPTests(TestCase):
 
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            f"Le profil de {self.deactivated_aidant.get_full_name()} est désactivé. "
+            f"Erreur : le profil de {self.deactivated_aidant.get_full_name()} "
+            "est désactivé. "
             "Il est impossible de valider la carte Aidants Connect qui lui est "
             "associée.",
             messages[0].message,

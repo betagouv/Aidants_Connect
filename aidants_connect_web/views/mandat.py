@@ -212,7 +212,7 @@ class RemoteMandateMixin:
             django_messages.error(
                 self.request,
                 format_html(
-                    "Une erreur est survenue pendant l'envoi du SMS de "
+                    "Une erreur est survenue pendant l'envoi du SMS "
                     "récapitulatif. Merci de réessayer plus tard. Si l'erreur "
                     "persiste, merci de nous la signaler {}.",
                     mailto(
@@ -242,7 +242,7 @@ class RemoteMandateMixin:
             # First step not performed
             django_messages.error(
                 self.request,
-                "Le récapitulatif de de mandat n'a pas été envoyé. "
+                "Erreur : le récapitulatif de mandat n'a pas été envoyé. "
                 "Veuillez réitérer l'opération de création de mandat.",
             )
             return redirect(self.mandat_form_path)
@@ -302,7 +302,7 @@ class RemoteMandateMixin:
         ).exists():
             django_messages.warning(
                 self.request,
-                "La personne accompagnée n'a pas encore donné "
+                "Attention : la personne accompagnée n'a pas encore donné "
                 "son consentement pour la création du mandat.",
             )
 
@@ -725,7 +725,9 @@ class Attestation(RenderAttestationAbstract):
                 pk=kwargs["mandat_id"], organisation=self.aidant.organisation
             )
         except Mandat.DoesNotExist:
-            django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
+            django_messages.error(
+                request, "Erreur : ce mandat est introuvable ou inaccessible."
+            )
             return redirect("espace_aidant_home")
         self.template = self.mandat.get_mandate_template_path()
         self.modified = not self.template

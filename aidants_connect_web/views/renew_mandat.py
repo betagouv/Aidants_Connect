@@ -39,12 +39,14 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
         self.usager: Usager = self.aidant.get_usager(kwargs.get("usager_id"))
 
         if not Mandat.objects.for_usager(self.usager).renewable().exists():
-            django_messages.error(request, "Cet usager n'a aucun mandat renouvelable.")
+            django_messages.error(
+                request, "Erreur : cet usager n'a aucun mandat renouvelable."
+            )
             return redirect("espace_aidant_home")
 
         if not self.usager:
             django_messages.error(
-                request, "Cet usager est introuvable ou inaccessible."
+                request, "Erreur : cet usager est introuvable ou inaccessible."
             )
             return redirect("espace_aidant_home")
 
