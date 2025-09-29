@@ -42,7 +42,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         cls.browser = await cls.playwright.chromium.launch(
             channel="chrome",
             headless=settings.HEADLESS_FUNCTIONAL_TESTS,
-            slow_mo=1500 if not settings.HEADLESS_FUNCTIONAL_TESTS else 0,
+            slow_mo=100 if settings.HEADLESS_FUNCTIONAL_TESTS else 1500,
         )
 
     @classmethod
