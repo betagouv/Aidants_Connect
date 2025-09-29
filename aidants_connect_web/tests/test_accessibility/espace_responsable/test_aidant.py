@@ -5,31 +5,52 @@ from aidants_connect_common.tests.test_accessibility.test_playwright import (
     async_test,
 )
 from aidants_connect_web.models import Aidant
-from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
+from aidants_connect_web.tests.factories import AidantFactory, CarteTOTPFactory
 
 
 class EspaceResponsableFicheAidantAccessibilityTests(AccessibilityTestCase):
     def setUp(self):
         super().setUp()
-        organisation = OrganisationFactory()
-        self.aidant_responsable: Aidant = AidantFactory(
-            organisation=organisation,
+        self.responsable_tom = AidantFactory(
+            username="tom@tom.fr",
             post__with_otp_device=True,
-            post__is_organisation_manager=True,
         )
+        self.responsable_tom.responsable_de.add(self.responsable_tom.organisation)
         self.otp_token = (
-            self.aidant_responsable.staticdevice_set.first().token_set.first().token
+            self.responsable_tom.staticdevice_set.first().token_set.first().token
         )
+        self.aidant_tim: Aidant = AidantFactory(
+            username="tim@tim.fr",
+            organisation=self.responsable_tom.organisation,
+            first_name="Tim",
+            last_name="Onier",
+        )
+        self.aidant_sarah: Aidant = AidantFactory(
+            username="sarah@sarah.fr",
+            organisation=self.responsable_tom.organisation,
+            first_name="Sarah",
+            last_name="Onier",
+            post__with_carte_totp=True,
+            post__with_carte_totp_confirmed=True,
+        )
+        self.deactivated_aidant: Aidant = AidantFactory(
+            username="deactivated@deactivated.fr",
+            organisation=self.responsable_tom.organisation,
+            first_name="Deactivated",
+            last_name="Onier",
+            is_active=False,
+        )
+        self.carte = CarteTOTPFactory(seed="zzzz")
+        self.org_id = self.responsable_tom.organisation.id
 
     async def navigate_to_helper_page(self):
-        await self.login_aidant(self.aidant_responsable, self.otp_token)
+        await self.login_aidant(self.responsable_tom, self.otp_token)
         await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.aidant_responsable.id}/"
+            self.live_server_url + f"/espace-responsable/aidant/{self.aidant_sarah.id}/"
         )
         await self.wait_for_path_match(
             "espace_responsable_aidant",
-            kwargs={"aidant_id": self.aidant_responsable.id},
+            kwargs={"aidant_id": self.aidant_sarah.id},
         )
 
     @async_test
@@ -40,7 +61,7 @@ class EspaceResponsableFicheAidantAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_title_is_correct(self):
         await self.navigate_to_helper_page()
-        full_name = self.aidant_responsable.get_full_name()
+        full_name = self.aidant_sarah.get_full_name()
         await expect(self.page).to_have_title(f"{full_name} - Aidants Connect")
 
     @async_test

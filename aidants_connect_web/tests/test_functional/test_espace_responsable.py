@@ -1,5 +1,4 @@
 import itertools
-import time
 
 from django.template.defaultfilters import yesno
 from django.test import tag
@@ -893,10 +892,8 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self.selenium.find_element(
             By.CSS_SELECTOR, '#empty-form input[id$="email"]'
         ).send_keys(req1.email)
-        time.sleep(2)
 
         self._try_open_modal(By.ID, "edit-button-0")
-        time.sleep(2)
 
         self.selenium.execute_script(
             "return arguments[0].value",

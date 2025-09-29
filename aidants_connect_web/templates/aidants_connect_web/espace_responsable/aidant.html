@@ -21,7 +21,8 @@
             </button>
           </form>
         {% endif %}
-        {% if aidant.is_active %}
+
+        {% if aidant.is_active and aidant != responsable %}
           <a href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
               class="fr-btn fr-btn--secondary"
               id="remove-aidant-{{ aidant.id }}-from-organisation">
@@ -90,7 +91,7 @@
       <div class="fr-card fr-mt-2w">
         <div class="fr-card__body">
           <div class="fr-card__content">
-            <div class="fr-grid-row">
+            <div class="fr-grid-row" id="section-otp-card">
               <h3 class="fr-h6">Carte OTP</h3>
               <div class="fr-mb-8v fr-ml-4v">
                 {% if aidant.has_a_carte_totp %}
@@ -124,7 +125,7 @@
       <div class="fr-card fr-mt-2w">
         <div class="fr-card__body">
           <div class="fr-card__content">
-            <div class="fr-grid-row">
+            <div class="fr-grid-row" id="section-mobile-app">
               <h3 class="fr-h6">Application mobile</h3>
               <div class="fr-mb-8v fr-ml-4v">
                 {% if aidant.has_otp_app %}
@@ -140,7 +141,7 @@
                 href="{% url 'espace_responsable_aidant_remove_app_otp' aidant_id=aidant.id %}"
                 class="fr-btn fr-btn--secondary fr-mt-8v"
               >
-                Délier l'application
+                Délier l'application mobile
               </a>
             {% else %}
               <a
