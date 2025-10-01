@@ -19,10 +19,10 @@ class ConnexionChoiceView(FormView):
     form_class = ConnexionChoiceForm
 
     def form_valid(self, form):
-        h_request = HabilitationRequest.objects.filter(
+        h_requests = HabilitationRequest.objects.filter(
             email=form.cleaned_data["email"]
-        ).first()
-        if h_request:
+        )
+        for h_request in h_requests:
             h_request.connexion_mode = form.cleaned_data["connexion_mode"]
             h_request.save()
         return super().form_valid(form)
