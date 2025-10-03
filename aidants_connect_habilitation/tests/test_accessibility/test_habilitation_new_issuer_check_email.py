@@ -29,7 +29,9 @@ class HabilitationNewIssuerCheckEmailAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_accessibility(self):
         await self.navigate_to_url()
-        await self.check_accessibility(page_name="habilitation_new_issuer", strict=True)
+        await self.check_accessibility(
+            page_name="habilitation_issuer_email_confirmation_waiting", strict=True
+        )
 
     @async_test
     async def test_title_is_correct(self):

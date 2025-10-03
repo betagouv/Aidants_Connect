@@ -43,9 +43,10 @@ __all__ = [
     "IssuerEmailConfirmationView",
     "IssuerPageView",
     "ModifyIssuerFormView",
+    "NewOrganisationSiretVerificationRequestFormView",
+    "NewOrganisationSiretNavigationView",
     "NewOrganisationRequestFormView",
     "ModifyOrganisationRequestFormView",
-    "NewOrganisationSiretNavigationView",
     "PersonnelRequestFormView",
     "ValidationRequestFormView",
     "ReadonlyRequestView",
@@ -272,7 +273,7 @@ class ModifyIssuerFormView(VerifiedEmailIssuerView, NewIssuerFormView):
             )
 
         return reverse(
-            "habilitation_new_organisation",
+            "habilitation_siret_verification",
             kwargs={"issuer_id": self.saved_model.issuer_id},
         )
 

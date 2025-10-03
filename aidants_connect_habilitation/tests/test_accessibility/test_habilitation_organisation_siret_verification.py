@@ -4,11 +4,20 @@ from aidants_connect_common.tests.test_accessibility.test_playwright import (
     AccessibilityTestCase,
     async_test,
 )
+from aidants_connect_habilitation.tests.factories import IssuerFactory
 
 
 class HabilitationSiretVerificationAccessibilityTests(AccessibilityTestCase):
+    def setUp(self):
+        super().setUp()
+        self.issuer = IssuerFactory()
+
     async def navigate_to_siret_verification(self):
-        await self.page.goto(self.live_server_url + "/habilitation/demandeur")
+        await self.page.goto(
+            self.live_server_url
+            + f"/habilitation/demandeur/{self.issuer.issuer_id}"
+            + "/organisation/siret_verification/"
+        )
         await self.page.wait_for_load_state("networkidle")
 
     @async_test

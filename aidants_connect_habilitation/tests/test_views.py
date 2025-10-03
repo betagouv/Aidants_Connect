@@ -272,7 +272,7 @@ class IssuerEmailConfirmationViewTests(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "habilitation_new_organisation",
+                "habilitation_siret_verification",
                 kwargs={"issuer_id": confirmed_issuer.issuer_id},
             ),
         )
@@ -399,7 +399,7 @@ class ModifyIssuerFormViewTests(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "habilitation_new_organisation",
+                "habilitation_siret_verification",
                 kwargs={"issuer_id": self.issuer.issuer_id},
             ),
         )
@@ -424,13 +424,18 @@ class NewOrganisationRequestFormViewTests(TestCase):
         uuid = uuid4()
 
         response: HttpResponse = self.client.get(
-            reverse(self.pattern_name, kwargs={"issuer_id": uuid})
+            reverse(
+                self.pattern_name, kwargs={"issuer_id": uuid, "siret": "12345678901234"}
+            )
         )
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
         response: HttpResponse = self.client.post(
-            reverse(self.pattern_name, kwargs={"issuer_id": uuid}), cleaned_data
+            reverse(
+                self.pattern_name, kwargs={"issuer_id": uuid, "siret": "12345678901234"}
+            ),
+            cleaned_data,
         )
         self.assertEqual(response.status_code, 404)
 
@@ -438,7 +443,11 @@ class NewOrganisationRequestFormViewTests(TestCase):
         unverified_issuer: Issuer = IssuerFactory(email_verified=False)
         response = self.client.get(
             reverse(
-                self.pattern_name, kwargs={"issuer_id": unverified_issuer.issuer_id}
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": unverified_issuer.issuer_id,
+                    "siret": "12345678901234",
+                },
             )
         )
         self.assertRedirects(
@@ -451,7 +460,10 @@ class NewOrganisationRequestFormViewTests(TestCase):
 
     def test_template(self):
         response = self.client.get(
-            reverse(self.pattern_name, kwargs={"issuer_id": self.issuer.issuer_id})
+            reverse(
+                self.pattern_name,
+                kwargs={"issuer_id": self.issuer.issuer_id, "siret": "12345678901234"},
+            )
         )
         self.assertTemplateUsed(response, self.template_name)
 
@@ -465,7 +477,7 @@ class NewOrganisationRequestFormViewTests(TestCase):
         response = self.client.post(
             reverse(
                 self.pattern_name,
-                kwargs={"issuer_id": self.issuer.issuer_id},
+                kwargs={"issuer_id": self.issuer.issuer_id, "siret": "12345678901234"},
             ),
             cleaned_data,
         )
@@ -1750,4 +1762,101 @@ class TestHabilitationRequestCancelationView(TestCase):
         self.aidant_with_ongoing_habilitation.habilitation_request.refresh_from_db()
         self.assertFalse(
             self.aidant_with_ongoing_habilitation.habilitation_request.status_cancellable_by_responsable  # noqa: E501
+        )
+
+
+@tag("habilitation")
+class NewOrganisationSiretVerificationRequestFormViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.pattern_name = "habilitation_siret_verification"
+        cls.template_name = "aidants_connect_habilitation/organisation-siret-verification-form-view.html"  # noqa: E501
+        cls.issuer: Issuer = IssuerFactory()
+
+    def test_404_on_bad_issuer_id(self):
+        response = self.client.get(
+            reverse(self.pattern_name, kwargs={"issuer_id": uuid4()})
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_redirect_on_unverified_issuer_email(self):
+        unverified_issuer: Issuer = IssuerFactory(email_verified=False)
+        response = self.client.get(
+            reverse(
+                self.pattern_name, kwargs={"issuer_id": unverified_issuer.issuer_id}
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_issuer_email_confirmation_waiting",
+                kwargs={"issuer_id": unverified_issuer.issuer_id},
+            ),
+        )
+
+    def test_template(self):
+        response = self.client.get(
+            reverse(self.pattern_name, kwargs={"issuer_id": self.issuer.issuer_id})
+        )
+        self.assertTemplateUsed(response, self.template_name)
+
+
+@tag("habilitation")
+class NewOrganisationSiretNavigationViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.pattern_name = "habilitation_siret_navigation"
+        cls.issuer: Issuer = IssuerFactory()
+
+    def test_404_on_bad_issuer_id(self):
+        response = self.client.post(
+            reverse(self.pattern_name, kwargs={"issuer_id": uuid4()}),
+            {"siret": "78866504300012", "organisation_choice": "0"},
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_redirect_on_unverified_issuer_email(self):
+        unverified_issuer: Issuer = IssuerFactory(email_verified=False)
+        response = self.client.post(
+            reverse(
+                self.pattern_name, kwargs={"issuer_id": unverified_issuer.issuer_id}
+            ),
+            {"siret": "78866504300012", "organisation_choice": "0"},
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_issuer_email_confirmation_waiting",
+                kwargs={"issuer_id": unverified_issuer.issuer_id},
+            ),
+        )
+
+    def test_redirect_to_new_organisation_when_siret_new(self):
+        siret = "78866504300012"
+        response = self.client.post(
+            reverse(self.pattern_name, kwargs={"issuer_id": self.issuer.issuer_id}),
+            {"siret": siret, "organisation_choice": "0"},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_new_organisation",
+                kwargs={"issuer_id": self.issuer.issuer_id, "siret": siret},
+            ),
+        )
+
+    def test_redirect_to_siret_verification_when_no_siret(self):
+        response = self.client.post(
+            reverse(self.pattern_name, kwargs={"issuer_id": self.issuer.issuer_id}), {}
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_siret_verification",
+                kwargs={"issuer_id": self.issuer.issuer_id},
+            ),
         )
