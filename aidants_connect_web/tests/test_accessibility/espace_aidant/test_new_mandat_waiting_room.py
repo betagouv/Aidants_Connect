@@ -1,5 +1,3 @@
-from django.conf import settings
-
 from playwright.async_api import expect
 
 from aidants_connect_common.tests.test_accessibility.test_playwright import (
@@ -16,7 +14,7 @@ from aidants_connect_web.tests.factories import (
 class NewMandatWaitingRoomAccessibilityTests(AccessibilityTestCase):
     @classmethod
     def setUpClass(cls):
-        cls.port = settings.FC_AS_FS_TEST_PORT
+        cls.port = 0
         super().setUpClass()
 
     def setUp(self):

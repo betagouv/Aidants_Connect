@@ -1,0 +1,62 @@
+<dialog
+      id="modal-change-organisations-{{ aidant.id }}"
+      class="fr-modal"
+      role="dialog"
+      aria-labelledby="modal-change-organisations-{{ aidant.id }}-title"
+    >
+      <div class="fr-container fr-container--fluid fr-container-md">
+        <div class="fr-grid-row fr-grid-row--center">
+          <div class="fr-col-12 fr-col-md-8 fr-col-lg-6">
+            <div class="fr-modal__body">
+              <div class="fr-modal__header">
+                <button
+                  class="fr-btn--close fr-btn"
+                  aria-controls="modal-change-organisations-{{ aidant.id }}"
+                  data-fr-js-modal-button="true"
+                >
+                  Annuler
+                </button>
+              </div>
+              <div class="fr-modal__content">
+                <h1 id="modal-change-organisations-{{ aidant.id }}-title" class="fr-modal__title">
+                  Modifier l'organisation
+                </h1>
+
+                <form method="post" action="{% url "espace_responsable_aidant_change_organisations" aidant_id=aidant.id %}">
+                  {% csrf_token %}
+                  <fieldset class="fr-fieldset">
+                    <legend class="fr-text fr-text--regular fr-mb-3w fr-ml-2w">
+                      Sélectionnez la ou les organisations de rattachement :
+                    </legend>
+
+                    {% for org in responsable.responsable_de.all %}
+                      <div class="fr-fieldset__element">
+                        <div class="fr-checkbox-group fr-ml-1w">
+                          <input
+                            type="checkbox"
+                            id="org-{{ org.id }}"
+                            name="organisations"
+                            value="{{ org.id }}"
+                            {% if org in aidant.organisations.all %}checked{% endif %}
+                          >
+                          <label class="fr-label" for="org-{{ org.id }}">
+                            {{ org.name }}
+                            <span class="fr-hint-text">{{ org.address }}</span>
+                          </label>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </fieldset>
+
+                  <div class="fr-fieldset__element fr-mt-3w">
+                    <button class="fr-btn fr-btn--icon-left fr-icon-pencil-line" type="submit">
+                      Valider les modifications
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>

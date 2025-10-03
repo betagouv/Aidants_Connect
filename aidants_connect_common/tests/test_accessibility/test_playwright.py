@@ -42,7 +42,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
         cls.browser = await cls.playwright.chromium.launch(
             channel="chrome",
             headless=settings.HEADLESS_FUNCTIONAL_TESTS,
-            slow_mo=1500 if not settings.HEADLESS_FUNCTIONAL_TESTS else 0,
+            slow_mo=100 if settings.HEADLESS_FUNCTIONAL_TESTS else 1500,
         )
 
     @classmethod
@@ -97,7 +97,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
             url_path: Chemin relatif de l'URL (ex: "/", "/activity_check/")
         """
         await self.page.goto(self.live_server_url + url_path)
-        await self.page.wait_for_load_state("networkidle")
+        await self.page.wait_for_load_state("domcontentloaded")
 
     async def login_aidant(self, aidant, otp_code: str):
         await self.page.goto(self.live_server_url + "/accounts/login/")
@@ -113,7 +113,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
             .replace("chargement/code", "code", 1)
         )
         await self.page.goto(url)
-        await self.page.wait_for_load_state("networkidle")
+        await self.page.wait_for_load_state("domcontentloaded")
 
 
 @tag("accessibility")
