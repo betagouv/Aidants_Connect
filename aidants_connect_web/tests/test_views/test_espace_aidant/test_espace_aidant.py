@@ -215,14 +215,14 @@ class SwitchOrganisationTests(TestCase):
         response = self.client.get(reverse("espace_aidant_switch_main_organisation"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Il est impossible de sélectionner cette organisation.",
+            "Erreur : il est impossible de sélectionner cette organisation.",
             messages[0].message,
         )
         self.aidant_with_orgs.refresh_from_db()
         self.assertEqual(self.aidant_with_orgs.organisation.id, orgas[0].id)
 
     def test_aidant_cannot_switch_to_an_org_they_dont_belong(self):
-        orgas = self.aidant_with_orgs.organisations.all()
+        orgas = self.aidant_with_orgs.organisations.all().order_by("id")
         unrelated_org = OrganisationFactory(name="Totally unrelated people")
         self.client.force_login(self.aidant_with_orgs)
         response = self.client.post(
@@ -236,7 +236,7 @@ class SwitchOrganisationTests(TestCase):
         )
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Il est impossible de sélectionner cette organisation.",
+            "Erreur : il est impossible de sélectionner cette organisation.",
             messages[0].message,
         )
         self.aidant_with_orgs.refresh_from_db()

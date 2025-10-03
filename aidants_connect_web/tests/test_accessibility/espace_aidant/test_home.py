@@ -16,7 +16,6 @@ class HomeAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_accessibility(self):
         await self.login_aidant(self.aidant, self.otp_token)
-        await self.page.wait_for_load_state("networkidle")
         await self.check_accessibility(page_name="espace_aidant_home", strict=True)
 
     @async_test

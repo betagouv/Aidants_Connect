@@ -132,26 +132,7 @@ def pull_hrequests_from_grist_fne():
                         siret=grist_siret, name__iexact=orga_name
                     ).first()
 
-                if orga is not None:
-                    hr, created = HabilitationRequest.objects.get_or_create(
-                        email=one_row.Adresse_e_mail,
-                        organisation=orga,
-                        defaults={
-                            "first_name": one_row.Prenom_du_professionnel,
-                            "last_name": one_row.Nom_du_professionnel,
-                            "profession": one_row.Profession,
-                            "status": ReferentRequestStatuses.STATUS_PROCESSING,
-                            "created_by_fne": True,
-                            "id_fne": str(one_row.id),
-                        },
-                    )
-                    if one_row.A_participe_a_la_session:
-                        hr.formation_done = True
-                        hr.save()
-                    if hr.id_fne != str(one_row.id):
-                        hr.id_fne = str(one_row.id)
-                        hr.save()
-                else:
+                if orga is None:
                     zipcode = one_row.Code_postal
                     data_pass_id = int(
                         f"{zipcode[:3]}{generate_new_datapass_id()}"
@@ -172,82 +153,84 @@ def pull_hrequests_from_grist_fne():
                         print(e)
                         print(one_row)
                         continue
-                    if (
-                        one_row.Nom_du_referent_Aidants_Connect
-                        == one_row.Nom_du_professionnel
-                    ):
-                        referent_aidant, created_by_fne = Aidant.objects.get_or_create(
-                            username=one_row.Adresse_e_mail.lower(),
-                            email=one_row.Adresse_e_mail.lower(),
-                            defaults={
-                                "organisation": orga,
-                                "first_name": one_row.Prenom_du_professionnel,
-                                "last_name": one_row.Nom_du_professionnel,
-                                "profession": one_row.Profession,
-                                "created_by_fne": True,
-                                "id_fne": str(one_row.id),
-                            },
-                        )
-                        if referent_aidant.id_fne != str(one_row.id):
-                            referent_aidant.id_fne = str(one_row.id)
-                            referent_aidant.save()
-                        if not referent_aidant.phone:
-                            referent_aidant.phone = (
-                                one_row.Numero_de_telephone_mobile_du_referent_Aidants_Connect  # noqa
-                            )
-                            referent_aidant.save()
-                        referent_aidant.save()
-                        referent_aidant.organisation = orga
-                        referent_aidant.organisations.add(orga)
-                        referent_aidant.responsable_de.add(orga)
-                    else:
-                        referent, created_by_fne = Aidant.objects.get_or_create(
-                            username=one_row.E_mail_du_referent_Aidants_Connect.lower(),
-                            email=one_row.E_mail_du_referent_Aidants_Connect.lower(),
-                            defaults={
-                                "organisation": orga,
-                                "first_name": one_row.Prenom_du_referent_Aidants_Connect,  # noqa
-                                "last_name": one_row.Nom_du_referent_Aidants_Connect,
-                                "profession": one_row.Profession_du_referent_Aidants_Connect,  # noqa
-                                "created_by_fne": True,
-                                "id_fne": str(one_row.id),
-                            },
-                        )
-                        if referent.id_fne != str(one_row.id):
-                            referent.id_fne = str(one_row.id)
-                            referent.save()
-                        if not referent.phone:
-                            referent.phone = (
-                                one_row.Numero_de_telephone_mobile_du_referent_Aidants_Connect  # noqa
-                            )
-                            referent.save()
-                        referent.organisation = orga
-                        referent.organisations.add(orga)
-                        referent.responsable_de.add(orga)
 
-                    hr, created = HabilitationRequest.objects.get_or_create(
+                if (
+                    one_row.Nom_du_referent_Aidants_Connect
+                    == one_row.Nom_du_professionnel
+                ):
+                    referent_aidant, created_by_fne = Aidant.objects.get_or_create(
+                        username=one_row.Adresse_e_mail.lower(),
                         email=one_row.Adresse_e_mail.lower(),
-                        organisation=orga,
                         defaults={
+                            "organisation": orga,
                             "first_name": one_row.Prenom_du_professionnel,
                             "last_name": one_row.Nom_du_professionnel,
                             "profession": one_row.Profession,
-                            "status": ReferentRequestStatuses.STATUS_PROCESSING,
                             "created_by_fne": True,
                             "id_fne": str(one_row.id),
                         },
                     )
-                    need_save = False
-                    # if not created:
-                    #     hr.organisation = orga
-                    if one_row.A_participe_a_la_session:
-                        hr.formation_done = True
-                        need_save = True
-                    if created:
-                        hr.id_fne = str(one_row.id)
-                        need_save = True
-                    if need_save:
-                        hr.save()
+                    if referent_aidant.id_fne != str(one_row.id):
+                        referent_aidant.id_fne = str(one_row.id)
+                        referent_aidant.save()
+                    if not referent_aidant.phone:
+                        referent_aidant.phone = (
+                            one_row.Numero_de_telephone_mobile_du_referent_Aidants_Connect  # noqa
+                        )
+                        referent_aidant.save()
+                    referent_aidant.save()
+                    referent_aidant.organisation = orga
+                    referent_aidant.organisations.add(orga)
+                    referent_aidant.responsable_de.add(orga)
+                else:
+                    referent, created_by_fne = Aidant.objects.get_or_create(
+                        username=one_row.E_mail_du_referent_Aidants_Connect.lower(),
+                        email=one_row.E_mail_du_referent_Aidants_Connect.lower(),
+                        defaults={
+                            "organisation": orga,
+                            "first_name": one_row.Prenom_du_referent_Aidants_Connect,  # noqa
+                            "last_name": one_row.Nom_du_referent_Aidants_Connect,
+                            "profession": one_row.Profession_du_referent_Aidants_Connect,  # noqa
+                            "created_by_fne": True,
+                            "id_fne": str(one_row.id),
+                        },
+                    )
+                    if referent.id_fne != str(one_row.id):
+                        referent.id_fne = str(one_row.id)
+                        referent.save()
+                    if not referent.phone:
+                        referent.phone = (
+                            one_row.Numero_de_telephone_mobile_du_referent_Aidants_Connect  # noqa
+                        )
+                        referent.save()
+                    referent.organisation = orga
+                    referent.organisations.add(orga)
+                    referent.responsable_de.add(orga)
+
+                hr, created = HabilitationRequest.objects.get_or_create(
+                    email=one_row.Adresse_e_mail.lower(),
+                    organisation=orga,
+                    defaults={
+                        "first_name": one_row.Prenom_du_professionnel,
+                        "last_name": one_row.Nom_du_professionnel,
+                        "profession": one_row.Profession,
+                        "status": ReferentRequestStatuses.STATUS_PROCESSING,
+                        "created_by_fne": True,
+                        "id_fne": str(one_row.id),
+                    },
+                )
+                need_save = False
+                # if not created:
+                #     hr.organisation = orga
+                if one_row.A_participe_a_la_session:
+                    hr.formation_done = True
+                    need_save = True
+                if hr.id_fne != str(one_row.id):
+                    hr.id_fne = str(one_row.id)
+                    need_save = True
+
+                if need_save:
+                    hr.save()
             except Exception as e:
                 print(e)
                 print(one_row)

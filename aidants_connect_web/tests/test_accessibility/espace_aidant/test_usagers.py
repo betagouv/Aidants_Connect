@@ -16,19 +16,19 @@ class MandatesAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_accessibility(self):
         await self.login_aidant(self.aidant, self.otp_token)
-        await self.page.goto(self.live_server_url + "/usagers/")
-        await self.page.wait_for_load_state("networkidle")
+        await self.navigate_to_url("/usagers/")
         await self.check_accessibility(page_name="usagers", strict=True)
 
     @async_test
     async def test_title_is_correct(self):
         await self.login_aidant(self.aidant, self.otp_token)
-        await self.page.goto(self.live_server_url + "/usagers/")
+        await self.navigate_to_url("/usagers/")
         await expect(self.page).to_have_title("Usagers - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
         await self.login_aidant(self.aidant, self.otp_token)
+        await self.navigate_to_url("/usagers/")
 
         nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
         skip_links = await nav_skiplinks.get_by_role("link").all()

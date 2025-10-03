@@ -906,3 +906,14 @@ FIRST_LOGIN_SENDER = os.getenv("FIRST_LOGIN_SENDER", "")
 FISRT_LOGIN_MESSAGE = os.getenv("FISRT_LOGIN_MESSAGE", "")
 
 API_INSEE_TOKEN = os.getenv("API_INSEE_TOKEN", "")
+URL_WEBINAIRE_REFERENT = os.getenv(
+    "URL_WEBINAIRE_REFERENT",
+    "https://app.livestorm.co/aidants-connect/webinaire-referent",
+)
+
+EMAIL_FNE_MANAGER_COMODE_URLWEBINAR = os.getenv(
+    "EMAIL_FNE_MANAGER_COMODE_URLWEBINAR",
+    "https://tube.numerique.gouv.fr/w/pkamuvHJtg1LdcEtGV32a3",
+)
+
+EMAIL_FNE_MANAGER_COMODE_URLFLOGIN = os.getenv("EMAIL_FNE_MANAGER_COMODE_URLFLOGIN", "")

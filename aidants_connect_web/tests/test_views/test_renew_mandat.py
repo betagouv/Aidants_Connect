@@ -169,7 +169,7 @@ class RenewMandatTests(TestCase):
         self.assertRedirects(response, reverse("espace_aidant_home"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            messages[0].message, "Cet usager n'a aucun mandat renouvelable."
+            messages[0].message, "Erreur : cet usager n'a aucun mandat renouvelable."
         )
         self.assertEqual(Connection.objects.count(), 0)
         self.assertEqual(Mandat.objects.count(), 1)
@@ -192,7 +192,7 @@ class RenewMandatTests(TestCase):
         self.assertRedirects(response, reverse("espace_aidant_home"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            messages[0].message, "Cet usager n'a aucun mandat renouvelable."
+            messages[0].message, "Erreur : cet usager n'a aucun mandat renouvelable."
         )
         self.assertEqual(Connection.objects.count(), 0)
         self.assertEqual(Mandat.objects.count(), 1)

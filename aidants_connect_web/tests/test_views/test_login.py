@@ -41,7 +41,7 @@ class LoginTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         # Check explicit message is displayed
-        self.assertContains(response, "Votre compte a été désactivé.")
+        self.assertContains(response, "Erreur : votre compte a été désactivé.")
         # Check no email was sent
         self.assertEqual(len(mail.outbox), 0)
 

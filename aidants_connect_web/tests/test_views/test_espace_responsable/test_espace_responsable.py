@@ -151,8 +151,9 @@ class EspaceResponsableAidantPage(TestCase):
         self.assertRedirects(response, reverse("espace_responsable_organisation"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
-            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "Erreur : ce profil aidant nʼexiste pas ou nʼest pas membre "
+            "de votre organisation active. "
+            "Si ce profil existe et que vous faites partie de ses référents, "
             "veuillez changer dʼorganisation pour le gérer.",
             messages[0].message,
         )
@@ -186,7 +187,7 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
 
         response = self.client.get(self.get_aidant_url(aidant))
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "Changer les organisations de rattachement")
+        self.assertContains(response, "Modifier l'organisation")
 
     def test_responsable_of_several_structures_can_see_the_form(self):
         responsable = self.responsable_of_2
@@ -197,7 +198,7 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Changer les organisations de rattachement")
+        self.assertContains(response, "Modifier l'organisation")
 
     def test_organisations_are_modified(self):
         responsable = self.responsable_of_2
@@ -283,8 +284,9 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
         self.assertRedirects(response, reverse("espace_responsable_organisation"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
-            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "Erreur : ce profil aidant nʼexiste pas ou nʼest pas membre "
+            "de votre organisation active. "
+            "Si ce profil existe et que vous faites partie de ses référents, "
             "veuillez changer dʼorganisation pour le gérer.",
             messages[0].message,
         )

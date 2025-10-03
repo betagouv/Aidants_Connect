@@ -15,13 +15,9 @@
 
     <h1>Référents</h1>
 
-    <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col-12">
-        {% include "aidants_connect_web/espace_aidant/notifications.html" with user=referent %}
-      </div>
-    </div>
+    {% include "aidants_connect_web/espace_aidant/notifications.html" with user=referent %}
 
-    <div class="fr-grid-row fr-grid-row--gutters margin-bottom-2rem">
+    <div class="fr-grid-row fr-grid-row--gutters fr-mb-4v">
       {% for notification in referent_notifications %}
         <div
           class="fr-col-12"
