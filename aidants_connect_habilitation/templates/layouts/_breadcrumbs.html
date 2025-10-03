@@ -1,4 +1,4 @@
-<div class="fr-stepper fr-my-12v">
+<div class="fr-stepper fr-my-6v">
   <h2 class="fr-stepper__title">
     {{ step.label }}
     <span class="fr-stepper__state">Étape {{ step.value }} sur {{ step.enum|length }}</span>
@@ -6,7 +6,7 @@
   <div class="fr-stepper__steps" data-fr-current-step="{{ step.value }}" data-fr-steps="{{ step.enum|length }}"></div>
   {% if step.next %}
     <p class="fr-stepper__details">
-      <span class="fr-text--bold">Étape suivante : {{ step.next.label }}</span>
+      <span class="fr-text--bold">Étape suivante : </span>{{ step.next.label }}
     </p>
   {% endif %}
 </div>

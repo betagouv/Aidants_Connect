@@ -1,34 +1,26 @@
-{% load dsfr_tags %}
+{% load dsfr_tags form_extras %}
 {% if errors %}
   <section class="fr-my-4v fr-input-group fr-input-group--error">
     {{ errors }}
   </section>
 {% endif %}
 <fieldset class="fr-fieldset">
-  <legend class="fr-fieldset__legend">Identité</legend>
-
   <div class="fr-fieldset__element fr-fieldset__element--inline fr-fieldset__element--inline-grow">
-    {% dsfr_form_field form.last_name %}
+    {% aidantc_dsfr_form_field_no_asterisk form.last_name %}
   </div>
   <div class="fr-fieldset__element fr-fieldset__element--inline fr-fieldset__element--inline-grow">
-    {% dsfr_form_field form.first_name %}
+    {% aidantc_dsfr_form_field_no_asterisk form.first_name %}
   </div>
   <div class="fr-fieldset__element">
-    {% dsfr_form_field form.profession %}
+    {% aidantc_dsfr_form_field_no_asterisk form.profession %}
   </div>
 </fieldset>
 <fieldset class="fr-fieldset">
-  <legend class="fr-fieldset__legend">Contact</legend>
-
   <div class="fr-fieldset__element">
-    {% dsfr_form_field form.email %}
-    <p class="fr-text--sm fr-info-text">
-      Pour des raisons de sécurité, chaque adresse email saisie doit être nominative et accessible par une seule 
-      personne. Toute saisie d’email de contact générique entrainera un blocage de la demande d’habilitation.
-    </p>
-  </div>
-
-  <div class="fr-fieldset__element">
-    {% dsfr_form_field form.phone %}
+    {% aidantc_dsfr_form_field_no_asterisk form.email %}
+    <div class="fr-alert fr-alert--warning fr-alert--sm">
+      <p class="fr-text--md fr-mb-2w">Toutes les adresses e-mail renseignées dans la demande doivent être nominatives (de type prenom-nom@exemple.fr). La demande d'habilitation sera refusée si les adresses e-mail ne respectent pas ce format.</p>
+      <p class="fr-text--md">Attention : les adresses @poste.net et @laposte.net rencontrent des problèmes de réception si l'identité numérique n'a pas été configurée.</p>
+    </div>
   </div>
 </fieldset>
