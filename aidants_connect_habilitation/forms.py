@@ -13,6 +13,7 @@ from django.forms import (
     ModelForm,
     RadioSelect,
     Textarea,
+    TextInput,
     TypedChoiceField,
     model_to_dict,
     modelformset_factory,
@@ -55,6 +56,7 @@ class AddressValidatableForm(DsfrBaseForm):
 
     address = CharField(
         label="Adresse",
+        help_text="Indication : numéro et voie",
         widget=Textarea(
             attrs={
                 "rows": 2,
@@ -64,8 +66,15 @@ class AddressValidatableForm(DsfrBaseForm):
         ),
     )
 
+    address_complement = CharField(
+        label="Complément d'adresse (facultatif)",
+        required=False,
+        help_text="Indication : bâtiment, immeuble, escalier et numéro d'appartement",
+    )
+
     zipcode = CharField(
-        label="Code Postal",
+        label="Code postal",
+        help_text="Format attendu : 5 chiffres",
         max_length=10,
         error_messages={
             "required": "Le champ « code postal » est obligatoire.",
@@ -76,7 +85,8 @@ class AddressValidatableForm(DsfrBaseForm):
     )
 
     city = CharField(
-        label="Ville",
+        label="Ville ou commune",
+        help_text="Exemple : Lyon",
         max_length=255,
         error_messages={
             "required": "Le champ « ville » est obligatoire.",
@@ -190,7 +200,18 @@ class OrganisationRequestForm(ModelForm, AddressValidatableForm):
         label="Numéro d’immatriculation France Services", required=False
     )
 
-    name = CharField(label="Nom")
+    name = CharField(label="Nom de la structure", required=True)
+
+    siret = CharField(
+        label="Siret",
+        required=True,
+        widget=TextInput(attrs={"readonly": "readonly"}),
+    )
+
+    web_site = CharField(
+        label="Site web (facultatif)",
+        required=False,
+    )
 
     @property
     def media(self):
@@ -231,6 +252,7 @@ class OrganisationRequestForm(ModelForm, AddressValidatableForm):
             "name",
             "siret",
             "address",
+            "address_complement",
             "zipcode",
             "city",
             "city_insee_code",
@@ -241,7 +263,9 @@ class OrganisationRequestForm(ModelForm, AddressValidatableForm):
             "mission_description",
             "avg_nb_demarches",
         ]
-        widgets = {"mission_description": Textarea(attrs={"rows": "4"})}
+        widgets = {
+            "mission_description": Textarea(attrs={"rows": "4"}),
+        }
 
 
 class ReferentForm(
@@ -284,6 +308,12 @@ class ReferentForm(
                 "data-action": "focus->address-autocomplete#onAutocompleteFocus",
             }
         ),
+    )
+
+    address_complement = CharField(
+        label="Complément d'adresse (facultatif)",
+        required=False,
+        help_text="Indication : bâtiment, immeuble, escalier et numéro d'appartement",
     )
 
     zipcode = CharField(
