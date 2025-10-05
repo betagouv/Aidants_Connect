@@ -1,45 +1,36 @@
-{% load ac_common dsfr_tags widget_tweaks %}
+{% load ac_common dsfr_tags form_extras widget_tweaks %}
 {% if errors %}
   <section class="fr-my-4v fr-input-group fr-input-group--error">
     {{ errors }}
   </section>
 {% endif %}
 <fieldset class="fr-fieldset">
-  <legend class="fr-fieldset__legend">Informations générales</legend>
+  <legend class="fr-fieldset__legend fr-text--lg fr-mb-1w">Informations générales</legend>
+  <div class="fr-fieldset__element">{% aidantc_dsfr_form_field_no_asterisk form.name %}</div>
   <div class="fr-fieldset__element">
-    <p>Vous pouvez faire autant de demandes qu’il existe de structures d’accueil.</p>
-  </div>
-  <div class="fr-fieldset__element">
-    {% dsfr_form_field form.type|attr:"data-action:change->dynamic-form#onTypeChange"|attr:"data-dynamic-form-target:typeInput" %}
+    {% aidantc_dsfr_form_field_no_asterisk form.type|attr:"data-action:change->dynamic-form#onTypeChange"|attr:"data-dynamic-form-target:typeInput" %}
   </div>
   <div class="fr-fieldset__element" data-dynamic-form-target="typeOtherInputContainer">
     {% dsfr_form_field form.type_other %}
   </div>
   <div class="fr-fieldset__element">
-    {% dsfr_form_field form.france_services_label|attr:"data-action:change->dynamic-form#onFranceServicesChange"|attr:"data-dynamic-form-target:franceServicesInput" %}</div>
+    {% dsfr_form_field form.france_services_label|attr:"data-action:change->dynamic-form#onFranceServicesChange"|attr:"data-dynamic-form-target:franceServicesInput" %}
+  </div>
   <div
     class="fr-fieldset__element"
     data-dynamic-form-target="onlyShownIfFranceServices"
   >
     {% dsfr_form_field form.france_services_number %}
   </div>
-  <div class="fr-fieldset__element">{% dsfr_form_field form.name %}</div>
-  <div class="fr-fieldset__element">{% dsfr_form_field form.siret %}</div>
-  <p>
-    <em>Besoin d’aide pour retrouver votre SIRET ?</em>
-    <a
-      class="fr-link fr-link--icon-right fr-icon-arrow-right-line"
-      target="_blank"
-      href="https://annuaire-entreprises.data.gouv.fr/?mtm_campaign=aidants_connect"
-    >
-      Annuaire des Entreprises
-    </a>
-  </p>
 </fieldset>
 <fieldset class="fr-fieldset">
-  <legend class="fr-fieldset__legend">Informations descriptives</legend>
-  <div class="fr-fieldset__element">{% dsfr_form_field form.web_site %}</div>
-  <div class="fr-fieldset__element">{% dsfr_form_field form.mission_description %}</div>
-  <div class="fr-fieldset__element">{% dsfr_form_field form.avg_nb_demarches %}</div>
+  <legend class="fr-fieldset__legend fr-text--lg fr-mb-1v">Informations administratives</legend>
+  <div class="fr-fieldset__element fr-col-sm-4">{% aidantc_dsfr_form_field_no_asterisk form.siret %}</div>
 </fieldset>
 {{ form.address_fieldset }}
+<fieldset class="fr-fieldset fr-mt-12v">
+  <legend class="fr-fieldset__legend fr-text--lg fr-mb-1v">Informations descriptives</legend>
+  <div class="fr-fieldset__element">{% aidantc_dsfr_form_field_no_asterisk form.web_site %}</div>
+  <div class="fr-fieldset__element">{% aidantc_dsfr_form_field_no_asterisk form.mission_description %}</div>
+  <div class="fr-fieldset__element">{% aidantc_dsfr_form_field_no_asterisk form.avg_nb_demarches %}</div>
+</fieldset>

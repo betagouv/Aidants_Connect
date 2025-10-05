@@ -37,13 +37,13 @@
                 value="{{ siret_value }}"
                 data-organisation-choice-target="siretInput"
               />
-            {% if not siret_is_new %}
-              {% include "aidants_connect_habilitation/_organisations_list.html" %}
-            {% else %}
+            {% if siret_is_new %}
               <div class="fr-alert fr-alert--info fr-mt-0v">
-                <h3 class="fr-alert__title">Votre structure n'est pas encore habilitée</h3>
+                <h3 class="fr-alert__title fr-mb-1v">Votre structure n'est pas encore habilitée</h3>
                 <p>Vous pouvez déposer une nouvelle demande en saisissant les informations de votre structure à l'étape suivante.</p>
               </div>
+            {% else %}
+              {% include "aidants_connect_habilitation/_organisations_list.html" %}
             {% endif %}
             {% include "aidants_connect_habilitation/_bottom_buttons_navigation.html" %}
           </form>

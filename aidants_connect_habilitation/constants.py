@@ -14,7 +14,7 @@ class HabilitationFormStep(IntegerChoices):
     ISSUER = auto(), "Informations demandeur"
     SIRET_VERIFICATION = auto(), "Numéro Siret de la structure"
     ORGANISATION = auto(), "Informations structure"
-    REFERENT = auto(), "Le référent Aidants Connect"
+    REFERENT = auto(), "Référent Aidants Connect"
     PERSONNEL = auto(), "Les aidants de ma structure"
     SUMMARY = auto(), "Récapitulatif & validation"
 
