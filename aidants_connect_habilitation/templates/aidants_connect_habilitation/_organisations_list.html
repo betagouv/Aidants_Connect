@@ -1,0 +1,54 @@
+<fieldset class="fr-fieldset">
+    <legend class="fr-fieldset__legend">
+        Résultats de la recherche
+    </legend>
+    <p class="fr-text--sm fr-ml-2v">
+        Si votre structure se trouve dans la liste suivante, veuillez la sélectionner
+    </p>
+    {% for org in existing_organisations %}
+        <div class="fr-fieldset__element">
+        <div class="fr-radio-group">
+            <input
+            type="radio"
+            id="org_{{ org.id }}"
+            name="organisation_choice"
+            value="{{ org.id }}"
+            required
+            >
+            <label class="fr-label" for="org_{{ org.id }}">
+            {{ org.name }}
+            {% if org.address != "No address provided" %}
+                <p class="fr-hint-text">
+                {{ org.address }} - {{ org.zipcode }} {{ org.city }}
+                </p>
+            {% else %}
+                <p class="fr-hint-text">
+                {{ org.zipcode }} {{ org.city }}
+                </p>
+            {% endif %}
+            </label>
+        </div>
+        <div class="fr-alert fr-alert--info fr-my-4v" data-organisation-choice-target="alertBox" hidden>
+            <h2 class="fr-alert__title">Rapprochez-vous de votre référent si vous souhaitez habiliter de nouveaux aidants</h2>
+            <p>Si ce n'est pas possible, veuillez contacter l'équipe Aidants Connect à l'adresse suivante :
+            <a href="mailto:contact@aidantsconnect.beta.gouv.fr" class="fr-link">
+                contact@aidantsconnect.beta.gouv.fr
+            </a>
+            </p>
+        </div>
+        </div>
+    {% endfor %}
+    <div class="fr-fieldset__element">
+        <div class="fr-radio-group">
+        <input
+            type="radio"
+            id="org_new"
+            name="organisation_choice"
+            value="0"
+        >
+        <label class="fr-label" for="org_new">
+            Ma structure n'apparaît pas dans la liste
+        </label>
+        </div>
+    </div>
+</fieldset>
