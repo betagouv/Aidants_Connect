@@ -27,7 +27,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             type_id=RequestOriginConstants.MEDIATHEQUE.value,
             france_services_number=444888555,
         )
-        self._open_form_url(issuer)
+        self._open_form_url(issuer, siret=request.siret)
 
         Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
             str(request.type.id)
@@ -73,7 +73,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
             type_id=RequestOriginConstants.OTHER.value,
             partner_administration="Beta.Gouv",
         )
-        self._open_form_url(issuer)
+        self._open_form_url(issuer, siret=request.siret)
 
         Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
             str(request.type.id)
@@ -170,7 +170,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         request: OrganisationRequest = OrganisationRequestFactory.build(
             type_id=RequestOriginConstants.MEDIATHEQUE.value,
         )
-        self._open_form_url(issuer)
+        self._open_form_url(issuer, siret=request.siret)
 
         # Fill the `type_other` field
         Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
@@ -240,7 +240,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
                     type_id=RequestOriginConstants.OTHER.value,
                     partner_administration="Beta.Gouv",
                 )
-                self._open_form_url(issuer)
+                self._open_form_url(issuer, siret=request.siret)
 
                 Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
                     str(request.type.id)
@@ -316,7 +316,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
                     type_id=RequestOriginConstants.OTHER.value,
                     partner_administration="Beta.Gouv",
                 )
-                self._open_form_url(issuer)
+                self._open_form_url(issuer, siret=request.siret)
 
                 Select(self.selenium.find_element(By.ID, "id_type")).select_by_value(
                     str(request.type.id)
@@ -374,6 +374,7 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         self,
         issuer: Issuer,
         organisation_request: Optional[OrganisationRequest] = None,
+        siret: Optional[str] = None,
     ):
         pattern = (
             "habilitation_modify_organisation"
@@ -383,4 +384,6 @@ class OrganisationRequestFormViewTests(FunctionalTestCase):
         kwargs = {"issuer_id": issuer.issuer_id}
         if organisation_request:
             kwargs.update(uuid=organisation_request.uuid)
+        else:
+            kwargs.update(siret=siret or "78866504300012")
         self.open_live_url(reverse(pattern, kwargs=kwargs))

@@ -12,6 +12,8 @@ from aidants_connect_habilitation.views import (
     NewHabilitationView,
     NewIssuerFormView,
     NewOrganisationRequestFormView,
+    NewOrganisationSiretNavigationView,
+    NewOrganisationSiretVerificationRequestFormView,
     PersonnelRequestFormView,
     ReadonlyRequestView,
     ReferentRequestFormView,
@@ -42,7 +44,17 @@ urlpatterns = [
         name="habilitation_modify_issuer",
     ),
     path(
-        "demandeur/<str:issuer_id>/organisation/nouvelle/",
+        "demandeur/<str:issuer_id>/organisation/siret_verification/",
+        NewOrganisationSiretVerificationRequestFormView.as_view(),
+        name="habilitation_siret_verification",
+    ),
+    path(
+        "demandeur/<str:issuer_id>/siret-verification/navigate/",
+        NewOrganisationSiretNavigationView.as_view(),
+        name="habilitation_siret_navigation",
+    ),
+    path(
+        "demandeur/<str:issuer_id>/organisation/nouvelle/<str:siret>/",
         NewOrganisationRequestFormView.as_view(),
         name="habilitation_new_organisation",
     ),
