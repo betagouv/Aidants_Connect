@@ -1,0 +1,36 @@
+from playwright.async_api import expect
+
+from aidants_connect_common.tests.test_accessibility.test_playwright import (
+    AccessibilityTestCase,
+    async_test,
+)
+
+
+class FormationPageAccessibilityTests(AccessibilityTestCase):
+    async def _open_url(self):
+        await self.navigate_to_url("/formation")
+
+    @async_test
+    async def test_accessibility(self):
+        await self._open_url()
+        await self.check_accessibility(
+            page_name="habilitation_faq_formation", strict=True
+        )
+
+    @async_test
+    async def test_title_is_correct(self):
+        await self._open_url()
+        await expect(self.page).to_have_title("Formation - Aidants Connect")
+
+    @async_test
+    async def test_skiplinks_are_valid(self):
+        await self._open_url()
+
+        nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
+        skip_links = await nav_skiplinks.get_by_role("link").all()
+
+        for skip_link in skip_links:
+            await expect(skip_link).to_be_attached()
+
+            await skip_link.focus()
+            await expect(skip_link).to_be_visible()
