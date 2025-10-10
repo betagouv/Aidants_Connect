@@ -905,6 +905,7 @@ FIRT_LOGIN_URL = os.getenv("FIRT_LOGIN_URL", "")
 FIRST_LOGIN_SENDER = os.getenv("FIRST_LOGIN_SENDER", "")
 FISRT_LOGIN_MESSAGE = os.getenv("FISRT_LOGIN_MESSAGE", "")
 
+API_INSEE_TOKEN = os.getenv("API_INSEE_TOKEN", "")
 URL_WEBINAIRE_REFERENT = os.getenv(
     "URL_WEBINAIRE_REFERENT",
     "https://app.livestorm.co/aidants-connect/webinaire-referent",
