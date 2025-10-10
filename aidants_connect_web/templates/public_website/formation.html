@@ -1,34 +1,36 @@
 {% extends 'public_website/layout/layout_habilitation.html' %}
 {% load ac_common dsfr_tags static %}
 
-{% block title %}Aidants Connect - Formation{% endblock %}
+{% block title %}Formation - Aidants Connect{% endblock %}
 
-{% block page.title %}Se former à Aidants Connect{% endblock %}
+{% block page.title %}La formation Aidants Connect{% endblock %}
 
 {% block body %}
 
-  <h2 class="fr-h4 fr-mb-3w">Pourquoi se former à Aidants Connect&nbsp;?</h2>
+  <h2 class="fr-h3 fr-mb-3w">Pourquoi se former à Aidants Connect&nbsp;?</h2>
   <p class="fr-mb-3w">
     Le service Aidants Connect, développé par l'ANCT, répond au besoin de
     sécurisation exprimé par les aidants professionnels qui manipulent
     régulièrement les données personnelles d'usagers éloignés du numérique.
-  </p>
-  <p class="fr-mb-3w">
     La formation Aidants Connect apporte l'habilitation et les bases de
     connaissance nécessaires à l'utilisation de ce service.
   </p>
-  <h2 class="fr-h4 fr-mb-3w">Comment financer la formation&nbsp;?</h2>
-  <p>La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023. <strong>Cette formation est dorénavant financée selon différentes modalités.</strong></p>
-  <p>Nous vous invitons à vous rendre sur <a href="https://tally.so/r/mO0Xkg">ce simulateur de financement</a> pour découvrir comment la financer.</p>
-  <p><strong>Attention :</strong> il peut arriver que dans certains cas (structures non adhérentes à l'OPCO Uniformation, conseillers numériques ayant consommés leurs modules annuels, etc.) la formation doive être financée par la structure.</p>
-  <p>Les aidants des structures déjà habilitées peuvent bénéficier de la formation entre pairs qui est gratuite.</p>
+  <h2 class="fr-h3 fr-mb-3w">Quelles sont les modalités de financement&nbsp;?</h2>
+  <p>La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023. <strong>Cette formation est dorénavant financée selon différentes modalités.</strong>
+  Dans certains cas (structures non adhérentes à l'OPCO Uniformation, conseillers numériques ayant consommés leurs modules annuels, etc.) la formation devra être financée par la structure.
+  </p>
+  <a class="fr-btn fr-btn--tertiary" href="https://tally.so/r/mO0Xkg" target="_blank">Se renseigner sur les modalités de financement</a>
 
-  <h2 class="fr-h4 fr-mb-3w">Comment s’inscrire en formation&nbsp;?</h2>
+  <div class="fr-alert fr-alert--info fr-my-4w">
+    <p>Information : Les aidants des structures déjà habilitées peuvent bénéficier de la formation entre pairs qui est gratuite.</p>
+  </div>
+
+  <h2 class="fr-h3 fr-mb-3w">Comment s’inscrire en formation&nbsp;?</h2>
   <p>
     Si ma structure n’est pas encore habilitée, l’inscription se fait suite à la <a class="fr-link" href="{% url 'habilitation_new' %}">demande d’habilitation</a> de la structure. Après vérification de l’éligibilité par Aidants Connect, un mail est envoyé au demandeur et au référent avec un lien vers le formulaire d’inscription aux sessions.</p>
     <p>Si ma structure est déjà habilitée, le référent peut ajouter des aidants depuis son <a class="fr-link" href="{% url 'espace_responsable_organisation' %}">espace référent</a> et les inscrire à une session après vérification de l’éligibilité par Aidants Connect.
   </p>
-  <h2 class="fr-h4 fr-mb-3w">Les formations à Aidants Connect</h2>
+  <h2 class="fr-h3 fr-mb-3w">Les formations à Aidants Connect</h2>
   <div class="fr-tabs right-grey-background">
     <ul class="fr-tabs__list" role="tablist" aria-label="formations_tabs">
       <li role="presentation">
@@ -45,9 +47,9 @@
     <div id="tabpanel-1-panel" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tabpanel-1" tabindex="0">
       <div class="fr-grid-row">
         <div class="fr-col-md-8 fr-col-12">
-          <h3 class="fr-h5">Prise en main d’Aidants Connect</h3>
+          <h3 class="fr-h4">Prise en main d’Aidants Connect</h3>
           <p><strong>Formation proposée aux personnes ayant une connaissance des enjeux d’inclusion numérique et proposant déjà des actions numériques.</strong></p>
-          <h3 class="fr-h5">Objectifs de la formation</h3>
+          <h4 class="fr-h5">Objectifs de la formation</h4>
           <ul class="fr-pl-3w">
             <li>Maîtriser l'utilisation du service Aidants Connect</li>
             <li>Savoir adapter l'accompagnement d'un usager à la réalisation de démarches en ligne (diagnostic et premier pas vers l'autonomie numérique)</li>
@@ -55,7 +57,7 @@
             <li>Comprendre les enjeux liés à la manipulation de données personnelles d'usagers</li>
             <li>Connaître le cadre réglementaire de la fonction d'aidant numérique</li>
           </ul>
-          <h3 class="fr-h5">Méthodes pédagogiques</h3>
+          <h4 class="fr-h5">Méthodes pédagogiques</h4>
           <ul class="fr-pl-3w">
             <li>Mises en situation</li>
             <li>Réflexion sur les problématiques rencontrées</li>
@@ -88,9 +90,9 @@
     <div id="tabpanel-2-panel" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tabpanel-2" tabindex="0">
       <div class="fr-grid-row">
         <div class="fr-col-md-8 fr-col-12">
-          <h3 class="fr-h5">Devenir aidant numérique avec Aidants Connect</h3>
-          <p><strong>Formation proposée pour des personnes découvrant les sujets de médiation numérique.</strong></p>
-          <h3 class="fr-h5">Objectifs de la formation</h3>
+          <h3 class="fr-h4">Devenir aidant numérique avec Aidants Connect</h3>
+          <p><strong>Formation proposée pour des personnes découvrant les sujets d'inclusion numérique.</strong></p>
+          <h4 class="fr-h5">Objectifs de la formation</h4>
           <ul class="fr-pl-3w">
             <li>Connaître le contexte et les enjeux de l'inclusion numérique</li>
             <li>Savoir accueillir un public, faire un diagnostic de ses besoins, l’accompagner et le rediriger</li>
@@ -100,7 +102,7 @@
             <li>Comprendre les enjeux liés à la manipulation de données personnelles d'usagers</li>
             <li>Connaître le cadre réglementaire de la fonction d'aidant numérique</li>
           </ul>
-          <h5 class="fr-mt-4w">Méthodes pédagogiques</h5>
+          <h4 class="fr-h5 fr-mt-4w">Méthodes pédagogiques</h4>
           <ul>
             <li>Mises en situation</li>
             <li>Réflexion sur les problématiques rencontrées</li>
