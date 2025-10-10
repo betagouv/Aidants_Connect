@@ -21,7 +21,7 @@ class FollowMyHabilitationRequestViewTests(FunctionalTestCase):
     def test_follow_my_request_modale(self):
         iss: Issuer = IssuerFactory()
 
-        self.open_live_url(reverse("habilitation_faq_formation"))
+        self.open_live_url(reverse("habilitation_faq_habilitation"))
 
         # Test bad email generating an error
         self._open_modale()
@@ -40,8 +40,8 @@ class FollowMyHabilitationRequestViewTests(FunctionalTestCase):
         self.selenium.find_element(By.ID, "id_email").send_keys(iss.email)
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
         self.assertEqual(
-            "Merci ! Nous venons de vous envoyer le lien vers votre demande "
-            "dʼhabilitation à lʼadresse indiquée.",
+            "Merci ! Le lien vers votre demande dʼhabilitation a été envoyé "
+            "avec succès à lʼadresse indiquée.",
             re.sub(
                 r"\s+",
                 " ",
@@ -60,8 +60,8 @@ class FollowMyHabilitationRequestViewTests(FunctionalTestCase):
         self.selenium.find_element(By.ID, "id_email").send_keys(iss.email)
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
         self.assertEqual(
-            "Merci ! Nous venons de vous envoyer le lien vers votre demande "
-            "dʼhabilitation à lʼadresse indiquée.",
+            "Merci ! Le lien vers votre demande dʼhabilitation a été envoyé "
+            "avec succès à lʼadresse indiquée.",
             re.sub(
                 r"\s+",
                 " ",
