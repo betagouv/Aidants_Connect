@@ -160,7 +160,9 @@ class FormationRegistrationForm(DsfrBaseForm):
 
 
 class FollowMyHabilitationRequesrForm(DsfrBaseForm):
-    email = forms.EmailField(label="Adresse email")
+    email = forms.EmailField(
+        label="Adresse e-mail", help_text="Format attendu : prenom-nom@exemple.fr"
+    )
 
     def clean_email(self):
         email = self.cleaned_data.get("email", None)

@@ -110,8 +110,7 @@ jobs:
           # https://support.circleci.com/hc/en-us/articles/360048786831-Use-test-splitting-with-Python-Django-tests
           command: |
             TESTFILES=$(circleci tests glob '**/test*.py' | grep test_functional | sort | uniq)
-            TESTFILES=$TESTFILES$IFS$(circleci tests glob '**/test*.py' | grep test_accessibility | grep -v lighthouse |  sort | uniq)
-            TESTFILES=$TESTFILES$IFS$(circleci tests glob '**/test*.py' | grep -v test_functional | grep -v test_accessibility | grep -v lighthouse | sort | uniq)
+            TESTFILES=$TESTFILES$IFS$(circleci tests glob '**/test*.py' | grep -v test_functional | sort | uniq)
             echo $TESTFILES | tr "$IFS" '\n' > test_filenames.txt
             TESTFILES=$(circleci tests split --split-by=timings test_filenames.txt | tr '/' '.' | sed 's/.py//g')
 
@@ -119,7 +118,7 @@ jobs:
 
             . /tmp/venv/bin/activate
             python manage.py collectstatic --noinput
-            coverage run --parallel-mode manage.py test --verbosity=2 $TESTFILES
+            coverage run --parallel-mode manage.py test --verbosity=2 --exclude-tag=accessibility $TESTFILES
       - persist_to_workspace:
           root: .
           paths: [".coverage*"]
@@ -172,21 +171,4 @@ jobs:
 
             python manage.py collectstatic --noinput
 
-            python -c "import json; urls=json.load(open('.lighthouserc.json'))['ci']['collect']['url']; [print(url) for url in urls]" > all_urls.txt
-
-            WORKER_URLS=$(circleci tests split all_urls.txt)
-
-            echo "Worker $CIRCLE_NODE_INDEX testing urls:"
-
-            echo "$WORKER_URLS" | while read -r url; do
-              if [ -n "$url" ]; then
-                echo "Testing URL: $url"
-                LIGHTHOUSE_URL="$url" python manage.py test --tag=lighthouse --verbosity=2
-              fi
-            done
-
-            rm -f all_urls.txt
-
-      - store_artifacts:
-          path: .lighthouseci
-          destination: lighthouse-accessibility-reports-worker-$CIRCLE_NODE_INDEX
+            coverage run --parallel-mode manage.py test --tag=accessibility --verbosity=2
