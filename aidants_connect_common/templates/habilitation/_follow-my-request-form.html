@@ -2,21 +2,27 @@
 
 {% if success %}
   <div class="fr-alert fr-alert--success">
-    <h3 class="fr-alert__title">Merci !</h3>
+    <h3 class="fr-alert__title fr-mb-0">Merci !</h3>
     <p>Le lien vers votre demande dʼhabilitation a été envoyé avec succès à lʼadresse indiquée.</p>
   </div>
 {% else %}
-  <form
-    action="{% url 'habilitation_follow_my_request' %}"
-    method="post"
-    data-action="follow-request-modale#onSubmit:prevent:stop"
-  >
-    {% csrf_token %}
-    {% aidantc_dsfr_form_field_no_asterisk form.email %}
-    <button
-      class="fr-btn"
-      type="submit"
-      data-follow-request-modale-target="submitBtn"
-    >Recevoir le lien de ma demande</button>
-  </form>
+  <div>
+    <p>
+        Pour retrouver votre demande dʼhabilitation, veuillez saisir ci-dessous lʼadresse email renseignée lors
+        de votre inscription
+    </p>
+    <form
+      action="{% url 'habilitation_follow_my_request' %}"
+      method="post"
+      data-action="follow-request-modale#onSubmit:prevent:stop"
+    >
+      {% csrf_token %}
+      {% aidantc_dsfr_form_field_no_asterisk form.email %}
+      <button
+        class="fr-btn"
+        type="submit"
+        data-follow-request-modale-target="submitBtn"
+      >Recevoir le lien de ma demande</button>
+    </form>
+  </div>
 {% endif %}
