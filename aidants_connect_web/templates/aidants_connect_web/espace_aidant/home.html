@@ -33,6 +33,7 @@
 
 {% block extracss %}
   <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
+  <link href="{% static 'css/custom-dropdown.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
@@ -71,7 +72,7 @@
       </div>
     {% endfor %}
 
-    <h3 class="fr-title-icon-left fr-icon-file-text-fill">Création de mandat</h3>
+    <h3>Mandat et fiches pratiques</h3>
     {% include "aidants_connect_web/common/resources-block.html" %}
   </section>
 {% endblock content %}
