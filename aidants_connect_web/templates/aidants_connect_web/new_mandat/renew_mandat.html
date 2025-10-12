@@ -2,7 +2,13 @@
 
 {% load static %}
 
-{% block title %}Aidants Connect - Renouveler un mandat{% endblock %}
+{% block title %}Renouveler un mandat - Aidants Connect{% endblock %}
+
+{% block page_title %}
+<h1>
+  Renouveler un mandat{% if aidant.organisations.count > 1 %} pour {{ aidant.organisation }}{% endif %}
+</h1>
+{% endblock page_title %}
 
 {% block form_title %}Renouvellement de mandat{% endblock %}
 
