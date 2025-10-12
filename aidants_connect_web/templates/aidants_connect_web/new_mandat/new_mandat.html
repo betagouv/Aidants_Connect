@@ -68,17 +68,19 @@
       {% csrf_token %}
 
       <section class="demarches-section">
-        <div role="group" aria-label="Sélectionnez la ou les démarches (obligatoire)">
+        <fieldset role="group" aria-label="Sélectionnez la ou les démarches">
+         <legend class="fr-sr-only">Sélectionnez la ou les démarches</legend>
         {% aidantc_dsfr_form_field_no_asterisk form.demarche %}
-        </div>
+        </fieldset>
       </section>
 
       {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
 
       <div class="fr-col-12 fr-col-lg-8">
-         <div role="group" aria-label="Choisissez la durée du mandat (obligatoire)">
-          {% aidantc_dsfr_form_field_no_asterisk form.duree %}
-         </div>
+        <fieldset role="group" aria-label="Choisissez la durée du mandat">
+        <legend class="fr-sr-only">Choisissez la durée du mandat</legend>
+        {% aidantc_dsfr_form_field_no_asterisk form.duree %}
+        </fieldset>
 
         <h3 class="fr-h6 fr-mt-2w">Signature à distance</h3>
 
