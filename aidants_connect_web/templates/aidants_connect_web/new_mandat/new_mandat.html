@@ -10,22 +10,24 @@
 
 {% block content %}
   <div class="fr-container">
+    {% block page_title %}
     <h1>
-      Créer ou renouveler un mandat{% if aidant.organisations.count > 1 %} pour {{ aidant.organisation }}{% endif %}
+      Créer un mandat{% if aidant.organisations.count > 1 %} pour {{ aidant.organisation }}{% endif %}
     </h1>
+    {% endblock page_title %}
     {% dsfr_django_messages %}
-
     {% if aidant.organisations.count > 1 %}
       <div class="fr-alert fr-alert--info fr-my-8v" role="alert">
         <p>Vous allez créer un mandat au nom de <strong>{{ aidant.organisation }}</strong></p>
           S'il ne s'agit pas de la bonne organisation, changez la depuis le menu en haut à droite.
       </div>
     {% endif %}
-    <h2>Mentions à lire à l’usager</h2>
-    <p class="fr-text--lead">Le mandat est une autorisation écrite qui permet à l’aidant de réaliser pour vous des démarches
-      administratives. Il vous protège et protège l’aidant qui vous accompagne. Vous pourrez y mettre fin à tout
-      moment.</p>
-    <div class="fr-callout fr-icon-information-line">
+    <p class="fr-text--lg">Sauf mention contraire, tous les champs sont obligatoires.</p>
+    <div class="fr-callout">
+      <h2>Mentions à lire à l’usager</h2>
+      <p class="fr-text--lg">Le mandat est une autorisation écrite qui permet à l’aidant de réaliser pour vous des démarches
+        administratives. Il vous protège et protège l’aidant qui vous accompagne. Vous pourrez y mettre fin à tout
+        moment.</p>
       <h3 class="fr-callout__title">Avec ce mandat, l’aidant s’engage à :</h3>
       <article class="fr-callout__text">
         <ul>
@@ -44,8 +46,6 @@
         </ul>
       </article>
     </div>
-    {% include "aidants_connect_web/common/resources-block.html" %}
-    <h2 class="fr-mb-8v">Création de Mandat</h2>
     <form
       method="post"
       data-controller="mandate-form-controller"
@@ -67,22 +67,22 @@
       {% endif %}
       {% csrf_token %}
 
-      <p class="fr-text fr-mt-6w">Sauf mention contraire, tous les champs sont obligatoires.</p>
-
       <section class="demarches-section">
-        <div role="group" aria-label="Sélectionnez la ou les démarches (obligatoire)">
+        <fieldset role="group" aria-label="Sélectionnez la ou les démarches">
+         <legend class="fr-sr-only">Sélectionnez la ou les démarches</legend>
         {% aidantc_dsfr_form_field_no_asterisk form.demarche %}
-        </div>
+        </fieldset>
       </section>
 
       {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
 
       <div class="fr-col-12 fr-col-lg-8">
-         <div role="group" aria-label="Choisissez la durée du mandat (obligatoire)">
-          {% aidantc_dsfr_form_field_no_asterisk form.duree %}
-         </div>
+        <fieldset role="group" aria-label="Choisissez la durée du mandat">
+        <legend class="fr-sr-only">Choisissez la durée du mandat</legend>
+        {% aidantc_dsfr_form_field_no_asterisk form.duree %}
+        </fieldset>
 
-        <h3 class="fr-h6 fr-mt-2w">Signature à distance (facultatif)</h3>
+        <h3 class="fr-h6 fr-mt-2w">Signature à distance</h3>
 
         <fieldset class="is-remote-section fr-fieldset">
           <section class="fr-checkbox-group">
