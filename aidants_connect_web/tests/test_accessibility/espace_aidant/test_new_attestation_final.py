@@ -17,8 +17,6 @@ from aidants_connect_web.tests.factories import (
 
 
 class NewAttestationFinalAccessibilityTests(AccessibilityTestCase):
-    common_page = None
-
     @classmethod
     def setUpClass(cls):
         # FC only calls back on specific port
@@ -39,28 +37,6 @@ class NewAttestationFinalAccessibilityTests(AccessibilityTestCase):
             demarches=["papiers", "logement"],
             duree_keyword="SHORT",
         )
-
-    # override playwright tearDown method to allow for context sharing between tests
-    def tearDown(self):
-        if hasattr(self, "page") and self.page is self.__class__.common_page:
-            pass
-        else:
-            super().tearDown()
-
-    @classmethod
-    def tearDownClass(cls):
-        # clean shared context at the end of tests
-        if hasattr(cls, "common_page") and cls.common_page is not None:
-            if hasattr(cls.common_page, "context"):
-                cls.loop.run_until_complete(cls.common_page.context.close())
-        super().tearDownClass()
-
-    async def lazy_loading(self):
-        if self.__class__.common_page is None:
-            await self._open_url()
-            self.__class__.common_page = self.page
-        else:
-            self.page = self.__class__.common_page
 
     async def _open_url(self):
         """Helper method to navigate to navigate_to_new_attestation_final page"""
@@ -103,17 +79,17 @@ class NewAttestationFinalAccessibilityTests(AccessibilityTestCase):
 
     @async_test
     async def test_accessibility(self):
-        await self.lazy_loading()
+        await self.lazy_loading(self._open_url)
         await self.check_accessibility(page_name="new_attestation_final", strict=True)
 
     @async_test
     async def test_title_is_correct(self):
-        await self.lazy_loading()
+        await self.lazy_loading(self._open_url)
         await expect(self.page).to_have_title("Impression du mandat - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
-        await self.lazy_loading()
+        await self.lazy_loading(self._open_url)
 
         nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
         skip_links = await nav_skiplinks.get_by_role("link").all()

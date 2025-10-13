@@ -35,7 +35,7 @@ class NewMandatRemoteSecondStepAccessibilityTests(AccessibilityTestCase):
             duree_keyword="SHORT",
         )
 
-    async def new_mandat_remote_second_step(self):
+    async def _open_url(self):
         """Helper method to navigate to new_mandat_remote_second_step page"""
         await self.login_aidant(self.aidant, self.otp_token)
         await self.navigate_to_url("/usagers/")
@@ -68,19 +68,19 @@ class NewMandatRemoteSecondStepAccessibilityTests(AccessibilityTestCase):
 
     @async_test
     async def test_accessibility(self):
-        await self.new_mandat_remote_second_step()
+        await self.lazy_loading(self._open_url)
         await self.check_accessibility(
             page_name="new_mandat_remote_second_step", strict=True
         )
 
     @async_test
     async def test_title_is_correct(self):
-        await self.new_mandat_remote_second_step()
+        await self.lazy_loading(self._open_url)
         await expect(self.page).to_have_title("Récapitulatif envoyé - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
-        await self.new_mandat_remote_second_step()
+        await self.lazy_loading(self._open_url)
 
         nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
         skip_links = await nav_skiplinks.get_by_role("link").all()
