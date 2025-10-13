@@ -10,17 +10,42 @@
 
 {% block body %}
   <div class="fr-container">
+    <h1 class="fr-mb-4w">Ressources</h1>
+    <p class="fr-text--xl fr-text-mention--grey">
+      Retrouvez ici toutes les ressources pour comprendre et utiliser Aidants Connect.
+    </p>
+    <nav class="fr-summary fr-mb-4w" role="navigation" aria-labelledby="fr-summary-title">
+      <h2 class="fr-summary__title" id="fr-summary-title">Sommaire</h2>
+      <ol>
+          <li>
+            <a class="fr-summary__link" id="ressource-demarrer-summary-link" href="#ressource_demarrer">Bien démarrer</a>
+          </li>
+          <li>
+            <a class="fr-summary__link" id="fiches-pratiques-summary-link" href="#fiches_pratiques">Fiches pratiques</a>
+          </li>
+          <li>
+            <a class="fr-summary__link" id="video-summary-link" href="#video">Vidéos</a>
+          </li>
+          <li>
+            <a class="fr-summary__link" id="externe-summary-link" href="#externe">Ressources externes</a>
+          </li>
+      </ol>
+  </nav>
     <div id="ressource_demarrer" class="fr-mb-8w">
       {% include "public_website/_ressource_demarrer.html" %}
     </div>
-    <div id="fiches" class="fr-mb-8w">
+    <div id="fiches_pratiques" class="fr-mb-8w">
       <h2 class="fr-h3 fr-mb-1w">Fiches pratiques</h2>
       <p class="fr-text--lg fr-text-mention--grey fr-mb-4w">
         Pour vous aider dans l’accompagnement
       </p>
       {% include "aidants_connect_web/common/resources-block.html" %}
     </div>
-    <div id="video" class="fr-mb-8w">
+    <div id="video" class="fr-mb-4w">
+      <h2 class="fr-h3">Vidéos</h2>
+      <p class="fr-text--lg fr-text-mention--grey fr-mb-3w">
+        Comprendre Aidants Connect en quelques minutes
+      </p>
       {% include 'public_website/_ressource_video.html' %}
     </div>
     <!-- Bloc Kit de communication pas prêt pour le moment -->
@@ -28,8 +53,8 @@
       <h2 class="h3">Kit de communication</h2>
       {% include 'public_website/_ressource_kit.html' %}
     </div> -->
-    <div id="externe">
-      <h2 class="h3">Ressources externes</h2>
+    <div id="externe" class="fr-mb-4w">
+       <h2 class="fr-h3">Ressources externes</h2>
       {% include 'public_website/_ressource_externe.html' %}
     </div>
   </div>
