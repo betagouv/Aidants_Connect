@@ -167,6 +167,7 @@ def pull_hrequests_from_grist_fne():
                             "last_name": one_row.Nom_du_professionnel,
                             "profession": one_row.Profession,
                             "created_by_fne": True,
+                            "can_create_mandats": False,
                             "id_fne": str(one_row.id),
                         },
                     )
