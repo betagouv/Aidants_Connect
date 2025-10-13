@@ -110,13 +110,16 @@ class LinebreaklessNode(Node):
         # May be useful when parsing purely text files
         regex = r"\n+"
         if not dont_rstrip:
-            regex = rf"{regex}\s*"
-        if not dont_lstrip:
             regex = rf"\s*{regex}"
+        if not dont_lstrip:
+            regex = rf"{regex}\s*"
+
+        # Use space replacement only when preserving spaces, otherwise use empty string
+        replacement = " " if (dont_rstrip or dont_lstrip) else ""
 
         return re.sub(
             regex,
-            "",
+            replacement,
             self.nodelist.render(context).strip(),
         ).replace(self.KEEP_LINEBREAK_MARKUP, "\n")
 
