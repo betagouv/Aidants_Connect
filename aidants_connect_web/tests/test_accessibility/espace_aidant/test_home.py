@@ -13,19 +13,22 @@ class HomeAccessibilityTests(AccessibilityTestCase):
         self.aidant = AidantFactory(post__with_otp_device=True)
         self.otp_token = self.aidant.staticdevice_set.first().token_set.first().token
 
+    async def _open_url(self):
+        await self.login_aidant(self.aidant, self.otp_token)
+
     @async_test
     async def test_accessibility(self):
-        await self.login_aidant(self.aidant, self.otp_token)
+        await self.lazy_loading(self._open_url)
         await self.check_accessibility(page_name="espace_aidant_home", strict=True)
 
     @async_test
     async def test_title_is_correct(self):
-        await self.login_aidant(self.aidant, self.otp_token)
+        await self.lazy_loading(self._open_url)
         await expect(self.page).to_have_title("Espace Aidant - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
-        await self.login_aidant(self.aidant, self.otp_token)
+        await self.lazy_loading(self._open_url)
 
         nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
         skip_links = await nav_skiplinks.get_by_role("link").all()

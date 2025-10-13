@@ -43,7 +43,7 @@ class EspaceResponsableFicheAidantAccessibilityTests(AccessibilityTestCase):
         self.carte = CarteTOTPFactory(seed="zzzz")
         self.org_id = self.responsable_tom.organisation.id
 
-    async def navigate_to_helper_page(self):
+    async def _open_url(self):
         await self.login_aidant(self.responsable_tom, self.otp_token)
         await self.page.goto(
             self.live_server_url + f"/espace-responsable/aidant/{self.aidant_sarah.id}/"
@@ -55,18 +55,18 @@ class EspaceResponsableFicheAidantAccessibilityTests(AccessibilityTestCase):
 
     @async_test
     async def test_accessibility(self):
-        await self.navigate_to_helper_page()
+        await self.lazy_loading(self._open_url)
         await self.check_accessibility("espace_responsable_aidant", strict=True)
 
     @async_test
     async def test_title_is_correct(self):
-        await self.navigate_to_helper_page()
+        await self.lazy_loading(self._open_url)
         full_name = self.aidant_sarah.get_full_name()
         await expect(self.page).to_have_title(f"{full_name} - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
-        await self.navigate_to_helper_page()
+        await self.lazy_loading(self._open_url)
         nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
         skip_links = await nav_skiplinks.get_by_role("link").all()
 
