@@ -1,15 +1,12 @@
 {% extends "admin/import_export/base.html" %}
-{% load i18n %}
-{% load admin_urls %}
-{% load import_export_tags %}
-{% load static %}
+{% load admin_urls i18n import_export_tags static %}
 
 {% block extrastyle %}{{ block.super }}
-  <link rel="stylesheet" type="text/css" href="{% static "import_export/import.css" %}"/>{% endblock %}
+  <link rel="stylesheet" type="text/css" href="{% static "import_export/import.css" %}"/>{% endblock extrastyle %}
 
 {% block breadcrumbs_last %}
   {% trans "Import" %}
-{% endblock %}
+{% endblock breadcrumbs_last %}
 
 {% block content %}
 
@@ -33,9 +30,9 @@
         {% block fields_intro %}Le fichier à importer doit contenir les en-têtes suivants&nbsp;:{% endblock %}
         <code>{{ fields|join:", " }}</code>
       </p>
-    {% endblock %}
+    {% endblock fields_listing %}
       {% block more_help %}
-      {% endblock %}
+      {% endblock more_help %}
       <fieldset class="module aligned">
         {% for field in form %}
           <div class="form-row">
@@ -163,4 +160,4 @@
       {% endfor %}
     {% endif %}
   {% endif %}
-{% endblock %}
+{% endblock content %}

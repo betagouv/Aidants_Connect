@@ -7,16 +7,10 @@ from aidants_connect_common.tests.test_accessibility.test_playwright import (
 
 
 class HomePageAccessibilityTests(AccessibilityTestCase):
-
     @async_test
     async def test_accessibility(self):
         await self.navigate_to_url("/")
         await self.check_accessibility(page_name="home_page", strict=True)
-
-    @async_test
-    async def test_accessibility(self):
-        await self.navigate_to_url("/")
-        await self.check_accessibility(page_name="home_page", strict=False)
 
     @async_test
     async def test_title_is_correct(self):

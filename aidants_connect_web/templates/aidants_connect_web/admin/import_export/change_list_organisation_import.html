@@ -1,10 +1,9 @@
 {% extends "admin/import_export/change_list.html" %}
-{% load i18n %}
-{% load admin_urls %}
+{% load admin_urls i18n %}
 
 {% block object-tools-items %}
     {% if has_import_permission %}
         <li><a href='{% url opts|admin_urlname:"import" %}' class="import_link">{% trans "Mettre à jour avec le fichier datapass" %}</a></li>
     {% endif %}
   {{ block.super }}
-{% endblock %}
+{% endblock object-tools-items %}

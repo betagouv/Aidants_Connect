@@ -1,9 +1,10 @@
 {% extends "_formation_registration_button.html" %}
-    {% block url_registration %}
+
+{% block url_registration %}
         <a
           href="{% url 'habilitation_new_aidant_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid aidant_id=aidant.id %}"
           class="fr-btn"
         >
           Inscrire à une formation
         </a>
-    {% endblock %}
+{% endblock url_registration %}

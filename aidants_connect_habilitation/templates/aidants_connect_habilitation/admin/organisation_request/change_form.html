@@ -1,5 +1,5 @@
 {% extends "admin/change_form.html" %}
-{% load i18n admin_urls admin_extras %}
+{% load admin_extras admin_urls i18n %}
 
 {% block object-tools-items %}
   {% with status=adminform.form.instance.status %}
@@ -27,7 +27,7 @@
     {% endif %}
     {% if status in "AC_VALIDATION_PROCESSING" %}
       <!--<li>
-        <a href="{# url 'otpadmin:aidants_connect_habilitation_organisationrequest_proposechanges' object_id=object_id  #}">
+        <a href="{# url 'otpadmin:aidants_connect_habilitation_organisationrequest_proposechanges' object_id=object_id #}">
           <span aria-hidden="true">💡️ </span>
           Proposer des modifications
         </a>
@@ -49,4 +49,4 @@
     {% endif %}
   {% endwith %}
   {{ block.super }}
-{% endblock %}
+{% endblock object-tools-items %}

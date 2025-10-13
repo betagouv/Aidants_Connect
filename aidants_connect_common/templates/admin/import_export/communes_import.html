@@ -1,6 +1,6 @@
 {% extends "admin/import_export/import.html" %}
 
-{% load i18n ac_common %}
+{% load ac_common i18n %}
 
 {% block import_form %}
   <form
@@ -56,4 +56,4 @@
       <input type="submit" class="default" value="{% trans "Submit" %}">
     </div>
   </form>
-{% endblock %}
+{% endblock import_form %}

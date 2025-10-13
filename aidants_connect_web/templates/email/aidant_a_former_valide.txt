@@ -1,6 +1,6 @@
 Bonjour,
 
-Nous venons de valider l'éligibilité de l'aidant(e) {{aidant.first_name}} {{aidant.last_name}} {{aidant.email}}. Vous pouvez dès à présent l’inscrire à une session de formation depuis l'onglet “Demandes en cours” de votre espace référent {{ espace_referent_url }}.
+Nous venons de valider l'éligibilité de l'aidant(e) {{ aidant.first_name }} {{ aidant.last_name }} {{ aidant.email }}. Vous pouvez dès à présent l’inscrire à une session de formation depuis l'onglet “Demandes en cours” de votre espace référent {{ espace_referent_url }}.
 
 La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023. Cette formation est dorénavant financée selon différentes modalités.
 
