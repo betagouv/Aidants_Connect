@@ -32,8 +32,9 @@
 
 /* Alignement à gauche pour tous les boutons */
 .custom-dropdown__menu .fr-btn {
-  text-align: left;
-  justify-content: flex-start;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 tr:nth-last-child(-n+2) .custom-dropdown__menu {
