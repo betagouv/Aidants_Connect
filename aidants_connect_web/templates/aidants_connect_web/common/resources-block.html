@@ -1,122 +1,83 @@
-<style nonce="{{ request.csp_nonce }}">
-  .fr-tile__title:not( a)::before {
-    background-image: linear-gradient(0deg, var(--border-active-blue-france), var(--border-active-blue-france));
-  }
-
-  details {
-    position: relative;
-  }
-
-  details .details-content {
-    position: absolute;
-    top: calc(2.5rem + 1px);
-    left: 0;
-    padding: .5rem 1rem;
-    background-color: white;
-    z-index: 1;
-    border: solid 1px;
-    width: calc(100% - 2rem - 2px);
-    text-align: left;
-  }
-
-  details .details-content a {
-    display: block;
-  }
-
-  details .details-content a:first-child {
-    margin-top: 0;
-  }
-  details summary::marker {
-    content: "";
-  }
-</style>
-
-
-<div class="fr-grid-row fr-grid-row--gutters fr-mb-6w">
-  <div class="fr-col-md-6 fr-col-md">
-    <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
-      <div class="fr-tile__body mandate-translation-section">
-        <div class="fr-tile__content">
-          <h3 class="fr-tile__title">
-            <a class="fr-text-default--grey" href="{% url 'mandate_translation' %}">Mandat type avec traductions
-              disponibles</a>
+<div class="fr-grid-row fr-grid-row--gutters fr-my-4w">
+  <div class="fr-col-12 fr-col-md-4">
+    <div class="fr-card fr-card--sm fr-enlarge-link">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h3 class="fr-card__title">
+            <a class="" href="{% url 'mandate_translation' %}">Exemple d'un mandat Aidants Connect</a>
           </h3>
-          <p class="fr-tile__detail fr-text--sm">Des traductions sont disponibles en consultant cette page. Attention,
-            ces traductions n’ont aucune valeur juridique. Seul le mandat final en français a une valeur juridique
-            valide.</p>
+          <p class="fr-card__desc">Version française et traductions</p>
         </div>
       </div>
     </div>
   </div>
-  <div class="fr-col-md-6 fr-col-md">
-    <div class="fr-tile fr-tile--horizontal fr-tile--sm">
-      <div class="fr-tile__body">
-        <div class="fr-tile__content fr-pb-0">
-          <h3 class="fr-tile__title">Fiches pratiques pour les usagers</h3>
-          <div class="fr-tile__desc flex-wrap">
-            <p class="fr-col-12 fr-text--sm">Des traductions sont disponibles en consultant cette page. Attention, ces
-              traductions n’ont aucune valeur juridique. Seul le mandat final en français a une valeur juridique valide.
-            </p>
-            <ul class="fr-btns-group fr-btns-group--inline-lg fr-col-12 fr-mt-2w flex-right">
-              <li>
-                <a
-                  href="https://www.etsijaccompagnais.fr/ressources-des-aidants"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="fr-btn fr-btn--secondary fr-text--sm"
-                >
-                  Version française
+  <div class="fr-col-12 fr-col-md-4">
+    <div class="fr-card fr-card--sm fr-enlarge-link">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h3 class="fr-card__title">
+            <a
+              href="https://www.etsijaccompagnais.fr/ressources-des-aidants"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Fiches pratiques pour les usagers
+            </a>
+          </h3>
+          <p class="fr-card__desc">Version française</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="fr-col-12 fr-col-md-4">
+    <div class="fr-card fr-card--sm">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h3 class="fr-card__title">
+              Version traduite des fiches pratiques
+          </h3>
+          <div class="fr-card__footer fr-pt-4w">
+            <div class="custom-dropdown">
+              <button class="fr-btn fr-btn--tertiary fr-text--sm"
+                      aria-expanded="false"
+                      aria-haspopup="true"
+                      aria-label="Sélectionner une langue"
+                      tabindex="0">
+                Sélectionner une langue <span class="fr-icon-arrow-down-s-line"></span>
+              </button>
+              <div class="custom-dropdown__menu">
+                <a class="fr-btn fr-btn--tertiary-no-outline"
+                   href="https://www.etsijaccompagnais.fr/s/Fiches_Anglais.pdf"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                  Anglais
                 </a>
-              </li>
-              <li>
-                <details class="fr-btn fr-btn--secondary fr-text--sm fr-mr-0">
-                  <summary>Versions traduites</summary>
-                  <div class="details-content">
-                    <a
-                      class="fr-mt-1w"
-                      href="https://www.etsijaccompagnais.fr/s/Fiches_Anglais.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Anglais
-                    </a>
-                    <a
-                      class="fr-mt-1w"
-                      href="https://www.etsijaccompagnais.fr/s/Fiches_Dari.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Dari
-                    </a>
-                    <a
-                      class="fr-mt-1w"
-                      href="https://www.etsijaccompagnais.fr/s/Fiche_Bengali-rmb7.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Bengali
-                    </a>
-                    <a
-                      class="fr-mt-1w"
-                      href="https://www.etsijaccompagnais.fr/s/Fiche_Pashto.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Pashto
-                    </a>
-                    <a
-                      class="fr-mt-1w"
-                      href="https://www.etsijaccompagnais.fr/s/Fiche_Arabe.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Arabe
-                    </a>
-                  </div>
-                </details>
-              </li>
-            </ul>
-          </div>
+                <a class="fr-btn fr-btn--tertiary-no-outline"
+                   href="https://www.etsijaccompagnais.fr/s/Fiches_Dari.pdf"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                  Dari
+                </a>
+                <a class="fr-btn fr-btn--tertiary-no-outline"
+                   href="https://www.etsijaccompagnais.fr/s/Fiche_Bengali-rmb7.pdf"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                  Bengali
+                </a>
+                <a class="fr-btn fr-btn--tertiary-no-outline"
+                   href="https://www.etsijaccompagnais.fr/s/Fiche_Pashto.pdf"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                  Pashto
+                </a>
+                <a class="fr-btn fr-btn--tertiary-no-outline"
+                   href="https://www.etsijaccompagnais.fr/s/Fiche_Arabe.pdf"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                  Arabe
+                </a>
+              </div>
+            </div>
         </div>
       </div>
     </div>
