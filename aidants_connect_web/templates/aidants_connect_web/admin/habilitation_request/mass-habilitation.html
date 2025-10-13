@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load static ac_extras i18n %}
+{% load ac_extras i18n static %}
 
 {% block extrastyle %}
   {{ block.super }}
@@ -7,12 +7,12 @@
   <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
   <link rel="stylesheet" type="text/css" href="{% static "css/admin/aidants-connect.css" %}">
   {{ media.css }}
-{% endblock %}
+{% endblock extrastyle %}
 
 {% block extrahead %}
   {{ block.super }}
   {{ media.js }}
-{% endblock %}
+{% endblock extrahead %}
 
 {% block content %}
   <h1>Habilitation en masse à partir des adresses e-mail</h1>
@@ -109,4 +109,4 @@
   </form>
 
 
-{% endblock %}
+{% endblock content %}

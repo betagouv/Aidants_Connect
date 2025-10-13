@@ -86,7 +86,7 @@ class LinebreaklessTests(TestCase):
                 """\
                 {% load ac_common %}
                 {% linebreakless dont_lstrip=True %}
-                This is a line; 
+                This is a line;
                 this is line
                 {% endlinebreakless %}"""  # noqa: W291
             )

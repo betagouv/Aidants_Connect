@@ -1,10 +1,10 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 
-{% load static ac_extras ac_common %}
+{% load ac_common ac_extras static %}
 
 {% block title %}
   Aidants Connect - {% if aidant.organisations|length > 1 %}Retirer l'aidant de {{ organisation.name }}{% else %}Désactiver l'aidant{% endif %}
-{% endblock %}
+{% endblock title %}
 
 {% block content %}
   <div class="fr-container">
@@ -38,7 +38,7 @@
           </a>
           <button class="fr-btn" type="submit">Confirmer</button>
         </div>
-      
+
       </form>
     </div>
   </div>

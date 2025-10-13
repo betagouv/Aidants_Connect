@@ -1,4 +1,4 @@
-{% load ac_extras ac_common %}
+{% load ac_common ac_extras %}
 Bonjour,
 
 Durant les {{ interval }} derniers jours, il y a eu sur Aidants Connect {{ total_requests }} nouveaux aidants à former dans {{ organisations.count }} structures différentes :

@@ -4,12 +4,12 @@
   <h1 class="text-center">
     Mandat pour réaliser des démarches en ligne avec le service « Aidants Connect »
   </h1>
-  <p>Je m’appelle : <strong>{{ usager.get_full_name }}</strong> (je suis le mandant).</p>  
+  <p>Je m’appelle : <strong>{{ usager.get_full_name }}</strong> (je suis le mandant).</p>
   <p>
     J’autorise <strong>{{ aidant.organisation }}</strong> (c’est le mandataire) à réaliser pour mon compte les démarches
     administratives suivantes :
   </p>
-  <ul class="demarches">  
+  <ul class="demarches">
     {% for demarche in demarches %}
       <li><strong>{{ demarche }}</strong></li>
     {% endfor %}
