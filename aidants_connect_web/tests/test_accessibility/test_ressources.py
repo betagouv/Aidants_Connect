@@ -4,28 +4,21 @@ from aidants_connect_common.tests.test_accessibility.test_playwright import (
     AccessibilityTestCase,
     async_test,
 )
-from aidants_connect_web.tests.factories import AidantFactory
 
 
-class MandatesAccessibilityTests(AccessibilityTestCase):
-    def setUp(self):
-        super().setUp()
-        self.aidant = AidantFactory(post__with_otp_device=True)
-        self.otp_token = self.aidant.staticdevice_set.first().token_set.first().token
-
+class RessourcesPageAccessibilityTests(AccessibilityTestCase):
     async def _open_url(self):
-        await self.login_aidant(self.aidant, self.otp_token)
-        await self.navigate_to_url("/usagers/")
+        await self.navigate_to_url("/ressources")
 
     @async_test
     async def test_accessibility(self):
         await self.lazy_loading(self._open_url)
-        await self.check_accessibility(page_name="usagers", strict=True)
+        await self.check_accessibility(page_name="ressources", strict=True)
 
     @async_test
     async def test_title_is_correct(self):
         await self.lazy_loading(self._open_url)
-        await expect(self.page).to_have_title("Usagers - Aidants Connect")
+        await expect(self.page).to_have_title("Ressources - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
@@ -36,5 +29,6 @@ class MandatesAccessibilityTests(AccessibilityTestCase):
 
         for skip_link in skip_links:
             await expect(skip_link).to_be_attached()
+
             await skip_link.focus()
             await expect(skip_link).to_be_visible()

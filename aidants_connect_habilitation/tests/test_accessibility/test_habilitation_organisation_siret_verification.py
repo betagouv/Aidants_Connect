@@ -12,7 +12,7 @@ class HabilitationSiretVerificationAccessibilityTests(AccessibilityTestCase):
         super().setUp()
         self.issuer = IssuerFactory()
 
-    async def navigate_to_siret_verification(self):
+    async def _open_url(self):
         await self.page.goto(
             self.live_server_url
             + f"/habilitation/demandeur/{self.issuer.issuer_id}"
@@ -22,19 +22,19 @@ class HabilitationSiretVerificationAccessibilityTests(AccessibilityTestCase):
 
     @async_test
     async def test_accessibility(self):
-        await self.navigate_to_siret_verification()
+        await self.lazy_loading(self._open_url)
         await self.check_accessibility(
             page_name="habilitation_siret_verification", strict=True
         )
 
     @async_test
     async def test_title_is_correct(self):
-        await self.navigate_to_siret_verification()
+        await self.lazy_loading(self._open_url)
         await expect(self.page).to_have_title("Vérification Siret - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
-        await self.navigate_to_siret_verification()
+        await self.lazy_loading(self._open_url)
 
         nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
         skip_links = await nav_skiplinks.get_by_role("link").all()
@@ -46,7 +46,7 @@ class HabilitationSiretVerificationAccessibilityTests(AccessibilityTestCase):
 
     @async_test
     async def test_required_fields_notice_is_present(self):
-        await self.navigate_to_siret_verification()
+        await self.lazy_loading(self._open_url)
 
         page_content = await self.page.content()
         self.assertIn("sauf mention contraire", page_content.lower())
