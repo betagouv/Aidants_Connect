@@ -73,8 +73,6 @@
               {% dsfr_accordion data_dict %}
             {% endwithdict %}
           {% ifchanged question.subcategory %}</div>{% endifchanged %}
-        {% empty %}
-          <p>Aucune question nʼa encore été publiée dans <em>{{ object.name }}</em></p>
         {% endfor %}
       </div>
       {# /Questions #}
