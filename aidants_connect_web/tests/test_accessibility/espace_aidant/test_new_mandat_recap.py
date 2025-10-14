@@ -35,7 +35,7 @@ class NewMandatRecapAccessibilityTests(AccessibilityTestCase):
             duree_keyword="SHORT",
         )
 
-    async def navigate_to_new_mandat_recap(self):
+    async def _open_url(self):
         """Helper method to navigate to navigate_to_new_mandat_recap page"""
         await self.login_aidant(self.aidant, self.otp_token)
         await self.navigate_to_url("/usagers/")
@@ -66,19 +66,19 @@ class NewMandatRecapAccessibilityTests(AccessibilityTestCase):
 
     @async_test
     async def test_accessibility(self):
-        await self.navigate_to_new_mandat_recap()
+        await self.lazy_loading(self._open_url)
         await self.check_accessibility(page_name="new_mandat_recap", strict=True)
 
     @async_test
     async def test_title_is_correct(self):
-        await self.navigate_to_new_mandat_recap()
+        await self.lazy_loading(self._open_url)
         await expect(self.page).to_have_title(
             "Récapitulatif du nouveau mandat - Aidants Connect"
         )
 
     @async_test
     async def test_skiplinks_are_valid(self):
-        await self.navigate_to_new_mandat_recap()
+        await self.lazy_loading(self._open_url)
 
         nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
         skip_links = await nav_skiplinks.get_by_role("link").all()
@@ -90,7 +90,7 @@ class NewMandatRecapAccessibilityTests(AccessibilityTestCase):
 
     @async_test
     async def test_required_fields_notice_is_present(self):
-        await self.navigate_to_new_mandat_recap()
+        await self.lazy_loading(self._open_url)
         page_content = await self.page.content()
         self.assertIn("sauf mention contraire", page_content.lower())
         self.assertIn("champs sont obligatoires", page_content.lower())

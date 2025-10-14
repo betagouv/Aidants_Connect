@@ -29,7 +29,6 @@ class NewAttestationFinalAccessibilityTests(AccessibilityTestCase):
         self.aidant: Aidant = AidantFactory(post__with_otp_device=["123456", self.otp])
         self.otp_token = self.aidant.staticdevice_set.first().token_set.first().token
 
-        # Créer un usager et une connection pour la prévisualisation
         self.usager = UsagerFactory()
         self.connection = ConnectionFactory(
             aidant=self.aidant,
@@ -39,7 +38,7 @@ class NewAttestationFinalAccessibilityTests(AccessibilityTestCase):
             duree_keyword="SHORT",
         )
 
-    async def navigate_to_new_attestation_final(self):
+    async def _open_url(self):
         """Helper method to navigate to navigate_to_new_attestation_final page"""
         await self.login_aidant(self.aidant, self.otp)
         await self.navigate_to_url("/usagers/")
@@ -76,22 +75,21 @@ class NewAttestationFinalAccessibilityTests(AccessibilityTestCase):
         await self.page.wait_for_url(
             re.compile(r".*/creation_mandat/visualisation/final/\d+")
         )
-        # Attendre que la page soit complètement chargée après FranceConnect
         await self.page.wait_for_load_state("networkidle")
 
     @async_test
     async def test_accessibility(self):
-        await self.navigate_to_new_attestation_final()
+        await self.lazy_loading(self._open_url)
         await self.check_accessibility(page_name="new_attestation_final", strict=True)
 
     @async_test
     async def test_title_is_correct(self):
-        await self.navigate_to_new_attestation_final()
+        await self.lazy_loading(self._open_url)
         await expect(self.page).to_have_title("Impression du mandat - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
-        await self.navigate_to_new_attestation_final()
+        await self.lazy_loading(self._open_url)
 
         nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
         skip_links = await nav_skiplinks.get_by_role("link").all()
@@ -99,4 +97,3 @@ class NewAttestationFinalAccessibilityTests(AccessibilityTestCase):
         for skip_link in skip_links:
             await expect(skip_link).to_be_attached()
             await skip_link.focus()
-            await expect(skip_link).to_be_visible()

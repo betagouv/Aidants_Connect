@@ -7,20 +7,22 @@ from aidants_connect_common.tests.test_accessibility.test_playwright import (
 
 
 class HomePageAccessibilityTests(AccessibilityTestCase):
+    async def _open_url(self):
+        await self.navigate_to_url("/")
 
     @async_test
     async def test_accessibility(self):
-        await self.navigate_to_url("/")
+        await self.lazy_loading(self._open_url)
         await self.check_accessibility(page_name="home_page", strict=True)
 
     @async_test
     async def test_title_is_correct(self):
-        await self.navigate_to_url("/")
+        await self.lazy_loading(self._open_url)
         await expect(self.page).to_have_title("Accueil - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
-        await self.navigate_to_url("/")
+        await self.lazy_loading(self._open_url)
 
         nav_skiplinks = self.page.get_by_role("navigation", name="Accès rapide")
         skip_links = await nav_skiplinks.get_by_role("link").all()

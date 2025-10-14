@@ -121,7 +121,39 @@ class AccessibilityTestCase(FunctionalTestCase):
     """
     Classe de base pour les tests d'accessibilité avec Playwright.
     Utilise un décorateur @async_test pour une syntaxe élégante.
+    Inclut un système de lazy loading pour partager les pages entre tests.
     """
+
+    common_page = None
+
+    async def lazy_loading(self, navigation_method):
+        """
+        Lazy loading générique pour partager une page entre tests d'une même classe.
+
+        Args:
+            navigation_method: Méthode async qui navigue vers la page cible
+        """
+        if self.__class__.common_page is None:
+            await navigation_method()
+            self.__class__.common_page = self.page
+        else:
+            self.page = self.__class__.common_page
+
+    def tearDown(self):
+        """Override pour éviter de fermer la page partagée entre tests."""
+        if hasattr(self, "page") and self.page is self.__class__.common_page:
+            # Ne pas fermer la page si elle est partagée
+            pass
+        else:
+            super().tearDown()
+
+    @classmethod
+    def tearDownClass(cls):
+        """Override pour nettoyer la page partagée à la fin de tous les tests."""
+        if hasattr(cls, "common_page") and cls.common_page is not None:
+            if hasattr(cls.common_page, "context"):
+                cls.loop.run_until_complete(cls.common_page.context.close())
+        super().tearDownClass()
 
     async def check_accessibility(
         self,
