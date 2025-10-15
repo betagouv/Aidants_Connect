@@ -59,6 +59,7 @@ class FNEOrganisationSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "uuid",
+            "is_active",
             "url",
             "name",
             "siret",

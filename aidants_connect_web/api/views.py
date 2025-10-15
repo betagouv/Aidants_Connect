@@ -25,7 +25,7 @@ class FNEOrganisationViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = "uuid"
     lookup_url_kwarg = "uuid"
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Organisation.objects.filter(is_active=True).order_by("pk")
+    queryset = Organisation.objects.all().order_by("pk")
     serializer_class = FNEOrganisationSerializer
 
 
