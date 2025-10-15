@@ -1,6 +1,6 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 
-{% load static %}
+{% load dsfr_tags static %}
 
 {% block title %}Aidants Connect - Associer la carte à {{ aidant.get_full_name }}{% endblock %}
 
@@ -29,8 +29,9 @@
                     >
                       Entrez le numéro de série
                     </label>
-                    <div class="margin-top-1rem">
+                    <div class="shadowed margin-bottom-2rem padding-1rem">
                       {{ form.serial_number }}
+                      {% dsfr_form_field form.serial_number %}
                     </div>
                     {% if form.errors.serial_number %}
                       <div id="{{ form.serial_number.id_for_label }}__errors">
