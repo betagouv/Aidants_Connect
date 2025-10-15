@@ -140,6 +140,16 @@
                   </a>
                 </li>
                 <li class="fr-nav__item">
+                  <a
+                    class="fr-nav__link"
+                    target="_self"
+                    href="{% url 'faq_aidant_generale' %}"
+                    {% if view_name|startswith:'fad' %}aria-current="true"{% endif %}
+                  >
+                    Aide
+                  </a>
+                </li>
+                <li class="fr-nav__item">
                   <a class="fr-nav__link" target="_self" href="{% mailto_href "contact@aidantsconnect.beta.gouv.fr" %}">
                     Contacter lʼéquipe
                   </a>
