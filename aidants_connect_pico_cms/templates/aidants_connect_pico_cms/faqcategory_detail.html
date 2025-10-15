@@ -35,7 +35,7 @@
                 {% for category in categories %}
                   <li class="fr-sidemenu__item">
                     <a
-                      href="{% if category.slug == object.slug %}#{% else %}{% url "faq_category_detail" slug=category.slug %}{% endif %}"
+                      href="{% if category.slug == object.slug %}#{% else %}{{ category.get_absolute_url }}{% endif %}"
                       class="fr-sidemenu__link"
                       target="_self"
                       {% if category.slug == object.slug %}aria-current="page"{% endif %}
