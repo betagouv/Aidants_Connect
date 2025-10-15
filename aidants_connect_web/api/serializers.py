@@ -69,6 +69,8 @@ class FNEOrganisationSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "num_mandats",
+            "france_services_label",
+            "france_services_number",
         ]
 
 
@@ -95,5 +97,6 @@ class FNEAidantSerializer(serializers.HyperlinkedModelSerializer):
             "formation_fne",
             "organisation",
             "profession",
+            "conseiller_numerique",
             "get_supports_number",
         ]
