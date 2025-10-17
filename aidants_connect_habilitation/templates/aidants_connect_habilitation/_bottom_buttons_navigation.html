@@ -7,14 +7,13 @@
         Revenir à l’étape précédente
         </a>
     </li>
-    <li>
-        <button
-            type="submit"
-            class="fr-btn"
-            {% if not siret_verified or not siret_is_new %}disabled{% endif %}
-            data-organisation-choice-target="submitButton"
-        >
-        Passer à l'étape suivante
-        </button>
-    </li>
+        <li>
+            <button
+                type="submit"
+                class="fr-btn{% if not siret_verified or not siret_is_new %} fr-hidden{% endif %}"
+                data-organisation-choice-target="submitButton"
+            >
+            Passer à l'étape suivante
+            </button>
+        </li>
 </ul>
