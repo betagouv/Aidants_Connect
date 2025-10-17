@@ -6,7 +6,6 @@ from aidants_connect_common.constants import (
     RequestStatusConstants,
 )
 from aidants_connect_habilitation.forms import (
-    AddressValidatableForm,
     AidantRequestForm,
     AidantRequestFormSet,
     IssuerForm,
@@ -201,30 +200,6 @@ class TestManagerForm(TestCase):
     def setUpTestData(cls):
         cls.organisation = OrganisationRequestFactory()
 
-    def test_clean_type_zipcode_number_passes(self):
-        form = get_form(
-            ReferentForm,
-            ignore_errors=True,
-            zipcode="01700",
-            form_init_kwargs={"organisation": self.organisation},
-        )
-
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.errors, {})
-
-    def test_clean_type_zipcode_not_number_raises_error(self):
-        form = get_form(
-            ReferentForm,
-            ignore_errors=True,
-            zipcode="La Commune",
-            form_init_kwargs={"organisation": self.organisation},
-        )
-
-        self.assertFalse(form.is_valid())
-        self.assertEqual(
-            form.errors["zipcode"], ["Veuillez entrer un code postal valide"]
-        )
-
     def test_email_lower(self):
         form = get_form(
             ReferentForm,
@@ -245,31 +220,6 @@ class TestManagerForm(TestCase):
         )
 
         self.assertTrue(form.is_valid())
-
-    def test_address_same_as_org(self):
-        form = ReferentForm(
-            organisation=self.organisation,
-            data={
-                **get_form(
-                    ReferentForm,
-                    conseiller_numerique=True,
-                    email="test@test.test",
-                    form_init_kwargs={"organisation": self.organisation},
-                ).cleaned_data,
-                "address_same_as_org": True,
-            },
-        )
-
-        self.assertTrue(form.is_valid())
-        for name, field in AddressValidatableForm.declared_fields.items():
-            with self.subTest(f"address field {name}"):
-                expected = getattr(self.organisation, name)
-                actual = form.cleaned_data[name]
-                if expected in field.empty_values:
-                    expected = field.empty_value
-                if actual in field.empty_values:
-                    actual = field.empty_value
-                self.assertEqual(expected, actual)
 
 
 class TestAidantRequestForm(TestCase):

@@ -124,9 +124,6 @@ class TestAidantAdmin(TestCase):
         self.assertEqual(0, HabilitationRequest.objects.count())
         for one_aidant in Aidant.objects.all():
             Manager.objects.create(
-                address="adr",
-                zipcode="ZIP",
-                city="City",
                 is_aidant=True,
                 phone="0112121212",
                 email=one_aidant.email,
