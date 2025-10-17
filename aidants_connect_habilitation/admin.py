@@ -112,11 +112,6 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
         "email",
         "profession",
         "phone",
-        "address",
-        "zipcode",
-        "city",
-        "city_insee_code",
-        "department_insee_code",
         "is_aidant",
         "conseiller_numerique",
     )
@@ -129,7 +124,6 @@ class ManagerAdmin(VisibleToAdminMetier, ModelAdmin):
         "is_aidant",
         "conseiller_numerique",
         "organisation",
-        "zipcode",
     )
     search_fields = (
         "email",
