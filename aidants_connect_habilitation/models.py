@@ -176,21 +176,6 @@ class IssuerEmailConfirmation(models.Model):
 
 
 class Manager(PersonWithResponsibilities):
-    address = models.TextField("Adresse")
-    address_complement = models.CharField(
-        "Complément d'adresse", max_length=255, blank=True, default=""
-    )
-    zipcode = models.CharField("Code Postal", max_length=10)
-    city = models.CharField("Ville", max_length=255)
-
-    city_insee_code = models.CharField(
-        "Code INSEE de la ville", max_length=5, null=True, blank=True
-    )
-
-    department_insee_code = models.CharField(
-        "Code INSEE du département", max_length=5, null=True, blank=True
-    )
-
     is_aidant = models.BooleanField("C'est aussi un aidant", default=False)
 
     conseiller_numerique = models.BooleanField(
