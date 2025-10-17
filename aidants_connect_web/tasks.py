@@ -417,6 +417,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "email",
             "phone",
             "profession",
+            "created_by_fne",
             "deactivation_warning_at",
             "referent",
             "can_create_mandats",
@@ -427,6 +428,9 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "totp_card_date_activated",
             "has_otp_app",
             "is_active",
+            "connexion_mode_choosed",
+            "connexion_mode_activated",
+            "formation_date",
             "has_connected_once",
             "nb_mandat_created",
             "nb_mandat_remote_created",
@@ -457,6 +461,32 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             return self.aidant.responsable_de.exists()
 
         referent.csv_column = "Est référent"
+
+        def connexion_mode_choosed(self):
+            return self.aidant.connexion_mode
+
+        connexion_mode_choosed.csv_column = "Moyen de connexion choisi"
+
+        def connexion_mode_activated(self):
+            if self.aidant.has_a_carte_totp:
+                return HabilitationRequest.CONNEXION_MODE_CARD
+            if self.aidant.has_otp_app:
+                return HabilitationRequest.CONNEXION_MODE_PHONE
+            return ""
+
+        connexion_mode_choosed.csv_column = "Moyen de connexion Activé"
+
+        def formation_date(self):
+            hr = (
+                HabilitationRequest.objects.filter(email=self.aidant.email)
+                .exclude(date_formation__isnull=True)
+                .first()
+            )
+            if hr:
+                return hr.date_formation.strftime("%d-%m-%Y")
+            return ""
+
+        connexion_mode_choosed.csv_column = "Date de formation"
 
         def active_totp_card(self):
             return getattr(
