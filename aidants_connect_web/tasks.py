@@ -474,7 +474,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
                 return HabilitationRequest.CONNEXION_MODE_PHONE
             return ""
 
-        connexion_mode_choosed.csv_column = "Moyen de connexion Activé"
+        connexion_mode_activated.csv_column = "Moyen de connexion Activé"
 
         def formation_date(self):
             hr = (
@@ -486,7 +486,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
                 return hr.date_formation.strftime("%d-%m-%Y")
             return ""
 
-        connexion_mode_choosed.csv_column = "Date de formation"
+        formation_date.csv_column = "Date de formation"
 
         def active_totp_card(self):
             return getattr(
