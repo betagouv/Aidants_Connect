@@ -402,6 +402,12 @@ class ModifyOrganisationRequestFormView(
     def step(self) -> HabilitationFormStep:
         return HabilitationFormStep.ORGANISATION
 
+    def get_initial(self):
+        initial = super().get_initial()
+        if self.organisation and self.organisation.siret:
+            initial["siret"] = self.organisation.siret
+        return initial
+
     def get_form_kwargs(self):
         return {**super().get_form_kwargs(), "instance": self.organisation}
 

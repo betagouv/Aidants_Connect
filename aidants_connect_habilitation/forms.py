@@ -11,22 +11,20 @@ from django.forms import (
     HiddenInput,
     Media,
     ModelForm,
-    RadioSelect,
     Textarea,
     TextInput,
-    TypedChoiceField,
     model_to_dict,
     modelformset_factory,
 )
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 import sentry_sdk
 from dsfr.forms import DsfrBaseForm
 
-from aidants_connect.utils import strtobool
 from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
@@ -268,80 +266,13 @@ class OrganisationRequestForm(ModelForm, AddressValidatableForm):
         }
 
 
-class ReferentForm(
-    ModelForm, ConseillerNumerique, CleanEmailMixin, AddressValidatableForm
-):
+class ReferentForm(ModelForm, CleanEmailMixin, DsfrBaseForm):
     template_name = "aidants_connect_habilitation/forms/referent.html"
 
     phone = AcPhoneNumberField(
         initial="",
-        label="Numéro de téléphone mobile",
+        label=mark_safe("Numéro de téléphone <strong>mobile</strong>"),
         required=True,
-    )
-
-    is_aidant = TypedChoiceField(
-        label="C’est aussi un aidant",
-        choices=((True, "Oui"), (False, "Non")),
-        coerce=lambda value: bool(strtobool(value)),
-        widget=RadioSelect,
-    )
-
-    address_same_as_org = TypedChoiceField(
-        label="S'agit-il de la même adresse que celle de la structure administrative ?",
-        choices=((True, "Oui"), (False, "Non")),
-        coerce=lambda value: bool(strtobool(value)),
-        widget=RadioSelect(
-            attrs={
-                "data-action": "manager-form#onAddressSameAsOrgChanged",
-                "data-manager-form-target": "addressSameAsOrgRadio",
-            }
-        ),
-    )
-
-    address = CharField(
-        label="Adresse",
-        widget=Textarea(
-            attrs={
-                "rows": 2,
-                "data-manager-form-target": "autcompleteInput",
-                "data-address-autocomplete-target": "autcompleteInput",
-                "data-action": "focus->address-autocomplete#onAutocompleteFocus",
-            }
-        ),
-    )
-
-    address_complement = CharField(
-        label="Complément d'adresse (facultatif)",
-        required=False,
-        help_text="Indication : bâtiment, immeuble, escalier et numéro d'appartement",
-    )
-
-    zipcode = CharField(
-        label="Code Postal",
-        max_length=10,
-        error_messages={
-            "required": "Le champ « code postal » est obligatoire.",
-        },
-        widget=CharField.widget(
-            attrs={
-                "data-address-autocomplete-target": "zipcodeInput",
-                "data-manager-form-target": "zipcodeInput",
-            }
-        ),
-    )
-
-    city = CharField(
-        label="Ville",
-        max_length=255,
-        error_messages={
-            "required": "Le champ « ville » est obligatoire.",
-        },
-        widget=CharField.widget(
-            attrs={
-                "data-address-autocomplete-target": "cityInput",
-                "data-manager-form-target": "cityInput",
-            }
-        ),
     )
 
     @property
@@ -350,10 +281,6 @@ class ReferentForm(
 
     def __init__(self, organisation: OrganisationRequest, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.is_bound:
-            # Otherwise test fail
-            self.data = self.data.copy()
-            self.data.setdefault("address_same_as_org", False)
         self.organisation = organisation
 
     def _clean_field(self, name):
@@ -373,25 +300,8 @@ class ReferentForm(
             self.add_error(name, e)
 
     def _clean_fields(self):
-        self._clean_field("address_same_as_org")
-        address_same_as_org = self.cleaned_data["address_same_as_org"]
-
-        if address_same_as_org:
-            object_data = model_to_dict(
-                self.organisation, AddressValidatableForm.declared_fields
-            )
-            self.data = self.data.copy()
-            for field in AddressValidatableForm.declared_fields:
-                self.data[self.add_prefix(field)] = object_data.get(field, None)
-
         for name in self.fields:
-            if name != "address_same_as_org":
-                self._clean_field(name)
-
-    def clean(self):
-        cleaned_data = super().clean()
-        cleaned_data.pop("address_same_as_org", None)
-        return cleaned_data
+            self._clean_field(name)
 
     def get_context(self):
         issuer_data = model_to_dict(
@@ -410,11 +320,7 @@ class ReferentForm(
 
     class Meta:
         model = Manager
-        include = ("conseiller_numerique",)
-        exclude = (
-            "pk",
-            "habilitation_request",
-        )
+        fields = ["first_name", "last_name", "email", "phone", "profession"]
 
 
 class EmailOrganisationValidationError(ValidationError):
