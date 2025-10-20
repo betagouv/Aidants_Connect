@@ -1,0 +1,34 @@
+{% load ac_common dsfr_tags partials %}
+
+
+{% partialdef habilitation-profile-card %}
+  {% include "habilitation/generic-habilitation-request-profile-card.html#habilitation-profile-card" with profile_cards_wrapper_attrs='data-new-habilitation-request-target="rightFormsInsert"' %}
+{% endpartialdef %}
+
+<div class="habilitation-requests" data-controller="base-aidant-request-formset">
+  {{ formset.management_form }}
+  <div class="fr-grid-row fr-grid-row--gutters">
+
+    <div class="fr-col-12">
+      <p class="fr-text">Renseignez les informations des aidants professionnels qui souhaitent être formés et habilités à accompagner des usagers avec Aidants Connect. La demande doit contenir au moins un aidant pour être valide, le référent peut faire partie des professionnels à habiliter. </p>
+      <div data-fr-group="false" class="fr-accordions-group fr-mb-4w">
+        {% for form in formset.forms %}
+          {% if formset.forms|length == 1 %}
+            {% dsfr_alert type="info" extra_classes="fr-alert--sm" content="Information : les élus, les services civiques, les bénévoles, les apprentis et les stagiaires ne peuvent pas être habilités à Aidants Connect" %}
+          {% endif %}
+          {% include "aidants_connect_habilitation/_accordion_aidant.html" with form=form idx=forloop.counter0 %}
+        {% endfor %}
+      </div>
+
+      {{ formset.non_form_errors }}
+      <button
+        id="partial-submit"
+        name="partial-submit"
+        class="fr-btn fr-btn--secondary fr-btn--icon-right fr-icon-user-add-line"
+        type="submit"
+      >
+        Ajouter un autre aidant à la demande
+      </button>
+    </div>
+  </div>
+</div>

@@ -2,36 +2,38 @@
 {% load ac_common dsfr_tags form_extras static %}
 
 {% block title %}
-  Structure - Aidants Connect
+  Aidants à habiliter - Aidants Connect
 {% endblock title %}
 
 {% block content %}
   <div class="fr-container">
-    <h1 class="fr-mb-0">Formulaire d’habilitation</h1>
+    <div class="fr-mb-1w">
+      <h1 class="fr-mb-2w">Formulaire d’habilitation</h1>
+      <p class="fr-text--lg">
+        Sauf mention contraire, tous les champs sont obligatoires.
+      </p>
+    </div>
     <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col-12 fr-col-md-6">
+      <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
         {% include "layouts/_breadcrumbs.html" %}
-      </div>
-      <form method="post" class="fr-col-12">
-        {% csrf_token %}
-        {{ form }}
-        <ul class="fr-btns-group fr-btns-group--inline-md fr-my-6w">
-          <li>
-            <a
-              class="fr-btn fr-btn--tertiary"
-              href="{% url 'habilitation_new_referent' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
-            >
-              Revenir à l’étape précédente
-            </a>
-          </li>
-          <li>
-            <input type="submit" class="fr-btn" value="Passer à l’étape suivante" data-test="submit">
-          </li>
-        </ul>
-      </form>
-
-      <div class="fr-col-12 fr-col-md-6">
-        {% dsfr_alert type="info" extra_classes="fr-alert--sm" content="Les informations saisies sont sauvegardées à chaque étape. Vous pouvez revenir plus tard en cliquant sur le lien reçu par email." %}
+        <form method="post" class="fr-col-12">
+          {% csrf_token %}
+          {{ form }}
+          {{ manager_data|json_script:"manager-data" }}
+          <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--between fr-my-6w">
+            <li>
+              <a
+                class="fr-btn fr-btn--tertiary"
+                href="{% url 'habilitation_new_referent' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+              >
+                Revenir à l’étape précédente
+              </a>
+            </li>
+            <li>
+              <input type="submit" name="continue" class="fr-btn" value="Passer à l'étape suivante" data-test="submit">
+            </li>
+          </ul>
+        </form>
       </div>
     </div>
   </div>
