@@ -23,6 +23,7 @@ class ManagerForm extends BaseController {
   connect() {
     const elt = document.querySelector("#issuer-data");
     this.issuerDataValue = elt ? JSON.parse(elt.textContent) : {};
+    console.log("Element #issuer-data:", elt);
   }
 
   addressSameAsOrgRadioTargetConnected(elt) {

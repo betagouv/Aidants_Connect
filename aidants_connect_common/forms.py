@@ -24,7 +24,6 @@ from django.forms import (
     BoundField,
     Field,
     Form,
-    Media,
     MediaDefiningClass,
     RadioSelect,
     TypedChoiceField,
@@ -42,7 +41,6 @@ from phonenumbers.phonenumber import PhoneNumber
 from aidants_connect.utils import strtobool
 from aidants_connect_common.models import Formation
 from aidants_connect_common.presenters import GenericHabilitationRequestPresenter
-from aidants_connect_common.widgets import JSModulePath
 
 
 class AsHiddenMixin:
@@ -186,9 +184,9 @@ class CleanEmailMixin:
 class ConseillerNumerique(Form):
     conseiller_numerique = TypedChoiceField(
         label=format_html(
-            'Fait partie du <a class="fr-link" href="{}">{}</a>',
+            "L'aidant fait-il partie du <a class='fr-link' href='{}'>{}</a>",
             settings.CONSEILLER_NUMERIQUE_PAGE,
-            "dispositif conseiller numérique",
+            "dispositif Conseiller numérique ?",
         ),
         label_suffix=" :",
         choices=((True, "Oui"), (False, "Non")),
@@ -576,13 +574,6 @@ class BaseHabilitationRequestFormSet(BaseModelFormSet, abc.ABC):
     presenter_class = None
 
     @property
-    def media(self):
-        return super().media + Media(
-            css={"all": ("css/new-habilitation-request.css",)},
-            js=(JSModulePath("js/new-habilitation-request.mjs"),),
-        )
-
-    @property
     @abc.abstractmethod
     def action_url(self):
         pass
@@ -597,24 +588,11 @@ class BaseHabilitationRequestFormSet(BaseModelFormSet, abc.ABC):
     ):
         kwargs.setdefault("queryset", self.model._default_manager.none())
         super().__init__(data, files, auto_id, prefix, **kwargs)
-        self.extra = 0
-        self.min_num = 1
 
         for field in self.management_form.fields:
             self.management_form.fields[field].widget.attrs.update(
                 {"autocomplete": "off", "data-new-habilitation-request-target": field}
             )
-
-    def total_form_count(self):
-        """
-        Don't add blank forms when self.min_num and and self.extra are positive
-        integers; this will be initialized by JS.
-        """
-        return (
-            super().total_form_count()
-            if self.is_bound
-            else max(0, min(self.initial_form_count(), self.max_num))
-        )
 
     @abc.abstractmethod
     def get_presenter_kwargs(self, idx, form) -> dict:

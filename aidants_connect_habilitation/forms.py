@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.forms import (
+    BaseModelFormSet,
     BooleanField,
     CharField,
     ChoiceField,
@@ -29,7 +30,6 @@ from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
     AsHiddenMixin,
-    BaseHabilitationRequestFormSet,
     CleanEmailMixin,
     ConseillerNumerique,
     PatchedForm,
@@ -42,7 +42,6 @@ from aidants_connect_habilitation.models import (
     Manager,
     OrganisationRequest,
 )
-from aidants_connect_habilitation.presenters import ProfileCardAidantRequestPresenter2
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import HabilitationRequest, OrganisationType
 
@@ -355,13 +354,42 @@ class AidantRequestForm(
 ):
     template_name = "aidants_connect_habilitation/forms/aidant.html"
 
+    @property
+    def media(self):
+        return super().media + Media(
+            css={"all": ("css/custom-accordion.css",)},
+            js=(JSModulePath("js/aidant-request-form.mjs"),),
+        )
+
+    @property
+    def clean_fullname(self):
+        first_name = (
+            self.data.get(f"{self.prefix}-first_name", "").strip() if self.data else ""
+        )
+        last_name = (
+            self.data.get(f"{self.prefix}-last_name", "").strip() if self.data else ""
+        )
+
+        if not first_name and not last_name and self.instance.pk:
+            first_name = self.instance.first_name or ""
+            last_name = self.instance.last_name or ""
+
+        if first_name or last_name:
+            return f"{first_name.capitalize()} {last_name.capitalize()}".strip()
+        return ""
+
     def __init__(self, organisation: OrganisationRequest, *args, **kwargs):
         self.organisation = organisation
         super().__init__(*args, **kwargs)
 
+    def get_context(self):
+        manager_data = model_to_dict(
+            self.organisation.manager, exclude=(*IssuerForm.Meta.exclude, "id")
+        )
+        return {**super().get_context(), "manager_data": manager_data}
+
     def clean_email(self):
         email = super().clean_email()
-
         query = Q(organisation=self.organisation) & Q(email__iexact=email)
         if getattr(self.instance, "pk"):
             # This user already exists, and we need to verify that
@@ -371,12 +399,8 @@ class AidantRequestForm(
         if AidantRequest.objects.filter(query).exists():
             raise EmailOrganisationValidationError(email)
 
-        if (
-            self.organisation.manager
-            and self.organisation.manager.is_aidant
-            and self.organisation.manager.email == email
-        ):
-            raise ManagerEmailOrganisationValidationError(email)
+        # if self.organisation.manager and self.organisation.manager.email == email:
+        #     self._manager_is_aidant = True
 
         return email
 
@@ -400,11 +424,18 @@ class AidantRequestForm(
 
     class Meta:
         model = AidantRequest
-        exclude = ["organisation", "habilitation_request"]
+        fields = [
+            "first_name",
+            "last_name",
+            "email",
+            "profession",
+            "conseiller_numerique",
+        ]
 
 
-class BaseAidantRequestFormSet(BaseHabilitationRequestFormSet):
-    presenter_class = ProfileCardAidantRequestPresenter2
+class BaseAidantRequestFormSet(BaseModelFormSet):
+    template_name = "forms/base-habilitation-request-formset.html"
+
     default_error_messages = {
         "too_few_forms": (
             "Vous devez déclarer au moins 1 aidant si le ou la référente de "
@@ -422,35 +453,32 @@ class BaseAidantRequestFormSet(BaseHabilitationRequestFormSet):
             },
         )
 
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        cls._validate_min = cls.validate_min
-        cls.validate_min = property(cls.validate_min_get)
+    @property
+    def media(self):
+        return super().media + Media(
+            js=(JSModulePath("js/base-aidant-request-formset.mjs"),),
+        )
 
-    def __init__(
-        self, organisation: OrganisationRequest, empty_permitted=None, **kwargs
-    ):
+    def __init__(self, organisation: OrganisationRequest, **kwargs):
         self.organisation = organisation
-        self.empty_permitted = empty_permitted
         kwargs["queryset"] = self.organisation.aidant_requests.order_by("pk").all()
         super().__init__(**kwargs)
 
-    def validate_min_get(self):
-        return (
-            not getattr(self.organisation.manager, "is_aidant", False)
-            or self._validate_min
-        )
+    def clean(self):
+        if not getattr(self.organisation.manager, "is_aidant", False):
+            # Compter les formulaires avec un email (existants + nouveaux)
+            filled_forms = sum(
+                1 for form in self.forms if form.cleaned_data.get("email")
+            )
+            if filled_forms == 0:
+                raise ValidationError(self.error_messages["too_few_forms"])
+        return super().clean()
 
     def validate_unique(self):
         emails = {
             existing_email: []
             for existing_email in self.get_queryset().values_list("email", flat=True)
         }
-        manager_email = (
-            {self.organisation.manager.email}
-            if getattr(self.organisation.manager, "is_aidant", False)
-            else set()
-        )
         for form in self.forms:
             if self.can_delete and self._should_delete_form(form):
                 continue
@@ -464,14 +492,6 @@ class BaseAidantRequestFormSet(BaseHabilitationRequestFormSet):
             emails.setdefault(email, [])
             emails[email].append(form)
 
-            if email in manager_email:
-                form.add_error(
-                    "email",
-                    "Cette personne a le même email que la personne que vous avez "
-                    "déclarée comme référente. Chaque aidant doit avoir "
-                    "une adresse email unique.",
-                )
-
         for email, grouped_forms in emails.items():
             if len(grouped_forms) > 1:
                 for form in grouped_forms:
@@ -483,12 +503,7 @@ class BaseAidantRequestFormSet(BaseHabilitationRequestFormSet):
     def get_form_kwargs(self, index):
         kwargs = super().get_form_kwargs(index)
         kwargs["organisation"] = self.organisation
-        if self.empty_permitted is not None:
-            kwargs["empty_permitted"] = self.empty_permitted
         return kwargs
-
-    def get_presenter_kwargs(self, idx, form) -> dict:
-        return {"organisation": self.organisation, "form": form, "idx": idx}
 
 
 AidantRequestFormSet = modelformset_factory(

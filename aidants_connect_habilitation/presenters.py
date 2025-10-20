@@ -98,7 +98,7 @@ class ProfileCardAidantRequestPresenter2(GenericHabilitationRequestPresenter):
 
     @property
     def form(self) -> str:
-        return self._form.as_hidden()
+        return self._form
 
     @property
     def details_id(self):

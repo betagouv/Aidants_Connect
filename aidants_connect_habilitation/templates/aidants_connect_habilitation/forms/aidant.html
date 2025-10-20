@@ -1,19 +1,61 @@
-{% load dsfr_tags %}
+{% load dsfr_tags form_extras %}
+
 {% if errors %}
   <section class="fr-my-4v fr-input-group fr-input-group--error">
     {{ errors }}
   </section>
 {% endif %}
-{% for field in hidden_fields %}
-	{{ field }}
+{% for field in form.hidden_fields %}
+  {{ field }}
 {% endfor %}
 
-<div class="fr-mb-4w">
-  {% dsfr_alert type="warning" extra_classes="fr-alert--sm" content="Si vous utilisez une adresse mail laposte.net et laposte.fr et que vous n’avez pas configuré votre identité numérique, vous pourriez rencontrer des problèmes de réception des emails de validation de compte." %}
-</div>
+<section class="fr-accordion custom-accordion-border fr-my-4v" data-controller="aidant-request-form">
+  <h3 class="fr-accordion__title">
+    {% if not form.email.value %}
+      <button type="button" class="fr-accordion__btn fr-py-4v" aria-expanded="false" aria-controls="accordion-{{ form.prefix }}">
+        <span class="fr-text--lg fr-text--bold">Informations de l'aidant</span>
+      </button>
+    {% else %}
+      <button type="button" class="fr-accordion__btn fr-py-4v" aria-expanded="false" aria-controls="accordion-{{ form.prefix }}">
+        <div>
+          <div class="fr-text--lg fr-text--bold">{{ form.clean_fullname }}</div>
+          <div class="fr-text--xs fr-text-mention--grey custom-accordion-help-text">Ouvrir pour modifier les données</div>
+        </div>
+      </button>
+    {% endif %}
+  </h3>
 
-{% dsfr_form_field form.email %}
-{% dsfr_form_field form.first_name %}
-{% dsfr_form_field form.last_name %}
-{% dsfr_form_field form.profession %}
-{% dsfr_form_field form.conseiller_numerique|dsfr_inline %}
+
+  <div id="accordion-{{ form.prefix }}" class="fr-collapse">
+    {% if idx == 0 and not form.email.value %}
+      <section class="fr-mb-5v">
+        <button id="its-me-manager" class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line fr-mt-2w" data-action="aidant-request-form#onManagerIsAidant:stop:prevent">
+          Remplir avec les informations du référent
+        </button>
+      </section>
+    {% endif %}
+
+    <fieldset class="fr-fieldset">
+      <div class="fr-fieldset__element fr-my-4v fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+        {% aidantc_dsfr_form_field_no_asterisk form.first_name %}
+      </div>
+      <div class="fr-fieldset__element fr-my-4v fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+        {% aidantc_dsfr_form_field_no_asterisk form.last_name %}
+      </div>
+
+      <div class="fr-fieldset__element fr-my-4v">
+        {% aidantc_dsfr_form_field_no_asterisk form.profession %}
+      </div>
+
+      <div class="fr-fieldset__element fr-mt-4v">
+        {% aidantc_dsfr_form_field_no_asterisk form.conseiller_numerique|dsfr_inline %}
+      </div>
+
+      <div class="fr-fieldset__element fr-mb-4v">
+        {% aidantc_dsfr_form_field_no_asterisk form.email %}
+        {% dsfr_alert type="warning" extra_classes="fr-alert--sm" content="Toutes les adresses e-mail renseignées dans la demande doivent être nominatives (de type prenom-nom@exemple.fr)" %}
+      </div>
+
+    </fieldset>
+  </div>
+</section>
