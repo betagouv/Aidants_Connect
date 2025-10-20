@@ -76,11 +76,20 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                     "prefix": formset.add_prefix(i),
                 },
             )
+            # Open accordion before filling the form
+            self._open_accordion_for_form(aidant_form.prefix)
+
+            self.wait.until(
+                expected_conditions.presence_of_element_located(
+                    (By.ID, f"id_form-{i}-email")
+                )
+            )
+
             self.fill_form(aidant_form.cleaned_data, aidant_form)
             self.selenium.find_element(By.CSS_SELECTOR, "#partial-submit").click()
             self.wait.until(
                 expected_conditions.visibility_of_element_located(
-                    (By.ID, f"profile-edit-card-{i}")
+                    (By.ID, f"accordion-form-{i+1}")
                 )
             )
 
@@ -169,49 +178,8 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
             )
         )
 
-    def _modal_closed(self):
-        def modal_has_no_open_attr(driver):
-            try:
-                with self.implicitely_wait(0.1, driver):
-                    element_attribute = driver.find_element(
-                        By.CSS_SELECTOR, "#main-modal"
-                    ).get_attribute("open")
-                return element_attribute is None
-            except:  # noqa: E722
-                return False
+    def _open_accordion_for_form(self, form_prefix):
+        """Open accordion for given form prefix if closed."""
+        accordion_button = self.selenium.find_element(By.ID, "empty-form")
 
-        return expected_conditions.all_of(
-            expected_conditions.invisibility_of_element_located(
-                (By.CSS_SELECTOR, "#main-modal")
-            ),
-            modal_has_no_open_attr,
-        )
-
-    def _try_open_modal(self, by, value: str):
-        self._try_close_modal()
-        self.js_click(by, value)
-        with self.implicitely_wait(0.1):
-            self.wait.until(
-                expected_conditions.text_to_be_present_in_element_attribute(
-                    (By.CSS_SELECTOR, "#main-modal"),
-                    "open",
-                    "true",
-                ),
-                "Modal was not opened",
-            )
-
-            self.wait.until(
-                expected_conditions.presence_of_element_located(
-                    (
-                        By.CSS_SELECTOR,
-                        '#main-modal input[id$="email"]',
-                    )
-                ),
-                "Modal seems opened but form seems not visible",
-            )
-
-    def _try_close_modal(self):
-        self.wait.until(self.document_loaded())
-        self.wait.until(self.dsfr_ready())
-        self.js_click(By.TAG_NAME, "body")
-        self.wait.until(self._modal_closed(), "Modal seems to be still visible")
+        accordion_button.click()

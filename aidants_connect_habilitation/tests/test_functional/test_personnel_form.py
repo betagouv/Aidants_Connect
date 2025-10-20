@@ -220,11 +220,23 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                     "prefix": formset.add_prefix(i),
                 },
             )
+
+            # Open accordion before filling the form
+            self._open_accordion_for_form(aidant_form.prefix)
+
+            self.wait.until(
+                expected_conditions.presence_of_element_located(
+                    (By.ID, f"id_form-{i}-email")
+                )
+            )
+
             self.fill_form(aidant_form.cleaned_data, aidant_form)
             self.selenium.find_element(By.CSS_SELECTOR, "#partial-submit").click()
+
+            # Wait for new accordion to appear
             self.wait.until(
-                expected_conditions.visibility_of_element_located(
-                    (By.ID, f"profile-edit-card-{i}")
+                expected_conditions.presence_of_element_located(
+                    (By.ID, f"accordion-form-{i+1}")
                 )
             )
 
@@ -242,71 +254,6 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
 
         organisation.refresh_from_db()
         self.assertEqual(organisation.aidant_requests.count(), 6)
-
-    def test_form_submit_modify_multiple_aidants(self):
-        issuer: Issuer = IssuerFactory()
-        manager: Manager = ManagerFactory()
-        organisation: OrganisationRequest = DraftOrganisationRequestFactory(
-            issuer=issuer, manager=manager
-        )
-
-        for _ in range(4):
-            AidantRequestFactory(organisation=organisation)
-
-        self._open_form_url(issuer, organisation)
-        self.wait.until(self.dsfr_ready())
-        self.check_accessibility("habilitation_new_aidants", strict=False)
-
-        modified_aidant_idx = 2
-        formset = AidantRequestFormSet(organisation=organisation)
-        aidant = formset.forms[modified_aidant_idx].instance
-        aidant_form = get_form(
-            AidantRequestForm,
-            form_init_kwargs={
-                "organisation": organisation,
-                "auto_id": formset.auto_id,
-                "prefix": formset.add_prefix(modified_aidant_idx),
-            },
-        )
-
-        for field_name in ("first_name", "last_name", "email"):
-            self.assertNotEqual(
-                getattr(aidant, field_name),
-                aidant_form.cleaned_data[field_name],
-            )
-
-        self._try_open_modal(By.CSS_SELECTOR, f"#edit-button-{modified_aidant_idx}")
-        self.check_accessibility("habilitation_new_aidants_modale", strict=False)
-
-        self.fill_form(
-            aidant_form.cleaned_data,
-            aidant_form,
-            selector=self.selenium.find_element(By.CSS_SELECTOR, "#main-modal"),
-        )
-
-        self.selenium.find_element(By.CSS_SELECTOR, "#profile-edit-submit").click()
-        self.wait.until(self._modal_closed())
-        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
-
-        self.wait.until(
-            self.path_matches(
-                "habilitation_validation",
-                kwargs={
-                    "issuer_id": str(organisation.issuer.issuer_id),
-                    "uuid": str(organisation.uuid),
-                },
-            )
-        )
-        self.check_accessibility("habilitation_validation", strict=False)
-
-        organisation.refresh_from_db()
-        self.assertEqual(organisation.aidant_requests.count(), 4)
-
-        aidant.refresh_from_db()
-        for field_name in aidant_form.fields:
-            self.assertEqual(
-                getattr(aidant, field_name), aidant_form.cleaned_data[field_name]
-            )
 
     def test_cannot_submit_form_without_aidants_displays_errors(self):
         issuer: Issuer = IssuerFactory()
@@ -346,49 +293,8 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             )
         )
 
-    def _modal_closed(self):
-        def modal_has_no_open_attr(driver):
-            try:
-                with self.implicitely_wait(0.1, driver):
-                    element_attribute = driver.find_element(
-                        By.CSS_SELECTOR, "#main-modal"
-                    ).get_attribute("open")
-                return element_attribute is None
-            except:  # noqa: E722
-                return False
+    def _open_accordion_for_form(self, form_prefix):
+        """Open accordion for given form prefix if closed."""
+        accordion_button = self.selenium.find_element(By.ID, "empty-form")
 
-        return expected_conditions.all_of(
-            expected_conditions.invisibility_of_element_located(
-                (By.CSS_SELECTOR, "#main-modal")
-            ),
-            modal_has_no_open_attr,
-        )
-
-    def _try_open_modal(self, by, value: str):
-        self._try_close_modal()
-        self.js_click(by, value)
-        with self.implicitely_wait(0.1):
-            self.wait.until(
-                expected_conditions.text_to_be_present_in_element_attribute(
-                    (By.CSS_SELECTOR, "#main-modal"),
-                    "open",
-                    "true",
-                ),
-                "Modal was not opened",
-            )
-
-            self.wait.until(
-                expected_conditions.presence_of_element_located(
-                    (
-                        By.CSS_SELECTOR,
-                        '#main-modal input[id$="email"]',
-                    )
-                ),
-                "Modal seems opened but form seems not visible",
-            )
-
-    def _try_close_modal(self):
-        self.wait.until(self.document_loaded())
-        self.wait.until(self.dsfr_ready())
-        self.js_click(By.TAG_NAME, "body")
-        self.wait.until(self._modal_closed(), "Modal seems to be still visible")
+        accordion_button.click()

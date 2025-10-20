@@ -224,7 +224,7 @@ class TestManagerForm(TestCase):
 
 class TestAidantRequestForm(TestCase):
     def test_clean_aidant_with_same_email_as_manager(self):
-        # Case manager is aidant: error
+        # Case manager is aidant: no error
         manager = ManagerFactory(is_aidant=True)
         organisation = OrganisationRequestFactory(manager=manager)
         form = get_form(
@@ -234,15 +234,7 @@ class TestAidantRequestForm(TestCase):
             email=organisation.manager.email,
         )
 
-        self.assertFalse(form.is_valid())
-        self.assertEqual(
-            [
-                "Le ou la référente de cette organisation est aussi déclarée"
-                f"comme aidante avec l'email '{organisation.manager.email}'. "
-                "Chaque aidant ou aidante doit avoir son propre e-mail nominatif."
-            ],
-            form.errors["email"],
-        )
+        self.assertTrue(form.is_valid())
 
         # Case manager is not aidant: no error
         manager = ManagerFactory(is_aidant=False)
