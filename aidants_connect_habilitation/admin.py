@@ -245,6 +245,7 @@ class OrganisationRequestAdmin(
         "siret",
         "legal_category",
         "address",
+        "address_complement",
         "zipcode",
         "city",
         "city_insee_code",
