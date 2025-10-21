@@ -265,7 +265,7 @@ class NewMandatTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        self.assertRedirects(response, "/fc_authorizev2/", target_status_code=302)
 
         # When mandate is remote and consent method is absent,
         # mandate creation should fail
@@ -286,7 +286,7 @@ class NewMandatTests(TestCase):
             "remote_constent_method": RemoteConsentMethodChoices.LEGACY.name,
         }
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        self.assertRedirects(response, "/fc_authorizev2/", target_status_code=302)
 
         # When mandate is remote and consent method is SMS and phone number is absent,
         # mandate creation should fail
@@ -308,7 +308,7 @@ class NewMandatTests(TestCase):
 
         data = {"demarche": ["papiers", "logement"], "duree": "LONG"}
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        self.assertRedirects(response, "/fc_authorizev2/", target_status_code=302)
         data = {
             "demarche": ["papiers", "logement"],
             "duree": "LONG",

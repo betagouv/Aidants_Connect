@@ -413,7 +413,7 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
 
     def get_success_url(self):
         return (
-            reverse("fc_authorize")
+            reverse("fc_authorizev2")
             if self.connection.remote_constent_method
             not in RemoteConsentMethodChoices.blocked_methods()
             else reverse("new_mandat_remote_second_step")
