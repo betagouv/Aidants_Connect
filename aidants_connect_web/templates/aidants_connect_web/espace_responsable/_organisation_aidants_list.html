@@ -56,10 +56,10 @@
                         id="manage-totp-cards-for-aidant-{{ aidant.id }}"
                         href='{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}' class="fr-link"
                       >
-                      Lier une carte
+                      Associer un moyen de connexion
                       </a>
                     {% else %}
-                      Pas de carte associée
+                      Pas de moyen de connexion associé
                     {% endif %}
                   </div>
                 {% endif %}
@@ -72,7 +72,7 @@
                         id="manage-totp-cards-for-aidant-{{ aidant.id }}"
                         href='{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}' class="fr-link"
                       >
-                      Lier une carte
+                      Associer un moyen de connexion
                       </a>
                {% if aidant.connexion_mode %}
                            <br />  Moyen de connexion voulu : {{ aidant.connexion_mode }}
