@@ -172,6 +172,8 @@ class HabilitationRequest(models.Model):
                 organisation=self.organisation,
                 email=self.email,
                 username=self.email,
+                created_by_fne=self.created_by_fne,
+                id_fne=self.id_fne,
                 conseiller_numerique=self.conseiller_numerique,
             )
             self.status = ReferentRequestStatuses.STATUS_VALIDATED
