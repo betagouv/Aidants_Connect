@@ -439,6 +439,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "nb_demarches",
             "organisation__name",
             "organisation__data_pass_id",
+            "organisation__created_by_fne",
             "organisation__siret",
             "organisation__address",
             "organisation__zipcode",
