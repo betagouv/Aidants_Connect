@@ -418,6 +418,8 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "phone",
             "profession",
             "created_by_fne",
+            "id_fne",
+            "last_modification_date",
             "deactivation_warning_at",
             "referent",
             "can_create_mandats",
@@ -462,6 +464,11 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             return self.aidant.responsable_de.exists()
 
         referent.csv_column = "Est référent"
+
+        def last_modification_date(self):
+            return self.aidant.updated_at.strftime("%d-%m-%Y")
+
+        last_modification_date.csv_column = "Derniere Modification Aidant"
 
         def connexion_mode_choosed(self):
             return self.aidant.connexion_mode
