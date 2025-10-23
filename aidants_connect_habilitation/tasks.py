@@ -29,26 +29,27 @@ def update_pix_and_create_aidant(json_result):
         date_test_pix = datetime.strptime(
             person["date d'envoi"], "%Y-%m-%d"
         ).astimezone(ZoneInfo("Europe/Paris"))
-        aidants_a_former = HabilitationRequest.objects.filter(
-            email=person["email saisi"]
-        )
+        if person["email saisi"]:
+            aidants_a_former = HabilitationRequest.objects.filter(
+                email=person["email saisi"].lower()
+            )
 
-        if aidants_a_former.exists():
-            for aidant_a_former in aidants_a_former:
-                if not aidant_a_former.test_pix_passed:
-                    aidant_a_former.test_pix_passed = True
-                    aidant_a_former.date_test_pix = date_test_pix
+            if aidants_a_former.exists():
+                for aidant_a_former in aidants_a_former:
+                    if not aidant_a_former.test_pix_passed:
+                        aidant_a_former.test_pix_passed = True
+                        aidant_a_former.date_test_pix = date_test_pix
 
-                    if (
-                        aidant_a_former.status
-                        == ReferentRequestStatuses.STATUS_PROCESSING_P2P
-                    ):
-                        aidant_a_former.formation_done = True
-                        aidant_a_former.date_formation = date_test_pix
-                    aidant_a_former.save()
+                        if (
+                            aidant_a_former.status
+                            == ReferentRequestStatuses.STATUS_PROCESSING_P2P
+                        ):
+                            aidant_a_former.formation_done = True
+                            aidant_a_former.date_formation = date_test_pix
+                        aidant_a_former.save()
 
-                    if aidant_a_former.formation_done:
-                        aidant_a_former.validate_and_create_aidant()
+                        if aidant_a_former.formation_done:
+                            aidant_a_former.validate_and_create_aidant()
 
 
 @shared_task
