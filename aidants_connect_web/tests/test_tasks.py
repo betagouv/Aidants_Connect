@@ -83,6 +83,38 @@ class ImportPixTests(TestCase):
 
         self.assertEqual(1, Aidant.objects.filter(email=aidant_a_former.email).count())
 
+    def test_import_pix_results_in_capital_letter_and_create_new_aidant(self):
+        aidant_a_former = HabilitationRequestFactory(
+            email="marina.botteau@aisne.gouv.fr",
+            formation_done=True,
+            date_formation=datetime(2022, 1, 1, tzinfo=pytz.UTC),
+        )
+        self.assertEqual(aidant_a_former.test_pix_passed, False)
+        self.assertEqual(aidant_a_former.date_test_pix, None)
+        self.assertEqual(
+            aidant_a_former.status,
+            ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+        )
+        self.assertEqual(0, Aidant.objects.filter(email=aidant_a_former.email).count())
+
+        data = [
+            {
+                "date d'envoi": "2022-01-01",
+                "email saisi": "MARINA.botteau@aisne.gouv.fr",
+            }
+        ]
+        update_pix_and_create_aidant(data)
+
+        aidant_a_former = HabilitationRequest.objects.filter(
+            email=aidant_a_former.email
+        )[0]
+        self.assertTrue(aidant_a_former.test_pix_passed)
+        self.assertEqual(
+            aidant_a_former.status, ReferentRequestStatuses.STATUS_VALIDATED.value
+        )
+
+        self.assertEqual(1, Aidant.objects.filter(email=aidant_a_former.email).count())
+
     def test_import_pix_results_and_do_not_create_new_aidant(self):
         aidant_a_former = HabilitationRequestFactory(
             email="marina.botteau@aisne.gouv.fr"
