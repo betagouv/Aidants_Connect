@@ -42,9 +42,9 @@ class OrganisationChoice extends BaseController {
 
       // Activer le bouton si "Ma structure n'apparaît pas dans la liste" est sélectionnée (value="0")
       if (selectedRadio.value === "0") {
-        this.submitButtonTarget.disabled = false;
+        this.submitButtonTarget.classList.remove("fr-hidden");
       } else {
-        this.submitButtonTarget.disabled = true;
+        this.submitButtonTarget.classList.add("fr-hidden");
 
         // Afficher l'alerte correspondant à l'organisation sélectionnée
         const alertInSameElement = selectedRadio

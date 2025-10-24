@@ -177,6 +177,9 @@ class IssuerEmailConfirmation(models.Model):
 
 class Manager(PersonWithResponsibilities):
     address = models.TextField("Adresse")
+    address_complement = models.CharField(
+        "Complément d'adresse", max_length=255, blank=True, default=""
+    )
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255)
 
@@ -292,6 +295,9 @@ class OrganisationRequest(models.Model):
         "categorieJuridiqueUniteLegale", max_length=30, default="0"
     )
     address = models.TextField("Adresse")
+    address_complement = models.CharField(
+        "Complément d'adresse", max_length=255, blank=True, default=""
+    )
     zipcode = models.CharField("Code Postal", max_length=10)
     city = models.CharField("Ville", max_length=255, blank=True)
 
