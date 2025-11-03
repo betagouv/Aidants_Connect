@@ -498,9 +498,9 @@ class PersonnelRequestFormView(LateStageRequestView, HabilitationStepMixin, Form
 class BaseValidationRequestFormView(
     HabilitationStepMixin, LateStageRequestView, FormView
 ):
-    # fmt: off
-    template_name = "aidants_connect_habilitation/validation-request-form-view.html"  # noqa: E501
-    # fmt: on
+    template_name = (
+        "aidants_connect_habilitation/validation-request-form-view.html"  # noqa: E501
+    )
     form_class = ValidationForm
     presenter_class = ProfileCardAidantRequestPresenter
 

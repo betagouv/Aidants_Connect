@@ -515,6 +515,7 @@ AidantRequestFormSet = modelformset_factory(
 
 class ValidationForm(DsfrBaseForm, AsHiddenMixin):
     template_name = "aidants_connect_habilitation/forms/validation.html"  # noqa: E501
+
     cgu = BooleanField(
         required=True,
         label='J’ai pris connaissance des&nbsp;<a href="{url}" class="fr-link">'
@@ -523,7 +524,7 @@ class ValidationForm(DsfrBaseForm, AsHiddenMixin):
     not_free = BooleanField(
         required=True,
         label="Je confirme avoir compris que la formation est payante "
-        'et je me suis renseigné(e) sur les&nbsp;<a href="{simulator_url}" class="fr-link">modalités de financements</a>&nbsp;disponibles.',  # noqa: E501
+        'et je me suis renseigné(e) sur les&nbsp;<a href="{simulator_url}" class="fr-link">modalités de financements &nbsp;disponibles.</a>',  # noqa: E501
     )
     dpo = BooleanField(
         required=True,
@@ -532,7 +533,7 @@ class ValidationForm(DsfrBaseForm, AsHiddenMixin):
     )
     professionals_only = BooleanField(
         required=True,
-        label="Je confirme que le référent ainsi que la liste des aidants à habiliter contient "  # noqa: E501
+        label="Je confirme que la liste des aidants à habiliter contient "  # noqa: E501
         "exclusivement des aidants professionnels. Elle ne contient "
         "donc ni service civique, ni bénévole, ni apprenti, ni stagiaire.",
     )
@@ -542,6 +543,12 @@ class ValidationForm(DsfrBaseForm, AsHiddenMixin):
         "Aidants Connect. Le ou la référente Aidants Connect ainsi que les aidants "
         "à habiliter ne sont pas des élus.",
     )
+
+    @property
+    def media(self):
+        return super().media + Media(
+            css={"all": ("css/custom-border.css", "css/custom-responsive.css")},
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

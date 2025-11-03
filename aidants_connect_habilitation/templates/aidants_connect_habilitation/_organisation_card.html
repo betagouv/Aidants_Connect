@@ -1,0 +1,98 @@
+{% load dsfr_tags form_extras %}
+
+<div class="fr-container custom-border fr-py-4v fr-mb-6v">
+    <div class="fr-grid-row fr-pl-2v">
+        <p class="fr-text--lg fr-text--bold fr-my-1v">
+        {{ organisation.name }}
+        </p>
+    </div>
+
+    <div class="fr-grid-row">
+        <div class="fr-col-12 fr-col-sm-6 fr-pl-2v">
+            <div class="fr-grid-row fr-my-2w">
+                <div class="fr-col">
+                    <p class="fr-text-mention--grey">
+                        Type de structure
+                    </p>
+                </div>
+                <div class="fr-col">
+                    <p class="fr-text--sm">
+                        {{ organisation.type }}
+                    </p>
+                </div>
+            </div>
+            <div class="fr-grid-row">
+                <div class="fr-col">
+                    <p class="fr-text-mention--grey">
+                        Adresse postale
+                    </p>
+                </div>
+                 <div class="fr-col">
+                    <div class="fr-text--sm fr-mb-0">
+                        {{ organisation.address }}
+                    </div>
+                    <div class="fr-text--sm fr-mt-0">
+                        {{ organisation.zipcode }} {{ organisation.city }}
+                    </div>
+                </div>
+            </div>
+            <div class="fr-grid-row fr-mb-2w">
+                <div class="fr-col">
+                    <p class="fr-text-mention--grey">
+                        Numéro Siret
+                    </p>
+                </div>
+                <div class="fr-col">
+                    <p class="fr-text--sm">
+                        {% format_siret organisation.siret %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="fr-col-12 fr-col-sm-6 fr-pl-2v">
+            <div class="fr-grid-row fr-my-2w">
+                <div class="fr-col">
+                    <p class="fr-text-mention--grey">
+                        Site web
+                    </p>
+                </div>
+                 <div class="fr-col">
+                    <p class="fr-text--sm">
+                        {{ organisation.web_site }}
+                    </p>
+                </div>
+            </div>
+            <div class="fr-grid-row">
+                <div class="fr-col">
+                    <p class="fr-text-mention--grey fr-my-1v">
+                        France Services
+                    </p>
+                </div>
+                 <div class="fr-col">
+                    <p class="fr-text--sm fr-my-1v">
+                        {{ organisation.france_services_number|yesno:"Oui,Non" }}
+                    </p>
+                </div>
+            </div>
+            <div class="fr-col">
+                <p class="fr-text-mention--grey fr-my-1v">
+                    Missions
+                </p>
+                <p class="fr-text--sm fr-my-1v">
+                    {{ organisation.mission_description }}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% if is_editable %}
+        <div class="fr-grid-row flex-between">
+            <div></div>
+            <a
+                class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line"
+                href="{% url 'habilitation_modify_organisation' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+            >
+            Modifier
+            </a>
+        </div>
+    {% endif %}
+</div>

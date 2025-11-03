@@ -1,9 +1,4 @@
-{% load ac_common dsfr_tags partials %}
-
-
-{% partialdef habilitation-profile-card %}
-  {% include "habilitation/generic-habilitation-request-profile-card.html#habilitation-profile-card" with profile_cards_wrapper_attrs='data-new-habilitation-request-target="rightFormsInsert"' %}
-{% endpartialdef %}
+{% load ac_common dsfr_tags %}
 
 <div class="habilitation-requests" data-controller="base-aidant-request-formset">
   {{ formset.management_form }}

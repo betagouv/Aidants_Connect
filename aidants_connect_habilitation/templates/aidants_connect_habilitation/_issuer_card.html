@@ -1,0 +1,55 @@
+<!-- Version desktop -->
+<div class="fr-container custom-border fr-py-4v fr-pl-10v fr-mb-6v custom-desktop">
+    <div class="fr-grid-row">
+        <p class="fr-text--lg fr-text--bold fr-my-1v">
+        {{ organisation.issuer.first_name }} {{ organisation.issuer.last_name }}
+        </p>
+    </div>
+    <div class="fr-grid-row">
+        <p class="fr-text-mention--grey fr-my-1v">
+        {{ organisation.issuer.profession }}
+        </p>
+    </div>
+    <div class="fr-grid-row flex-between custom-desktop">
+        <p class="fr-text--sm fr-my-1v">
+        {{ organisation.issuer.email }}
+        </p>
+        {% if is_editable %}
+            <a
+                class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line"
+                href="{% url 'habilitation_modify_issuer' issuer_id=organisation.issuer.issuer_id %}"
+            >
+                Modifier
+            </a>
+        {% endif %}
+    </div>
+</div>
+<!-- Version mobile -->
+<div class="fr-container custom-border fr-py-4v fr-pl-6v fr-mb-6v custom-mobile">
+    <div class="fr-grid-row">
+        <p class="fr-text--lg fr-text--bold fr-my-1v">
+        {{ organisation.issuer.first_name }} {{ organisation.issuer.last_name }}
+        </p>
+    </div>
+    <div class="fr-grid-row">
+        <p class="fr-text-mention--grey fr-my-1v">
+        {{ organisation.issuer.profession }}
+        </p>
+    </div>
+    <div class="fr-grid-row custom-mobile">
+        <p class="fr-text--sm fr-my-1v">
+        {{ organisation.issuer.email }}
+        </p>
+    </div>
+    {% if is_editable %}
+        <div class="fr-grid-row custom-mobile flex-between">
+            <div></div>
+            <a
+                class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line"
+                href="{% url 'habilitation_modify_issuer' issuer_id=organisation.issuer.issuer_id %}"
+            >
+                Modifier
+            </a>
+        </div>
+    {% endif %}
+</div>

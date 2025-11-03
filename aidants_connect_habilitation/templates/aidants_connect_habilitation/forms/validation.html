@@ -1,12 +1,17 @@
 {% load dsfr_tags %}
-<fieldset class="fr-fieldset">
-  <legend class="fr-fieldset__legend">Conditions et modalités d’utilisation</legend>
-  {% dsfr_form_field form.cgu %}
-  {% dsfr_form_field form.not_free %}
-</fieldset>
-<fieldset class="fr-fieldset">
-  <legend class="fr-fieldset__legend">Personnes impliquées</legend>
-  {% dsfr_form_field form.dpo %}
-  {% dsfr_form_field form.professionals_only %}
-  {% dsfr_form_field form.without_elected %}
-</fieldset>
+<section>
+  <h2 class="fr-h4">Validation de la demande</h2>
+  <div class="fr-container custom-border fr-pt-4v fr-pl-6v">
+    <fieldset class="fr-fieldset">
+      <legend class="fr-fieldset__legend fr-pl-2v">Conditions et modalités d’utilisation</legend>
+      {% dsfr_form_field form.cgu %}
+      {% dsfr_form_field form.not_free %}
+    </fieldset>
+    <fieldset class="fr-fieldset">
+      <legend class="fr-fieldset__legend fr-pl-2v">Personnes impliquées</legend>
+      {% dsfr_form_field form.dpo %}
+      {% dsfr_form_field form.professionals_only %}
+      {% dsfr_form_field form.without_elected %}
+    </fieldset>
+  </div>
+</section>
