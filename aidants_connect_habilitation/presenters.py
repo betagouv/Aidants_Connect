@@ -4,6 +4,7 @@ from django.template.defaultfilters import yesno
 from django.urls import reverse
 
 from aidants_connect.utils import strtobool
+from aidants_connect_common.constants import RequestStatusConstants
 from aidants_connect_common.presenters import GenericHabilitationRequestPresenter
 from aidants_connect_habilitation.models import AidantRequest, OrganisationRequest
 
@@ -109,3 +110,52 @@ class ProfileCardAidantRequestPresenter2(GenericHabilitationRequestPresenter):
         self.organisation = organisation
         self._form = form
         self.idx = idx
+
+
+class OrganisationRequestPresenter:
+    def __init__(self, organisation: OrganisationRequest):
+        self.organisation = organisation
+
+    @property
+    def issuer_editable(self) -> bool:
+        """Determine if issuer section is editable based on status"""
+        return self.organisation.status in [
+            RequestStatusConstants.NEW,
+            RequestStatusConstants.CHANGES_REQUIRED,
+            RequestStatusConstants.VALIDATED,
+            # Ajoutez les autres statuts selon vos règles
+        ]
+
+    @property
+    def organisation_editable(self) -> bool:
+        """Determine if organisation section is editable based on status"""
+        return self.organisation.status in [
+            RequestStatusConstants.NEW,
+            RequestStatusConstants.CHANGES_REQUIRED,
+            # Pas VALIDATED pour l'organisation selon votre exemple
+        ]
+
+    @property
+    def manager_editable(self) -> bool:
+        """Determine if manager section is editable based on status"""
+        return self.organisation.status in [
+            RequestStatusConstants.NEW,
+            RequestStatusConstants.CHANGES_REQUIRED,
+            RequestStatusConstants.VALIDATED,
+        ]
+
+    @property
+    def personnel_editable(self) -> bool:
+        """Determine if aidants section is editable based on status"""
+        return self.organisation.status in [
+            RequestStatusConstants.NEW,
+            RequestStatusConstants.CHANGES_REQUIRED,
+            RequestStatusConstants.VALIDATED,
+        ]
+
+    @property
+    def request_submitable(self) -> bool:
+        """Determine if request can be submitted based on status"""
+        return self.organisation.status in [
+            RequestStatusConstants.NEW,
+        ]

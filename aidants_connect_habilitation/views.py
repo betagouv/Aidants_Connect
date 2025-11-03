@@ -56,7 +56,10 @@ __all__ = [
     "ManagerFormationRegistrationView",
 ]
 
-from aidants_connect_habilitation.presenters import ProfileCardAidantRequestPresenter
+from aidants_connect_habilitation.presenters import (
+    OrganisationRequestPresenter,
+    ProfileCardAidantRequestPresenter,
+)
 from aidants_connect_web.models import Aidant, HabilitationRequest
 
 """Mixins"""
@@ -502,24 +505,30 @@ class BaseValidationRequestFormView(
         "aidants_connect_habilitation/validation-request-form-view.html"  # noqa: E501
     )
     form_class = ValidationForm
-    presenter_class = ProfileCardAidantRequestPresenter
+    profile_presenter_class = ProfileCardAidantRequestPresenter
+    organisation_presenter_class = OrganisationRequestPresenter
 
     @property
     def step(self) -> HabilitationFormStep:
         return HabilitationFormStep.SUMMARY
 
     def get_context_data(self, **kwargs):
+        self.organisation.status = RequestStatusConstants.NEW
+
         kwargs.update(
             {
                 "organisation": self.organisation,
                 # using a generator to avoid unneccessary computations
                 "habilitation_requests": (
-                    self.presenter_class(self.organisation, it)
+                    self.profile_presenter_class(self.organisation, it)
                     for it in self.organisation.aidant_requests.prefetch_related(
                         "habilitation_request"
                     ).all()
                 ),
                 "type_other": RequestOriginConstants.OTHER.value,
+                "organisation_presenter": self.organisation_presenter_class(
+                    self.organisation
+                ),
             }
         )
         return super().get_context_data(**kwargs)

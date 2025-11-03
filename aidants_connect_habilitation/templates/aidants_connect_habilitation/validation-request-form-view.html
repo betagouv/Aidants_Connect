@@ -33,111 +33,85 @@
 
 {% block content %}
   <div class="fr-container">
-    {% if organisation.status == organisation.Status.NEW %}
-    <div class="fr-mb-1w">
-      <h1 class="fr-mb-2w">Formulaire d’habilitation</h1>
-    </div>
-    <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
-        {% include "layouts/_breadcrumbs.html" %}
-        <p class="fr-text--md">
-          Vérifiez les informations ci-dessous puis validez votre demande
-        </p>
-      </div>
-    </div>
+    {% comment %}
+      |--------------------------------------------------------------------------------------------------------------------|
+      |                                                      HEADER                                                        |
+      |--------------------------------------------------------------------------------------------------------------------|
+    {% endcomment %}
+        {% include "aidants_connect_habilitation/_header_validation.html" with organisation=organisation %}
+    {% comment %}
+      |--------------------------------------------------------------------------------------------------------------------|
+      |                                                      SECTIONS                                                      |
+      |--------------------------------------------------------------------------------------------------------------------|
+    {% endcomment %}
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
         <section>
           <h2 class="fr-h4">Demandeur</h2>
-          {% include "aidants_connect_habilitation/_issuer_card.html" with organisation=organisation is_editable=True %}
+          {% include "aidants_connect_habilitation/_issuer_card.html" with organisation=organisation is_editable=organisation_presenter.issuer_editable %}
         </section>
         <section>
           <h2 class="fr-h4">Structure</h2>
-          {% include "aidants_connect_habilitation/_organisation_card.html" with organisation=organisation is_editable=True %}
+          {% include "aidants_connect_habilitation/_organisation_card.html" with organisation=organisation is_editable=organisation_presenter.organisation_editable %}
         </section>
         <section>
           <h2 class="fr-h4">Référent Aidants Connect</h2>
-          {% include "aidants_connect_habilitation/_manager_card.html" with organisation=organisation is_editable=True %}
+          {% include "aidants_connect_habilitation/_manager_card.html" with organisation=organisation is_editable=organisation_presenter.manager_editable %}
         </section>
         <section>
           <h2 class="fr-h4">Aidants à habiliter et à former</h2>
             {% for aidant_request in habilitation_requests %}
-              {% include "aidants_connect_habilitation/_helper_card.html" with aidant_request=aidant_request is_editable=True %}
+              {% include "aidants_connect_habilitation/_helper_card.html" with aidant_request=aidant_request is_editable=organisation_presenter.personnel_editable %}
             {% endfor %}
         </section>
-        <a
-          class="fr-btn fr-btn--secondary fr-btn--icon-right fr-icon-user-add-line"
-          href="{% url 'habilitation_new_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
-        >
-
-          Ajouter un autre aidant à la demande
-        </a>
-        <form method="post" class="fr-my-8v">
-          {% csrf_token %}
-          {{ form }}
-
-          <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--between fr-my-6w">
-            <li>
-              <a
-                class="fr-btn fr-btn--tertiary"
-                href="{% url 'habilitation_new_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
-              >
-                Revenir à l'étape précédente
-              </a>
-            </li>
-            <li>
-              <input type="submit" class="fr-btn" value="Valider et envoyer la demande">
-            </li>
-          </ul>
-        </form>
       </div>
     </div>
-
-    {% else %}
+    {% comment %}
+      |--------------------------------------------------------------------------------------------------------------------|
+      |                                                      ADD PERSONEL BUTTON                                           |
+      |--------------------------------------------------------------------------------------------------------------------|
+    {% endcomment %}
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
-        <h1>Demande n° {{ organisation.data_pass_id }}</h1>
-          {% if organisation.status == organisation.Status.CHANGES_REQUIRED or organisation.status == organisation.Status.REFUSED or organisation.status == organisation.Status.CLOSED %}
-          <div class="fr-alert fr-alert--warning fr-mb-6w">
-          {% else %}
-              {% if organisation.status == organisation.Status.VALIDATED %}
-                <div class="fr-alert fr-alert--success fr-mb-6w">
-              {% else %}
-                <div class="fr-alert fr-alert--info fr-mb-6w">
-              {% endif %}
-          {% endif %}
-          <h2 class="fr-alert__title fr-mb-0">Statut : {{ organisation.status_enum.label }}</h2>
-          {% if organisation.status_enum.description %}
-            <section>{{ organisation.status_enum.description }}</section>
-          {% endif %}
-          </div>
-          <section>
-            <h2 class="fr-h4">Demandeur</h2>
-            {% include "aidants_connect_habilitation/_issuer_card.html" with organisation=organisation is_editable=True %}
-          </section>
-          <section>
-            <h2 class="fr-h4">Structure</h2>
-            {% include "aidants_connect_habilitation/_organisation_card.html" with organisation=organisation is_editable=False %}
-          </section>
-          <section>
-            <h2 class="fr-h4">Référent Aidants Connect</h2>
-            {% include "aidants_connect_habilitation/_manager_card.html" with organisation=organisation is_editable=True %}
-          </section>
-          <section>
-            <h2 class="fr-h4">Aidants à habiliter et à former</h2>
-              {% for aidant_request in habilitation_requests %}
-                {% include "aidants_connect_habilitation/_helper_card.html" with aidant_request=aidant_request is_editable=True %}
-              {% endfor %}
-          </section>
-        <a
-          class="fr-btn fr-btn--secondary fr-btn--icon-right fr-icon-user-add-line"
-          href="{% url 'habilitation_new_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
-        >
+        {% if organisation_presenter.personnel_editable %}
+          <a
+            class="fr-btn fr-btn--secondary fr-btn--icon-right fr-icon-user-add-line"
+            href="{% url 'habilitation_new_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+          >
 
-          Ajouter un autre aidant à la demande
-        </a>
+            Ajouter un autre aidant à la demande
+          </a>
+        {% endif %}
       </div>
     </div>
-    {% endif %}
+    {% comment %}
+      |--------------------------------------------------------------------------------------------------------------------|
+      |                                                      VALIDATION FORM                                               |
+      |--------------------------------------------------------------------------------------------------------------------|
+    {% endcomment %}
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
+        {% if organisation.status == organisation.Status.NEW %}
+          <form method="post" class="fr-my-8v">
+            {% csrf_token %}
+            {{ form }}
+
+            <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--between fr-my-6w">
+              <li>
+                <a
+                  class="fr-btn fr-btn--tertiary"
+                  href="{% url 'habilitation_new_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+                >
+                  Revenir à l'étape précédente
+                </a>
+              </li>
+              <li>
+                <input type="submit" class="fr-btn" value="Valider et envoyer la demande">
+              </li>
+            </ul>
+          </form>
+        {% endif %}
+      </div>
+    </div>
   </div>
 {% endblock content %}
