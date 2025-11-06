@@ -416,6 +416,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "last_name",
             "email",
             "phone",
+            "course_type",
             "profession",
             "created_by_fne",
             "id_fne",
@@ -469,6 +470,11 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             return self.aidant.updated_at.strftime("%d-%m-%Y")
 
         last_modification_date.csv_column = "Derniere Modification Aidant"
+
+        def course_type(self):
+            return self.aidant.get_course_type
+
+        course_type.csv_column = "Type de Parcours"
 
         def connexion_mode_choosed(self):
             return self.aidant.connexion_mode
