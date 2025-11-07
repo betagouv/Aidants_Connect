@@ -405,6 +405,14 @@ class ModifyOrganisationRequestFormView(
     def get_form_kwargs(self):
         return {**super().get_form_kwargs(), "instance": self.organisation}
 
+    def get_initial(self):
+        # heritage from NewOrganisationRequestFormView => get_initial() None for siret
+        # because siret is in url on NewOrganisationRequestFormView
+        return {
+            **(super().get_initial()),
+            "siret": self.organisation.siret,
+        }
+
 
 class ReferentRequestFormView(OnlyNewRequestsView, UpdateView):
     template_name = "aidants_connect_habilitation/referent-form-view.html"
