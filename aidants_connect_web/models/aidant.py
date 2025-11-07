@@ -342,6 +342,26 @@ class Aidant(AbstractUser):
         return self.validated_cgu_version != settings.CGU_CURRENT_VERSION
 
     @cached_property
+    def get_course_type(self):
+        from .other_models import (
+            HabilitationRequest,
+            HabilitationRequestCourseType,
+            ReferentRequestStatuses,
+        )
+
+        hr = HabilitationRequest.objects.filter(
+            email=self.email, status=ReferentRequestStatuses.STATUS_VALIDATED
+        ).first()
+
+        if hr:
+            match hr.course_type:
+                case HabilitationRequestCourseType.P2P:
+                    return HabilitationRequestCourseType.P2P.label
+                case HabilitationRequestCourseType.CLASSIC:
+                    return HabilitationRequestCourseType.CLASSIC.label
+        return ""
+
+    @cached_property
     def has_a_totp_device(self):
         return self.totpdevice_set.filter(confirmed=True).exists()
 
