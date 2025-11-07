@@ -109,7 +109,9 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         section_mobile_app = self.page.locator("#section-mobile-app")
         await expect(section_mobile_app.locator("text=ACTIF")).to_be_visible()
 
-        await expect(self.page.get_by_text("Lier une carte")).to_be_visible()
+        await expect(
+            self.page.get_by_text("Associer un moyen de connexion")
+        ).to_be_visible()
         await expect(
             self.page.get_by_text("Délier l'application mobile")
         ).to_be_visible()

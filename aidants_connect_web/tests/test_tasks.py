@@ -17,7 +17,10 @@ from freezegun import freeze_time
 
 from aidants_connect_common.constants import AuthorizationDurations
 from aidants_connect_habilitation.tasks import update_pix_and_create_aidant
-from aidants_connect_web.constants import ReferentRequestStatuses
+from aidants_connect_web.constants import (
+    HabilitationRequestCourseType,
+    ReferentRequestStatuses,
+)
 from aidants_connect_web.models import (
     Aidant,
     CarteTOTP,
@@ -69,6 +72,38 @@ class ImportPixTests(TestCase):
             {
                 "date d'envoi": "2022-01-01",
                 "email saisi": "marina.botteau@aisne.gouv.fr",
+            }
+        ]
+        update_pix_and_create_aidant(data)
+
+        aidant_a_former = HabilitationRequest.objects.filter(
+            email=aidant_a_former.email
+        )[0]
+        self.assertTrue(aidant_a_former.test_pix_passed)
+        self.assertEqual(
+            aidant_a_former.status, ReferentRequestStatuses.STATUS_VALIDATED.value
+        )
+
+        self.assertEqual(1, Aidant.objects.filter(email=aidant_a_former.email).count())
+
+    def test_import_pix_results_in_capital_letter_and_create_new_aidant(self):
+        aidant_a_former = HabilitationRequestFactory(
+            email="marina.botteau@aisne.gouv.fr",
+            formation_done=True,
+            date_formation=datetime(2022, 1, 1, tzinfo=pytz.UTC),
+        )
+        self.assertEqual(aidant_a_former.test_pix_passed, False)
+        self.assertEqual(aidant_a_former.date_test_pix, None)
+        self.assertEqual(
+            aidant_a_former.status,
+            ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+        )
+        self.assertEqual(0, Aidant.objects.filter(email=aidant_a_former.email).count())
+
+        data = [
+            {
+                "date d'envoi": "2022-01-01",
+                "email saisi": "MARINA.botteau@aisne.gouv.fr",
             }
         ]
         update_pix_and_create_aidant(data)
@@ -243,8 +278,15 @@ class ExportForBizdevs(TestCase):
             is_staff=True,
             organisation=cls.staff_aidant_org,
             created_by_fne=True,
+            id_fne=43,
         )
 
+        cls.hr_aidant = HabilitationRequestFactory(
+            email=cls.staff_aidant.email,
+            organisation=cls.staff_aidant_org,
+            status=ReferentRequestStatuses.STATUS_VALIDATED,
+            course_type=HabilitationRequestCourseType.P2P,
+        )
         # Create 4 mandates including 2 remote
         cls.mandat1: Mandat = MandatFactory(
             organisation=cls.staff_aidant.organisation,
@@ -295,8 +337,8 @@ class ExportForBizdevs(TestCase):
         self.assertEqual(
             dedent(
                 f"""
-                prénom,nom,adresse électronique,Téléphone,profession,Création FNE,Date d'envoi de l’email d’alerte de désactivation,Est référent,Aidant - Peut créer des mandats,L'aidant est conseiller numérique,Carte TOTP active,Importance de décalage de la carte,totp_card_drift,Date activation carte TOTP,App OTP,actif,Moyen de connexion choisi,Moyen de connexion Activé,Date de formation,S'est connecté⋅e au moins 1 fois,Nombre de mandats créés,Nombre de mandats à distance créés,Nombre de mandats révoqués,Nombre de mandats renouvelés,Nombre de démarches rélisées,Organisation: Nom,Organisation: Datapass ID,Organisation: N° SIRET,Organisation: Adresse,Organisation: Code Postal,Organisation: Ville,Organisation: Code INSEE du département,Organisation: Code INSEE de la région,Organisation type: Nom,Organisation: Labellisation France Services,Organisation: categorieJuridiqueUniteLegale,Organisation: Niveau I catégories juridiques,Organisation: Niveau II catégories juridiques,Organisation: Niveau III catégories juridiques,Organisation: Nombre d'usagers
-                Thierry,Goneau,{self.staff_aidant.email},,secrétaire,{self.staff_aidant.created_by_fne},,False,True,False,False,None,None,None,False,True,,,,False,5,2,0,0,0,COMMUNE D'HOULBEC COCHEREL,None,123,45 avenue du Général de Gaulle,27120,HOULBEC COCHEREL,27,27,Réseau France Services,False,0,None,None,None,4
+                prénom,nom,adresse électronique,Téléphone,Type de Parcours,profession,Création FNE,ID FNE,Derniere Modification Aidant,Date d'envoi de l’email d’alerte de désactivation,Est référent,Aidant - Peut créer des mandats,L'aidant est conseiller numérique,Carte TOTP active,Importance de décalage de la carte,totp_card_drift,Date activation carte TOTP,App OTP,actif,Moyen de connexion choisi,Moyen de connexion Activé,Date de formation,S'est connecté⋅e au moins 1 fois,Nombre de mandats créés,Nombre de mandats à distance créés,Nombre de mandats révoqués,Nombre de mandats renouvelés,Nombre de démarches rélisées,Organisation: Nom,Organisation: Datapass ID,Organisation: Création FNE,Organisation: N° SIRET,Organisation: Adresse,Organisation: Code Postal,Organisation: Ville,Organisation: Code INSEE du département,Organisation: Code INSEE de la région,Organisation type: Nom,Organisation: Labellisation France Services,Organisation: categorieJuridiqueUniteLegale,Organisation: Niveau I catégories juridiques,Organisation: Niveau II catégories juridiques,Organisation: Niveau III catégories juridiques,Organisation: Nombre d'usagers
+                Thierry,Goneau,{self.staff_aidant.email},,Parcours pair-à-pair,secrétaire,{self.staff_aidant.created_by_fne},{self.staff_aidant.id_fne},{self.staff_aidant.updated_at.strftime("%d-%m-%Y")},,False,True,False,False,None,None,None,False,True,,,,False,5,2,0,0,0,COMMUNE D'HOULBEC COCHEREL,None,{self.staff_aidant_org.created_by_fne},123,45 avenue du Général de Gaulle,27120,HOULBEC COCHEREL,27,27,Réseau France Services,False,0,None,None,None,4
                 """  # noqa: E501
             ).strip(),
             # Replace Windows' newline separator by Unix'
