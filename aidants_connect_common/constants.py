@@ -314,12 +314,21 @@ class RequestStatusConstants(TextChoicesEnum):
                 return ""
 
     @classproperty
-    def aidant_registrable(cls):
-        """Statuses that allow to add new aidants to an habilitation request"""
+    def personel_editable(cls):
+        """Statuses that allow to edit issuer, and personel (manager and aidants)"""
         return (
             cls.NEW,
             cls.AC_VALIDATION_PROCESSING,
             cls.VALIDATED,
+            cls.CHANGES_REQUIRED,
+            cls.CHANGES_PROPOSED,
+        )
+
+    @classproperty
+    def organisation_editable(cls):
+        """Statuses that allow to edit organisation"""
+        return (
+            cls.NEW,
             cls.CHANGES_REQUIRED,
             cls.CHANGES_PROPOSED,
         )

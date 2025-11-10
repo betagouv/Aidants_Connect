@@ -1,0 +1,32 @@
+{% load dsfr_tags form_extras %}
+
+{% if organisation.status == organisation.Status.NEW %}
+    <div class="fr-mb-1w">
+        <h1 class="fr-mb-2w">Formulaire d’habilitation</h1>
+    </div>
+    <div class="fr-grid-row fr-grid-row--gutters">
+        <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
+            {% include "layouts/_breadcrumbs.html" %}
+            <p class="fr-text--md">
+            Vérifiez les informations ci-dessous puis validez votre demande
+            </p>
+        </div>
+    </div>
+{% else %}
+    <div class="fr-grid-row fr-grid-row--gutters">
+        <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
+            <h1>Demande n° {{ organisation.data_pass_id }}</h1>
+            {% if organisation.status == organisation.Status.CHANGES_REQUIRED or organisation.status == organisation.Status.REFUSED or organisation.status == organisation.Status.CLOSED %}
+                <div class="fr-alert fr-alert--warning fr-mb-6w">
+            {% elif organisation.status == organisation.Status.VALIDATED %}
+                <div class="fr-alert fr-alert--success fr-mb-6w">
+            {% else %}
+                <div class="fr-alert fr-alert--info fr-mb-6w">
+            {% endif %}
+            <h2 class="fr-alert__title fr-mb-0">Statut : {{ organisation.status_enum.label }}</h2>
+            {% if organisation.status_enum.description %}
+                <section>{{ organisation.status_enum.description }}</section>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}

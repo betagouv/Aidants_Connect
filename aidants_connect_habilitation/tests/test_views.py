@@ -895,7 +895,24 @@ class ValidationRequestFormViewTests(TestCase):
         )
         self.assertTemplateUsed(response, self.template_name)
         # expected button count = 4 -> issuer, org,, manager, aidant
-        self.assertContains(response, "Éditer", 4)
+        self.assertContains(
+            response, f"/demandeur/{self.organisation.issuer.issuer_id}/modifier/"
+        )
+        self.assertContains(
+            response,
+            f"/demandeur/{self.organisation.issuer.issuer_id}/organisation/"
+            f"{self.organisation.uuid}/infos-generales/",
+        )
+        self.assertContains(
+            response,
+            f"/demandeur/{self.organisation.issuer.issuer_id}/organisation/"
+            f"{self.organisation.uuid}/referent/",
+        )
+        self.assertContains(
+            response,
+            f"/demandeur/{self.organisation.issuer.issuer_id}/organisation/"
+            f"{self.organisation.uuid}/aidants/",
+        )
 
     def test_do_the_job_and_redirect_valid_post_to_org_view(self):
         self.assertIsNone(self.organisation.data_pass_id)
@@ -1072,12 +1089,12 @@ class RequestReadOnlyViewTests(TestCase):
             issuer=issuer,
             status__in=(
                 set(RequestStatusConstants)
-                - set(RequestStatusConstants.aidant_registrable)
+                - set(RequestStatusConstants.personel_editable)
             ),
         ).all()
 
         cls.do_add_aidants = OrganisationRequest.objects.filter(
-            issuer=issuer, status__in=RequestStatusConstants.aidant_registrable
+            issuer=issuer, status__in=RequestStatusConstants.personel_editable
         ).all()
 
         cls.do_not_validate = OrganisationRequest.objects.filter(
@@ -1089,6 +1106,18 @@ class RequestReadOnlyViewTests(TestCase):
 
         cls.do_validate = OrganisationRequest.objects.filter(
             issuer=issuer, status__in=RequestStatusConstants.validatable
+        ).all()
+
+        cls.do_edit_organisation = OrganisationRequest.objects.filter(
+            issuer=issuer, status__in=RequestStatusConstants.organisation_editable
+        ).all()
+
+        cls.do_not_edit_organisation = OrganisationRequest.objects.filter(
+            issuer=issuer,
+            status__in=(
+                set(RequestStatusConstants)
+                - set(RequestStatusConstants.organisation_editable)
+            ),
         ).all()
 
     def get_url(self, issuer_id, uuid):
@@ -1144,7 +1173,7 @@ class RequestReadOnlyViewTests(TestCase):
         )
 
     def test_can_edit_organisation_in_right_circumstances(self):
-        for organisation in self.do_validate:
+        for organisation in self.do_edit_organisation:
             with self.subTest(f"Modifiable {organisation.status}"):
                 response = self.client.get(
                     self.get_url(organisation.issuer.issuer_id, organisation.uuid)
@@ -1161,7 +1190,7 @@ class RequestReadOnlyViewTests(TestCase):
                     ),
                 )
 
-        for organisation in self.do_not_validate:
+        for organisation in self.do_not_edit_organisation:
             with self.subTest(f"Unmodifiable {organisation.status}"):
                 response = self.client.get(
                     self.get_url(organisation.issuer.issuer_id, organisation.uuid)
@@ -1188,7 +1217,7 @@ class RequestReadOnlyViewTests(TestCase):
         self.assertNotContains(response, "Modifier votre demande")
 
     def test_can_add_aidant_in_right_circumstances(self):
-        text_to_search = "Ajouter un aidant à la demande"
+        text_to_search = "Ajouter un autre aidant à la demande"
 
         for organisation in self.do_not_add_aidants:
             response = self.client.get(

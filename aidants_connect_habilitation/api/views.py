@@ -32,7 +32,7 @@ class PersonnelRequestEditView(LateStageRequestView, FormView):
         self._form_valid = False
         super().setup(request, *args, **kwargs)
 
-        if self.organisation.status not in self.organisation.Status.aidant_registrable:
+        if self.organisation.status not in self.organisation.Status.personel_editable:
             raise Http404
 
         self.aidant_request = get_object_or_404(
@@ -110,7 +110,7 @@ class PersonnelRequestView(LateStageRequestView, FormView):
     def setup(self, request, *args, **kwargs):
         self._form_valid = False
         super().setup(request, *args, **kwargs)
-        if self.organisation.status not in self.organisation.Status.aidant_registrable:
+        if self.organisation.status not in self.organisation.Status.personel_editable:
             raise Http404
 
     def get_form_kwargs(self):

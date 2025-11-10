@@ -1,0 +1,87 @@
+<!-- Version desktop -->
+<div class="custom-desktop">
+    <div class="fr-container custom-border fr-py-4v fr-pl-10v fr-mb-6v">
+        <div class="fr-grid-row">
+            <p class="fr-text--lg fr-text--bold fr-my-1v">
+                {{ aidant_request.id }}
+            </p>
+        </div>
+        <div class="fr-grid-row">
+            <p class="fr-text--lg fr-text--bold fr-my-1v">
+                {{ aidant_request.full_name }}
+            </p>
+        </div>
+        <div class="fr-grid-row flex-between fr-grid-row--middle">
+            <p class="fr-text-mention--grey fr-my-1v fr-pr-4v">
+                {{ aidant_request.req.profession }}
+            </p>
+            <div class="fr-text-mention--grey fr-my-1v fr-ml-1v custom-border-left fr-col-8 fr-grid-row--middle">
+                <p class="fr-text--sm fr-pl-4v">
+                    <em>
+                    {% if aidant_request.req.conseiller_numerique %}
+                        Fait partie du dispositif Conseiller numérique
+                    {% else %}
+                        Ne fait pas partie du dispositif Conseiller numérique
+                    {% endif %}
+                    </em>
+                </p>
+            </div>
+        </div>
+        {% if organisation.status in organisation.Status.personel_editable %}
+            <div class="fr-grid-row flex-between">
+                <p class="fr-text--sm fr-my-1v fr-col-4">
+                    {{ aidant_request.email }}
+                </p>
+                <a
+                    class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line"
+                    href="{{ aidant_request.edit_endpoint }}"
+                >
+                    Modifier
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Version mobile -->
+<div class="custom-mobile">
+    <div class="fr-container custom-border fr-py-4v fr-pl-6v fr-mb-6v">
+        <div class="fr-grid-row">
+            <p class="fr-text--lg fr-text--bold fr-my-1v">
+                {{ aidant_request.full_name }}
+            </p>
+        </div>
+        <div class="fr-grid-row">
+            <p class="fr-text-mention--grey fr-my-1v fr-pr-4v">
+                {{ aidant_request.req.profession }}
+            </p>
+        </div>
+        <div class="fr-text-mention--grey fr-my-1v">
+            <p class="fr-text--sm">
+                <em>
+                {% if aidant_request.req.conseiller_numerique %}
+                    Fait partie du dispositif Conseiller numérique
+                {% else %}
+                    Ne fait pas partie du dispositif Conseiller numérique
+                {% endif %}
+                </em>
+            </p>
+        </div>
+        <div class="fr-grid-row">
+            <p class="fr-text--sm fr-my-1v">
+                {{ aidant_request.email }}
+            </p>
+        </div>
+        {% if organisation.status in organisation.Status.personel_editable %}
+            <div class="fr-grid-row flex-between">
+                <div></div>
+                <a
+                    class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line"
+                    href="{{ aidant_request.edit_endpoint }}"
+                >
+                    Modifier
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>

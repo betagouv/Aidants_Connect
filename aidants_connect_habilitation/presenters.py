@@ -19,7 +19,7 @@ class ProfileCardAidantRequestPresenter(GenericHabilitationRequestPresenter):
 
     @property
     def edit_endpoint(self):
-        if self.org.status not in self.org.Status.aidant_registrable:
+        if self.org.status not in self.org.Status.personel_editable:
             return None
 
         return reverse(
