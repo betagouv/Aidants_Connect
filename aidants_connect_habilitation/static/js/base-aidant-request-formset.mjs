@@ -4,12 +4,15 @@ import {
 } from "AidantsConnectApplication";
 
 class BaseAidantRequestFormset extends BaseController {
-  // static values = {
-  //   managerData: Object,
-  // };
-  // static targets = ["aidantForm"];
-
   connect() {
+    // Detect browser back navigation and reload page to avoid cached form data
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted) {
+        // Page was restored from cache (back button), force reload
+        window.location.reload();
+      }
+    });
+
     this.openLastForm();
   }
 
