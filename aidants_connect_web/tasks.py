@@ -434,6 +434,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "connexion_mode_choosed",
             "connexion_mode_activated",
             "formation_date",
+            "formation_organisation",
             "has_connected_once",
             "nb_mandat_created",
             "nb_mandat_remote_created",
@@ -501,6 +502,21 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             return ""
 
         formation_date.csv_column = "Date de formation"
+
+        def formation_organisation(self):
+            try:
+                from aidants_connect_common.models import FormationAttendant
+
+                hr = HabilitationRequest.objects.filter(email=self.aidant.email).first()
+                if hr:
+                    fa = FormationAttendant.objects.filter(attendant=hr).first()
+                    if fa and fa.formation and fa.formation.organisation:
+                        return fa.formation.organisation.name
+            except Exception:
+                return "ERREUR"
+            return "NC"
+
+        formation_organisation.csv_column = "Nom Organisme de formation"
 
         def active_totp_card(self):
             return getattr(

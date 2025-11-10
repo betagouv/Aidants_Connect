@@ -16,6 +16,10 @@ from dateutil.relativedelta import relativedelta
 from freezegun import freeze_time
 
 from aidants_connect_common.constants import AuthorizationDurations
+from aidants_connect_common.tests.factories import (
+    FormationFactory,
+    FormationOrganizationFactory,
+)
 from aidants_connect_habilitation.tasks import update_pix_and_create_aidant
 from aidants_connect_web.constants import (
     HabilitationRequestCourseType,
@@ -281,12 +285,19 @@ class ExportForBizdevs(TestCase):
             id_fne=43,
         )
 
+        cls.formation_organisation = FormationOrganizationFactory(name="Org Formation")
+
+        cls.formation = FormationFactory(organisation=cls.formation_organisation)
+
         cls.hr_aidant = HabilitationRequestFactory(
             email=cls.staff_aidant.email,
             organisation=cls.staff_aidant_org,
             status=ReferentRequestStatuses.STATUS_VALIDATED,
             course_type=HabilitationRequestCourseType.P2P,
         )
+
+        cls.formation.register_attendant(cls.hr_aidant)
+
         # Create 4 mandates including 2 remote
         cls.mandat1: Mandat = MandatFactory(
             organisation=cls.staff_aidant.organisation,
@@ -337,8 +348,8 @@ class ExportForBizdevs(TestCase):
         self.assertEqual(
             dedent(
                 f"""
-                prénom,nom,adresse électronique,Téléphone,Type de Parcours,profession,Création FNE,ID FNE,Derniere Modification Aidant,Date d'envoi de l’email d’alerte de désactivation,Est référent,Aidant - Peut créer des mandats,L'aidant est conseiller numérique,Carte TOTP active,Importance de décalage de la carte,totp_card_drift,Date activation carte TOTP,App OTP,actif,Moyen de connexion choisi,Moyen de connexion Activé,Date de formation,S'est connecté⋅e au moins 1 fois,Nombre de mandats créés,Nombre de mandats à distance créés,Nombre de mandats révoqués,Nombre de mandats renouvelés,Nombre de démarches rélisées,Organisation: Nom,Organisation: Datapass ID,Organisation: Création FNE,Organisation: N° SIRET,Organisation: Adresse,Organisation: Code Postal,Organisation: Ville,Organisation: Code INSEE du département,Organisation: Code INSEE de la région,Organisation type: Nom,Organisation: Labellisation France Services,Organisation: categorieJuridiqueUniteLegale,Organisation: Niveau I catégories juridiques,Organisation: Niveau II catégories juridiques,Organisation: Niveau III catégories juridiques,Organisation: Nombre d'usagers
-                Thierry,Goneau,{self.staff_aidant.email},,Parcours pair-à-pair,secrétaire,{self.staff_aidant.created_by_fne},{self.staff_aidant.id_fne},{self.staff_aidant.updated_at.strftime("%d-%m-%Y")},,False,True,False,False,None,None,None,False,True,,,,False,5,2,0,0,0,COMMUNE D'HOULBEC COCHEREL,None,{self.staff_aidant_org.created_by_fne},123,45 avenue du Général de Gaulle,27120,HOULBEC COCHEREL,27,27,Réseau France Services,False,0,None,None,None,4
+                prénom,nom,adresse électronique,Téléphone,Type de Parcours,profession,Création FNE,ID FNE,Derniere Modification Aidant,Date d'envoi de l’email d’alerte de désactivation,Est référent,Aidant - Peut créer des mandats,L'aidant est conseiller numérique,Carte TOTP active,Importance de décalage de la carte,totp_card_drift,Date activation carte TOTP,App OTP,actif,Moyen de connexion choisi,Moyen de connexion Activé,Date de formation,Nom Organisme de formation,S'est connecté⋅e au moins 1 fois,Nombre de mandats créés,Nombre de mandats à distance créés,Nombre de mandats révoqués,Nombre de mandats renouvelés,Nombre de démarches rélisées,Organisation: Nom,Organisation: Datapass ID,Organisation: Création FNE,Organisation: N° SIRET,Organisation: Adresse,Organisation: Code Postal,Organisation: Ville,Organisation: Code INSEE du département,Organisation: Code INSEE de la région,Organisation type: Nom,Organisation: Labellisation France Services,Organisation: categorieJuridiqueUniteLegale,Organisation: Niveau I catégories juridiques,Organisation: Niveau II catégories juridiques,Organisation: Niveau III catégories juridiques,Organisation: Nombre d'usagers
+                Thierry,Goneau,{self.staff_aidant.email},,Parcours pair-à-pair,secrétaire,{self.staff_aidant.created_by_fne},{self.staff_aidant.id_fne},{self.staff_aidant.updated_at.strftime("%d-%m-%Y")},,False,True,False,False,None,None,None,False,True,,,,Org Formation,False,5,2,0,0,0,COMMUNE D'HOULBEC COCHEREL,None,{self.staff_aidant_org.created_by_fne},123,45 avenue du Général de Gaulle,27120,HOULBEC COCHEREL,27,27,Réseau France Services,False,0,None,None,None,4
                 """  # noqa: E501
             ).strip(),
             # Replace Windows' newline separator by Unix'
