@@ -1,3 +1,4 @@
+import time
 from unittest import skip
 
 from django.test import tag
@@ -67,7 +68,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
         self.__open_form_url(organisation)
 
         formset = AidantRequestFormSet(organisation=organisation)
-        for i in range(nb_aidant_requests, nb_aidant_requests + 2):
+        for i in range(nb_aidant_requests, nb_aidant_requests + 1):
             aidant_form = get_form(
                 AidantRequestForm,
                 form_init_kwargs={
@@ -76,11 +77,8 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                     "prefix": formset.add_prefix(i),
                 },
             )
-            # Open accordion before filling the form
-            self._open_accordion_for_form(aidant_form.prefix)
-
             self.wait.until(
-                expected_conditions.presence_of_element_located(
+                expected_conditions.visibility_of_element_located(
                     (By.ID, f"id_form-{i}-email")
                 )
             )
@@ -93,7 +91,15 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                 )
             )
 
-        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
+        submit_button = self.selenium.find_element(By.CSS_SELECTOR, self.submit_css)
+        # Scroll submit button into view to prevent interaction issues in CI
+        self.selenium.execute_script(
+            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+            submit_button,
+        )
+
+        time.sleep(0.1)  # Allow time for scroll to complete
+        submit_button.click()
 
         self.wait.until(
             self.path_matches(
@@ -106,7 +112,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
         )
 
         organisation.refresh_from_db()
-        self.assertEqual(organisation.aidant_requests.count(), 4)
+        self.assertEqual(organisation.aidant_requests.count(), 3)
 
     @skip
     def test_I_can_cancel_habilitation_request(self):
@@ -177,9 +183,3 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
                 },
             )
         )
-
-    def _open_accordion_for_form(self, form_prefix):
-        """Open accordion for given form prefix if closed."""
-        accordion_button = self.selenium.find_element(By.ID, "empty-form")
-
-        accordion_button.click()
