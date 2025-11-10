@@ -25,6 +25,8 @@ class HabilitationNewPersonelAccessibilityTests(AccessibilityTestCase):
         self.organisation: OrganisationRequest = DraftOrganisationRequestFactory(
             issuer=self.issuer, manager=self.manager
         )
+        AidantRequestFactory(organisation=self.organisation)
+        AidantRequestFactory(organisation=self.organisation)
 
     async def _open_url(self):
         url = reverse(
@@ -39,8 +41,6 @@ class HabilitationNewPersonelAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_accessibility(self):
         await self.lazy_loading(self._open_url)
-        AidantRequestFactory(organisation=self.organisation)
-        AidantRequestFactory(organisation=self.organisation)
         await self.check_accessibility(
             page_name="habilitation_new_referent", strict=True
         )
