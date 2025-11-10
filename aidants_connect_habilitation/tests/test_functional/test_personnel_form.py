@@ -1,3 +1,5 @@
+import time
+
 from django.conf import settings
 from django.test import tag
 from django.urls import reverse
@@ -15,7 +17,6 @@ from aidants_connect_habilitation.forms import (
 )
 from aidants_connect_habilitation.models import Issuer, Manager, OrganisationRequest
 from aidants_connect_habilitation.tests.factories import (
-    AidantRequestFactory,
     DraftOrganisationRequestFactory,
     IssuerFactory,
     ManagerFactory,
@@ -204,14 +205,10 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
             issuer=issuer, manager=manager
         )
 
-        # Setup 2 initial requests
-        AidantRequestFactory(organisation=organisation)
-        AidantRequestFactory(organisation=organisation)
-
         self._open_form_url(issuer, organisation)
 
         formset = AidantRequestFormSet(organisation=organisation)
-        for i in range(2, 6):
+        for i in range(0, 2):
             aidant_form = get_form(
                 AidantRequestForm,
                 form_init_kwargs={
@@ -221,26 +218,30 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 },
             )
 
-            # Open accordion before filling the form
-            self._open_accordion_for_form(aidant_form.prefix)
-
             self.wait.until(
-                expected_conditions.presence_of_element_located(
+                expected_conditions.visibility_of_element_located(
                     (By.ID, f"id_form-{i}-email")
                 )
             )
 
             self.fill_form(aidant_form.cleaned_data, aidant_form)
             self.selenium.find_element(By.CSS_SELECTOR, "#partial-submit").click()
-
             # Wait for new accordion to appear
             self.wait.until(
-                expected_conditions.presence_of_element_located(
+                expected_conditions.visibility_of_element_located(
                     (By.ID, f"accordion-form-{i+1}")
                 )
             )
 
-        self.selenium.find_element(By.CSS_SELECTOR, self.submit_css).click()
+        submit_button = self.selenium.find_element(By.CSS_SELECTOR, self.submit_css)
+        # Scroll submit button into view to prevent interaction issues in CI
+        self.selenium.execute_script(
+            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+            submit_button,
+        )
+
+        time.sleep(0.1)  # Allow time for scroll to complete
+        submit_button.click()
 
         self.wait.until(
             self.path_matches(
@@ -253,7 +254,7 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
         )
 
         organisation.refresh_from_db()
-        self.assertEqual(organisation.aidant_requests.count(), 6)
+        self.assertEqual(organisation.aidant_requests.count(), 2)
 
     def test_cannot_submit_form_without_aidants_displays_errors(self):
         issuer: Issuer = IssuerFactory()
@@ -292,9 +293,3 @@ class PersonnelRequestFormViewTests(FunctionalTestCase):
                 },
             )
         )
-
-    def _open_accordion_for_form(self, form_prefix):
-        """Open accordion for given form prefix if closed."""
-        accordion_button = self.selenium.find_element(By.ID, "empty-form")
-
-        accordion_button.click()

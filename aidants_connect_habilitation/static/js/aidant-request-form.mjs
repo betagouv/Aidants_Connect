@@ -10,15 +10,11 @@ class AidantRequestForm extends BaseController {
   static targets = ["aidantForm"];
 
   connect() {
-    console.log("AidantRequestForm connected");
-
     const elt = document.querySelector("#manager-data");
-    console.log(elt);
     this.managerData = elt ? JSON.parse(elt.textContent) : {};
   }
 
   onManagerIsAidant(event) {
-    console.log(event.target);
     const fieldset = event.target
       .closest(".fr-accordion")
       .querySelector(".fr-fieldset");
