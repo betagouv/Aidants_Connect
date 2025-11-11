@@ -1,16 +1,35 @@
 {% load dsfr_tags form_extras %}
 
 <div class="fr-container custom-border fr-py-6v fr-pl-4v fr-pl-md-10v fr-mb-6v">
-    <div class="fr-grid-row">
+    <div class="fr-grid-row flex-between">
         <p class="fr-text--lg fr-text--bold fr-my-1v">
         {{ organisation.manager.first_name }}
         {{ organisation.manager.last_name }}
         </p>
+        <div class="fr-mb-2w">
+            <p class="fr-badge fr-badge--sm fr-badge--no-icon fr-badge--info">référent</p>
+            {% if organisation.manager.is_aidant %}
+                <p class="fr-badge fr-badge--sm fr-badge--purple-glycine">aidant</p>
+            {% endif %}
+        </div>
     </div>
-    <div class="fr-grid-row">
-        <p class="fr-text-mention--grey fr-my-1v">
-        {{ organisation.issuer.profession }}
+    <div class="fr-grid-row flex-between fr-grid-row--middle">
+        <p class="fr-text-mention--grey fr-my-1v fr-pr-4v">
+            {{ organisation.manager.profession }}
         </p>
+        {% if organisation.manager.is_aidant %}
+            <div class="fr-text-mention--grey fr-my-1v fr-ml-1v custom-border-left fr-col-8 fr-grid-row--middle">
+                <p class="fr-text--sm fr-pl-4v">
+                    <em>
+                    {% if organisation.manager.conseiller_numerique %}
+                        Fait partie du dispositif Conseiller numérique
+                    {% else %}
+                        Ne fait pas partie du dispositif Conseiller numérique
+                    {% endif %}
+                    </em>
+                </p>
+            </div>
+        {% endif %}
     </div>
     <div class="fr-grid-row flex-between fr-grid-row--middle">
         <div class="fr-text--sm fr-my-1v">

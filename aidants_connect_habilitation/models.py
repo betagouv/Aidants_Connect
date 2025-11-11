@@ -403,6 +403,17 @@ class OrganisationRequest(models.Model):
         )
 
     def prepare_request_for_ac_validation(self, form_data: dict):
+        if self.manager:
+            matching_aidant: AidantRequest = self.aidant_requests.filter(
+                email__iexact=self.manager.email
+            ).first()
+
+            if matching_aidant:
+                self.manager.conseiller_numerique = matching_aidant.conseiller_numerique
+                self.manager.is_aidant = True
+                self.manager.save()
+                matching_aidant.delete()
+
         self.cgu = form_data["cgu"]
         self.not_free = form_data["not_free"]
         self.dpo = form_data["dpo"]
