@@ -1,7 +1,6 @@
 {% load dsfr_tags form_extras %}
 
-<!-- Version desktop -->
-<div class="fr-container custom-border fr-py-4v fr-pl-10v fr-mb-6v custom-desktop">
+<div class="fr-container custom-border fr-py-6v fr-pl-4v fr-pl-md-10v fr-mb-6v">
     <div class="fr-grid-row">
         <p class="fr-text--lg fr-text--bold fr-my-1v">
         {{ organisation.manager.first_name }}
@@ -13,7 +12,7 @@
         {{ organisation.issuer.profession }}
         </p>
     </div>
-    <div class="fr-grid-row flex-between fr-grid-row--middle custom-desktop">
+    <div class="fr-grid-row flex-between fr-grid-row--middle">
         <div class="fr-text--sm fr-my-1v">
             {{ organisation.manager.email }}
         </div>
@@ -21,46 +20,39 @@
             <div class="custom-border-left fr-text--sm fr-pl-4v fr-my-1v">
                 {% format_phone organisation.manager.phone %}
             </div>
-            {% if organisation.status in organisation.Status.personel_editable %}
-                <a
-                    class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line "
-                    href="{% url 'habilitation_new_referent' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
-                >
-                    Modifier
+        </div>
+    </div>
+    {% if organisation.manager.is_aidant and organisation.manager.habilitation_request %}
+        {% if organisation.manager.habilitation_request.status in organisation.manager.habilitation_request.ReferentRequestStatuses.formation_registerable %}
+            <div class="fr-grid-row fr-mt-2v">
+            {% if organisation.manager.habilitation_request.formations.exists %}
+                {% for formation_attendant in organisation.manager.habilitation_request.formations.all %}
+                <span class="fr-badge fr-badge--success fr-badge--sm fr-mr-1v">
+                    ✓ Formation du {{ formation_attendant.formation.start_datetime|date:"d/m/y" }}
+                </span>
+                {% endfor %}
+            {% else %}
+                {% if organisation.manager.aidant.last_login %}
+                {% url "espace_responsable_organisation" as formation_url %}
+                {% else %}
+                {% url 'habilitation_manager_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid as formation_url %}
+                {% endif %}
+                <a href="{{ formation_url }}" class="fr-link fr-icon-arrow-right-line">
+                    Inscrire en formation
                 </a>
             {% endif %}
-        </div>
-    </div>
-</div>
-<!-- Version mobile -->
-<div class="fr-container custom-border fr-py-4v fr-pl-6v fr-mb-6v custom-mobile">
-    <div class="fr-grid-row">
-        <p class="fr-text--lg fr-text--bold fr-mt-1v">
-        {{ organisation.manager.first_name }}
-        {{ organisation.manager.last_name }}
-        </p>
-    </div>
-    <div class="fr-grid-row">
-        <p class="fr-text-mention--grey fr-my-1v">
-        {{ organisation.issuer.profession }}
-        </p>
-    </div>
-    <div class="custom-mobile">
-        <div class="fr-text--sm fr-my-1v">
-            {{ organisation.manager.email }}
-        </div>
-        <div class="fr-grid-row flex-between">
-            <div class="fr-text--sm fr-my-1v">
-                {% format_phone organisation.manager.phone %}
             </div>
-            {% if organisation.status in organisation.Status.personel_editable %}
-                <a
-                    class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line "
-                    href="{% url 'habilitation_new_referent' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
-                >
-                    Modifier
-                </a>
-            {% endif %}
+        {% endif %}
+    {% endif %}
+    {% if organisation.status in organisation.Status.personel_editable %}
+        <div class="fr-grid-row flex-between fr-grid-row--middle fr-mt-3v">
+            <div></div>
+            <a
+                class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line"
+                href="{% url 'habilitation_new_referent' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+            >
+                Modifier
+            </a>
         </div>
-    </div>
+     {% endif %}
 </div>

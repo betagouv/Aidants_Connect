@@ -98,6 +98,9 @@ class Organisation(models.Model):
     is_experiment = models.BooleanField("Structure d'expérimentation ?", default=False)
     siret = models.BigIntegerField("N° SIRET", default=1)
     address = models.TextField("Adresse", default="No address provided")
+    address_complement = models.TextField(
+        "Complément d'adresse", max_length=255, blank=True, default=""
+    )
     zipcode = models.CharField("Code Postal", max_length=10, default="0")
     city = models.CharField("Ville", max_length=255, null=True)
 

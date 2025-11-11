@@ -445,6 +445,7 @@ class OrganisationRequest(models.Model):
                 type=organisation_type,
                 siret=self.siret,
                 address=self.address,
+                address_complement=self.address_complement,
                 zipcode=self.zipcode,
                 city=self.city,
                 city_insee_code=self.city_insee_code,

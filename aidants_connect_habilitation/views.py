@@ -511,6 +511,15 @@ class BaseValidationRequestFormView(
         return HabilitationFormStep.SUMMARY
 
     def get_context_data(self, **kwargs):
+        print("----------------------------")
+        print(self.organisation.manager.is_aidant)
+        print(
+            (
+                self.organisation.manager.is_aidant
+                and self.organisation.manager.habilitation_request
+            )
+        )
+        # print(self.organisation.manager.habilitation_request.ReferentRequestStatuses.formation_registerable)
         kwargs.update(
             {
                 "organisation": self.organisation,
