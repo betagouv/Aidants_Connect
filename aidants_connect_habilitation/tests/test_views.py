@@ -611,7 +611,7 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "habilitation_new_referent",
+                "habilitation_validation",
                 kwargs={
                     "issuer_id": model.issuer.issuer_id,
                     "uuid": model.uuid,
@@ -896,7 +896,9 @@ class ValidationRequestFormViewTests(TestCase):
         self.assertTemplateUsed(response, self.template_name)
         # expected button count = 4 -> issuer, org,, manager, aidant
         self.assertContains(
-            response, f"/demandeur/{self.organisation.issuer.issuer_id}/modifier/"
+            response,
+            f"/demandeur/{self.organisation.issuer.issuer_id}/organisation/"
+            f"{self.organisation.uuid}/modifier-demandeur/",
         )
         self.assertContains(
             response,

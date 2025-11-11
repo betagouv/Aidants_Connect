@@ -1,63 +1,31 @@
-<!-- Version desktop -->
-<div class="custom-desktop">
-    <div class="fr-container custom-border fr-py-4v fr-pl-10v fr-mb-6v">
-        <div class="fr-grid-row">
-            <p class="fr-text--lg fr-text--bold fr-my-1v">
-                {{ aidant_request.id }}
-            </p>
-        </div>
-        <div class="fr-grid-row">
-            <p class="fr-text--lg fr-text--bold fr-my-1v">
-                {{ aidant_request.full_name }}
-            </p>
-        </div>
-        <div class="fr-grid-row flex-between fr-grid-row--middle">
-            <p class="fr-text-mention--grey fr-my-1v fr-pr-4v">
-                {{ aidant_request.req.profession }}
-            </p>
-            <div class="fr-text-mention--grey fr-my-1v fr-ml-1v custom-border-left fr-col-8 fr-grid-row--middle">
-                <p class="fr-text--sm fr-pl-4v">
-                    <em>
-                    {% if aidant_request.req.conseiller_numerique %}
-                        Fait partie du dispositif Conseiller numérique
-                    {% else %}
-                        Ne fait pas partie du dispositif Conseiller numérique
-                    {% endif %}
-                    </em>
-                </p>
-            </div>
-        </div>
-        {% if organisation.status in organisation.Status.personel_editable %}
-            <div class="fr-grid-row flex-between">
-                <p class="fr-text--sm fr-my-1v fr-col-4">
-                    {{ aidant_request.email }}
-                </p>
-                <a
-                    class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line"
-                    href="{{ aidant_request.edit_endpoint }}"
-                >
-                    Modifier
-                </a>
-            </div>
-        {% endif %}
-    </div>
-</div>
+{% load ac_common dsfr_tags form_extras partials static %}
 
-<!-- Version mobile -->
-<div class="custom-mobile">
-    <div class="fr-container custom-border fr-py-4v fr-pl-6v fr-mb-6v">
-        <div class="fr-grid-row">
-            <p class="fr-text--lg fr-text--bold fr-my-1v">
-                {{ aidant_request.full_name }}
-            </p>
-        </div>
-        <div class="fr-grid-row">
-            <p class="fr-text-mention--grey fr-my-1v fr-pr-4v">
-                {{ aidant_request.req.profession }}
-            </p>
-        </div>
-        <div class="fr-text-mention--grey fr-my-1v">
-            <p class="fr-text--sm">
+<div
+    id="profile-edit-card-{{ aidant_request.pk }}"
+    class="fr-container custom-border fr-py-4v fr-pl-4v fr-pl-md-10v fr-mb-6v"
+    {% if aidant_request.edit_endpoint %}
+        data-controller="profile-edit-card"
+        data-profile-edit-card-id-value="{{ aidant_request.pk }}"
+        data-profile-edit-card-enpoint-value="{{ aidant_request.edit_endpoint }}"
+        data-profile-edit-card-profile-edit-modal-outlet="*"
+    {% endif %}
+>
+    <div class="fr-grid-row">
+        <p class="fr-text--lg fr-text--bold fr-my-1v">
+            {{ aidant_request.id }}
+        </p>
+    </div>
+    <div class="fr-grid-row">
+        <p class="fr-text--lg fr-text--bold fr-my-1v">
+            {{ aidant_request.full_name }}
+        </p>
+    </div>
+    <div class="fr-grid-row flex-between fr-grid-row--middle">
+        <p class="fr-text-mention--grey fr-my-1v fr-pr-4v">
+            {{ aidant_request.req.profession }}
+        </p>
+        <div class="fr-text-mention--grey fr-my-1v fr-ml-1v custom-border-left fr-col-8 fr-grid-row--middle">
+            <p class="fr-text--sm fr-pl-4v">
                 <em>
                 {% if aidant_request.req.conseiller_numerique %}
                     Fait partie du dispositif Conseiller numérique
@@ -67,21 +35,36 @@
                 </em>
             </p>
         </div>
-        <div class="fr-grid-row">
-            <p class="fr-text--sm fr-my-1v">
-                {{ aidant_request.email }}
-            </p>
-        </div>
-        {% if organisation.status in organisation.Status.personel_editable %}
-            <div class="fr-grid-row flex-between">
-                <div></div>
-                <a
-                    class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line"
-                    href="{{ aidant_request.edit_endpoint }}"
-                >
-                    Modifier
-                </a>
-            </div>
-        {% endif %}
     </div>
+    <div class="fr-grid-row">
+        <p class="fr-text--sm fr-my-1v">
+            {{ aidant_request.email }}
+        </p>
+    </div>
+    {% if aidant_request.req.habilitation_request.status in aidant_request.req.habilitation_request.ReferentRequestStatuses.formation_registerable %}
+        <div class="fr-grid-row fr-mt-2v">
+            {% if aidant_request.req.habilitation_request.formations.exists %}
+                {% dsfr_badge label="Inscrit en formation" extra_classes="fr-badge--success fr-badge--sm hide-header" %}
+            {% else %}
+                {% if organisation.manager.aidant.last_login %}
+                    {% url "espace_responsable_organisation" as formation_url %}
+                {% else %}
+                    {% url 'habilitation_new_aidant_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid aidant_id=aidant_request.pk as formation_url %}
+                {% endif %}
+                <a href="{{ formation_url }}" class="fr-link hide-header">Inscrire en formation</a>
+            {% endif %}
+        </div>
+    {% endif %}
+    {% if organisation.status in organisation.Status.personel_editable %}
+        <div class="fr-grid-row flex-between">
+            <div></div>
+            <button
+                id="edit-button-{{ aidant_request.pk }}"
+                class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line"
+                data-action="profile-edit-card#onEdit:stop:prevent"
+            >
+                Modifier
+            </button>
+        </div>
+    {% endif %}
 </div>

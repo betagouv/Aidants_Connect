@@ -1,6 +1,6 @@
 {% load dsfr_tags form_extras %}
 
-<div class="fr-container custom-border fr-py-4v fr-mb-6v">
+<div id="organisation-infos" class="fr-container custom-border fr-py-4v fr-mb-6v">
     <div class="fr-grid-row fr-pl-2v">
         <p class="fr-text--lg fr-text--bold fr-my-1v">
         {{ organisation.name }}
@@ -88,6 +88,7 @@
         <div class="fr-grid-row flex-between">
             <div></div>
             <a
+                id="organisation-edit-button"
                 class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line"
                 href="{% url 'habilitation_modify_organisation' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
             >

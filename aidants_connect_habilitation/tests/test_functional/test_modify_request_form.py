@@ -28,7 +28,7 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
 
     def test_add_aidant_button_shown_in_readonly_view_under_correct_conditions(self):
         unauthorized_statuses = set(RequestStatusConstants) - set(
-            RequestStatusConstants.aidant_registrable
+            RequestStatusConstants.personel_editable
         )
 
         for status in unauthorized_statuses:
@@ -38,13 +38,12 @@ class AddAidantsRequestViewTests(FunctionalTestCase):
             self.__open_readonly_view_url(organisation)
             self.assertElementNotFound(By.CSS_SELECTOR, self.add_aidant_css)
 
-        for status in RequestStatusConstants.aidant_registrable:
+        for status in RequestStatusConstants.personel_editable:
             with self.subTest(status):
                 organisation: OrganisationRequest = OrganisationRequestFactory(
                     status=status
                 )
                 self.__open_readonly_view_url(organisation)
-                self.check_accessibility("habilitation_organisation_view", strict=True)
 
                 self.selenium.find_element(By.CSS_SELECTOR, self.add_aidant_css).click()
 

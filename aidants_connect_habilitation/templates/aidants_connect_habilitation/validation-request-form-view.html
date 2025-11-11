@@ -2,31 +2,6 @@
 {% load ac_common dsfr_tags form_extras partials static %}
 
 
-{% comment %}
-  |--------------------------------------------------------------------------------------------------------------------|
-  |                                                      Partials                                                      |
-  |--------------------------------------------------------------------------------------------------------------------|
-{% endcomment %}
-{% partialdef summary-second-line %}
-  {% if object.habilitation_request.status in object.habilitation_request.ReferentRequestStatuses.formation_registerable %}
-    {% if object.habilitation_request.formations.exists %}
-      {% dsfr_badge label="Inscrit" extra_classes="fr-badge--success fr-badge--sm hide-header" %}
-    {% else %}
-      {% if object.organisation.manager.aidant.last_login %}
-        {% url "espace_responsable_organisation" as formation_url %}
-      {% else %}
-        {% url 'habilitation_new_aidant_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid aidant_id=object.pk as formation_url %}
-      {% endif %}
-      <a href="{{ formation_url }}" class="fr-link hide-header">Inscrire en formation</a>
-    {% endif %}
-  {% elif object.email %}
-    {% include "habilitation/generic-habilitation-request-profile-card.html#summary-second-line" %}
-  {% endif %}
-{% endpartialdef %}
-{% comment %}
-  |--------------------------------------------------------------------------------------------------------------------|
-{% endcomment %}
-
 {% block title %}
   Demande d'habilitation pour {{ organisation.name }} - Aidants Connect
 {% endblock title %}
@@ -72,6 +47,7 @@
       <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
         {% if organisation.status in organisation.Status.personel_editable %}
           <a
+            id="add-aidants-btn"
             class="fr-btn fr-btn--secondary fr-btn--icon-right fr-icon-user-add-line"
             href="{% url 'habilitation_new_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
           >
@@ -118,10 +94,11 @@
             <li>
             </li>
             <li>
-              <input type="submit" class="fr-btn" value="Soumettre la demande">
+              <input type="submit" class="fr-btn" value="Valider et envoyer la demande">
             </li>
           </ul>
         </div>
     {% endif %}
   </div>
+  <script type="module" src="{% static 'js/generic-habilitation-request-profile-card.mjs' %}"></script>
 {% endblock content %}

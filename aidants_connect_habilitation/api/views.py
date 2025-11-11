@@ -19,7 +19,7 @@ class PersonnelRequestEditView(LateStageRequestView, FormView):
     @property
     def template_name(self):
         return (
-            "habilitation/generic-habilitation-request-profile-card.html#habilitation-profile-card"  # noqa: E501
+            "aidants_connect_habilitation/_personel_card.html"
             if self._form_valid
             else "forms/form.html"
         )
@@ -78,9 +78,10 @@ class PersonnelRequestEditView(LateStageRequestView, FormView):
         self._form_valid = True
         return self.render_to_response(
             self.get_context_data(
-                object=ProfileCardAidantRequestPresenter(
+                aidant_request=ProfileCardAidantRequestPresenter(
                     self.organisation, habilitation_request
-                )
+                ),
+                organisation=self.organisation,
             )
         )
 
