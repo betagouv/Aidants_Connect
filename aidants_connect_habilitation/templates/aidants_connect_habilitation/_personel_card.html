@@ -41,20 +41,6 @@
             {{ aidant_request.email }}
         </p>
     </div>
-    {% if aidant_request.req.habilitation_request.status in aidant_request.req.habilitation_request.ReferentRequestStatuses.formation_registerable %}
-        <div class="fr-grid-row fr-mt-2v">
-            {% if aidant_request.req.habilitation_request.formations.exists %}
-                {% dsfr_badge label="Inscrit en formation" extra_classes="fr-badge--success fr-badge--sm hide-header" %}
-            {% else %}
-                {% if organisation.manager.aidant.last_login %}
-                    {% url "espace_responsable_organisation" as formation_url %}
-                {% else %}
-                    {% url 'habilitation_new_aidant_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid aidant_id=aidant_request.pk as formation_url %}
-                {% endif %}
-                <a href="{{ formation_url }}" class="fr-link hide-header">Inscrire en formation</a>
-            {% endif %}
-        </div>
-    {% endif %}
     {% if organisation.status in organisation.Status.personel_editable %}
         <div class="fr-grid-row flex-between">
             <div></div>

@@ -49,12 +49,6 @@
                 Inscrit à la formation aidant du {{ formation_attendant.formation.start_datetime|date:"d/m/y" }}
                 </p>
             {% endfor %}
-                {% if organisation.manager.aidant.last_login %}
-                    {% url "espace_responsable_organisation" as formation_url %}
-                {% else %}
-                    {% url 'habilitation_manager_formation_registration' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid as formation_url %}
-                {% endif %}
-                <a href="{{ formation_url }}" class="fr-link hide-header">Inscrire en formation</a>
         </div>
     {% endif %}
     {% if organisation.status in organisation.Status.personel_editable %}

@@ -125,4 +125,8 @@ def format_phone(value: str):
     phone = str(value)
     if not phone or len(phone) != 12:
         return phone
-    return f"{phone[:3]} {phone[3:4]} {phone[4:6]} {phone[6:8]} {phone[8:10]}"
+    clean_format = (
+        f"{phone[:3]} {phone[3:4]} {phone[4:6]} "
+        f"{phone[6:8]} {phone[8:10]} {phone[10:12]}"
+    )
+    return clean_format
