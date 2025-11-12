@@ -319,7 +319,6 @@ class RequestStatusConstants(TextChoicesEnum):
         return (
             cls.NEW,
             cls.AC_VALIDATION_PROCESSING,
-            cls.VALIDATED,
             cls.CHANGES_REQUIRED,
             cls.CHANGES_PROPOSED,
         )
@@ -329,6 +328,7 @@ class RequestStatusConstants(TextChoicesEnum):
         """Statuses that allow to edit organisation"""
         return (
             cls.NEW,
+            cls.AC_VALIDATION_PROCESSING,
             cls.CHANGES_REQUIRED,
             cls.CHANGES_PROPOSED,
         )
