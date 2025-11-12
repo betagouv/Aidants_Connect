@@ -41,14 +41,9 @@
             </div>
         </div>
     </div>
-    {% if organisation.manager.is_aidant and organisation.manager.habilitation_request.status in organisation.manager.habilitation_request.ReferentRequestStatuses.formation_registerable %}
+    {% if organisation.status == organisation.Status.VALIDATED %}
         <div class="fr-grid-row fr-mt-2v">
-            {% for formation_attendant in organisation.manager.habilitation_request.formations.all %}
-                <p class="fr-text-default--success fr-icon fr-text--sm fr-m-0">
-                <span class="fr-icon-check-line fr-icon--sm fr-mr-1v" aria-hidden="true"></span>
-                Inscrit à la formation aidant du {{ formation_attendant.formation.start_datetime|date:"d/m/y" }}
-                </p>
-            {% endfor %}
+            <a href="https://app.livestorm.co/aidants-connect/webinaire-referent" class="fr-link">S'inscrire au webinaire référent </a>
         </div>
     {% endif %}
     {% if organisation.status in organisation.Status.personel_editable %}
