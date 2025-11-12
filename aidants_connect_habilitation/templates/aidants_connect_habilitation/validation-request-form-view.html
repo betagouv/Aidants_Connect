@@ -24,16 +24,22 @@
           <h2 class="fr-h4">Demandeur</h2>
           {% include "aidants_connect_habilitation/_issuer_card.html" with organisation=organisation %}
         </section>
-        <section>
+        <section class="fr-mt-6w">
           <h2 class="fr-h4">Structure</h2>
           {% include "aidants_connect_habilitation/_organisation_card.html" with organisation=organisation %}
         </section>
-        <section>
+        <section class="fr-mt-6w">
           <h2 class="fr-h4">Référent Aidants Connect</h2>
           {% include "aidants_connect_habilitation/_manager_card.html" with organisation=organisation %}
         </section>
-        <section>
+        <section class="fr-mt-6w">
           <h2 class="fr-h4">Aidants à habiliter et à former</h2>
+            {% if organisation.status == organisation.Status.VALIDATED %}
+                <div class="fr-alert fr-alert--info fr-alert--sm fr-my-4w">
+                  <p class="fr-text--md fr-mb-2w">Information : pour l’inscription des aidants, merci de vous rendre sur votre espace référent depuis la <a href="/accounts/login/" class="fr-link">page suivante</a>.</p>
+                  <p class="fr-text--md">Si vous vous connectez pour la 1ere fois, cliquez sur <a href="/accounts/manager_first_login/" class="fr-link">Première connexion référent</a></p></p>
+                </div>
+            {% endif %}
             {% for aidant_request in habilitation_requests %}
               {% include "aidants_connect_habilitation/_personel_card.html" with organisation=organisation aidant_request=aidant_request %}
             {% endfor %}
