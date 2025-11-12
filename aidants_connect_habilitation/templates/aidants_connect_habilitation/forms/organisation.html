@@ -31,6 +31,10 @@
 <fieldset class="fr-fieldset fr-mt-12v">
   <legend class="fr-fieldset__legend fr-text--lg fr-mb-1v">Informations descriptives</legend>
   <div class="fr-fieldset__element">{% aidantc_dsfr_form_field_no_asterisk form.web_site %}</div>
-  <div class="fr-fieldset__element">{% aidantc_dsfr_form_field_no_asterisk form.mission_description %}</div>
-  <div class="fr-fieldset__element">{% aidantc_dsfr_form_field_no_asterisk form.avg_nb_demarches %}</div>
+  <div class="fr-fieldset__element">
+    {% aidantc_dsfr_form_field_no_asterisk form.mission_description|attr:"data-dynamic-form-target:missionDescriptionField" %}
+  </div>
+  <div class="fr-fieldset__element">
+    {% aidantc_dsfr_form_field_no_asterisk form.avg_nb_demarches|attr:"data-dynamic-form-target:avgNbDemarchesField" %}
+  </div>
 </fieldset>

@@ -334,10 +334,14 @@ class OrganisationRequest(models.Model):
 
     web_site = models.URLField("Site web", blank=True, default="")
 
-    mission_description = models.TextField("Description des missions de la structure")
+    mission_description = models.TextField(
+        "Description des missions de la structure", blank=True, default=""
+    )
 
     avg_nb_demarches = models.IntegerField(
-        "Nombre moyen de démarches ou de dossiers traités par semaine"
+        "Nombre moyen de démarches ou de dossiers traités par semaine",
+        null=True,
+        blank=True,
     )
 
     # Checkboxes

@@ -210,6 +210,43 @@ class OrganisationRequestForm(ModelForm, AddressValidatableForm):
         required=False,
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Check if this is an association based on initial data or bound data
+        structure_type_id = None
+        if self.is_bound and self.data.get("type"):
+            try:
+                structure_type_id = int(self.data.get("type"))
+            except (ValueError, TypeError):
+                pass
+        elif self.initial.get("type"):
+            structure_type_id = getattr(self.initial.get("type"), "pk", None)
+        elif hasattr(self, "instance") and self.instance and self.instance.type:
+            structure_type_id = self.instance.type.pk
+
+        # For associations, make these fields optional and update labels
+        if structure_type_id == RequestOriginConstants.ASSOCIATIONS.value:
+            self.fields["mission_description"].required = False
+            self.fields["avg_nb_demarches"].required = False
+
+            # Update labels to show they're optional
+            mission_label = (
+                self.fields["mission_description"].label
+                or "Description des missions de la structure"
+            )
+            avg_label = (
+                self.fields["avg_nb_demarches"].label
+                or "Nombre moyen de démarches ou de dossiers traités par semaine"
+            )
+
+            if "(facultatif)" not in mission_label:
+                self.fields["mission_description"].label = (
+                    f"{mission_label} (facultatif)"
+                )
+            if "(facultatif)" not in avg_label:
+                self.fields["avg_nb_demarches"].label = f"{avg_label} (facultatif)"
+
     @property
     def media(self):
         return super().media + Media(js=(JSModulePath("js/organisation-form.mjs"),))
@@ -236,10 +273,44 @@ class OrganisationRequestForm(ModelForm, AddressValidatableForm):
         if not self.data["france_services_number"]:
             raise ValidationError(
                 "Vous avez indiqué que la structure est labellisée France Services : "
-                "merci de renseigner son numéro d’immatriculation France Services."
+                "merci de renseigner son numéro d'immatriculation France Services."
             )
 
         return self.data["france_services_number"]
+
+    def clean_mission_description(self):
+        mission_description = self.cleaned_data.get("mission_description", "")
+        structure_type = self.cleaned_data.get("type")
+
+        # For associations, mission_description is optional
+        if (
+            structure_type
+            and structure_type.pk == RequestOriginConstants.ASSOCIATIONS.value
+        ):
+            return mission_description
+
+        # For other structure types, field is required
+        if not mission_description:
+            raise ValidationError("Ce champ est obligatoire.")
+
+        return mission_description
+
+    def clean_avg_nb_demarches(self):
+        avg_nb_demarches = self.cleaned_data.get("avg_nb_demarches")
+        structure_type = self.cleaned_data.get("type")
+
+        # For associations, avg_nb_demarches is optional
+        if (
+            structure_type
+            and structure_type.pk == RequestOriginConstants.ASSOCIATIONS.value
+        ):
+            return avg_nb_demarches
+
+        # For other structure types, field is required
+        if avg_nb_demarches is None:
+            raise ValidationError("Ce champ est obligatoire.")
+
+        return avg_nb_demarches
 
     class Meta:
         model = models.OrganisationRequest
