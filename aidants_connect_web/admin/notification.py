@@ -6,13 +6,13 @@ from django.db import transaction
 from django.shortcuts import redirect
 from django.urls import path, reverse
 
-from aidants_connect.admin import admin_site
+from aidants_connect.admin import VisibleToAdminMetier, admin_site
 from aidants_connect_common.constants import TextChoicesEnum
 from aidants_connect_web.models import Aidant, Notification
 
 
 @register(Notification, site=admin_site)
-class NotificationAdmin(ModelAdmin):
+class NotificationAdmin(VisibleToAdminMetier, ModelAdmin):
     date_hierarchy = "date"
     raw_id_fields = ("aidant",)
     list_display = ("type", "aidant", "date", "auto_ack_date", "was_ack")
