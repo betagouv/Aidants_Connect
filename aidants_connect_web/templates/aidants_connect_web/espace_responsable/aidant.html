@@ -61,12 +61,21 @@
         <div class="fr-card fr-mt-2w">
           <div class="fr-card__body">
             <div class="fr-card__content">
-              <h3 class="fr-h6">
-                {% if organisations_count > 1 %}Organisations{% else %}Organisation{% endif %}
-              </h3>
-              <p class="fr-text">{{ organisations_display }}</p>
-              {% if responsable.responsable_de.count > 1 %}
-                <button
+                <h3 class="fr-h6">
+                  Organisation{% if common_organisations|length > 1 %}s{% endif %}
+                </h3>
+                {% for org in common_organisations %}
+                  <p class="fr-text">{{ org.name }}
+                      {% if aidant in org.responsables.all %}
+                        <span id="badge-referent" class="fr-badge fr-badge--purple-glycine fr-ml-2v">REFERENT</span>
+                      {% endif %}
+                      {% if aidant in org.aidants.all and not aidant.referent_non_aidant %}
+                        <span id="badge-aidant" class="fr-badge fr-badge--no-icon fr-badge--info fr-ml-2v">AIDANT</span>
+                      {% endif %}
+                  </p>
+                {% endfor %}
+                {% if common_organisations|length > 1 %}
+                 <button
                   class="fr-btn fr-btn--secondary"
                   data-fr-opened="false"
                   aria-controls="modal-change-organisations-{{ aidant.id }}"
@@ -74,7 +83,7 @@
                 >
                   Modifier l'organisation
                 </button>
-              {% endif %}
+                {% endif %}
             </div>
           </div>
         </div>

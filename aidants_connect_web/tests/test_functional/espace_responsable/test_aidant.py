@@ -81,14 +81,14 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         )
 
         section_otp_card = self.page.locator("#section-otp-card")
-        await expect(section_otp_card.locator("text=ACTIF")).to_be_visible()
+        await expect(section_otp_card.locator("text=ASSOCIÉ")).to_be_visible()
 
         section_mobile_app = self.page.locator("#section-mobile-app")
         await expect(section_mobile_app.locator("text=INACTIF")).to_be_visible()
 
         await expect(self.page.get_by_text("Délier la carte")).to_be_visible()
         await expect(
-            self.page.get_by_text("Lier une application mobile")
+            self.page.get_by_text("Associer une application mobile")
         ).to_be_visible()
 
     @async_test
@@ -107,7 +107,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await expect(section_otp_card.locator("text=INACTIF")).to_be_visible()
 
         section_mobile_app = self.page.locator("#section-mobile-app")
-        await expect(section_mobile_app.locator("text=ACTIF")).to_be_visible()
+        await expect(section_mobile_app.locator("text=ASSOCIÉ")).to_be_visible()
 
         await expect(
             self.page.get_by_text("Associer un moyen de connexion")
@@ -131,7 +131,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await expect(
             self.page.get_by_text("Désigner comme référent")
         ).not_to_be_visible()
-        await expect(self.page.get_by_text("Désactiver l'aidant")).not_to_be_visible()
+        await expect(self.page.get_by_text("Désactiver")).not_to_be_visible()
 
     @async_test
     async def test_helper_manager_can_deactivate_another_helper_manager(self):
@@ -148,4 +148,4 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await expect(
             self.page.get_by_text("Désigner comme référent")
         ).not_to_be_visible()
-        await expect(self.page.get_by_text("Désactiver l'aidant")).to_be_visible()
+        await expect(self.page.get_by_text("Désactiver")).to_be_visible()

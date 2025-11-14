@@ -413,13 +413,13 @@ class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
     def get_context_data(self, **kwargs):
         # Récupérer les organisations communes
         referent_orgs = self.referent.responsable_de.all()
-        aidant_orgs = self.aidant.organisations.all()
-        common_organisations = referent_orgs.filter(
-            pk__in=aidant_orgs.values_list("pk", flat=True)
+        # Inclure les organisations où l'aidant est membre OU référent (sans doublons)
+        aidant_member_orgs = self.aidant.organisations.all()
+        aidant_referent_orgs = self.aidant.responsable_de.all()
+        all_aidant_org_ids = set(aidant_member_orgs.values_list("pk", flat=True)) | set(
+            aidant_referent_orgs.values_list("pk", flat=True)
         )
-
-        org_names_list = [org.name for org in common_organisations]
-        organisations_display = ", ".join(org_names_list)
+        common_organisations = referent_orgs.filter(pk__in=all_aidant_org_ids)
 
         is_aidant_referent_of_current_org = self.aidant.responsable_de.filter(
             pk=self.referent.organisation.pk
@@ -431,7 +431,7 @@ class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
                 "responsable": self.referent,
                 "organisation": self.referent.organisation,
                 "form": ChangeAidantOrganisationsForm(self.referent, self.aidant),
-                "organisations_display": organisations_display,
+                "common_organisations": common_organisations,
                 "is_aidant_referent_of_current_org": is_aidant_referent_of_current_org,
             }
         )
