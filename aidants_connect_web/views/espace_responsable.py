@@ -425,6 +425,14 @@ class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
             pk=self.referent.organisation.pk
         ).exists()
 
+        habilitation_request = (
+            HabilitationRequest.objects.filter(email=self.aidant.email)
+            .order_by("-created_at")
+            .first()
+        )
+        formation_attendant = None
+        if habilitation_request:
+            formation_attendant = habilitation_request.formations.first()
         kwargs.update(
             {
                 "aidant": self.aidant,
@@ -433,6 +441,8 @@ class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
                 "form": ChangeAidantOrganisationsForm(self.referent, self.aidant),
                 "common_organisations": common_organisations,
                 "is_aidant_referent_of_current_org": is_aidant_referent_of_current_org,
+                "habilitation_request": habilitation_request,
+                "formation_attendant": formation_attendant,
             }
         )
         return super().get_context_data(**kwargs)

@@ -90,6 +90,49 @@
       {% include "aidants_connect_web/espace_responsable/_modale_change_aidant_organisations.html" %}
     </section>
 
+    {% if habilitation_request %}
+      <section class="fr-mt-8v">
+        <h2 class="fr-h3 fr-mb-4 fr-title-icon-left fr-icon-book-2-line">
+          Formation
+        </h2>
+        <div class="fr-card fr-mt-2w">
+          <div class="fr-card__body">
+            <div class="fr-card__content">
+                  {% if habilitation_request.course_type == 2 %}
+                    <p class="fr-text">Formation pair à pair réalisée</p>
+                  {% elif formation_attendant %}
+                    {% if formation_attendant.formation.start_datetime > now %}
+                      <p class="fr-text">Inscrit à la formation du {{ formation_attendant.formation.start_datetime|date:"d/m/Y" }} de {{ formation_attendant.formation.organisation.name }}</p>
+                      <div class="fr-alert fr-alert--info fr-mb-8v">
+                        <p class="fr-text">Information : Si vous souhaitez modifier ou annuler l’inscription, rapprochez-vous de l’organisme en charge de la formation :
+                          {% if formation_attendant.formation.organisation.contacts %}
+                            <a class="fr-btn" href="mailto:{{ formation_attendant.formation.organisation.contacts.0 }}">
+                              {{ formation_attendant.formation.organisation.contacts.0 }}
+                            </a>
+                          {% endif %}
+                        </p>
+                      </div>
+                    {% else %}
+                      <p class="fr-text">Formation {% if habilitation_request.created_by_fne %} FNE {% elif habilitation_request.course_type == 1 %} classique {% endif %}réalisée
+                          le {{ formation_attendant.formation.start_datetime|date:"d/m/Y" }}
+                          par {{ formation_attendant.formation.organisation.name }}
+                      </p>
+                    {% endif %}
+                  {% else %}
+                    <p class="fr-text">Formation {% if habilitation_request.created_by_fne %} FNE {% elif habilitation_request.course_type == 1 %} classique {% endif %}réalisée
+                      {% if habilitation_request.formation_done %}
+                        le {{ habilitation_request.date_formation|date:"d/m/Y" }}
+                      {% endif %}
+                    </p>
+                  {% endif %}
+                  {% if habilitation_request.test_pix_passed %}
+                    <p class="fr-text">Test PIX réalisé le {{ habilitation_request.date_test_pix|date:"d/m/Y" }}</p>
+                  {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+    {% endif %}
 
 
     <section class="fr-mt-8v">
