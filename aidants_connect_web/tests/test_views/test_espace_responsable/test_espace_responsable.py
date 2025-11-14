@@ -7,6 +7,7 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from faker import Faker
 
 from aidants_connect import settings
+from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
 from aidants_connect_web.models.other_models import CoReferentNonAidantRequest
 from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 from aidants_connect_web.views import espace_responsable
@@ -157,6 +158,47 @@ class EspaceResponsableAidantPage(TestCase):
             "veuillez changer dʼorganisation pour le gérer.",
             messages[0].message,
         )
+
+    def test_espace_responsable_aidant_deactivated(self):
+        """
+        A referent can access a deactivated aidant's profile
+        and only the card unlinking action is available
+        """
+        # Create a deactivated aidant with a TOTP card
+        aidant_desactive = AidantFactory(
+            organisation=self.responsable_tom.organisation,
+            is_active=False,
+            post__with_carte_totp=True,
+        )
+
+        TOTPDevice.objects.create(
+            user=aidant_desactive,
+            name=OTP_APP_DEVICE_NAME % aidant_desactive.pk,  # "OTP App for user 123"
+            confirmed=True,
+        )
+        aidant_desactive.refresh_from_db()
+
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(f"/espace-responsable/aidant/{aidant_desactive.id}/")
+
+        # The referent can access the profile
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/espace_responsable/aidant.html"
+        )
+
+        serial_number = aidant_desactive.carte_totp.serial_number
+
+        # The 'Unlink card' action is available
+        self.assertContains(response, "Délier")
+        self.assertContains(response, serial_number)
+        self.assertContains(response, "ASSOCIÉ")
+
+        # Other actions are not available
+        self.assertNotContains(response, "Désigner comme référent")
+        self.assertNotContains(response, "Désactiver")
+        self.assertNotContains(response, "Associer")
+        self.assertNotContains(response, "INACTIF")
 
 
 @tag("responsable-structure")

@@ -12,7 +12,7 @@
 
       <div>
         <div class="fr-btns-group fr-btns-group--inline fr-btns-group--md">
-        {% if not is_aidant_referent_of_current_org %}
+        {% if aidant.is_active and not is_aidant_referent_of_current_org %}
           <form method="post" action="{% url 'espace_responsable_aidants' %}">
             {% csrf_token %}
             <input type="hidden" name="candidate" value="{{ aidant.pk }}">
@@ -26,7 +26,7 @@
           <a href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
               class="fr-btn fr-btn--secondary"
               id="remove-aidant-{{ aidant.id }}-from-organisation">
-          Désactiver l'aidant
+          Désactiver
           </a>
         {% endif %}
         </div>
@@ -95,7 +95,7 @@
               <h3 class="fr-h6">Carte OTP</h3>
               <div class="fr-mb-8v fr-ml-4v">
                 {% if aidant.has_a_carte_totp %}
-                  <span class="fr-badge fr-badge--success">ACTIF</span>
+                  <span class="fr-badge fr-badge--success">ASSOCIÉ</span>
                 {% else %}
                   <span class="fr-badge fr-badge--warning">INACTIF</span>
                 {% endif %}
@@ -110,7 +110,7 @@
               >
                 Délier la carte
               </a>
-            {% else %}
+            {% elif aidant.is_active %}
               <a
                 id="manage-totp-cards-for-aidant-{{ aidant.id }}"
                 href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"
@@ -129,7 +129,7 @@
               <h3 class="fr-h6">Application mobile</h3>
               <div class="fr-mb-8v fr-ml-4v">
                 {% if aidant.has_otp_app %}
-                  <span class="fr-badge fr-badge--success">ACTIF</span>
+                  <span class="fr-badge fr-badge--success">ASSOCIÉ</span>
                 {% else %}
                   <span class="fr-badge fr-badge--warning">INACTIF</span>
                 {% endif %}
@@ -143,13 +143,13 @@
               >
                 Délier l'application mobile
               </a>
-            {% else %}
+            {% elif aidant.is_active %}
               <a
                 id="manage-totp-cards-for-aidant-{{ aidant.id }}"
                 href="{% url 'espace_responsable_aidant_add_app_otp' aidant_id=aidant.id %}"
                 class="fr-btn fr-btn--secondary"
               >
-                Lier une application mobile
+                Associer une application mobile
               </a>
             {% endif %}
           </div>
