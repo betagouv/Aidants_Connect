@@ -68,19 +68,21 @@
       |--------------------------------------------------------------------------------------------------------------------|
     {% endcomment %}
       <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
-        {% if organisation.status == organisation.Status.NEW %}
+        {% if organisation.status in organisation.Status.validatable %}
           <form method="post" class="fr-my-8v">
             {% csrf_token %}
             {{ form }}
 
             <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--between fr-my-6w">
               <li>
+              {% if organisation.status == NEW %}
                 <a
                   class="fr-btn fr-btn--tertiary"
                   href="{% url 'habilitation_new_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
                 >
                   Revenir à l'étape précédente
                 </a>
+              {% endif %}
               </li>
               <li>
                 <input type="submit" class="fr-btn" value="Valider et envoyer la demande">
@@ -89,22 +91,6 @@
           </form>
         {% endif %}
       </div>
-  {% comment %}
-    |--------------------------------------------------------------------------------------------------------------------|
-    |                                                      RESUBMIT FORM                                               |
-    |--------------------------------------------------------------------------------------------------------------------|
-  {% endcomment %}
-    {% if organisation.status == organisation.Status.CHANGES_REQUIRED or organisation.status == organisation.Status.CHANGES_PROPOSED %}
-      <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
-        <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--between fr-my-6w">
-            <li>
-            </li>
-            <li>
-              <input type="submit" class="fr-btn" value="Valider et envoyer la demande">
-            </li>
-          </ul>
-        </div>
-    {% endif %}
   </div>
   <script type="module" src="{% static 'js/generic-habilitation-request-profile-card.mjs' %}"></script>
 {% endblock content %}
