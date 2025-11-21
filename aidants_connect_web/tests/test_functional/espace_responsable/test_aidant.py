@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils.timezone import now
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from playwright.async_api import expect
@@ -104,7 +104,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
             formation_done=True,
             created_by_fne=True,
             test_pix_passed=True,
-            date_test_pix=datetime.now(),
+            date_test_pix=now(),
         )
         self.formation_attendant_fne_done = FormationAttendantFactory(
             attendant=self.habilitation_request_fne_done,
@@ -121,7 +121,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
             formation_done=True,
             created_by_fne=True,
             test_pix_passed=True,
-            date_test_pix=datetime.now(),
+            date_test_pix=now(),
         )
 
         # cas formation P2P, inscrit
@@ -192,7 +192,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
             formation_done=True,
             created_by_fne=False,
             test_pix_passed=True,
-            date_test_pix=datetime.now(),
+            date_test_pix=now(),
         )
         self.formation_attendant_classic_done = FormationAttendantFactory(
             attendant=self.habilitation_request_classic_done,
@@ -211,7 +211,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
                 formation_done=True,
                 created_by_fne=False,
                 test_pix_passed=True,
-                date_test_pix=datetime.now(),
+                date_test_pix=now(),
             )
         )
 

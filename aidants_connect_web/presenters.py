@@ -90,9 +90,6 @@ class AidantFormationPresenter:
             and self._habilitation_request.formations.exists()
         ):
             self._formation_attendant = self._habilitation_request.formations.first()
-        print(
-            "AidantFormationPresenter: _formation_attendant:", self._formation_attendant
-        )
 
     @property
     def info_available(self) -> bool:

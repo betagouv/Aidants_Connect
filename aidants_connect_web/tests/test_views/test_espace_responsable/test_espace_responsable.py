@@ -232,9 +232,8 @@ class EspaceResponsableAidantPage(TestCase):
         # Test the different statuses displayed for Korben
         self.assertContains(response_1, organisation_1.name)
         self.assertContains(response_1, organisation_2.name)
-        self.assertContains(response_1, "AIDANT")
-        self.assertContains(response_1, "REFERENT")
-        self.assertEqual(aidant_count, 1)
+        self.assertContains(response_1, "REFERENT-AIDANT")
+        self.assertEqual(aidant_count, 0)
         self.assertEqual(referent_count, 1)
 
         # he cannot see organisation_3
@@ -249,9 +248,8 @@ class EspaceResponsableAidantPage(TestCase):
         self.assertContains(response_2, organisation_1.name)
         self.assertContains(response_2, organisation_2.name)
         self.assertContains(response_2, organisation_3.name)
-        self.assertContains(response_1, "AIDANT")
-        self.assertContains(response_1, "REFERENT")
-        self.assertEqual(aidant_count, 2)
+        self.assertContains(response_1, "REFERENT-AIDANT")
+        self.assertEqual(aidant_count, 0)
         self.assertEqual(referent_count, 2)
 
 

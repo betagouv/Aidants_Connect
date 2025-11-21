@@ -433,6 +433,7 @@ class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
             {
                 "aidant": self.aidant,
                 "responsable": self.referent,
+                "referent_orgs": referent_orgs,
                 "organisation": self.referent.organisation,
                 "form": ChangeAidantOrganisationsForm(self.referent, self.aidant),
                 "common_organisations": common_organisations,
