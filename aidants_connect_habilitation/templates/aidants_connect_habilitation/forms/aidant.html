@@ -1,19 +1,33 @@
-{% load dsfr_tags %}
+{% load dsfr_tags form_extras %}
+
 {% if errors %}
   <section class="fr-my-4v fr-input-group fr-input-group--error">
     {{ errors }}
   </section>
 {% endif %}
-{% for field in hidden_fields %}
-	{{ field }}
+{% for field in form.hidden_fields %}
+  {{ field }}
 {% endfor %}
 
-<div class="fr-mb-4w">
-  {% dsfr_alert type="warning" extra_classes="fr-alert--sm" content="Si vous utilisez une adresse mail laposte.net et laposte.fr et que vous n’avez pas configuré votre identité numérique, vous pourriez rencontrer des problèmes de réception des emails de validation de compte." %}
-</div>
+<fieldset class="fr-fieldset">
+  <div class="fr-fieldset__element fr-my-4v fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+    {% aidantc_dsfr_form_field_no_asterisk form.first_name %}
+  </div>
+  <div class="fr-fieldset__element fr-my-4v fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+    {% aidantc_dsfr_form_field_no_asterisk form.last_name %}
+  </div>
 
-{% dsfr_form_field form.email %}
-{% dsfr_form_field form.first_name %}
-{% dsfr_form_field form.last_name %}
-{% dsfr_form_field form.profession %}
-{% dsfr_form_field form.conseiller_numerique|dsfr_inline %}
+  <div class="fr-fieldset__element fr-my-4v">
+    {% aidantc_dsfr_form_field_no_asterisk form.profession %}
+  </div>
+
+  <div class="fr-fieldset__element fr-mt-4v">
+    {% aidantc_dsfr_form_field_no_asterisk form.conseiller_numerique|dsfr_inline %}
+  </div>
+
+  <div class="fr-fieldset__element fr-mb-4v">
+    {% aidantc_dsfr_form_field_no_asterisk form.email %}
+    {% dsfr_alert type="warning" extra_classes="fr-alert--sm" content="Toutes les adresses e-mail renseignées dans la demande doivent être nominatives (de type prenom-nom@exemple.fr)" %}
+  </div>
+
+</fieldset>

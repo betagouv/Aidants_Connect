@@ -25,13 +25,14 @@
           class="fr-my-8v"
           data-controller="dynamic-form"
           data-dynamic-form-type-other-value="{{ type_other_value }}"
+          data-dynamic-form-associations-value-value="13"
         >
           {% csrf_token %}
           {{ form }}
           <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--between fr-my-6w">
             <li>
               <a
-                class="fr-btn fr-btn--secondary"
+                class="fr-btn fr-btn--tertiary"
                 href="{% url 'habilitation_siret_verification' issuer_id=issuer_id %}"
               >
                 Revenir à l’étape précédente

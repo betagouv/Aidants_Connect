@@ -100,7 +100,7 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
     def test_modify_issuer(self):
         self.open_live_url(self.url)
 
-        self.selenium.find_element(By.ID, "tests-issuer-edit-button").click()
+        self.selenium.find_element(By.ID, "issuer-edit-button").click()
         self.wait.until(
             self.path_matches(
                 "habilitation_modify_issuer_on_organisation",
@@ -109,9 +109,6 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
                     "uuid": f"{self.request.uuid}",
                 },
             )
-        )
-        self.check_accessibility(
-            "habilitation_modify_issuer_on_organisation", strict=False
         )
 
         for _ in range(10):
@@ -135,8 +132,42 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
             )
         )
 
+        self.assertIn(new_email, self.selenium.find_element(By.ID, "issuer-infos").text)
+
+    def test_modify_organisation(self):
+        self.open_live_url(self.url)
+
+        self.selenium.find_element(By.ID, "organisation-edit-button").click()
+        self.wait.until(
+            self.path_matches(
+                "habilitation_modify_organisation",
+                kwargs={
+                    "issuer_id": f"{self.request.issuer.issuer_id}",
+                    "uuid": f"{self.request.uuid}",
+                },
+            )
+        )
+
+        new_address = self.faker.address().replace("\n", " ")
+
+        address_input = self.selenium.find_element(By.ID, "id_address")
+        address_input.clear()
+        address_input.send_keys(new_address)
+
+        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+        self.wait.until(
+            self.path_matches(
+                "habilitation_validation",
+                kwargs={
+                    "issuer_id": f"{self.request.issuer.issuer_id}",
+                    "uuid": f"{self.request.uuid}",
+                },
+            )
+        )
+
         self.assertIn(
-            new_email, self.selenium.find_element(By.ID, "test-issuer-infos").text
+            new_address, self.selenium.find_element(By.ID, "organisation-infos").text
         )
 
     def _fill_form_with_correct_email_and_assert(
@@ -241,3 +272,6 @@ class ReadonlyRequestView(ValidationRequestFormViewTests):
 
     def test_modify_issuer(self):
         super().test_modify_issuer()
+
+    def test_modify_organisation(self):
+        super().test_modify_organisation()

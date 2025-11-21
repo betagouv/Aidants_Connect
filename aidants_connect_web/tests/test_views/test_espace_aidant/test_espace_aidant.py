@@ -201,7 +201,8 @@ class SwitchOrganisationTests(TestCase):
         )
 
     def test_aidant_cannot_switch_to_an_unexisting_orga(self):
-        orgas = self.aidant_with_orgs.organisations.all()
+        # L'organisation initiale de l'aidant est first_org
+        initial_org_id = self.aidant_with_orgs.organisation.id
         self.client.force_login(self.aidant_with_orgs)
         response = self.client.post(
             reverse("espace_aidant_switch_main_organisation"),
@@ -219,10 +220,12 @@ class SwitchOrganisationTests(TestCase):
             messages[0].message,
         )
         self.aidant_with_orgs.refresh_from_db()
-        self.assertEqual(self.aidant_with_orgs.organisation.id, orgas[0].id)
+        # Vérifier que l'organisation n'a pas changé
+        self.assertEqual(self.aidant_with_orgs.organisation.id, initial_org_id)
 
     def test_aidant_cannot_switch_to_an_org_they_dont_belong(self):
-        orgas = self.aidant_with_orgs.organisations.all().order_by("id")
+        # L'organisation initiale de l'aidant est first_org
+        initial_org_id = self.aidant_with_orgs.organisation.id
         unrelated_org = OrganisationFactory(name="Totally unrelated people")
         self.client.force_login(self.aidant_with_orgs)
         response = self.client.post(
@@ -240,7 +243,8 @@ class SwitchOrganisationTests(TestCase):
             messages[0].message,
         )
         self.aidant_with_orgs.refresh_from_db()
-        self.assertEqual(self.aidant_with_orgs.organisation.id, orgas[0].id)
+        # Vérifier que l'organisation n'a pas changé
+        self.assertEqual(self.aidant_with_orgs.organisation.id, initial_org_id)
 
 
 @tag("usagers")

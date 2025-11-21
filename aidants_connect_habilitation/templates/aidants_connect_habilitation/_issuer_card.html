@@ -1,0 +1,29 @@
+<div id="issuer-infos" class="fr-container custom-border fr-py-4v fr-pl-md-10v fr-pl-6v fr-mb-6v">
+    <div class="fr-grid-row">
+        <p class="fr-text--lg fr-text--bold fr-my-1v">
+        {{ organisation.issuer.first_name }} {{ organisation.issuer.last_name }}
+        </p>
+    </div>
+    <div class="fr-grid-row">
+        <p class="fr-text-mention--grey fr-my-1v">
+        {{ organisation.issuer.profession }}
+        </p>
+    </div>
+    <div class="fr-grid-row">
+        <p class="fr-text--sm fr-my-1v">
+        {{ organisation.issuer.email }}
+        </p>
+    </div>
+     <div class="fr-grid-row flex-between">
+        <div></div>
+        {% if organisation.status in organisation.Status.personel_editable %}
+            <a
+                id="issuer-edit-button"
+                class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line"
+                href="{% url 'habilitation_modify_issuer_on_organisation' issuer_id=issuer.issuer_id uuid=organisation.uuid %}"
+            >
+                Modifier
+            </a>
+        {% endif %}
+    </div>
+</div>

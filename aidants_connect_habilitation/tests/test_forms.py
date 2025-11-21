@@ -6,7 +6,6 @@ from aidants_connect_common.constants import (
     RequestStatusConstants,
 )
 from aidants_connect_habilitation.forms import (
-    AddressValidatableForm,
     AidantRequestForm,
     AidantRequestFormSet,
     IssuerForm,
@@ -156,7 +155,7 @@ class TestOrganisationRequestForm(TestCase):
         self.assertEqual("", form.cleaned_data["france_services_number"])
 
 
-class TestValidationFormForm(TestCase):
+class TestValidationForm(TestCase):
     names_attr = ["cgu", "not_free", "dpo", "professionals_only", "without_elected"]
 
     def test_form_valid_only_with_four_enabled_choices(self):
@@ -167,7 +166,7 @@ class TestValidationFormForm(TestCase):
         self.assertFalse(form.is_valid())
 
         form = ValidationForm(
-            data={name: True for name in TestValidationFormForm.names_attr}
+            data={name: True for name in TestValidationForm.names_attr}
         )
         self.assertTrue(form.is_valid())
 
@@ -182,7 +181,7 @@ class TestValidationFormForm(TestCase):
         )
 
         form = ValidationForm(
-            data={name: True for name in TestValidationFormForm.names_attr}
+            data={name: True for name in TestValidationForm.names_attr}
         )
         form.is_valid()
 
@@ -190,7 +189,7 @@ class TestValidationFormForm(TestCase):
         self.assertEqual(
             orga.status, RequestStatusConstants.AC_VALIDATION_PROCESSING.name
         )
-        for name in TestValidationFormForm.names_attr:
+        for name in TestValidationForm.names_attr:
             with self.subTest(f"{name} field validated"):
                 self.assertTrue(getattr(orga, name))
 
@@ -200,30 +199,6 @@ class TestManagerForm(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.organisation = OrganisationRequestFactory()
-
-    def test_clean_type_zipcode_number_passes(self):
-        form = get_form(
-            ReferentForm,
-            ignore_errors=True,
-            zipcode="01700",
-            form_init_kwargs={"organisation": self.organisation},
-        )
-
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.errors, {})
-
-    def test_clean_type_zipcode_not_number_raises_error(self):
-        form = get_form(
-            ReferentForm,
-            ignore_errors=True,
-            zipcode="La Commune",
-            form_init_kwargs={"organisation": self.organisation},
-        )
-
-        self.assertFalse(form.is_valid())
-        self.assertEqual(
-            form.errors["zipcode"], ["Veuillez entrer un code postal valide"]
-        )
 
     def test_email_lower(self):
         form = get_form(
@@ -246,35 +221,10 @@ class TestManagerForm(TestCase):
 
         self.assertTrue(form.is_valid())
 
-    def test_address_same_as_org(self):
-        form = ReferentForm(
-            organisation=self.organisation,
-            data={
-                **get_form(
-                    ReferentForm,
-                    conseiller_numerique=True,
-                    email="test@test.test",
-                    form_init_kwargs={"organisation": self.organisation},
-                ).cleaned_data,
-                "address_same_as_org": True,
-            },
-        )
-
-        self.assertTrue(form.is_valid())
-        for name, field in AddressValidatableForm.declared_fields.items():
-            with self.subTest(f"address field {name}"):
-                expected = getattr(self.organisation, name)
-                actual = form.cleaned_data[name]
-                if expected in field.empty_values:
-                    expected = field.empty_value
-                if actual in field.empty_values:
-                    actual = field.empty_value
-                self.assertEqual(expected, actual)
-
 
 class TestAidantRequestForm(TestCase):
     def test_clean_aidant_with_same_email_as_manager(self):
-        # Case manager is aidant: error
+        # Case manager is aidant: no error
         manager = ManagerFactory(is_aidant=True)
         organisation = OrganisationRequestFactory(manager=manager)
         form = get_form(
@@ -284,15 +234,7 @@ class TestAidantRequestForm(TestCase):
             email=organisation.manager.email,
         )
 
-        self.assertFalse(form.is_valid())
-        self.assertEqual(
-            [
-                "Le ou la référente de cette organisation est aussi déclarée"
-                f"comme aidante avec l'email '{organisation.manager.email}'. "
-                "Chaque aidant ou aidante doit avoir son propre e-mail nominatif."
-            ],
-            form.errors["email"],
-        )
+        self.assertTrue(form.is_valid())
 
         # Case manager is not aidant: no error
         manager = ManagerFactory(is_aidant=False)

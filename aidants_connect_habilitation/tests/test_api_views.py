@@ -29,7 +29,7 @@ class HabilitationRequestsTests(TestCase):
             OrganisationRequestFactory(status=status, post__aidants_count=1)
             for status in (
                 set(RequestStatusConstants)
-                - set(RequestStatusConstants.aidant_registrable)
+                - set(RequestStatusConstants.personel_editable)
             )
         ]
 
@@ -58,10 +58,7 @@ class HabilitationRequestsTests(TestCase):
             # self.assertTemplateUsed is not working with django-template-partials
             self.assertEqual(
                 set(response.template_name),
-                {
-                    "habilitation/generic-habilitation-request-profile-card.html"
-                    "#habilitation-profile-card"
-                },
+                {"aidants_connect_habilitation/_personel_card.html"},
             )
 
     def test_404_on_aidant_not_registrable(self):

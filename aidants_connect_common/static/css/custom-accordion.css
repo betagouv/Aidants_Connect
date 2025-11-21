@@ -1,0 +1,8 @@
+.custom-accordion-border {
+    border-left: 1px solid lightgrey;
+    border-right: 1px solid lightgrey;
+}
+
+.fr-accordion__btn[aria-expanded="true"] .custom-accordion-help-text {
+    display: none;
+}

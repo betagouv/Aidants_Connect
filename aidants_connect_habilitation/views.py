@@ -2,7 +2,7 @@ from abc import ABC
 from uuid import UUID
 
 from django.conf import settings
-from django.forms import Form
+from django.forms import Form, model_to_dict
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -413,6 +413,15 @@ class ModifyOrganisationRequestFormView(
             "siret": self.organisation.siret,
         }
 
+    def get_success_url(self):
+        return reverse(
+            "habilitation_validation",
+            kwargs={
+                "issuer_id": self.organisation.issuer.issuer_id,
+                "uuid": self.organisation.uuid,
+            },
+        )
+
 
 class ReferentRequestFormView(OnlyNewRequestsView, UpdateView):
     template_name = "aidants_connect_habilitation/referent-form-view.html"
@@ -456,18 +465,35 @@ class PersonnelRequestFormView(LateStageRequestView, HabilitationStepMixin, Form
         return HabilitationFormStep.PERSONNEL
 
     def form_valid(self, form):
-        form.save()
-        return super().form_valid(form)
+        if "partial-submit" in self.request.POST:
+            data = self.request.POST.copy()
+            total_forms = int(data.get("form-TOTAL_FORMS", 0))
+            data["form-TOTAL_FORMS"] = str(total_forms + 1)
+
+            form_kwargs = self.get_form_kwargs()
+            form_kwargs.pop("data", None)
+            form_kwargs["data"] = data
+
+            new_form = self.form_class(**form_kwargs)
+            return self.render_to_response(self.get_context_data(form=new_form))
+        else:
+            form.save()
+            return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        kwargs.update({"organisation": self.organisation})
+        manager_data = {}
+        if self.organisation.manager:
+            manager_data = model_to_dict(
+                self.organisation.manager,
+                fields=["first_name", "last_name", "email", "profession"],
+            )
+        kwargs.update({"organisation": self.organisation, "manager_data": manager_data})
         return super().get_context_data(**kwargs)
 
     def get_form_kwargs(self):
         return {
             **super().get_form_kwargs(),
             "organisation": self.organisation,
-            "empty_permitted": True,
         }
 
     def get_success_url(self):
@@ -483,9 +509,9 @@ class PersonnelRequestFormView(LateStageRequestView, HabilitationStepMixin, Form
 class BaseValidationRequestFormView(
     HabilitationStepMixin, LateStageRequestView, FormView
 ):
-    # fmt: off
-    template_name = "aidants_connect_habilitation/validation-request-form-view.html"  # noqa: E501
-    # fmt: on
+    template_name = (
+        "aidants_connect_habilitation/validation-request-form-view.html"  # noqa: E501
+    )
     form_class = ValidationForm
     presenter_class = ProfileCardAidantRequestPresenter
 

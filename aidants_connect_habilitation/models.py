@@ -176,12 +176,12 @@ class IssuerEmailConfirmation(models.Model):
 
 
 class Manager(PersonWithResponsibilities):
-    address = models.TextField("Adresse")
+    address = models.TextField("Adresse", default="", blank=True)
     address_complement = models.CharField(
-        "Complément d'adresse", max_length=255, blank=True, default=""
+        "Complément d'adresse", max_length=255, default="", blank=True
     )
-    zipcode = models.CharField("Code Postal", max_length=10)
-    city = models.CharField("Ville", max_length=255)
+    zipcode = models.CharField("Code Postal", max_length=10, blank=True, null=True)
+    city = models.CharField("Ville", max_length=255, default="", blank=True)
 
     city_insee_code = models.CharField(
         "Code INSEE de la ville", max_length=5, null=True, blank=True
@@ -191,10 +191,10 @@ class Manager(PersonWithResponsibilities):
         "Code INSEE du département", max_length=5, null=True, blank=True
     )
 
-    is_aidant = models.BooleanField("C'est aussi un aidant", default=False)
+    is_aidant = models.BooleanField("C'est aussi un aidant", default=False, blank=True)
 
     conseiller_numerique = models.BooleanField(
-        "Est un conseiller numérique", default=False
+        "Est un conseiller numérique", default=False, blank=True
     )
 
     habilitation_request = models.OneToOneField(
@@ -334,10 +334,14 @@ class OrganisationRequest(models.Model):
 
     web_site = models.URLField("Site web", blank=True, default="")
 
-    mission_description = models.TextField("Description des missions de la structure")
+    mission_description = models.TextField(
+        "Description des missions de la structure", blank=True, default=""
+    )
 
     avg_nb_demarches = models.IntegerField(
-        "Nombre moyen de démarches ou de dossiers traités par semaine"
+        "Nombre moyen de démarches ou de dossiers traités par semaine",
+        null=True,
+        blank=True,
     )
 
     # Checkboxes
@@ -403,6 +407,17 @@ class OrganisationRequest(models.Model):
         )
 
     def prepare_request_for_ac_validation(self, form_data: dict):
+        if self.manager:
+            matching_aidant: AidantRequest = self.aidant_requests.filter(
+                email__iexact=self.manager.email
+            ).first()
+
+            if matching_aidant:
+                self.manager.conseiller_numerique = matching_aidant.conseiller_numerique
+                self.manager.is_aidant = True
+                self.manager.save()
+                matching_aidant.delete()
+
         self.cgu = form_data["cgu"]
         self.not_free = form_data["not_free"]
         self.dpo = form_data["dpo"]
@@ -445,6 +460,7 @@ class OrganisationRequest(models.Model):
                 type=organisation_type,
                 siret=self.siret,
                 address=self.address,
+                address_complement=self.address_complement,
                 zipcode=self.zipcode,
                 city=self.city,
                 city_insee_code=self.city_insee_code,

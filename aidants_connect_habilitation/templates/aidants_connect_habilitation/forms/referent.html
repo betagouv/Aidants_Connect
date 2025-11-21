@@ -1,55 +1,36 @@
-{% load ac_common dsfr_tags widget_tweaks %}
+{% load ac_common dsfr_tags form_extras widget_tweaks %}
 
 <div data-controller="manager-form">
-      <section class="fr-mb-5v">
+  <section class="fr-mb-5v">
 
-      <p>Le ou la référente Aidants Connect est en
-        charge de la mise en place du dispositif et de son suivi (activation des comptes, gestion
-        des départs et des arrivées).</p>
-    </section>
+    <p>Le référent est en charge de la mise en place et du suivi d’Aidants Connect.
+      Toute personne qui travaille au sein de la structure peut être désignée comme référent.
+      Le référent peut aussi faire partie des aidants professionnels à former pour accompagner des usagers avec Aidants Connect.</p>
+  </section>
 
   <section class="fr-mb-5v">
-    <button id="its-me-manager" class="fr-btn fr-btn--secondary" data-action="manager-form#onManagerItsMeBtnClicked:stop:prevent">
-      Remplir avec mes informations
+    <button id="its-me-manager" class="fr-btn fr-btn--tertiary fr-btn--icon-right fr-icon-edit-line fr-my-4v" data-action="manager-form#onManagerItsMeBtnClicked:stop:prevent">
+      Remplir avec les informations du demandeur
     </button>
   </section>
 
   <fieldset class="fr-fieldset">
-    <div class="fr-fieldset__element fr-fieldset__element--inline fr-fieldset__element--inline-grow">
-      {% dsfr_form_field form.last_name %}
+    <div class="fr-fieldset__element fr-my-4v fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+      {% aidantc_dsfr_form_field_no_asterisk form.last_name %}
     </div>
-    <div class="fr-fieldset__element fr-fieldset__element--inline fr-fieldset__element--inline-grow">
-      {% dsfr_form_field form.first_name %}
+    <div class="fr-fieldset__element fr-my-4v fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+      {% aidantc_dsfr_form_field_no_asterisk form.first_name %}
     </div>
-    <div class="fr-fieldset__element fr-mt-4v">{% dsfr_form_field form.profession %}</div>
-    <div class="fr-fieldset__element">{% dsfr_form_field form.is_aidant|dsfr_inline %}</div>
-    <div class="fr-fieldset__element">{% dsfr_form_field form.conseiller_numerique|dsfr_inline %}</div>
-  </fieldset>
+    <div class="fr-fieldset__element fr-my-4v">{% aidantc_dsfr_form_field_no_asterisk form.profession %}</div>
 
-  <fieldset class="fr-fieldset">
-    <legend class="fr-fieldset__legend">Contact</legend>
+    <div class="fr-fieldset__element fr-my-4v">
+      {% aidantc_dsfr_form_field_no_asterisk form.email %}
+      {% dsfr_alert type="warning" extra_classes="fr-alert--sm" content="Toutes les adresses e-mail renseignées dans la demande doivent être nominatives (de type prenom-nom@exemple.fr)" %}
+    </div>
 
+    <div class="fr-fieldset__element fr-my-4v fr-col-sm-6">{% aidantc_dsfr_form_field_no_asterisk form.phone %}</div>
     <div class="fr-fieldset__element">
-      {% dsfr_form_field form.email %}
-      <p class="fr-info-text fr-mb-4v fr-mt-n2v">L’email doit être nominatif</p>
-    </div>
-
-    <div class="fr-fieldset__element ">{% dsfr_form_field form.phone %}
-      <p class="fr-info-text fr-mb-4v fr-mt-n2v"><a href="/faq/utiliser-aidants-connect/">Pourquoi un numéro de téléphone mobile ?</a></p>
-    </div>
-  </fieldset>
-
-  <fieldset class="fr-fieldset">
-    <legend class="fr-fieldset__legend">
-      Adresse d’intervention du référent
-    </legend>
-    <p class="fr-fieldset__element">
-      Il s’agit notamment de l’adresse de réception du kit de bienvenue et des cartes Aidants Connect.
-    </p>
-
-    <div class="fr-fieldset__element">{% dsfr_form_field form.address_same_as_org|dsfr_inline %}</div>
-    <div class="fr-fieldset__element" data-manager-form-target="addressContainer" {% hidden %}>
-      {{ form.address_fieldset }}
+      <p class="fr-info-text fr-mb-4v fr-mt-n2v">Lors de la première connexion à Aidants Connect, un code à usage unique doit être envoyé par SMS au référent.&nbsp;<a href="/faq/utiliser-aidants-connect/">Voir plus</a></p>
     </div>
   </fieldset>
 
