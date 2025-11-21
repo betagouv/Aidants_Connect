@@ -10,6 +10,9 @@ from factory import Faker, LazyFunction, SubFactory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice
 
+from aidants_connect_common.models import FormationAttendant
+from aidants_connect_web.tests.factories import HabilitationRequestFactory
+
 from ..models import Department, Formation, FormationOrganization, FormationType, Region
 
 
@@ -71,3 +74,12 @@ class FormationFactory(DjangoModelFactory):
 
     class Meta:
         model = Formation
+
+
+class FormationAttendantFactory(DjangoModelFactory):
+    attendant = SubFactory(HabilitationRequestFactory)
+    formation = SubFactory(FormationFactory)
+    state = FormationAttendant.State.DEFAULT
+
+    class Meta:
+        model = FormationAttendant

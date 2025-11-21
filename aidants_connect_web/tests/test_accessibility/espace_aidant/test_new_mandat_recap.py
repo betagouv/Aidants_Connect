@@ -1,6 +1,5 @@
-import re
-
 from django.conf import settings
+from django.test import Client
 
 from playwright.async_api import expect
 
@@ -35,34 +34,41 @@ class NewMandatRecapAccessibilityTests(AccessibilityTestCase):
             duree_keyword="SHORT",
         )
 
+        # Configurer la session de manière synchrone et propre
+        self._setup_session()
+
+    def _setup_session(self):
+        """Configure la session Django avec l'ID de connection de manière synchrone"""
+        # Utiliser le client de test Django pour créer une session propre
+        client = Client()
+        client.force_login(self.aidant)
+
+        # Configurer la session avec l'ID de connection
+        session = client.session
+        session["connection"] = self.connection.id
+        session.save()
+
+        # Stocker la clé de session pour l'utiliser dans Playwright
+        self.session_key = session.session_key
+
     async def _open_url(self):
         """Helper method to navigate to navigate_to_new_mandat_recap page"""
         await self.login_aidant(self.aidant, self.otp_token)
-        await self.navigate_to_url("/usagers/")
-        await self.page.click("#add_usager")
-        await self.wait_for_path_match("new_mandat")
 
-        # fill-in new_mandate form
-        await self.page.click("#id_demarche_argent ~ label")
-        await self.page.click("#id_demarche_famille ~ label")
-        await self.page.click("#id_duree_short ~ label")
+        # Injecter le cookie de session configuré dans setUp()
+        await self.page.context.add_cookies(
+            [
+                {
+                    "name": "sessionid",
+                    "value": self.session_key,
+                    "domain": "localhost",
+                    "path": "/",
+                }
+            ]
+        )
 
-        # FranceConnect
-        await self.page.click(".fr-connect")
-        await self.page.wait_for_url(
-            re.compile(r"https://.+franceconnect\.fr/api/v1/authorize.+")
-        )
-        await self.page.click("#fi-identity-provider-example")
-        await self.page.wait_for_url(
-            re.compile(r"https://.+franceconnect\.fr/interaction/.+")
-        )
-        await self.page.locator('input[type="submit"]').first.click()
-        await self.page.wait_for_url(
-            re.compile(r"https://.+franceconnect\.fr/api/v1/authorize.+")
-        )
-        await self.page.click("button")
-        # Attendre que la page soit complètement chargée après FranceConnect
-        await self.page.wait_for_load_state("networkidle")
+        # Naviguer vers la page de récapitulatif
+        await self.navigate_to_url("/creation_mandat/recapitulatif/")
 
     @async_test
     async def test_accessibility(self):

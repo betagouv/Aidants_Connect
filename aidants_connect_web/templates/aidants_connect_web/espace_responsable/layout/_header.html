@@ -16,7 +16,7 @@
       class="fr-nav__link"
       target="_self"
       href="{% url 'espace_responsable_aidants' %}"
-      {% if view_name|startswith:'espace_responsable_aidant' %}aria-current="true"{% endif %}
+      {% if view_name|startswith:'espace_responsable_aidant' and not is_aidant_referent_of_current_org %}aria-current="true"{% endif %}
     >Aidants</a>
   </li>
   <li class="fr-nav__item">
@@ -24,7 +24,7 @@
       class="fr-nav__link"
       target="_self"
       href="{% url 'espace_responsable_referents' %}"
-      {% if view_name == 'espace_responsable_referents' %}aria-current="true"{% endif %}
+    {% if view_name == 'espace_responsable_referents' %}aria-current="true"{% elif view_name|startswith:'espace_responsable_aidant' and is_aidant_referent_of_current_org %}aria-current="true"{% endif %}
     >Référents</a>
   </li>
   <li class="fr-nav__item">

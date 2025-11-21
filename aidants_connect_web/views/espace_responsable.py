@@ -52,6 +52,7 @@ from aidants_connect_web.models import (
     Notification,
     Organisation,
 )
+from aidants_connect_web.presenters import AidantFormationPresenter
 
 logger = logging.getLogger()
 
@@ -401,6 +402,7 @@ class OrganisationResponsables(FormView):
 @responsable_logged_with_activity_required
 class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
     template_name = "aidants_connect_web/espace_responsable/aidant.html"
+    presenter_formation = AidantFormationPresenter
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -413,26 +415,30 @@ class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
     def get_context_data(self, **kwargs):
         # Récupérer les organisations communes
         referent_orgs = self.referent.responsable_de.all()
-        aidant_orgs = self.aidant.organisations.all()
-        common_organisations = referent_orgs.filter(
-            pk__in=aidant_orgs.values_list("pk", flat=True)
+        # Inclure les organisations où l'aidant est membre OU référent (sans doublons)
+        aidant_member_orgs = self.aidant.organisations.all()
+        aidant_referent_orgs = self.aidant.responsable_de.all()
+        all_aidant_org_ids = set(aidant_member_orgs.values_list("pk", flat=True)) | set(
+            aidant_referent_orgs.values_list("pk", flat=True)
         )
-
-        org_names_list = [org.name for org in common_organisations]
-        organisations_display = ", ".join(org_names_list)
+        common_organisations = referent_orgs.filter(pk__in=all_aidant_org_ids)
 
         is_aidant_referent_of_current_org = self.aidant.responsable_de.filter(
             pk=self.referent.organisation.pk
         ).exists()
 
+        presenter_formation = self.presenter_formation(self.aidant)
+
         kwargs.update(
             {
                 "aidant": self.aidant,
                 "responsable": self.referent,
+                "referent_orgs": referent_orgs,
                 "organisation": self.referent.organisation,
                 "form": ChangeAidantOrganisationsForm(self.referent, self.aidant),
-                "organisations_display": organisations_display,
+                "common_organisations": common_organisations,
                 "is_aidant_referent_of_current_org": is_aidant_referent_of_current_org,
+                "formation": presenter_formation,
             }
         )
         return super().get_context_data(**kwargs)
