@@ -52,6 +52,7 @@ from aidants_connect_web.models import (
     Notification,
     Organisation,
 )
+from aidants_connect_web.presenters import AidantFormationPresenter
 
 logger = logging.getLogger()
 
@@ -401,6 +402,7 @@ class OrganisationResponsables(FormView):
 @responsable_logged_with_activity_required
 class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
     template_name = "aidants_connect_web/espace_responsable/aidant.html"
+    presenter_formation = AidantFormationPresenter
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -425,14 +427,8 @@ class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
             pk=self.referent.organisation.pk
         ).exists()
 
-        habilitation_request = (
-            HabilitationRequest.objects.filter(email=self.aidant.email)
-            .order_by("-created_at")
-            .first()
-        )
-        formation_attendant = None
-        if habilitation_request:
-            formation_attendant = habilitation_request.formations.first()
+        presenter_formation = self.presenter_formation(self.aidant)
+
         kwargs.update(
             {
                 "aidant": self.aidant,
@@ -441,8 +437,7 @@ class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
                 "form": ChangeAidantOrganisationsForm(self.referent, self.aidant),
                 "common_organisations": common_organisations,
                 "is_aidant_referent_of_current_org": is_aidant_referent_of_current_org,
-                "habilitation_request": habilitation_request,
-                "formation_attendant": formation_attendant,
+                "formation": presenter_formation,
             }
         )
         return super().get_context_data(**kwargs)

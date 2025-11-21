@@ -1,0 +1,3 @@
+{
+  "python.djangoTestRunner.manageProgram": "HEADLESS_FUNCTIONAL_TESTS=True python manage.py test"
+}
