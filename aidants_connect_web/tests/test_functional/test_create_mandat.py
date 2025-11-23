@@ -1,6 +1,6 @@
 from distutils.util import strtobool
 from random import randint
-from unittest import mock, skip
+from unittest import mock
 from unittest.mock import Mock
 
 from django.conf import settings
@@ -15,6 +15,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions
 
+from aidants_connect_common.constants import AuthorizationDurations
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import Aidant, Journal, Mandat
@@ -38,62 +39,51 @@ class CreateNewMandatTests(FunctionalTestCase):
     def setUp(self):
         self.otp = "123455"
         self.aidant: Aidant = AidantFactory(post__with_otp_device=["123456", self.otp])
-
-        # Créer un usager et une connection pour bypasser FranceConnect
         self.usager = UsagerFactory(
             given_name="Angela Claire Louise",
             family_name="DUBOIS",
-            preferred_username="trois",
-            birthdate="1969-12-25",
-            gender="female",
-            birthplace="70447",
-            birthcountry="99100",
-            sub="123456789",
-            email="user@test.com",
         )
-        # Connection de base (sera modifiée par test si nécessaire)
-        self.connection = None
 
-        # Configurer la session de manière synchrone et propre
-        self._setup_session_with_connection()
-
-    def _create_connection(self, is_remote=False, remote_constent_method=None):
-        """Crée une connection avec les paramètres spécifiés"""
-        connection_params = {
-            "aidant": self.aidant,
-            "organisation": self.aidant.organisation,
-            "usager": self.usager,
-            "demarches": ["argent", "famille"],
-            "duree_keyword": "SHORT",
-        }
-
-        if is_remote:
-            connection_params["mandat_is_remote"] = True
-            if remote_constent_method:
-                connection_params["remote_constent_method"] = remote_constent_method
-
-        return ConnectionFactory(**connection_params)
-
-    def _setup_session_with_connection(
-        self, is_remote=False, remote_constent_method=None
+    def _inject_session_cookie(
+        self,
+        is_remote=False,
+        remote_constent_method=RemoteConsentMethodChoices.LEGACY.name,
     ):
-        """Configure la session Django avec l'ID de connection de manière synchrone"""
-        self.connection = self._create_connection(is_remote, remote_constent_method)
+        """Injecte le cookie de session configuré dans Selenium"""
+        self.open_live_url("/")
+        if remote_constent_method == RemoteConsentMethodChoices.SMS.name:
+            connection = ConnectionFactory(
+                aidant=self.aidant,
+                usager=self.usager,
+                organisation=self.aidant.organisation,
+                mandat_is_remote=is_remote,
+                remote_constent_method=remote_constent_method,
+                demarches=["argent", "famille"],
+                duree_keyword=AuthorizationDurations.SHORT,
+                user_phone=format_number(
+                    parse_number("0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION),
+                    PhoneNumberFormat.E164,
+                ),
+                consent_request_id=UUID,
+            )
+        else:
+            connection = ConnectionFactory(
+                aidant=self.aidant,
+                usager=self.usager,
+                organisation=self.aidant.organisation,
+                mandat_is_remote=is_remote,
+                remote_constent_method=remote_constent_method,
+                demarches=["argent", "famille"],
+                duree_keyword=AuthorizationDurations.SHORT,
+            )
 
         client = Client()
         client.force_login(self.aidant)
 
         session = client.session
-        session["connection"] = self.connection.id
+        session["connection"] = connection.id
         session.save()
-
         self.session_key = session.session_key
-
-    def _inject_session_cookie(self):
-        """Injecte le cookie de session configuré dans Selenium"""
-        # D'abord naviguer vers le domaine pour pouvoir ajouter le cookie
-        self.open_live_url("/")
-        # Puis ajouter le cookie de session (sans spécifier le domaine)
         self.selenium.add_cookie(
             {
                 "name": "sessionid",
@@ -233,10 +223,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         text = RemoteConsentMethodChoices.LEGACY.label["label"]
         self.selenium.find_element(By.XPATH, f"//*[contains(text(), '{text}')]").click()
 
-        self._setup_session_with_connection(
-            is_remote=True, remote_constent_method=RemoteConsentMethodChoices.LEGACY
-        )
-        self._inject_session_cookie()
+        self._inject_session_cookie(is_remote=True)
         self.open_live_url("/creation_mandat/recapitulatif/")
         self.wait.until(self.path_matches("new_mandat_recap"))
 
@@ -276,7 +263,6 @@ class CreateNewMandatTests(FunctionalTestCase):
         LM_SMS_SERVICE_SND_SMS_ENDPOINT=reverse("test_sms_api_sms"),
     )
     @mock.patch("aidants_connect_web.views.mandat.uuid4")
-    @skip("Flaky test, to be fixed later")
     def test_create_new_remote_mandat_with_sms_consent(self, uuid4_mock: Mock):
         uuid4_mock.return_value = UUID
 
@@ -398,16 +384,15 @@ class CreateNewMandatTests(FunctionalTestCase):
         """
         )
 
-        self._setup_session_with_connection(
-            is_remote=True, remote_constent_method=RemoteConsentMethodChoices.SMS
+        self._inject_session_cookie(
+            is_remote=True, remote_constent_method=RemoteConsentMethodChoices.SMS.name
         )
-        self._inject_session_cookie()
         self.open_live_url("/creation_mandat/recapitulatif/")
         self.wait.until(self.path_matches("new_mandat_recap"))
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual("Récapitulatif du mandat", recap_title)
+        self.assertEqual("Récapitulatif du mandat à distance", recap_title)
         recap_text = self.selenium.find_element(By.ID, "recap-text").text
         self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
         checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
