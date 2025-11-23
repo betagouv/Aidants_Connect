@@ -67,7 +67,11 @@
                 {% for org in common_organisations %}
                   <p class="fr-text">{{ org.name }}
                       {% if aidant in org.responsables.all %}
-                        <span id="badge-referent" class="fr-badge fr-badge--purple-glycine fr-ml-2v">REFERENT-AIDANT</span>
+                        {% if aidant.referent_non_aidant %}
+                          <span id="badge-referent" class="fr-badge fr-badge--purple-glycine fr-ml-2v">REFERENT</span>
+                        {% else %}
+                          <span id="badge-referent-aidant" class="fr-badge fr-badge--no-icon fr-badge--info fr-ml-2v">REFERENT-AIDANT</span>
+                        {% endif %}
                       {% endif %}
                   </p>
                 {% endfor %}

@@ -219,7 +219,12 @@ class EspaceResponsableAidantPage(TestCase):
         leloo.organisations.add(organisation_3)
         leloo.responsable_de.add(organisation_3)
 
-        korben = AidantFactory(is_active=True, organisation=organisation_1)
+        korben = AidantFactory(
+            is_active=True,
+            organisation=organisation_1,
+            can_create_mandats=False,
+            referent_non_aidant=True,
+        )
         korben.responsable_de.add(organisation_1)
         korben.responsable_de.add(organisation_2)
 
@@ -227,14 +232,16 @@ class EspaceResponsableAidantPage(TestCase):
         response_1 = self.client.get(f"/espace-responsable/aidant/{leloo.id}/")
 
         referent_count = response_1.content.decode().count('id="badge-referent"')
-        aidant_count = response_1.content.decode().count('id="badge-aidant"')
+        referent_aidant_count = response_1.content.decode().count(
+            'id="badge-referent-aidant"'
+        )
 
         # Test the different statuses displayed for Korben
         self.assertContains(response_1, organisation_1.name)
         self.assertContains(response_1, organisation_2.name)
         self.assertContains(response_1, "REFERENT-AIDANT")
-        self.assertEqual(aidant_count, 0)
-        self.assertEqual(referent_count, 1)
+        self.assertEqual(referent_aidant_count, 1)
+        self.assertEqual(referent_count, 0)
 
         # he cannot see organisation_3
         self.assertNotContains(response_1, organisation_3.name)
@@ -243,14 +250,29 @@ class EspaceResponsableAidantPage(TestCase):
         korben.responsable_de.add(organisation_3)
         response_2 = self.client.get(f"/espace-responsable/aidant/{leloo.id}/")
         referent_count = response_2.content.decode().count('id="badge-referent"')
-        aidant_count = response_2.content.decode().count('id="badge-aidant"')
+        referent_aidant_count = response_2.content.decode().count(
+            'id="badge-referent-aidant"'
+        )
 
         self.assertContains(response_2, organisation_1.name)
         self.assertContains(response_2, organisation_2.name)
         self.assertContains(response_2, organisation_3.name)
-        self.assertContains(response_1, "REFERENT-AIDANT")
-        self.assertEqual(aidant_count, 0)
-        self.assertEqual(referent_count, 2)
+        self.assertContains(response_2, "REFERENT-AIDANT")
+        self.assertEqual(referent_aidant_count, 2)
+        self.assertEqual(referent_count, 0)
+
+        response_3 = self.client.get(f"/espace-responsable/aidant/{korben.id}/")
+        referent_count = response_3.content.decode().count('id="badge-referent"')
+        referent_aidant_count = response_3.content.decode().count(
+            'id="badge-referent-aidant"'
+        )
+
+        self.assertContains(response_3, organisation_1.name)
+        self.assertContains(response_3, organisation_2.name)
+        self.assertContains(response_3, organisation_3.name)
+        self.assertContains(response_3, "REFERENT")
+        self.assertEqual(referent_aidant_count, 0)
+        self.assertEqual(referent_count, 3)
 
 
 @tag("responsable-structure")
