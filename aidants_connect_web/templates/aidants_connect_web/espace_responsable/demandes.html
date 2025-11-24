@@ -68,10 +68,8 @@
           {% if organisation_habilitation_validated %}
             {% for validation in organisation_habilitation_validated %}
             <tr>
-              <td>
-                <a class="fr-link" href="{% url 'espace_responsable_aidant' aidant_id=validation.id %}">
+              <td class="fr-text--md">
                   {{ validation.get_full_name }}
-                </a>
               </td>
               <td class="fr-text--md">{{ validation.email }}</td>
             <td class="fr-text--md">{{ validation.connexion_mode_label }}</td>
@@ -153,10 +151,8 @@
           {% if organisation_habilitation_requests %}
             {% for request in organisation_habilitation_requests %}
               <tr>
-                <td>
-                  <a class="fr-link" href="{% url 'espace_responsable_aidant' aidant_id=request.id %}">
+                <td class="fr-text--md">
                     {{ request.get_full_name }}
-                  </a>
                 </td>
                 <td class="fr-text--md">{{ request.email }}</td>
                 <td>
@@ -212,14 +208,14 @@
             {% for refus in organisation_habilitation_refused %}
             <tr>
               <td class="fr-text--md">
-                <a class="fr-link" href="{% url 'espace_responsable_aidant' aidant_id=refus.id %}">
-                  {{ refus.get_full_name }}
-                </a>
+                {{ refus.get_full_name }}
               </td>
               <td class="fr-text--md">{{ refus.email }}</td>
               <td class="fr-text--md">
                 {% if refus.status|lower == "refused" %}
                   <span class="fr-badge fr-badge--warning"> {{ refus.get_status_display }}</span>
+                {% elif refus.status|lower == "cancelled" %}
+                  <span class="fr-badge fr-badge--info"> {{ refus.get_status_display }}</span>
                 {% elif refus.status|lower == "status_cancelled_by_responsable" %}
                   <span class="fr-badge fr-badge--info"> {{ refus.get_status_display }}</span>
                 {% endif %}
