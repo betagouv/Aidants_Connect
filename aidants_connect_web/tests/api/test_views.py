@@ -53,6 +53,7 @@ class OrganisationViewSetTests(APITestCase):
                         "code_postal": orga.zipcode,
                         "code_insee": orga.city_insee_code,
                         "adresse": orga.address,
+                        "address_complement": orga.address_complement,
                         "service": (
                             "Réaliser des démarches administratives "
                             "avec un accompagnement"
@@ -103,6 +104,7 @@ class OrganisationViewSetTests(APITestCase):
                 "code_postal": self.orgas[1].zipcode,
                 "code_insee": self.orgas[1].city_insee_code,
                 "adresse": self.orgas[1].address,
+                "address_complement": self.orgas[1].address_complement,
                 "service": (
                     "Réaliser des démarches administratives avec un accompagnement"
                 ),
