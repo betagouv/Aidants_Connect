@@ -456,7 +456,7 @@ class RecapMandatForm(OTPForm):
 
 
 class CarteOTPSerialNumberForm(forms.Form):
-    serial_number = forms.CharField()
+    serial_number = forms.CharField(label="Entrez le numéro de série")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
