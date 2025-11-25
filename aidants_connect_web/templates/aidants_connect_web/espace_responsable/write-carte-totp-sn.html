@@ -23,14 +23,7 @@
               <div class="shadowed margin-bottom-2rem">
                 <div class="fr-grid-row padding-1rem">
                   <div class="fr-col-12 fr-col-md-6">
-                    <label
-                      class="margin-bottom-1rem"
-                      for="{{ form.serial_number.id_for_label }}"
-                    >
-                      Entrez le numéro de série
-                    </label>
                     <div class="shadowed margin-bottom-2rem padding-1rem">
-                      {{ form.serial_number }}
                       {% dsfr_form_field form.serial_number %}
                     </div>
                     {% if form.errors.serial_number %}
