@@ -19,10 +19,11 @@ from aidants_connect_web.tests.factories import (
 UUID = "1f75d571-4127-445b-a141-ea837580da14"
 
 
-class NewMandatSmsErrorAccessibilityTests(FunctionalTestCase):
+class NewMandatSmsErrorTests(FunctionalTestCase):
     @classmethod
     def setUpClass(cls):
-        cls.port = settings.FC_AS_FS_TEST_PORT
+        # Utiliser un port dynamique (0) au lieu d'un port fixe
+        cls.port = 0
         super().setUpClass()
 
     def setUp(self):

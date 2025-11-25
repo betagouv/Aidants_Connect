@@ -106,4 +106,27 @@ def merge_html_attr_values(attr_value: str | Iterable) -> str:
 @register.inclusion_tag("forms/aidantc-dsfr-input-snippet-no-asterisk.html")
 def aidantc_dsfr_form_field_no_asterisk(field):
     """Template tag DSFR sans astérisque"""
-    return {"field": field}
+    is_inline = getattr(field.field.widget, "inline", False)
+    return {"field": field, "is_inline": is_inline}
+
+
+@register.simple_tag
+def format_siret(value: int):
+    """Format SIRET number: 44951429800024 -> 449 514 298 00024"""
+    siret = str(value)
+    if not value or len(siret) != 14:
+        return value
+    return f"{siret[:3]} {siret[3:6]} {siret[6:9]} {siret[9:]}"
+
+
+@register.simple_tag
+def format_phone(value: str):
+    """Format phone number: +33760076007 -> +33 7 60 07 60 07"""
+    phone = str(value)
+    if not phone or len(phone) != 12:
+        return phone
+    clean_format = (
+        f"{phone[:3]} {phone[3:4]} {phone[4:6]} "
+        f"{phone[6:8]} {phone[8:10]} {phone[10:12]}"
+    )
+    return clean_format

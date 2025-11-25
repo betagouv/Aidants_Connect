@@ -889,25 +889,29 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         )
         self.fill_form(req1, self._all_visible_fields(), self._custom_getter)
         self.selenium.find_element(By.ID, "partial-submit").click()
-        self.selenium.find_element(
+
+        # Attendre que le DOM soit stable après le clic et re-trouver l'élément
+        self.wait.until(self.document_loaded())
+        email_input = self.selenium.find_element(
             By.CSS_SELECTOR, '#empty-form input[id$="email"]'
-        ).send_keys(req1.email)
+        )
+        email_input.send_keys(req1.email)
 
         self._try_open_modal(By.ID, "edit-button-0")
 
-        self.selenium.execute_script(
+        actual = self.selenium.execute_script(
             "return arguments[0].value",
             self.selenium.find_element(
                 By.CSS_SELECTOR, '#empty-form input[id$="email"]'
             ),
         )
 
-        # self.assertEqual(
-        #     req1.email,
-        #     actual,
-        #     "Editing form is not correctly filled. "
-        #     f"Expected email field to be {req1.email}, was {actual}",
-        # )
+        self.assertEqual(
+            req1.email,
+            actual,
+            "Editing form is not correctly filled. "
+            f"Expected email field to be {req1.email}, was {actual}",
+        )
 
     @property
     def _habilitation_requests_form(self) -> HabilitationRequestCreationFormSet:

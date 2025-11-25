@@ -15,8 +15,8 @@ class HabilitationFormStep(IntegerChoices):
     SIRET_VERIFICATION = auto(), "Numéro Siret de la structure"
     ORGANISATION = auto(), "Informations structure"
     REFERENT = auto(), "Référent Aidants Connect"
-    PERSONNEL = auto(), "Les aidants de ma structure"
-    SUMMARY = auto(), "Récapitulatif & validation"
+    PERSONNEL = auto(), "Aidants à habiliter"
+    SUMMARY = auto(), "Récapitulatif et validation de la demande"
 
     @enum_property
     def enum(self):

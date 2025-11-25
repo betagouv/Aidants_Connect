@@ -4,7 +4,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 from django.conf import settings
-from django.test import override_settings, tag
+from django.test import Client, override_settings, tag
 from django.urls import reverse
 from django.utils import timezone
 
@@ -14,12 +14,16 @@ from requests import post as requests_post
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.expected_conditions import url_matches
 
+from aidants_connect_common.constants import AuthorizationDurations
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.models import Aidant, Journal, Mandat
-from aidants_connect_web.tests.factories import AidantFactory
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    ConnectionFactory,
+    UsagerFactory,
+)
 
 UUID = "1f75d571-4127-445b-a141-ea837580da14"
 
@@ -35,6 +39,58 @@ class CreateNewMandatTests(FunctionalTestCase):
     def setUp(self):
         self.otp = "123455"
         self.aidant: Aidant = AidantFactory(post__with_otp_device=["123456", self.otp])
+        self.usager = UsagerFactory(
+            given_name="Angela Claire Louise",
+            family_name="DUBOIS",
+        )
+
+    def _inject_session_cookie(
+        self,
+        is_remote=False,
+        remote_constent_method=RemoteConsentMethodChoices.LEGACY.name,
+    ):
+        """Injecte le cookie de session configuré dans Selenium"""
+        self.open_live_url("/")
+        if remote_constent_method == RemoteConsentMethodChoices.SMS.name:
+            connection = ConnectionFactory(
+                aidant=self.aidant,
+                usager=self.usager,
+                organisation=self.aidant.organisation,
+                mandat_is_remote=is_remote,
+                remote_constent_method=remote_constent_method,
+                demarches=["argent", "famille"],
+                duree_keyword=AuthorizationDurations.SHORT,
+                user_phone=format_number(
+                    parse_number("0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION),
+                    PhoneNumberFormat.E164,
+                ),
+                consent_request_id=UUID,
+            )
+        else:
+            connection = ConnectionFactory(
+                aidant=self.aidant,
+                usager=self.usager,
+                organisation=self.aidant.organisation,
+                mandat_is_remote=is_remote,
+                remote_constent_method=remote_constent_method,
+                demarches=["argent", "famille"],
+                duree_keyword=AuthorizationDurations.SHORT,
+            )
+
+        client = Client()
+        client.force_login(self.aidant)
+
+        session = client.session
+        session["connection"] = connection.id
+        session.save()
+        self.session_key = session.session_key
+        self.selenium.add_cookie(
+            {
+                "name": "sessionid",
+                "value": self.session_key,
+                "path": "/",
+            }
+        )
 
     def test_create_new_mandat(self):
         self.open_live_url("/usagers/")
@@ -70,34 +126,9 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         self.selenium.find_element(By.CSS_SELECTOR, "#id_duree_short ~ label").click()
 
-        # FranceConnect
-        fc_button = self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect")
-        fc_button.click()
-        self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
-        fc_title = self.selenium.title
-        self.assertEqual("Connexion - choix du compte", fc_title)
-
-        # Click on the 'Démonstration' identity provider
-        demonstration_hex = self.selenium.find_element(
-            By.ID, "fi-identity-provider-example"
-        )
-        demonstration_hex.click()
-        self.wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
-
-        # FC - Use the Mélaine_trois credentials
-        demo_title = self.selenium.find_element(By.TAG_NAME, "h3").text
-        self.assertEqual(demo_title, "Fournisseur d'identité de démonstration")
-        submit_button = self.selenium.find_elements(By.TAG_NAME, "input")[2]
-        self.assertEqual(submit_button.get_attribute("type"), "submit")
-        submit_button.click()
-        self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
-
-        # FC - Validate the information
-        submit_button = self.selenium.find_element(By.TAG_NAME, "button")
-        submit_button.click()
-        self.wait.until(
-            self.path_matches("logout_callback", query_params={"state": ".+"})
-        )
+        self._inject_session_cookie()
+        self.open_live_url("/creation_mandat/recapitulatif/")
+        self.wait.until(self.path_matches("new_mandat_recap"))
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -192,32 +223,9 @@ class CreateNewMandatTests(FunctionalTestCase):
         text = RemoteConsentMethodChoices.LEGACY.label["label"]
         self.selenium.find_element(By.XPATH, f"//*[contains(text(), '{text}')]").click()
 
-        # FranceConnect
-        fc_button = self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect")
-        fc_button.click()
-        self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
-
-        # Click on the 'Démonstration' identity provider
-        demonstration_hex = self.selenium.find_element(
-            By.ID, "fi-identity-provider-example"
-        )
-        demonstration_hex.click()
-        self.wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
-
-        # FC - Use the Mélaine_trois credentials
-        demo_title = self.selenium.find_element(By.TAG_NAME, "h3").text
-        self.assertEqual(demo_title, "Fournisseur d'identité de démonstration")
-        submit_button = self.selenium.find_elements(By.TAG_NAME, "input")[2]
-        self.assertEqual(submit_button.get_attribute("type"), "submit")
-        submit_button.click()
-        self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
-
-        # FC - Validate the information
-        submit_button = self.selenium.find_element(By.TAG_NAME, "button")
-        submit_button.click()
-        self.wait.until(
-            self.path_matches("logout_callback", query_params={"state": ".+"})
-        )
+        self._inject_session_cookie(is_remote=True)
+        self.open_live_url("/creation_mandat/recapitulatif/")
+        self.wait.until(self.path_matches("new_mandat_recap"))
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -375,29 +383,12 @@ class CreateNewMandatTests(FunctionalTestCase):
             )
         """
         )
-        self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
 
-        # Click on the 'Démonstration' identity provider
-        demonstration_hex = self.selenium.find_element(
-            By.ID, "fi-identity-provider-example"
+        self._inject_session_cookie(
+            is_remote=True, remote_constent_method=RemoteConsentMethodChoices.SMS.name
         )
-        demonstration_hex.click()
-        self.wait.until(url_matches(r"https://.+franceconnect\.fr/interaction/.+"))
-
-        # FC - Use the Mélaine_trois credentials
-        demo_title = self.selenium.find_element(By.TAG_NAME, "h3").text
-        self.assertEqual(demo_title, "Fournisseur d'identité de démonstration")
-        submit_button = self.selenium.find_elements(By.TAG_NAME, "input")[2]
-        self.assertEqual(submit_button.get_attribute("type"), "submit")
-        submit_button.click()
-        self.wait.until(url_matches(r"https://.+franceconnect\.fr/api/v1/authorize.+"))
-
-        # FC - Validate the information
-        submit_button = self.selenium.find_element(By.TAG_NAME, "button")
-        submit_button.click()
-        self.wait.until(
-            self.path_matches("logout_callback", query_params={"state": ".+"})
-        )
+        self.open_live_url("/creation_mandat/recapitulatif/")
+        self.wait.until(self.path_matches("new_mandat_recap"))
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text

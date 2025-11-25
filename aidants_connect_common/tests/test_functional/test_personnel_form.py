@@ -8,6 +8,7 @@ from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import (
     invisibility_of_element_located,
+    text_to_be_present_in_element,
     visibility_of_element_located,
 )
 
@@ -39,6 +40,15 @@ class FollowMyHabilitationRequestViewTests(FunctionalTestCase):
         self._open_modale()
         self.selenium.find_element(By.ID, "id_email").send_keys(iss.email)
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+        # Attendre que le message de succès apparaisse après le traitement JavaScript
+        self.wait.until(
+            text_to_be_present_in_element(
+                (By.CSS_SELECTOR, '[data-follow-request-modale-target="formContent"]'),
+                "Merci !",
+            )
+        )
+
         self.assertEqual(
             "Merci ! Le lien vers votre demande dʼhabilitation a été envoyé "
             "avec succès à lʼadresse indiquée.",
@@ -59,6 +69,15 @@ class FollowMyHabilitationRequestViewTests(FunctionalTestCase):
         self._open_modale()
         self.selenium.find_element(By.ID, "id_email").send_keys(iss.email)
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
+
+        # Attendre que le message de succès apparaisse après le traitement JavaScript
+        self.wait.until(
+            text_to_be_present_in_element(
+                (By.CSS_SELECTOR, '[data-follow-request-modale-target="formContent"]'),
+                "Merci !",
+            )
+        )
+
         self.assertEqual(
             "Merci ! Le lien vers votre demande dʼhabilitation a été envoyé "
             "avec succès à lʼadresse indiquée.",
