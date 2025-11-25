@@ -284,7 +284,9 @@ urlpatterns = [
     ),
     # FC_as_FS
     path("fc_authorize/", FC_as_FS.FCAuthorize.as_view(), name="fc_authorize"),
+    path("fc_authorizev2/", FC_as_FS.FCAuthorize.as_view(), name="fc_authorizev2"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
+    path("callbackv2/", FC_as_FS.fc_callback_v2, name="fc_callbackv2"),
     # public_website
     path("", service.home_page, name="home_page"),
     path("stats/", service.StatistiquesView.as_view(), name="statistiques"),

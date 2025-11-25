@@ -49,6 +49,7 @@ ua-parser = "==0.18.0"
 sortedcontainers = "~=2.4.0"
 setuptools = "*"
 axe-selenium-python = "~=2.1.6"
+cryptography = "*"
 django = "==4.2.26"
 
 [dev-packages]

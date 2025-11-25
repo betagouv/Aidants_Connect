@@ -80,6 +80,12 @@ FC_AS_FS_BASE_URL = os.environ["FC_AS_FS_BASE_URL"]
 FC_AS_FS_ID = os.environ["FC_AS_FS_ID"]
 FC_AS_FS_SECRET = os.environ["FC_AS_FS_SECRET"]
 FC_AS_FS_CALLBACK_URL = os.environ["FC_AS_FS_CALLBACK_URL"]
+FC_AS_FS_BASE_URL_V2 = os.environ["FC_AS_FS_BASE_URL_V2"]
+FC_AS_FS_CALLBACK_URL_V2 = os.environ["FC_AS_FS_CALLBACK_URL_V2"]
+FC_AS_FS_ID_V2 = os.environ["FC_AS_FS_ID_V2"]
+FC_AS_FS_SECRET_V2 = os.environ["FC_AS_FS_SECRET_V2"]
+FC_AS_FS_KID_V2 = os.environ["FC_AS_FS_KID_V2"]
+FC_AS_FS_N_V2 = os.environ["FC_AS_FS_N_V2"]
 
 FC_CONNECTION_AGE = int(os.environ["FC_CONNECTION_AGE"])
 
