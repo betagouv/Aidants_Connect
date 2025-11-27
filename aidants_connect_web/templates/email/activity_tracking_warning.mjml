@@ -7,28 +7,44 @@
       <p>Bonjour {{ user.get_full_name }},</p>
 
       <p>
-        Votre habilitation Aidants Connect vous permet d’accompagner de façon sécurisée des usagers dans la
-        réalisation de leurs démarches en ligne.
+        Nous avons remarqué que cela fait un moment que vous n'avez pas utilisé votre compte Aidants Connect.
+        Nous espérons vous revoir bientôt.
       </p>
 
       <p>
-        📚 Vous avez besoin d’un rappel au sujet de l’utilisation du dispositif ?
-        <a href="https://aidantsconnect.beta.gouv.fr/ressources/">Retrouvez nos guides de prise en main via ce lien.</a>
+        Nous tenions à vous rappeler que votre compte est toujours actif et prêt à être utilisé.
+        Connectez-vous dès maintenant pour accompagner vos usagers.
       </p>
 
       <p>
-        ⚙️ Vous rencontrez des difficultés techniques ? Contactez-nous à l’adresse suivante :
-        <a href="contact@aidantsconnect.beta.gouv.fr">contact@aidantsconnect.beta.gouv.fr</a>
+        Vous avez des difficultés à utiliser l’outil ? Nous mettons à disposition :
       </p>
 
       <p>
-        🗣️ Vous souhaitez participer à un temps d’échange où nous lèverons les freins liés à l’utilisation de l’outil ?
-        <a href="https://tally.so/r/wkeNk1">Inscrivez-vous à l’un de nos webinaires ici.</a>
+        ✅ Un site d'entraînement sécurisé (bac à sable) :
+        <a href="https://sandbox.aidantsconnect.beta.gouv.fr/">Site bac à sable.</a>
       </p>
 
       <p>
-        🤔 Vous avez des informations à nous partager ?
-        <a href="https://tally.so/r/wvD6Kd">Utilisez ce formulaire.</a>
+        🎓 Un module d’autoformation :
+        <a href="https://incubateurdesterritoires.notion.site/Module-d-auto-formation-en-ligne-1f8744bf03dd8081a9becea68e0e14bc">Module d'autoformation</a>
+      </p>
+
+      <p>
+        📘 Des guides pratiques pour chaque étape (création, révocation, renouvellement de mandats, etc.) :
+        <a href="https://aidantsconnect.beta.gouv.fr/ressources/">Nos ressources ici.</a>
+      </p>
+      <p>
+        Vous ne comprenez pas l’intérêt d’Aidants Connect ? Nous mettons à disposition :
+      </p>
+      <p>
+        ✍️ Un document juridique sur l’intérêt du mandat :
+        <a href="https://lesbases.anct.gouv.fr/ressources/ressources-juridiques-autour-d-aidants-connect.</a>
+      </p>
+
+      <p>
+        🎥 Un webinaire juridique en présence d’un juriste spécialisé
+        <a href="https://lesbases.anct.gouv.fr/ressources/ressources-juridiques-autour-d-aidants-connect.">S'inscrire au webinaire</a>
       </p>
     </mj-text>
 
