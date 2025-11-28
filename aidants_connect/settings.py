@@ -12,12 +12,11 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import logging
 import os
-import re
 import sys
 from datetime import datetime, timedelta
 from itertools import chain
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
 
 from django.conf import global_settings
 from django.utils.crypto import get_random_string

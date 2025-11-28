@@ -1,7 +1,7 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 {% load ac_common ac_extras static %}
 
-{% block title %}Référents - Aidants Connect{% endblock %}
+{% block title %}Gestion des référents - Aidants Connect{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
@@ -12,9 +12,6 @@
 {% block content %}
   <div class="fr-container">
     {% include "layouts/_messages.html" %}
-
-    <h1>Référents</h1>
-
     {% include "aidants_connect_web/espace_aidant/notifications.html" with user=referent %}
 
     <div class="fr-grid-row fr-grid-row--gutters fr-mb-4v">
@@ -42,9 +39,9 @@
         </div>
       {% endfor %}
     </div>
-    <div class="fr-grid-row flex-between">
-      <h2 class="fr-h3" id="active-aidants">Référents actifs</h2>
-      <div class="fr-grid-row">
+    <div class="fr-grid-row fr-grid-row--middle flex-between fr-mb-4w">
+      <h1 class="fr-h2">Gestion des référents</h1>
+      <div class="fr-grid-row fr-grid-row--middle">
         <div class="unset-summary fr-mr-1w">
           <details>
             <summary>
@@ -79,21 +76,30 @@
         </div>
       </div>
     </div>
-    <div class="referent-table">
-      {% if organisation_active_referents %}
-      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_referents %}
-      {% else %}
-      Il n'y a pas de référent actif pour cette organisation
-      {% endif %}
+     <div class="fr-tabs">
+      <ul class="fr-tabs__list" role="tablist" aria-label="Gestion des aidants">
+          <li role="presentation">
+              <button type="button" id="tab-1" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="tab-1-panel">Référents actifs</button>
+          </li>
+          <li role="presentation">
+              <button type="button" id="tab-2" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="tab-2-panel">Référents désactivés</button>
+          </li>
+      </ul>
+      <div id="tab-1-panel" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-1" tabindex="0">
+        {% if organisation_active_referents %}
+          {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_referents is_referent=True %}
+        {% else %}
+          Il n'y a pas de référent actif pour cette organisation.
+        {% endif %}
+      </div>
+      <div id="tab-2-panel" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-2" tabindex="0">
+        {% if organisation_inactive_referents %}
+          {% include "aidants_connect_web/espace_responsable/_organisation_inactives_aidants_list.html" with aidants=organisation_inactive_referents is_referent=True %}
+        {% else %}
+          Il n'y a pas de référent désactivé pour cette organisation.
+        {% endif %}
     </div>
   </div>
-
-  {% if organisation_inactive_referents %}
-    <div class="fr-container inactives-aidants fr-mt-4w">
-      <h2 class="fr-h3" id="inactive-referents">Référents désactivés</h2>
-        {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_inactive_referents %}
-    </div>
-  {% endif %}
 {% endblock content %}
 
 {% block extrajs %}

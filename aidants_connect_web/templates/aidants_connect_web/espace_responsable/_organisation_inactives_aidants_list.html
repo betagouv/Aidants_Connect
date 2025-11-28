@@ -1,7 +1,7 @@
 {% load ac_common ac_extras form_extras %}
 <div class="fr-table fr-table--no-caption d-table fr-table--bordered fr-table--layout-fixed">
   <table>
-    <caption>Table des aidants</caption>
+    <caption>Table {% if is_referent %} des référents {% else %} des aidants {% endif %}</caption>
     <thead>
       <tr>
         <th scope="col" class="fr-text--md fr-col-3">Nom {% if is_referent %} du référent {% else %} de l'aidant {% endif %} </th>
@@ -20,26 +20,18 @@
           <td>
             <div class="fr-grid fr-grid-row fr-grid-row--middle">
               {% if not aidant.has_a_carte_totp and not aidant.has_otp_app %}
-                <p class="fr-badge fr-badge--warning">Aucun</p>
-                <a
-                  id="manage-totp-cards-for-aidant-{{ aidant.id }}"
-                  href='{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}' class="fr-btn fr-btn--tertiary fr-ml-2w"
-                >
-                  Associer un moyen de connexion
-                </a>
-              {% endif %}
-              {% if aidant.has_a_carte_totp %}
-                <p class="fr-tag fr-tag--blue fr-text--md fr-mr-1w"><span class="fr-icon-checkbox-circle-fill fr-btn--icon-left">Carte OTP</span></p>
-                {% if not aidant.carte_totp.totp_device.confirmed %}
-                  <p class="fr-badge fr-badge--warning fr-ml-2w">
-                    A valider
-                  </p>
+                <p class="fr-badge fr-badge--success">Aucun</p>
+              {% else %}
+                {% if aidant.has_a_carte_totp %}
+                  <p class="fr-tag fr-tag--blue fr-text--md fr-mr-1w"><span class="fr-icon-checkbox-circle-fill fr-btn--icon-left">carte OTP</span></p>
                 {% endif %}
-              {% endif %}
-              {% if aidant.has_otp_app %}
-                <p class="fr-tag fr-tag--blue fr-text--md fr-mr-1w"><span class="fr-icon-checkbox-circle-fill fr-btn--icon-left">Application mobile</span></p>
+                {% if aidant.has_otp_app %}
+                  <p class="fr-tag fr-tag--blue fr-text--md fr-mr-1w"><span class="fr-icon-checkbox-circle-fill fr-btn--icon-left">Application mobile</span></p>
+                {% endif %}
+                <p class="fr-badge fr-badge--warning fr-ml-2w">A dissocier</p>
               {% endif %}
             </div>
+
           </td>
           <td>
             <a class="fr-btn fr-btn--secondary fr-icon-arrow-right-line fr-btn--icon-left" href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
@@ -48,6 +40,6 @@
           </td>
         </tr>
       {% endfor %}
-    </tbody>
+  </tbody>
   </table>
 </div>

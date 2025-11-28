@@ -28,7 +28,7 @@ class HabilitationRequestItemPresenter(GenericHabilitationRequestPresenter):
 
     @property
     def full_name(self) -> str:
-        return f'{self._form["first_name"].value()} {self._form["last_name"].value()}'
+        return f"{self._form['first_name'].value()} {self._form['last_name'].value()}"
 
     @property
     def email(self) -> str:
@@ -84,6 +84,7 @@ class AidantFormationPresenter:
             .last()
         )
         self._habilitation_request = habilitation_request
+        self._aidant = aidant
         self._formation_attendant = None
         if (
             self._habilitation_request
@@ -125,6 +126,7 @@ class AidantFormationPresenter:
             return FormationStatus.FORMATION_COMPLETED
         if self._formation_attendant:
             return FormationStatus.FORMATION_ATTENDANCE
+        return None
         # no other cases should happen, caught by formation_info_available guard
 
     @property
