@@ -665,7 +665,11 @@ class RemoveAidantFromOrganisationView(
                 ),
             )
 
-        return redirect("espace_responsable_aidants")
+        # Vérifier si l'aidant est référent de cette organisation
+        if self.aidant in self.organisation.responsables.all():
+            return redirect("espace_responsable_referents")
+        else:
+            return redirect("espace_responsable_aidants")
 
     def get_context_data(self, **kwargs):
         kwargs.update({"aidant": self.aidant, "organisation": self.organisation})
@@ -705,7 +709,12 @@ class ReactivateAidantFromOrganisationView(
                 request,
                 (f"{self.aidant.get_full_name()} a été activé à nouveau avec succés "),
             )
-        return redirect("espace_responsable_aidants")
+
+        # Vérifier si l'aidant est référent de cette organisation
+        if self.aidant in self.organisation.responsables.all():
+            return redirect("espace_responsable_referents")
+        else:
+            return redirect("espace_responsable_aidants")
 
     def get_context_data(self, **kwargs):
         kwargs.update({"aidant": self.aidant, "organisation": self.organisation})
@@ -745,10 +754,8 @@ class ChangeAidantOrganisations(ReferentCannotManageAidantResponseMixin, FormVie
         )
 
         message = _(
-            "Le compte de %(u)s "
-            "a été rattaché aux organisations %(org)s avec succès",
-            "Le compte de %(u)s "
-            "a été rattaché aux organisations %(org)s avec succès",
+            "Le compte de %(u)s a été rattaché aux organisations %(org)s avec succès",
+            "Le compte de %(u)s a été rattaché aux organisations %(org)s avec succès",
             len(posted_organisations),
         ) % {
             "u": self.aidant,
@@ -950,10 +957,7 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
                         organisation_request.save()
         django_messages.success(
             self.request,
-            (
-                "Le compte de "
-                f"{self.aidant.get_full_name()} a été préparé avec succès"
-            ),
+            (f"Le compte de {self.aidant.get_full_name()} a été préparé avec succès"),
         )
 
         return super().form_valid(form)
