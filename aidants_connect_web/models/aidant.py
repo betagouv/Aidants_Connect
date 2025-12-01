@@ -322,6 +322,9 @@ class Aidant(AbstractUser):
     def is_in_organisation(self, organisation: Organisation):
         return self.organisations.filter(pk=organisation.id).exists()
 
+    def is_responsable_of_organisation(self, organisation: Organisation):
+        return self.responsable_de.filter(pk=organisation.id).exists()
+
     def is_responsable_structure(self):
         """
         :return: True if the Aidant is référent of at least one organisation
@@ -405,6 +408,10 @@ class Aidant(AbstractUser):
             return self.is_active
 
         self.organisations.remove(organisation)
+
+        if self.is_responsable_of_organisation(organisation):
+            self.responsable_de.remove(organisation)
+
         if not self.is_in_organisation(self.organisation):
             self.organisation = self.organisations.order_by("id").first()
             self.save()
