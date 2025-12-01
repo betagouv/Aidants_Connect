@@ -14,7 +14,7 @@ DSFR component - Search bar label is hidden by default, so we need to pick it up
     Renseignez le numéro Siret de votre structure
   </label>
   <p class="fr-hint-text fr-mb-2v">Format attendu : 14 chiffres</p>
-  <div class="fr-search-bar fr-search-bar--sm fr-mb-2v" role="search" data-search-target="searchBar">
+  <div class="fr-search-bar fr-search-bar--sm fr-mb-2v" role="search" data-search-target="searchBar" data-controller="siret-formatter">
     <input
       class="fr-input"
       aria-describedby="siret-input-messages"
@@ -25,7 +25,8 @@ DSFR component - Search bar label is hidden by default, so we need to pick it up
       value="{{ form.siret.value|default:'' }}"
       data-search-target="searchInput"
       data-organisation-choice-target="siretInput"
-      data-action="search#search"
+      data-siret-formatter-target="input"
+      data-action="search#search input->siret-formatter#onInput paste->siret-formatter#onPaste"
       {% if form.siret.field.required %}required{% endif %}
       {% if siret_verified %}readonly{% endif %}
     >
