@@ -101,26 +101,22 @@ class EspaceResponsableDemandesFunctionalTests(FunctionalTestCase):
 
     @async_test
     async def test_display_validated_habilitation_requests(self):
-        """Test l'affichage des demandes d'habilitation validées"""
+        """Test l'affichage des demandes dont l'égilibitée est validée"""
 
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(self.live_server_url + "/espace-responsable/demandes/")
-        await self.wait_for_path_match("espace_responsable_demandes")
+        await self.page.goto(self.live_server_url + "/espace-responsable/aidants/")
+        await self.wait_for_path_match("espace_responsable_aidants")
 
-        await expect(self.page.get_by_text("Demandes validées")).to_be_visible()
+        await expect(self.page.get_by_text("Demandes en cours")).to_be_visible()
+        await self.page.get_by_role("tab", name="Demandes en cours").click()
 
         await expect(self.page.get_by_text("Alice Validée")).to_be_visible()
-        await expect(self.page.get_by_text("alice.validee@example.com")).to_be_visible()
-        await expect(self.page.get_by_text("Session")).to_be_visible()
-        await expect(self.page.get_by_text("non inscrit")).to_be_visible()
+        await expect(self.page.get_by_text("Inscrire à une session")).to_be_visible()
 
         await expect(self.page.get_by_text("Bob ValidéP2P")).to_be_visible()
-        await expect(
-            self.page.get_by_text("bob.valide.p2p@example.com")
-        ).to_be_visible()
-        await expect(self.page.get_by_text("Pair à pair")).to_be_visible()
+        await expect(self.page.get_by_text("Formation pair à pair")).to_be_visible()
 
-        # Vérifier que le bouton "Inscrire à une formation" est présent
+        # Vérifier que le bouton "Inscrire à une session" est présent
         # pour les demandes classiques
         await expect(
             self.page.locator(
@@ -143,22 +139,18 @@ class EspaceResponsableDemandesFunctionalTests(FunctionalTestCase):
         """Test l'affichage des demandes d'habilitation en cours"""
 
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(self.live_server_url + "/espace-responsable/demandes/")
-        await self.wait_for_path_match("espace_responsable_demandes")
+        await self.page.goto(self.live_server_url + "/espace-responsable/aidants/")
+        await self.wait_for_path_match("espace_responsable_aidants")
 
-        await expect(self.page.get_by_text("habilitation en cours")).to_be_visible()
+        await expect(self.page.get_by_text("Demandes en cours")).to_be_visible()
+        await self.page.get_by_role("tab", name="Demandes en cours").click()
 
         await expect(self.page.get_by_text("Charlie Nouveau")).to_be_visible()
-        await expect(
-            self.page.get_by_text("charlie.nouveau@example.com")
-        ).to_be_visible()
-
         await expect(self.page.get_by_text("Diana Attente")).to_be_visible()
-        await expect(self.page.get_by_text("diana.attente@example.com")).to_be_visible()
 
         # Vérifier que les noms ne sont pas clicables dans cette section aussi
         pending_table = (
-            self.page.locator("h2:has-text('habilitation en cours')")
+            self.page.locator("h2:has-text('Demandes en cours')")
             .locator("..")
             .locator("table")
         )
@@ -169,19 +161,17 @@ class EspaceResponsableDemandesFunctionalTests(FunctionalTestCase):
         """Test l'affichage des demandes d'habilitation refusées"""
 
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(self.live_server_url + "/espace-responsable/demandes/")
-        await self.wait_for_path_match("espace_responsable_demandes")
+        await self.page.goto(self.live_server_url + "/espace-responsable/aidants/")
+        await self.wait_for_path_match("espace_responsable_aidants")
 
-        await expect(self.page.get_by_text("Demandes refusées")).to_be_visible()
+        await expect(self.page.get_by_text("Demandes en cours")).to_be_visible()
+        await self.page.get_by_role("tab", name="Demandes en cours").click()
 
         await expect(self.page.get_by_text("Eve Refusée")).to_be_visible()
-        await expect(self.page.get_by_text("eve.refusee@example.com")).to_be_visible()
 
         await expect(self.page.get_by_text("Frank Annulé")).to_be_visible()
-        await expect(self.page.get_by_text("frank.annule@example.com")).to_be_visible()
 
         await expect(self.page.get_by_text("Grace AnnuléeParRéférent")).to_be_visible()
-        await expect(self.page.get_by_text("grace.annulee@example.com")).to_be_visible()
 
         await expect(self.page.get_by_text("Refusée", exact=True)).to_be_visible()
         await expect(self.page.get_by_text("Annulée", exact=True)).to_be_visible()
@@ -191,7 +181,7 @@ class EspaceResponsableDemandesFunctionalTests(FunctionalTestCase):
 
         # Vérifier que les noms ne sont pas clicables dans cette section
         refused_table = (
-            self.page.locator("h2:has-text('Demandes refusées')")
+            self.page.locator("h2:has-text('Demandes en cours')")
             .locator("..")
             .locator("table")
         )
