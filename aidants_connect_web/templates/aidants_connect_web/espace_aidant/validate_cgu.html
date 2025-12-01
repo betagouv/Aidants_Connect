@@ -14,7 +14,7 @@
 {% block after_content %}
   <div class="section section-grey">
     <form class="fr-container fr-mt-4v" method="post">
-      {% dsfr_form %}
+      {{ form }}
       {% csrf_token %}
       <button type="submit" class="fr-btn">Valider</button>
     </form>
