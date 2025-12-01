@@ -273,11 +273,6 @@ urlpatterns = [
         name="espace_responsable_cancel_habilitation",
     ),
     path(
-        "espace-responsable/demandes/",
-        espace_responsable.DemandesView.as_view(),
-        name="espace_responsable_demandes",
-    ),
-    path(
         "espace-responsable/aidant-a-former/<int:request_id>/inscription-formation/",
         espace_responsable.FormationRegistrationView.as_view(),
         name="espace_responsable_register_formation",
