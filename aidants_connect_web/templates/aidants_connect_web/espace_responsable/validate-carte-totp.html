@@ -1,6 +1,6 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 
-{% load static %}
+{% load dsfr_tags static %}
 
 {% block title %}Aidants Connect - Valider la carte de {{ aidant.get_full_name }}{% endblock %}
 
@@ -12,7 +12,7 @@
       <div class="fr-col-12 fr-col-md-10">
         <h1>Espace référent</h1>
         <h2>Associer un moyen de connexion</h2>
-        <p class="subtitle">Affectez une carte Aidant & {{ aidant.get_full_name }} en suivant les étapes ci-dessous.</p>
+        <p class="subtitle">Affectez une carte Aidant à {{ aidant.get_full_name }} en suivant les étapes ci-dessous.</p>
 
         <div class="fr-grid-row fr-grid-row--gutters">
           <div class="fr-col-12 fr-col-md-8 margin-bottom-1rem">
@@ -28,12 +28,7 @@
                   Entrez le code à 6 chiffres fourni par votre carte.
                   Sauf mention contraire, tous les champs sont obligatoires.
                 </label>
-                {{ form.otp_token }}
-                {% if form.errors.otp_token %}
-                  <div id="{{ form.otp_token.id_for_label }}-errors">
-                    {{ form.errors.otp_token }}
-                  </div>
-                {% endif %}
+              {% dsfr_form_field form.otp_token %}
               </div>
 
               <button class="fr-btn" type="submit">Valider cette carte</button>
