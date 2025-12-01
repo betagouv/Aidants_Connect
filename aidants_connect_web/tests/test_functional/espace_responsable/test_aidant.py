@@ -499,3 +499,143 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await expect(
             self.page.get_by_text(f"Test PIX réalisé le {date_pix}")
         ).to_be_visible()
+
+    @async_test
+    async def test_deactivate_and_reactivate_aidant(self):
+        """Test la fonctionnalité deasctivate et reactivation d'un aidant"""
+
+        await self.login_aidant(self.responsable_tom, self.otp_token)
+        await self.page.goto(
+            self.live_server_url + f"/espace-responsable/aidant/{self.aidant_tim.id}/"
+        )
+        await self.wait_for_path_match(
+            "espace_responsable_aidant",
+            kwargs={"aidant_id": self.aidant_tim.id},
+        )
+
+        await expect(self.page.get_by_text("Désactiver")).to_be_visible()
+        deactivate_link = self.page.get_by_role("link", name="Désactiver")
+        await deactivate_link.click()
+
+        await self.wait_for_path_match(
+            "espace_responsable_remove_aidant_from_organisation",
+            kwargs={
+                "aidant_id": self.aidant_tim.id,
+                "organisation_id": self.aidant_tim.organisation.id,
+            },
+        )
+
+        confirm_button = self.page.get_by_role("button", name="Confirmer")
+        await confirm_button.click()
+
+        await self.wait_for_path_match(
+            "espace_responsable_aidants",
+        )
+
+        # Vérifier que l'aidant n'apparaît plus dans la liste des aidants actifs
+        await expect(
+            self.page.locator("#active-aidants").get_by_text("Tim Onier")
+        ).not_to_be_visible()
+
+        # Cliquer sur le nom de l'aidant désactivé pour aller sur sa fiche
+        aidant_link = self.page.get_by_role("link", name="Tim Onier")
+        await aidant_link.click()
+
+        await self.wait_for_path_match(
+            "espace_responsable_aidant",
+            kwargs={"aidant_id": self.aidant_tim.id},
+        )
+
+        reactivate_link = self.page.get_by_role("link", name="Réactiver")
+        await reactivate_link.click()
+
+        # Vérifier qu'on arrive sur la page de confirmation de réactivation
+        await self.wait_for_path_match(
+            "espace_responsable_reactivate_aidant_from_organisation",
+            kwargs={
+                "aidant_id": self.aidant_tim.id,
+                "organisation_id": self.aidant_tim.organisation.id,
+            },
+        )
+
+        confirm_reactivate_button = self.page.get_by_role("button", name="Confirmer")
+        await confirm_reactivate_button.click()
+
+        await self.wait_for_path_match(
+            "espace_responsable_aidants",
+        )
+        # Vérifier que l'aidant n'est plus dans la section des aidants désactivés
+        await expect(
+            self.page.locator("#inactive-aidants").get_by_text("Tim Onier")
+        ).not_to_be_visible()
+
+    @async_test
+    async def test_deactivate_and_reactivate_manager(self):
+        """Test la fonctionnalité deasctivate et reactivation d'un aidant"""
+
+        await self.login_aidant(self.responsable_tom, self.otp_token)
+        await self.page.goto(
+            self.live_server_url
+            + f"/espace-responsable/aidant/{self.responsable_marie.id}/"
+        )
+        await self.wait_for_path_match(
+            "espace_responsable_aidant",
+            kwargs={"aidant_id": self.responsable_marie.id},
+        )
+
+        await expect(self.page.get_by_text("Désactiver")).to_be_visible()
+        deactivate_link = self.page.get_by_role("link", name="Désactiver")
+        await deactivate_link.click()
+
+        await self.wait_for_path_match(
+            "espace_responsable_remove_aidant_from_organisation",
+            kwargs={
+                "aidant_id": self.responsable_marie.id,
+                "organisation_id": self.responsable_marie.organisation.id,
+            },
+        )
+
+        confirm_button = self.page.get_by_role("button", name="Confirmer")
+
+        await confirm_button.click()
+
+        await self.wait_for_path_match(
+            "espace_responsable_referents",
+        )
+
+        # Vérifier que le référent-aidant n'apparaît plus
+        await expect(
+            self.page.locator("#active-aidants").get_by_text("Marie Onier")
+        ).not_to_be_visible()
+
+        # Cliquer sur le nom de l'aidant désactivé pour aller sur sa fiche
+        aidant_link = self.page.get_by_role("link", name="Marie Onier")
+        await aidant_link.click()
+
+        await self.wait_for_path_match(
+            "espace_responsable_aidant",
+            kwargs={"aidant_id": self.responsable_marie.id},
+        )
+
+        reactivate_link = self.page.get_by_role("link", name="Réactiver")
+        await reactivate_link.click()
+
+        # Vérifier qu'on arrive sur la page de confirmation de réactivation
+        await self.wait_for_path_match(
+            "espace_responsable_reactivate_aidant_from_organisation",
+            kwargs={
+                "aidant_id": self.responsable_marie.id,
+                "organisation_id": self.responsable_marie.organisation.id,
+            },
+        )
+
+        confirm_reactivate_button = self.page.get_by_role("button", name="Confirmer")
+        await confirm_reactivate_button.click()
+
+        await self.wait_for_path_match(
+            "espace_responsable_referents",
+        )
+        # Vérifier que l'aidant n'est plus dans la section des aidants désactivés
+        await expect(
+            self.page.locator("#inactive-aidants").get_by_text("Marie Onier")
+        ).not_to_be_visible()

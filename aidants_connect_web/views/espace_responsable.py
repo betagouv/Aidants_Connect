@@ -665,7 +665,56 @@ class RemoveAidantFromOrganisationView(
                 ),
             )
 
-        return redirect("espace_responsable_aidants")
+        # Vérifier si l'aidant est référent de cette organisation
+        if self.aidant in self.organisation.responsables.all():
+            return redirect("espace_responsable_referents")
+        else:
+            return redirect("espace_responsable_aidants")
+
+    def get_context_data(self, **kwargs):
+        kwargs.update({"aidant": self.aidant, "organisation": self.organisation})
+        return super().get_context_data(**kwargs)
+
+
+@responsable_logged_with_activity_required
+class ReactivateAidantFromOrganisationView(
+    ReferentCannotManageAidantResponseMixin, TemplateView
+):
+    template_name = "aidants_connect_web/espace_responsable/confirm-reactivate-aidant-from-organisation.html"  # noqa: E501
+
+    def dispatch(self, request, *args, **kwargs):
+        self.referent: Aidant = request.user
+        self.organisation: Organisation = get_object_or_404(
+            Organisation, pk=kwargs["organisation_id"]
+        )
+        if not self.referent.can_manage_aidant(kwargs["aidant_id"]):
+            self.referent_cannot_manage_aidant_response()
+        self.aidant: Aidant = Aidant.objects.get(pk=kwargs["aidant_id"])
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if self.aidant.is_active:
+            django_messages.error(
+                request,
+                (
+                    f"{self.aidant.get_full_name()} est un aidant actif"
+                    f"il ne peut être activé à nouveau"
+                ),
+            )
+        else:
+            self.aidant.is_active = True
+            self.aidant.save()
+            django_messages.success(
+                request,
+                (f"{self.aidant.get_full_name()} a été activé à nouveau avec succés "),
+            )
+
+        # Vérifier si l'aidant est référent de cette organisation
+        if self.aidant in self.organisation.responsables.all():
+            return redirect("espace_responsable_referents")
+        else:
+            return redirect("espace_responsable_aidants")
 
     def get_context_data(self, **kwargs):
         kwargs.update({"aidant": self.aidant, "organisation": self.organisation})
@@ -705,10 +754,8 @@ class ChangeAidantOrganisations(ReferentCannotManageAidantResponseMixin, FormVie
         )
 
         message = _(
-            "Le compte de %(u)s "
-            "a été rattaché aux organisations %(org)s avec succès",
-            "Le compte de %(u)s "
-            "a été rattaché aux organisations %(org)s avec succès",
+            "Le compte de %(u)s a été rattaché aux organisations %(org)s avec succès",
+            "Le compte de %(u)s a été rattaché aux organisations %(org)s avec succès",
             len(posted_organisations),
         ) % {
             "u": self.aidant,
@@ -910,10 +957,7 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
                         organisation_request.save()
         django_messages.success(
             self.request,
-            (
-                "Le compte de "
-                f"{self.aidant.get_full_name()} a été préparé avec succès"
-            ),
+            (f"Le compte de {self.aidant.get_full_name()} a été préparé avec succès"),
         )
 
         return super().form_valid(form)
