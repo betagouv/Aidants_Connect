@@ -65,10 +65,10 @@ class HabilitationRequestsTests(TestCase):
     def test_habilitation_request_is_displayed_if_needed(self):
         HabilitationRequestFactory(organisation=self.org_a)
         self.client.force_login(self.responsable_tom)
-        response = self.client.get(reverse("espace_responsable_demandes"))
+        response = self.client.get(reverse("espace_responsable_aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "Demandes d’habilitation en cours",
+            "Demandes en cours",
             response_content,
             "Confirmation message should be displayed.",
         )
@@ -83,14 +83,12 @@ class HabilitationRequestsTests(TestCase):
             course_type=HabilitationRequestCourseType.P2P,
         )
         self.client.force_login(self.responsable_tom)
-        response = self.client.get(reverse("espace_responsable_demandes"))
+        response = self.client.get(reverse("espace_responsable_aidants"))
         response_content = response.content.decode("utf-8")
-        self.assertIn("Demandes validées", response_content)
-        self.assertIn("p2ptest@example.com", response_content)
-        self.assertIn("Pair à pair", response_content)
-        self.assertNotIn("non inscrit", response_content)
-        self.assertNotIn("Session", response_content)
-        self.assertNotIn("Inscrire à une formation", response_content)
+        self.assertIn("Validée", response_content)
+        self.assertIn("Formation pair à pair", response_content)
+        self.assertNotIn("Session du", response_content)
+        self.assertNotIn("Inscrire à une session", response_content)
 
     def test_add_aidant_allows_create_aidants_for_all_possible_organisations(self):
         self.client.force_login(self.responsable_tom)
@@ -120,11 +118,11 @@ class HabilitationRequestsTests(TestCase):
             )
             self.assertRedirects(
                 response,
-                reverse("espace_responsable_demandes"),
+                reverse("espace_responsable_aidants"),
                 fetch_redirect_response=False,
             )
             self.assertEqual(idx + 1, len(HabilitationRequest.objects.all()))
-            response = self.client.get(reverse("espace_responsable_demandes"))
+            response = self.client.get(reverse("espace_responsable_aidants"))
             response_content = response.content.decode("utf-8")
             self.assertIn(
                 (
@@ -133,11 +131,6 @@ class HabilitationRequestsTests(TestCase):
                 ),
                 response_content,
                 "Confirmation message should be displayed.",
-            )
-            self.assertIn(
-                email,
-                response_content,
-                "New habilitation request should be displayed on organisation page.",
             )
             created_habilitation_request = HabilitationRequest.objects.get(email=email)
             self.assertEqual(
@@ -273,20 +266,15 @@ class HabilitationRequestsTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("espace_responsable_demandes"),
+            reverse("espace_responsable_aidants"),
             fetch_redirect_response=False,
         )
-        response = self.client.get(reverse("espace_responsable_demandes"))
+        response = self.client.get(reverse("espace_responsable_aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "La demande d’habilitation pour Bob Dubois a été enregistrée avec succès.",
             response_content,
             "Confirmation message should be displayed.",
-        )
-        self.assertIn(
-            "b@b.fr",
-            response_content,
-            "New habilitation request should be displayed on organisation page.",
         )
 
     def test_avoid_oracle_for_other_organisations_aidants(self):
@@ -313,20 +301,15 @@ class HabilitationRequestsTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("espace_responsable_demandes"),
+            reverse("espace_responsable_aidants"),
             fetch_redirect_response=False,
         )
-        response = self.client.get(reverse("espace_responsable_demandes"))
+        response = self.client.get(reverse("espace_responsable_aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "La demande d’habilitation pour Bob Dubois a été enregistrée avec succès.",
             response_content,
             "Confirmation message should be displayed.",
-        )
-        self.assertIn(
-            other_aidant.email,
-            response_content,
-            "New habilitation request should be displayed on organisation page.",
         )
 
 
