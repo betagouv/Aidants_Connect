@@ -368,9 +368,9 @@ class OrganisationAdmin(
     def format_list_of_aidants(self, aidants_list):
         return mark_safe(
             "<table><tr>"
-            + '<th scope="col">id</th><th scope="col">Nom</th><th>E-mail</th><th>Carte TOTP</th></tr><tr>'  # noqa
+            + '<th scope="col">id</th><th scope="col">Nom</th><th>E-mail</th><th>Carte TOTP</th><th>Application TOTP</th><th>A un TOTP</th></tr><tr>'  # noqa
             + "</tr><tr>".join(
-                '<td>{}</td><td><a href="{}">{}</a></td><td>{}</td><td>{}</td>'.format(
+                '<td>{}</td><td><a href="{}">{}</a></td><td>{}</td><td>{}</td><td>{}</td><td>{}</td>'.format(  # noqa
                     aidant.id,
                     reverse(
                         "otpadmin:aidants_connect_web_aidant_change",
@@ -379,6 +379,8 @@ class OrganisationAdmin(
                     aidant,
                     aidant.email,
                     aidant.number_totp_card,
+                    "Oui" if aidant.has_otp_app else "Non",
+                    "Oui" if aidant.has_a_totp_device else "Non",
                 )
                 for aidant in aidants_list
             )
