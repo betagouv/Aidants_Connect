@@ -333,6 +333,10 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "carte_totp",
         "display_mandates_count",
         "deactivation_warning_at",
+        "has_otp_app",
+        "created_at",
+        "updated_at",
+        "id_fne",
     )
 
     # For bulk import
@@ -394,10 +398,29 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                     "last_name",
                     "email",
                     "phone",
-                    "password",
-                    "carte_totp",
-                    "display_totp_device_status",
                     "deactivation_warning_at",
+                )
+            },
+        ),
+        (
+            "Informations Technique",
+            {
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                    "created_by_fne",
+                    "id_fne",
+                    "password",
+                )
+            },
+        ),
+        (
+            "Informations de connexion",
+            {
+                "fields": (
+                    "carte_totp",
+                    "has_otp_app",
+                    "display_totp_device_status",
                 )
             },
         ),
@@ -406,8 +429,10 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
             {
                 "fields": (
                     "profession",
+                    "conseiller_numerique",
                     "organisation",
                     "organisations",
+                    "responsable_de",
                     "display_mandates_count",
                 )
             },
@@ -419,10 +444,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                     "is_active",
                     "can_create_mandats",
                     "referent_non_aidant",
-                    "conseiller_numerique",
                     "is_staff",
                     "is_superuser",
-                    "responsable_de",
                 )
             },
         ),
