@@ -213,11 +213,6 @@ urlpatterns = [
         name="espace_responsable_referents",
     ),
     path(
-        "espace-responsable/demandes/",
-        espace_responsable.DemandesView.as_view(),
-        name="espace_responsable_demandes",
-    ),
-    path(
         "espace-responsable/organisation/<int:organisation_id>/responsables/",
         espace_responsable.OrganisationResponsables.as_view(),
         name="espace_responsable_organisation_responsables",
@@ -281,6 +276,11 @@ urlpatterns = [
         "espace-responsable/aidant-a-former/<int:request_id>/annuler-demande",
         espace_responsable.CancelHabilitationRequestView.as_view(),
         name="espace_responsable_cancel_habilitation",
+    ),
+    path(
+        "espace-responsable/demandes/",
+        espace_responsable.DemandesView.as_view(),
+        name="espace_responsable_demandes",
     ),
     path(
         "espace-responsable/aidant-a-former/<int:request_id>/inscription-formation/",

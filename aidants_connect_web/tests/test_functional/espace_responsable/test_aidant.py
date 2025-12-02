@@ -532,13 +532,17 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
             "espace_responsable_aidants",
         )
 
-        # Vérifier que l'aidant n'apparaît plus dans la liste des aidants actifs
-        await expect(
-            self.page.locator("#active-aidants").get_by_text("Tim Onier")
-        ).not_to_be_visible()
+        # Cliquer sur l'onglet "Aidants désactivés"
+        tab_inactive = self.page.get_by_text("Aidants désactivés")
+        await tab_inactive.click()
 
-        # Cliquer sur le nom de l'aidant désactivé pour aller sur sa fiche
-        aidant_link = self.page.get_by_role("link", name="Tim Onier")
+        # Vérifier que l'aidant apparaît dans la liste des aidants désactivés
+        await expect(
+            self.page.locator("#tab-3-panel").get_by_text("Tim Onier")
+        ).to_be_visible()
+
+        tim_row = self.page.locator("#tab-3-panel tr").filter(has_text="Tim Onier")
+        aidant_link = tim_row.get_by_role("link", name="Détail et gestion de l'aidant")
         await aidant_link.click()
 
         await self.wait_for_path_match(
@@ -564,9 +568,14 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await self.wait_for_path_match(
             "espace_responsable_aidants",
         )
+
+        # Cliquer sur l'onglet "Aidants désactivés" pour vérifier qu'il n'y est plus
+        tab_inactive = self.page.get_by_text("Aidants désactivés")
+        await tab_inactive.click()
+
         # Vérifier que l'aidant n'est plus dans la section des aidants désactivés
         await expect(
-            self.page.locator("#inactive-aidants").get_by_text("Tim Onier")
+            self.page.locator("#tab-3-panel").get_by_text("Tim Onier")
         ).not_to_be_visible()
 
     @async_test
@@ -603,13 +612,19 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
             "espace_responsable_referents",
         )
 
-        # Vérifier que le référent-aidant n'apparaît plus
-        await expect(
-            self.page.locator("#active-aidants").get_by_text("Marie Onier")
-        ).not_to_be_visible()
+        # Cliquer sur l'onglet "Référents désactivés"
+        tab_inactive = self.page.get_by_text("Référents désactivés")
+        await tab_inactive.click()
 
-        # Cliquer sur le nom de l'aidant désactivé pour aller sur sa fiche
-        aidant_link = self.page.get_by_role("link", name="Marie Onier")
+        # Vérifier que le référent apparaît dans la liste des référents désactivés
+        await expect(
+            self.page.locator("#tab-2-panel").get_by_text("Marie Onier")
+        ).to_be_visible()
+
+        marie_row = self.page.locator("#tab-2-panel tr").filter(has_text="Marie Onier")
+        aidant_link = marie_row.get_by_role(
+            "link", name="Détail et gestion du référent"
+        )
         await aidant_link.click()
 
         await self.wait_for_path_match(
@@ -635,7 +650,12 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await self.wait_for_path_match(
             "espace_responsable_referents",
         )
-        # Vérifier que l'aidant n'est plus dans la section des aidants désactivés
+
+        # Cliquer sur l'onglet "Référents désactivés" pour vérifier qu'elle n'y est plus
+        tab_inactive = self.page.get_by_text("Référents désactivés")
+        await tab_inactive.click()
+
+        # Vérifier que le référent n'est plus dans la section des référents désactivés
         await expect(
-            self.page.locator("#inactive-aidants").get_by_text("Marie Onier")
+            self.page.locator("#tab-2-panel").get_by_text("Marie Onier")
         ).not_to_be_visible()

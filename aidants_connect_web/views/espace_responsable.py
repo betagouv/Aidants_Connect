@@ -262,6 +262,25 @@ class AidantsView(DetailView, FormView):
         organisation_active_aidants = aidantq_qs.filter(is_active=True)
         organisation_inactive_aidants = aidantq_qs.filter(is_active=False)
 
+        unregistrable_requests = self.object.habilitation_requests.filter(
+            status__in=[
+                ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
+                ReferentRequestStatuses.STATUS_NEW.value,
+                ReferentRequestStatuses.STATUS_REFUSED.value,
+                ReferentRequestStatuses.STATUS_CANCELLED.value,
+                ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE.value,
+            ],
+            created_by_fne=False,
+        ).order_by("status", "last_name")
+
+        eligibility_validated_requests = self.object.habilitation_requests.filter(
+            status__in=[
+                ReferentRequestStatuses.STATUS_PROCESSING.value,
+                ReferentRequestStatuses.STATUS_PROCESSING_P2P.value,
+            ],
+            created_by_fne=False,
+        ).order_by("status", "last_name")
+
         return {
             **super().get_context_data(**kwargs),
             "referent": self.referent,
@@ -272,6 +291,8 @@ class AidantsView(DetailView, FormView):
             "organisation_active_aidants": organisation_active_aidants,
             "organisation_inactive_aidants": organisation_inactive_aidants,
             "perimetres_form": super().get_form(),
+            "eligibility_validated_requests": eligibility_validated_requests,
+            "unregistrable_requests": unregistrable_requests,
         }
 
     def form_valid(self, form):
@@ -972,7 +993,7 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
 class NewHabilitationRequest(FormView):
     template_name = "aidants_connect_web/espace_responsable/new-habilitation-request.html"  # noqa: E501
     form_class = NewHabilitationRequestForm
-    success_url = reverse_lazy("espace_responsable_demandes")
+    success_url = reverse_lazy("espace_responsable_aidants")
 
     def setup(self, request: HttpRequest, *args, **kwargs):
         super().setup(request, *args, **kwargs)
@@ -1038,7 +1059,7 @@ class CancelHabilitationRequestView(DetailView):
 
 @responsable_logged_with_activity_required
 class FormationRegistrationView(CommonFormationRegistrationView):
-    success_url = reverse_lazy("espace_responsable_demandes")
+    success_url = reverse_lazy("espace_responsable_aidants")
 
     def get_habilitation_request(self) -> HabilitationRequest:
         return get_object_or_404(

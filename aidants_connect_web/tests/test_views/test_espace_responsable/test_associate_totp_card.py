@@ -168,7 +168,7 @@ class AssociateCarteTOTPTests(TestCase):
         response = self.client.get(reverse("espace_responsable_aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "Le fonctionnement de cette carte n’a pas été vérifié.",
+            "A valider",
             response_content,
             "Organization page should display a warning about activation.",
         )

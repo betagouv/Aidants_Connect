@@ -1,17 +1,14 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 {% load ac_common ac_extras dsfr_tags static %}
 
-{% block title %}Aidants - Aidants Connect{% endblock %}
+{% block title %}Gestion des aidants - Aidants Connect{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
-  <link href="{% static 'css/custom-dropdown.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
   <div class="fr-container">
-    <h1>Aidants</h1>
-
     {% dsfr_django_messages %}
 
     {% include "aidants_connect_web/espace_aidant/notifications.html" with user=referent %}
@@ -41,28 +38,48 @@
         </div>
       {% endfor %}
     </div>
-    <div class="fr-grid-row flex-between">
-      <h2 class="fr-h3" id="active-aidants">Aidants actifs</h2>
-      <div class="">
-        <div>
-          <a href="{% url "espace_responsable_aidant_new" %}" class="fr-btn fr-btn--icon-left fr-icon-user-add-fill">
-            Ajouter un aidant
-          </a>
-        </div>
+    <div class="fr-grid-row fr-grid-row--middle flex-between fr-mb-4w">
+      <h1 class="fr-h2">Gestion des aidants</h1>
+      <div>
+        <a href="{% url "espace_responsable_aidant_new" %}" class="fr-btn fr-btn--icon-left fr-icon-user-add-fill">
+          Ajouter un aidant
+        </a>
       </div>
     </div>
-
-
-    {% if organisation_active_aidants %}
-      {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_aidants %}
-    {% endif %}
+    <div class="fr-tabs">
+      <ul class="fr-tabs__list" role="tablist" aria-label="Gestion des aidants">
+        <li role="presentation">
+            <button type="button" id="tab-1" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="tab-1-panel">Aidants actifs</button>
+        </li>
+        <li role="presentation">
+            <button type="button" id="tab-2" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="tab-2-panel">Demandes en cours</button>
+        </li>
+        <li role="presentation">
+            <button type="button" id="tab-3" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="tab-3-panel">Aidants désactivés</button>
+        </li>
+      </ul>
+      <div id="tab-1-panel" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-1" tabindex="0">
+        {% if organisation_active_aidants %}
+          {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_aidants is_referent=False %}
+        {% else %}
+          Il n'y a pas d'aidant actif pour cette organisation.
+        {% endif %}
+      </div>
+      <div id="tab-2-panel" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-2" tabindex="0">
+        {% if eligibility_validated_requests or unregistrable_requests %}
+          {% include "aidants_connect_web/espace_responsable/_organisation_habilitation_requests_list.html" with eligibility_validated_requests=eligibility_validated_requests unregistrable_requests=unregistrable_requests %}
+        {% else %}
+          Il n'y a pas de demandes d'habilitation en cours pour cette organisation.
+        {% endif %}
+      </div>
+      <div id="tab-3-panel" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-3" tabindex="0">
+        {% if organisation_inactive_aidants %}
+          {% include "aidants_connect_web/espace_responsable/_organisation_inactives_aidants_list.html" with aidants=organisation_inactive_aidants is_referent=False %}
+        {% else %}
+          Il n'y a pas d'aidant désactivé pour cette organisation.
+        {% endif %}
+      </div>
   </div>
-  {% if organisation_inactive_aidants %}
-    <div class="fr-container inactives-aidants fr-mt-4w">
-      <h2 class="fr-h3" id="inactive-aidants">Aidants désactivés</h2>
-        {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_inactive_aidants %}
-    </div>
-  {% endif %}
 {% endblock content %}
 
 {% block extrajs %}
