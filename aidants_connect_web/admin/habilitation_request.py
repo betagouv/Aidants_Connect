@@ -270,7 +270,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         "id_fne",
         "created_at",
     )
-    readonly_fields = ("created_at", "updated_at")
+    readonly_fields = ("created_at", "updated_at", "id_fne", "course_type")
     raw_id_fields = ("organisation",)
     actions = ("mark_validated", "mark_refused", "mark_processing")
     list_filter = (
@@ -293,6 +293,48 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         "organisation__data_pass_id",
     )
     ordering = ("email",)
+
+    fieldsets = (
+        (
+            "Informations personnelles et professionnelles",
+            {
+                "fields": (
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "organisation",
+                    "profession",
+                    "conseiller_numerique",
+                )
+            },
+        ),
+        (
+            "Informations Habilitation",
+            {
+                "fields": (
+                    "status",
+                    "origin",
+                    "course_type",
+                    "connexion_mode",
+                    "formation_done",
+                    "date_formation",
+                    "test_pix_passed",
+                    "date_test_pix",
+                )
+            },
+        ),
+        (
+            "Informations Technique",
+            {
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                    "created_by_fne",
+                    "id_fne",
+                )
+            },
+        ),
+    )
 
     resource_classes = [HabilitationRequestResource]
 
