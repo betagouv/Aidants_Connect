@@ -104,7 +104,7 @@ def notify_referent_aidant_activated(sender, aidant: Aidant, **_):
             "etsijaccompagnais_url": (
                 "https://www.etsijaccompagnais.fr/ressources-des-aidants"
             ),
-            "faq_url": build_url(reverse("faq_generale")),
+            "faq_url": build_url(reverse("faq_aidant_generale")),
             "home_url": build_url(reverse("home_page")),
             "AC_CONTACT_EMAIL": settings.AC_CONTACT_EMAIL,
         },

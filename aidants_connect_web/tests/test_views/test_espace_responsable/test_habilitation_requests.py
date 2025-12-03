@@ -8,7 +8,10 @@ from django.utils.timezone import now
 
 from aidants_connect_common.models import Formation
 from aidants_connect_common.tests.factories import FormationFactory
-from aidants_connect_web.constants import ReferentRequestStatuses
+from aidants_connect_web.constants import (
+    HabilitationRequestCourseType,
+    ReferentRequestStatuses,
+)
 from aidants_connect_web.models import HabilitationRequest
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -62,13 +65,30 @@ class HabilitationRequestsTests(TestCase):
     def test_habilitation_request_is_displayed_if_needed(self):
         HabilitationRequestFactory(organisation=self.org_a)
         self.client.force_login(self.responsable_tom)
-        response = self.client.get(reverse("espace_responsable_demandes"))
+        response = self.client.get(reverse("espace_responsable_aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "Demandes d’habilitation en cours",
+            "Demandes en cours",
             response_content,
             "Confirmation message should be displayed.",
         )
+
+    def test_habilitation_request_p2p_processing_dont_display_formation_inscription(
+        self,
+    ):
+        HabilitationRequestFactory(
+            organisation=self.org_a,
+            email="p2ptest@example.com",
+            status=ReferentRequestStatuses.STATUS_PROCESSING_P2P,
+            course_type=HabilitationRequestCourseType.P2P,
+        )
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_responsable_aidants"))
+        response_content = response.content.decode("utf-8")
+        self.assertIn("Validée", response_content)
+        self.assertIn("Formation pair à pair", response_content)
+        self.assertNotIn("Session du", response_content)
+        self.assertNotIn("Inscrire à une session", response_content)
 
     def test_add_aidant_allows_create_aidants_for_all_possible_organisations(self):
         self.client.force_login(self.responsable_tom)
@@ -98,21 +118,19 @@ class HabilitationRequestsTests(TestCase):
             )
             self.assertRedirects(
                 response,
-                reverse("espace_responsable_demandes"),
+                reverse("espace_responsable_aidants"),
                 fetch_redirect_response=False,
             )
             self.assertEqual(idx + 1, len(HabilitationRequest.objects.all()))
-            response = self.client.get(reverse("espace_responsable_demandes"))
+            response = self.client.get(reverse("espace_responsable_aidants"))
             response_content = response.content.decode("utf-8")
             self.assertIn(
-                "La demande d’habilitation pour Angela Dubois a bien été enregistrée.",
+                (
+                    "La demande d’habilitation pour Angela Dubois "
+                    "a été enregistrée avec succès."
+                ),
                 response_content,
                 "Confirmation message should be displayed.",
-            )
-            self.assertIn(
-                email,
-                response_content,
-                "New habilitation request should be displayed on organisation page.",
             )
             created_habilitation_request = HabilitationRequest.objects.get(email=email)
             self.assertEqual(
@@ -182,9 +200,9 @@ class HabilitationRequestsTests(TestCase):
             "email",
             errors=[
                 (
-                    "Une demande d’habilitation est déjà en cours pour l’adresse "
-                    "e-mail. Vous n’avez pas besoin de déposer une "
-                    "nouvelle demande pour cette adresse-ci."
+                    "Erreur : une demande d’habilitation est déjà en cours "
+                    "pour l’adresse e-mail. Vous n’avez pas besoin de déposer "
+                    "une nouvelle demande pour cette adresse-ci."
                 )
             ],
         )
@@ -217,9 +235,9 @@ class HabilitationRequestsTests(TestCase):
             "email",
             errors=[
                 (
-                    "Il existe déjà un compte aidant pour cette adresse e-mail. "
-                    "Vous n’avez pas besoin de déposer une nouvelle demande pour cette "
-                    "adresse-ci."
+                    "Erreur : il existe déjà un compte aidant pour cette "
+                    "adresse e-mail. Vous n’avez pas besoin de déposer une "
+                    "nouvelle demande pour cette adresse-ci."
                 )
             ],
         )
@@ -248,20 +266,15 @@ class HabilitationRequestsTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("espace_responsable_demandes"),
+            reverse("espace_responsable_aidants"),
             fetch_redirect_response=False,
         )
-        response = self.client.get(reverse("espace_responsable_demandes"))
+        response = self.client.get(reverse("espace_responsable_aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "La demande d’habilitation pour Bob Dubois a bien été enregistrée.",
+            "La demande d’habilitation pour Bob Dubois a été enregistrée avec succès.",
             response_content,
             "Confirmation message should be displayed.",
-        )
-        self.assertIn(
-            "b@b.fr",
-            response_content,
-            "New habilitation request should be displayed on organisation page.",
         )
 
     def test_avoid_oracle_for_other_organisations_aidants(self):
@@ -288,20 +301,15 @@ class HabilitationRequestsTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("espace_responsable_demandes"),
+            reverse("espace_responsable_aidants"),
             fetch_redirect_response=False,
         )
-        response = self.client.get(reverse("espace_responsable_demandes"))
+        response = self.client.get(reverse("espace_responsable_aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "La demande d’habilitation pour Bob Dubois a bien été enregistrée.",
+            "La demande d’habilitation pour Bob Dubois a été enregistrée avec succès.",
             response_content,
             "Confirmation message should be displayed.",
-        )
-        self.assertIn(
-            other_aidant.email,
-            response_content,
-            "New habilitation request should be displayed on organisation page.",
         )
 
 

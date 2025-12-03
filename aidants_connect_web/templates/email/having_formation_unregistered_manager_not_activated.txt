@@ -1,0 +1,33 @@
+Bonjour,
+
+
+Sauf erreur de notre part, vous n’avez toujours pas activé votre compte Aidants Connect.
+
+Rendez-vous sur la page <a href="{{ url_first_login }}">Première connexion référent</a> et suivez les instructions.
+
+Si vous n’arrivez pas à activer votre compte et souhaitez inscrire les aidants en formation,
+retournez sur votre demande d’habilitation, cliquez sur « Inscrire à une formation » au niveau
+de l’aidant puis sélectionnez une date de session.
+
+L’organisme de formation concerné vous contactera par la suite pour confirmer l’inscription. Notez que des
+financements sont possibles via Uniformation, le marché des conseillers numérique ou France Numérique Ensemble.
+
+Lien vers ma demande d’habilitation : {{ habilitation_requests_url }}
+
+
+Tout savoir sur le rôle de référent
+Pour mieux comprendre le rôle de référent et assister à une démonstration de l'espace référent,
+participez au webinaire dédié. Plusieurs créneaux sont disponibles, inscrivez-vous via <a href="{{ url_formulaire }}">ce formulaire.</a>
+
+Nous contacter
+Si vous rencontrez un problème pour activer votre compte,
+envoyez un e-mail à contact@aidantsconnect.beta.gouv.fr en précisant votre numéro d’habilitation.
+
+Nous vous remercions de votre implication sur le dispositif et nous tenons à disposition pour toute demande.
+
+
+À bientôt sur Aidants Connect !
+
+L’équipe Aidants Connect
+Accompagnez vos usagers en toute sécurité
+Pour toute demande : contact@aidantsconnect.beta.gouv.fr

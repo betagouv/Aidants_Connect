@@ -13,7 +13,9 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 
 from aidants_connect_common.models import Department
+from aidants_connect_erp.models import CardSending
 
+from ..constants import ReferentRequestStatuses
 from .journal import Journal
 from .utils import delete_mandats_and_clean_journal
 
@@ -52,11 +54,19 @@ class OrganisationManager(models.Manager):
         ).distinct()
 
     def having_formation_unregistered_habilitation_requests(self):
-        return self.filter(
-            is_active=True,
-            habilitation_requests__isnull=False,
-            habilitation_requests__formations=None,
-        ).distinct()
+        from aidants_connect_web.models import HabilitationRequest  # noqa
+
+        orga_id = list(
+            set(
+                HabilitationRequest.objects.filter(
+                    created_by_fne=False,
+                    organisation__is_active=True,
+                    status=ReferentRequestStatuses.STATUS_PROCESSING,
+                    formations__isnull=True,
+                ).values_list("organisation_id", flat=True),
+            )
+        )
+        return self.filter(id__in=orga_id).distinct()
 
 
 def organisation_allowed_demarches():
@@ -88,6 +98,9 @@ class Organisation(models.Model):
     is_experiment = models.BooleanField("Structure d'expérimentation ?", default=False)
     siret = models.BigIntegerField("N° SIRET", default=1)
     address = models.TextField("Adresse", default="No address provided")
+    address_complement = models.TextField(
+        "Complément d'adresse", max_length=255, blank=True, default=""
+    )
     zipcode = models.CharField("Code Postal", max_length=10, default="0")
     city = models.CharField("Ville", max_length=255, null=True)
 
@@ -125,6 +138,11 @@ class Organisation(models.Model):
     created_at = models.DateTimeField("Date création", auto_now_add=True)
     updated_at = models.DateTimeField("Date modification", auto_now=True)
 
+    created_by_fne = models.BooleanField("Création FNE", default=False, editable=False)
+    id_fne = models.CharField(
+        "ID FNE", max_length=255, null=True, blank=True, editable=False
+    )
+
     objects = OrganisationManager()
 
     def __str__(self):
@@ -144,10 +162,18 @@ class Organisation(models.Model):
     def num_active_aidants(self):
         return self.aidants.active().count()
 
+    num_active_aidants.short_description = "Nombre d'aidants actifs"
+
     def admin_num_active_aidants(self):
         return self.num_active_aidants
 
-    admin_num_active_aidants.short_description = "Nombre d'aidants actifs"
+    @cached_property
+    def num_cards_used(self):
+        from .mandat import CarteTOTP
+
+        return CarteTOTP.objects.filter(aidant__in=self.aidants.all()).count()
+
+    num_cards_used.short_description = "Nombre de cartes utilisées par un aidant"
 
     @cached_property
     def num_mandats(self):
@@ -174,12 +200,25 @@ class Organisation(models.Model):
         return self.aidants.exclude(responsable_de=self)
 
     @cached_property
+    def responsables_is_active(self) -> QuerySet:
+        return self.responsables.exclude(is_active=False)
+
+    @cached_property
     def num_usagers(self):
         return self.mandats.distinct("usager").count()
 
     @cached_property
     def num_demarches(self):
         return Journal.objects.find_demarches_for_organisation(self).count()
+
+    @cached_property
+    def num_received_cards(self):
+        return CardSending.get_cards_stock_for_one_organisation(self)
+
+    def admin_num_received_cards(self):
+        return self.num_received_cards
+
+    admin_num_received_cards.short_description = "Nombre de cartes reçues"
 
     @cached_property
     def referents_eligible_aidants(self):
@@ -225,11 +264,14 @@ class Organisation(models.Model):
         delete_mandats_and_clean_journal(self, str_today)
 
         # we need migrate aidants before delete organisations
+        message = (
+            "Erreur : vous ne pouvez pas supprimer une organisation avec des aidants."
+        )
         if self.aidants.count() > 0:
             if request:
                 django_messages.error(
                     request,
-                    "Vous ne pouvez pas supprimer une organisation avec des aidants.",
+                    message,
                 )
             return False
 

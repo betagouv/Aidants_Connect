@@ -24,6 +24,7 @@ from aidants_connect.admin import VisibleToAdminMetier
 from aidants_connect.utils import strtobool
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.constants import JournalActionKeywords
+from aidants_connect_habilitation.models import Manager
 from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
 from aidants_connect_web.forms import (
     AidantChangeForm,
@@ -34,6 +35,7 @@ from aidants_connect_web.models import (
     Aidant,
     AidantManager,
     CarteTOTP,
+    HabilitationRequest,
     Journal,
     Organisation,
 )
@@ -284,7 +286,8 @@ class AidantMassDeactivateFromMailFormView(FormView):
             )
 
             message = ngettext(
-                "Nous n’avons trouvé aucun aidant à désactiver portant l’email "
+                "Attention :"
+                "nous n’avons trouvé aucun aidant à désactiver portant l’email "
                 "suivant :%(emails)s.<br/>Ce profil n’a été désactivé.",
                 "Nous n’avons trouvé aucun aidant à désactiver pour les %(count)d "
                 "emails suivants :%(emails)s Ces profils n’ont pas été désactivés.",
@@ -300,7 +303,8 @@ class AidantMassDeactivateFromMailFormView(FormView):
             django_messages.success(
                 self.request,
                 ngettext(
-                    "Le profil correspondant à l’email %(email)s a été désactivé.",
+                    "Le profil correspondant à l’email %(email)s"
+                    "a été désactivé avec succès.",
                     "Nous avons désactivé %(count)d profils.",
                     nb_processed_emails,
                 )
@@ -321,7 +325,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
-    actions = ["mass_deactivate"]
+    actions = ["mass_deactivate", "add_habilitationrequest_to_manager"]
     raw_id_fields = ("responsable_de", "organisation", "organisations")
     readonly_fields = (
         "validated_cgu_version",
@@ -329,6 +333,10 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "carte_totp",
         "display_mandates_count",
         "deactivation_warning_at",
+        "has_otp_app",
+        "created_at",
+        "updated_at",
+        "id_fne",
     )
 
     # For bulk import
@@ -370,6 +378,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         AidantWithOTPAppFilter,
         "is_staff",
         "is_superuser",
+        "created_by_fne",
     )
     search_fields = ("id", *DjangoUserAdmin.search_fields, "organisation__name")
     ordering = ("email",)
@@ -389,10 +398,29 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                     "last_name",
                     "email",
                     "phone",
-                    "password",
-                    "carte_totp",
-                    "display_totp_device_status",
                     "deactivation_warning_at",
+                )
+            },
+        ),
+        (
+            "Informations Technique",
+            {
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                    "created_by_fne",
+                    "id_fne",
+                    "password",
+                )
+            },
+        ),
+        (
+            "Informations de connexion",
+            {
+                "fields": (
+                    "carte_totp",
+                    "has_otp_app",
+                    "display_totp_device_status",
                 )
             },
         ),
@@ -401,8 +429,10 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
             {
                 "fields": (
                     "profession",
+                    "conseiller_numerique",
                     "organisation",
                     "organisations",
+                    "responsable_de",
                     "display_mandates_count",
                 )
             },
@@ -413,10 +443,9 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                 "fields": (
                     "is_active",
                     "can_create_mandats",
-                    "conseiller_numerique",
+                    "referent_non_aidant",
                     "is_staff",
                     "is_superuser",
-                    "responsable_de",
                 )
             },
         ),
@@ -505,3 +534,46 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         self.message_user(request, f"{queryset.count()} profils ont été désactivés")
 
     mass_deactivate.short_description = "Désactiver les profils sélectionnés"
+
+    @staticmethod
+    def _add_habilitationrequest_to_manager(queryset: QuerySet):
+        for one_manager in queryset.all():
+            if (
+                not one_manager.can_create_mandats
+                and not HabilitationRequest.objects.filter(
+                    email=one_manager.email
+                ).exists()
+            ):
+                hr = HabilitationRequest.objects.create(
+                    organisation=one_manager.organisation,
+                    first_name=one_manager.first_name,
+                    last_name=one_manager.last_name,
+                    email=one_manager.email,
+                    profession=one_manager.profession,
+                )
+                hab_manager = Manager.objects.filter(email=one_manager.email).first()
+                if hab_manager:
+                    hab_manager.habilitation_request = hr
+                    hab_manager.save()
+
+    def add_habilitationrequest_to_manager(
+        self, request: HttpRequest, queryset: QuerySet
+    ):
+        self._add_habilitationrequest_to_manager(queryset)
+        self.message_user(
+            request, f"{queryset.count()} référent(s) peuvent s'inscrire en formation"
+        )
+
+    add_habilitationrequest_to_manager.short_description = (
+        "Permettre à un/des référents de s'inscrire en formation"
+    )
+
+
+class MobileAskingUserAdmin(admin.ModelAdmin):
+    list_display = ("user", "user_mobile", "user_padding", "created_at")
+    raw_id_fields = ("user",)
+
+
+class FirstConnexionManagerInfoAdmin(admin.ModelAdmin):
+    list_display = ("user", "user_secret", "created_at")
+    raw_id_fields = ("user",)

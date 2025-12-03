@@ -17,7 +17,7 @@ import sys
 from datetime import datetime, timedelta
 from itertools import chain
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
 
 from django.conf import global_settings
 from django.utils.crypto import get_random_string
@@ -80,6 +80,12 @@ FC_AS_FS_BASE_URL = os.environ["FC_AS_FS_BASE_URL"]
 FC_AS_FS_ID = os.environ["FC_AS_FS_ID"]
 FC_AS_FS_SECRET = os.environ["FC_AS_FS_SECRET"]
 FC_AS_FS_CALLBACK_URL = os.environ["FC_AS_FS_CALLBACK_URL"]
+FC_AS_FS_BASE_URL_V2 = os.environ["FC_AS_FS_BASE_URL_V2"]
+FC_AS_FS_CALLBACK_URL_V2 = os.environ["FC_AS_FS_CALLBACK_URL_V2"]
+FC_AS_FS_ID_V2 = os.environ["FC_AS_FS_ID_V2"]
+FC_AS_FS_SECRET_V2 = os.environ["FC_AS_FS_SECRET_V2"]
+FC_AS_FS_KID_V2 = os.environ["FC_AS_FS_KID_V2"]
+FC_AS_FS_N_V2 = os.environ["FC_AS_FS_N_V2"]
 
 FC_CONNECTION_AGE = int(os.environ["FC_CONNECTION_AGE"])
 
@@ -134,6 +140,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "rest_framework",
+    "rest_framework.authtoken",
     "django_otp",
     "aidants_connect_sandbox.otp_infinite",
     "django_otp.plugins.otp_static",
@@ -394,16 +401,18 @@ EMAIL_HOST = os.getenv("EMAIL_HOST", None)
 EMAIL_PORT = os.getenv("EMAIL_PORT", None)
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", None)
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", None)
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", None)
-EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", None)
+EMAIL_USE_TLS = getenv_bool("EMAIL_USE_TLS", True)
+EMAIL_USE_SSL = getenv_bool("EMAIL_USE_SSL", False)
 
 
 BACKUP_EMAIL_HOST = os.getenv("BACKUP_EMAIL_HOST", EMAIL_HOST)
 BACKUP_EMAIL_PORT = os.getenv("BACKUP_EMAIL_PORT", EMAIL_PORT)
-BACKUP_EMAIL_HOST_USER = os.getenv("BACKUP_EMAIL_HOST_USER", EMAIL_HOST_USER)
-BACKUP_EMAIL_HOST_PASSWORD = os.getenv("BACKUP_MAIL_HOST_PASSWORD", EMAIL_HOST_PASSWORD)
-BACKUP_EMAIL_USE_TLS = os.getenv("BACKUP_EMAIL_USE_TLS", EMAIL_USE_TLS)
-BACKUP_EMAIL_USE_SSL = os.getenv("BACKUP_EMAIL_USE_SSL", EMAIL_USE_SSL)
+BACKUP_EMAIL_HOST_USERNAME = os.getenv("BACKUP_EMAIL_HOST_USERNAME", EMAIL_HOST_USER)
+BACKUP_EMAIL_HOST_PASSWORD = os.getenv(
+    "BACKUP_EMAIL_HOST_PASSWORD", EMAIL_HOST_PASSWORD
+)
+BACKUP_EMAIL_USE_TLS = getenv_bool("BACKUP_EMAIL_USE_TLS", False)
+BACKUP_EMAIL_USE_SSL = getenv_bool("BACKUP_EMAIL_USE_SSL", False)
 
 TDL_NEED_BACKUP_SMTP = os.getenv("TDL_NEED_BACKUP_SMTP", "laposte.net")
 
@@ -428,6 +437,8 @@ MD_EDITOR_JS_URL = "https://unpkg.com/easymde/dist/easymde.min.js"
 MD_EDITOR_CSS_URL = "https://unpkg.com/easymde/dist/easymde.min.css"
 SARBACANE_SCRIPT_URL = "https://forms.sbc29.com/form.js"
 SARBACANE_CONNECT_URL = "https://api.sarbacane.com/v1/forms/contacts/upsert"
+BREVO_IFRAME_URL = "https://0115c97a.sibforms.com/serve/MUIFAOEUqPVTtu5LAcp2Jb6IwxykPCfAQXbKZDkoZsUf4A8T1zH3hzFGvidEm_nbheED_dM3HtKQWnfla_ET40DKbBEN8dXi55l9bF36E7IXtemPGq9dcifiZiYjVho5UcESRhao0Nypf0e4TErVcvJdKh33b788Nu_KPW9okNiaT3wxJQ1Dja5FUbZ7_l9-NBFeCJ_EMWfhg4zq"
+
 COOKIE_BANNER_JS_URL = "https://unpkg.com/tarteaucitronjs@1.15.0/tarteaucitron.js"
 COOKIE_BANNER_LANG_URL = (
     "https://unpkg.com/tarteaucitronjs@1.15.0/lang/tarteaucitron.fr.js"
@@ -492,26 +503,26 @@ CSP_STYLE_SRC_ATTR = (
 )
 
 CSP_OBJECT_SRC = ("'none'",)
-CSP_FRAME_SRC = (
-    *list(
-        chain.from_iterable(
+CSP_FRAME_SRC = list(
+    chain.from_iterable(
+        [
             [
-                [
-                    f"https://www.youtube.com/embed/{video_id}",
-                    f"https://www.youtube-nocookie.com/embed/{video_id}",
-                    f"http://www.youtube.com/embed/{video_id}",
-                    f"http://www.youtube-nocookie.com/embed/{video_id}",
-                ]
-                for video_id in [
-                    "hATrqHG4zYQ",
-                    "WTHj_kQXnzs",
-                    "ihsm-36I-fE",
-                    "AJGo6bydQss",
-                ]
+                f"https://www.youtube.com/embed/{video_id}",
+                f"https://www.youtube-nocookie.com/embed/{video_id}",
+                f"http://www.youtube.com/embed/{video_id}",
+                f"http://www.youtube-nocookie.com/embed/{video_id}",
             ]
-        )
-    ),
+            for video_id in [
+                "hATrqHG4zYQ",
+                "WTHj_kQXnzs",
+                "ihsm-36I-fE",
+                "AJGo6bydQss",
+            ]
+        ]
+    )
 )
+
+CSP_FRAME_SRC.append(BREVO_IFRAME_URL)
 
 CSP_INCLUDE_NONCE_IN = ("script-src", "style-src")
 
@@ -707,7 +718,7 @@ EMAIL_WELCOME_AIDANT_RESSOURCES_URL = os.getenv(
     "https://aidantsconnect.beta.gouv.fr/ressources/",
 )
 EMAIL_WELCOME_AIDANT_FAQ_URL = os.getenv(
-    "EMAIL_WELCOME_AIDANT_FAQ_URL", "https://aidantsconnect.beta.gouv.fr/faq/"
+    "EMAIL_WELCOME_AIDANT_FAQ_URL", "https://aidantsconnect.beta.gouv.fr/faq_aidant/"
 )
 EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES = os.getenv(
     "EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES",
@@ -819,6 +830,11 @@ SANDBOX_API_TOKEN = os.getenv("SANDBOX_API_TOKEN", "TOKEN")
 WEBINAIRE_SUBFORM_URL = os.getenv("WEBINAIRE_SUBFORM_URL", "#")
 
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+    ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
 }
@@ -834,20 +850,34 @@ except ValueError:
     DRIFTED_OTP_CARD_TOLERANCE = 20
 
 PK_MEDNUM_FORMATION_TYPE = os.getenv("PK_MEDNUM_FORMATION_TYPE", 1)
+FORMATION_MAX_ATTENDANTS = int(os.getenv("FORMATION_MAX_ATTENDANTS", 18))
 
+
+# Grist Connexion Information
 GRIST_URL_SERVER = os.getenv("GRIST_URL_SERVER", "")
 GRIST_DOCUMENT_ID = os.getenv("GRIST_DOCUMENT_ID", "")
-GRIST_REBORDING_TABLE_ID = os.getenv("GRIST_REBORDING_TABLE_ID", "")
 GRIST_API_KEY = os.getenv("GRIST_API_KEY", "")
+
+
+GRIST_REBORDING_TABLE_ID = os.getenv("GRIST_REBORDING_TABLE_ID", "")
+
+# Grist Formation
 GRIST_FORMATION_REPORTING_TABLE_ID = os.getenv("GRIST_FORMATION_REPORTING_TABLE_ID", "")
 GRIST_FORMATION_ORGANIZATION_TABLE_ID = os.getenv(
     "GRIST_FORMATION_ORGANIZATION_TABLE_ID", ""
 )
 GRIST_ATTENDEES_TABLE_ID = os.getenv("GRIST_ATTENDEES_TABLE_ID", "")
-
-FORMATION_MAX_ATTENDANTS = int(os.getenv("FORMATION_MAX_ATTENDANTS", 18))
 GRIST_ID_MEDNUM = int(os.getenv("GRIST_ID_MEDNUM", 3))
 GRIST_ID_FAMILLE_RURALES = int(os.getenv("GRIST_ID_FAMILLE_RURALES", 1))
+GRIST_ID_PIMMMS = int(os.getenv("GRIST_ID_PIMMS", 2))
+GRIST_SENDING_TABLE_ID = os.getenv("GRIST_SENDING_TABLE_ID", "")
+GRIST_USERS_TABLE_ID = os.getenv("GRIST_USERS_TABLE_ID", "")
+GRIST_CONNEXION_MODE_ID = os.getenv("GRIST_CONNEXION_MODE_ID", "")
+
+# Grist FNE
+GRIST_DOCUMENT_ID_FNE = os.getenv("GRIST_DOCUMENT_ID_FNE", "")
+GRIST_HR_FNE_TABLE_ID = os.getenv("GRIST_HR_FNE_TABLE_ID", "")
+GRIST_DEPARTMENT_TABLE_ID = os.getenv("GRIST_DEPARTMENT_TABLE_ID", "")
 
 
 LIVESTORM_API_KEY = os.getenv("LIVESTORM_API_KEY")
@@ -858,6 +888,44 @@ FF_DEACTIVATE_OLD_AIDANT = getenv_bool("FF_DEACTIVATE_OLD_AIDANT", False)
 FF_EMAIL_CO_RERERENT_CREATION = getenv_bool("FF_EMAIL_CO_RERERENT_CREATION", False)
 
 URL_FORMATION = os.getenv("URL_FORMATION", get_random_string(12))
+URL_FNEAPI = os.getenv("URL_FNEAPI", get_random_string(12))
+
+URL_CONNEXIONCHOICE = os.getenv("URL_CONNEXIONCHOICE", get_random_string(12))
+URL_TEST_PIX = os.getenv("URL_TEST_PIX", "")
+URL_ASK_MOBILE = os.getenv("URL_ASK_MOBILE", get_random_string(12))
+
+
+URL_FIRST_LOGIN_REFERENT = os.getenv("URL_FIRST_LOGIN_REFERENT", get_random_string(12))
+FIRST_LOGIN_REFERENT_EMAIL_HTML_TEMPLATE = (
+    "login/first_login_referent_email_template.mjml"
+)
+FIRST_LOGIN_REFERENT_EMAIL_TEXT_TEMPLATE = (
+    "login/first_login_referent_email_template.txt"
+)
+FIRST_LOGIN_REFERENT_EMAIL_SUBJECT = os.getenv(
+    "FIRST_LOGIN_REFERENT_EMAIL_SUBJECT", "Lien pour le code de première connexion"
+)
+
+
+FIRT_LOGIN_ACCOUNT = os.getenv("FIRT_LOGIN_ACCOUNT", "")
+FIRT_LOGIN_PASS = os.getenv("FIRT_LOGIN_PASS", "")
+FIRST_LOGIN_USER = os.getenv("FIRST_LOGIN_USER", "")
+FIRT_LOGIN_URL = os.getenv("FIRT_LOGIN_URL", "")
+FIRST_LOGIN_SENDER = os.getenv("FIRST_LOGIN_SENDER", "")
+FISRT_LOGIN_MESSAGE = os.getenv("FISRT_LOGIN_MESSAGE", "")
+
+API_INSEE_TOKEN = os.getenv("API_INSEE_TOKEN", "")
+URL_WEBINAIRE_REFERENT = os.getenv(
+    "URL_WEBINAIRE_REFERENT",
+    "https://app.livestorm.co/aidants-connect/webinaire-referent",
+)
+
+EMAIL_FNE_MANAGER_COMODE_URLWEBINAR = os.getenv(
+    "EMAIL_FNE_MANAGER_COMODE_URLWEBINAR",
+    "https://tube.numerique.gouv.fr/w/pkamuvHJtg1LdcEtGV32a3",
+)
+
+EMAIL_FNE_MANAGER_COMODE_URLFLOGIN = os.getenv("EMAIL_FNE_MANAGER_COMODE_URLFLOGIN", "")
 
 
 # ######################## SANDBOX SETTING ############################

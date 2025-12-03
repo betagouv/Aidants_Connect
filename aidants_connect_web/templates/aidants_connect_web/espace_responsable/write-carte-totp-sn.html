@@ -1,6 +1,6 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 
-{% load static %}
+{% load dsfr_tags static %}
 
 {% block title %}Aidants Connect - Associer la carte à {{ aidant.get_full_name }}{% endblock %}
 
@@ -11,7 +11,7 @@
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-10">
         <h1>Espace référent</h1>
-        <h2>Lier une carte</h2>
+        <h2>Associer un moyen de connexion</h2>
         <p class="subtitle">Affectez une carte Aidant à {{ aidant.get_full_name }} en suivant les étapes ci-dessous.</p>
 
         <div class="fr-grid-row fr-grid-row--gutters">
@@ -23,14 +23,8 @@
               <div class="shadowed margin-bottom-2rem">
                 <div class="fr-grid-row padding-1rem">
                   <div class="fr-col-12 fr-col-md-6">
-                    <label
-                      class="margin-bottom-1rem"
-                      for="{{ form.serial_number.id_for_label }}"
-                    >
-                      Entrez le numéro de série
-                    </label>
-                    <div class="margin-top-1rem">
-                      {{ form.serial_number }}
+                    <div class="shadowed margin-bottom-2rem padding-1rem">
+                      {% dsfr_form_field form.serial_number %}
                     </div>
                     {% if form.errors.serial_number %}
                       <div id="{{ form.serial_number.id_for_label }}__errors">

@@ -302,9 +302,9 @@ class AuthorizeTests(TestCase):
         self.assertListEqual(
             response.context_data["form"].errors["chosen_usager"],
             [
-                "Aucun profil n'a été trouvé.Veuillez taper le nom d'une personne et "
-                "la barre de recherche et sélectionner parmis les propositions dans "
-                "la liste déroulante"
+                "Erreur : aucun profil n'a été trouvé. Veuillez taper le nom "
+                "d'une personne et la barre de recherche et sélectionner "
+                "parmis les propositions dans la liste déroulante"
             ],
         )
 

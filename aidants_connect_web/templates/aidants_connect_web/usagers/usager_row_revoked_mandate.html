@@ -1,0 +1,47 @@
+{% load ac_extras i18n %}
+
+{% with auth_badge_classes="auth-badge fr-badge fr-badge--no-icon fr-text--xs" %}
+  <tr data-search-target="item" data-search-terms="{{ usager.search_terms|json_attribute }}">
+    <td>
+      <a class="fr-link" href="{% url 'usager_details' usager_id=usager.id %}">
+        {% if usager.preferred_username %}
+          {{ usager.preferred_username }}<br />
+          Né(e)
+        {% endif %}
+        {{ usager.given_name }}
+        {{ usager.family_name }}
+      </a>
+    </td>
+    <td>{{ usager.birthdate|date:"d F" }}</td>
+    {% if mandats|length > 1 %}
+      <td></td>
+    {% else %}
+      {% for mandat in mandats %}
+        <td>
+          <div class="auth-badges">
+            {% for autorisation in mandat.1 %}
+              <p class="{{ auth_badge_classes }} fr-text-mention--grey">{{ autorisation }} </p>
+            {% endfor %}
+          </div>
+        </td>
+      {% endfor %}
+    {% endif %}
+  </tr>
+{% if mandats|length > 1 %}
+    {% for mandat in mandats %}
+      <tr data-search-target="item" data-search-terms="{{ usager.search_terms|json_attribute }}">
+        <td>
+          Mandat du {{ mandat.0.creation_date|date:"d F Y" }}
+        </td>
+        <td></td>
+        <td>
+          <div class="auth-badges">
+            {% for autorisation in mandat.1 %}
+              <p class="{{ auth_badge_classes }} fr-text-mention--grey">{{ autorisation }} </p>
+            {% endfor %}
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+  {% endif %}
+{% endwith %}

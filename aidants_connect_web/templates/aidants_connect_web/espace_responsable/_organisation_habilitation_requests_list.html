@@ -1,0 +1,81 @@
+  <div class="fr-table fr-table--no-caption d-table fr-table--bordered fr-table--layout-fixed">
+    <table>
+      <caption>Table des demandes d'habilitations en cours</caption>
+      <thead>
+        <tr>
+          <th scope="col" class="fr-col-2 fr-text--md">Nom de l'aidant</th>
+          <th scope="col" class="fr-col-3 fr-text--md">Statut de la demande</th>
+          <th scope="col" class="fr-col-3 fr-text--md">Inscription en formation</th>
+          <th scope="col" class="fr-col-4 fr-text--md">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for habilitation_request in eligibility_validated_requests %}
+          <tr>
+            <td class="fr-text--md">
+              {{ habilitation_request.get_full_name }}
+            </td>
+            <td class="fr-text--md">
+              <p class="fr-badge fr-badge--success">Validée</p>
+            </td>
+            <td class="fr-text--md">
+              {% if habilitation_request.formations.exists %}
+                <p class="fr-tag fr-tag--blue fr-text--md fr-mr-1w">
+                  <span class="fr-icon-checkbox-circle-fill fr-btn--icon-left">
+                      Session du {{ habilitation_request.formations.last.formation.start_datetime|date:"d/m/Y" }}
+                  </span>
+                </p>
+              {% elif habilitation_request.course_type == 1 %}
+                <a
+                    id="register-habilitation-request-{{ habilitation_request.id }}"
+                    href="{% url 'espace_responsable_register_formation' request_id=habilitation_request.id %}"
+                    class="fr-mr-2w fr-btn fr-btn--secondary fr-text--md"
+                  >
+                  Inscrire à une session
+                </a>
+              {% elif habilitation_request.course_type == 2 %}
+                <p class="fr-tag fr-tag--blue fr-text--md fr-mr-1w">
+                  <span class="fr-icon-checkbox-circle-fill fr-btn--icon-left">
+                    Formation pair à pair
+                  </span>
+                </p>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'espace_responsable_cancel_habilitation' request_id=habilitation_request.id %}"
+                  class="fr-btn fr-btn--tertiary"
+                  id="cancel-habilitation-request-{{ habilitation_request.id }}">
+                Annuler la demande d'habilitation
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+        {% for habilitation_request in unregistrable_requests %}
+          <tr>
+            <td class="fr-text--md">
+              {{ habilitation_request.get_full_name }}
+            </td>
+            <td class="fr-text--md">
+              {% if habilitation_request.status == "refused" %}
+                <p class="fr-badge fr-badge--error">{{ habilitation_request.status_label }}</p>
+              {% elif "cancelled" in habilitation_request.status %}
+                <p class="fr-badge fr-badge--warning">{{ habilitation_request.status_label }}</p>
+              {% else %}
+                <p class="fr-badge fr-badge--info">{{ habilitation_request.status_label }}</p>
+              {% endif %}
+            </td>
+            <td class="fr-text--md"></td>
+            <td>
+              {% if habilitation_request.status_cancellable_by_responsable %}
+                <a href="{% url 'espace_responsable_cancel_habilitation' request_id=habilitation_request.id %}"
+                    class="fr-btn fr-btn--tertiary"
+                    id="cancel-habilitation-request-{{ habilitation_request.id }}">
+                  Annuler la demande d'habilitation
+                </a>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>

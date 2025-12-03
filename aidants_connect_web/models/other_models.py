@@ -39,11 +39,25 @@ class HabilitationRequest(models.Model):
         ORIGIN_HABILITATION: "Formulaire Habilitation",
     }
 
+    CONNEXION_MODE_CARD = "card"
+    CONNEXION_MODE_PHONE = "phone"
+
+    CONNEXION_MODE_LABELS = {
+        CONNEXION_MODE_CARD: "Carte physique",
+        CONNEXION_MODE_PHONE: "Application mobile",
+    }
+
     first_name = models.CharField("Prénom", max_length=150)
     last_name = models.CharField("Nom", max_length=150)
     email = models.EmailField(
         max_length=150,
     )
+
+    created_by_fne = models.BooleanField("Création FNE", default=False)
+    id_fne = models.CharField(
+        "ID FNE", max_length=255, null=True, blank=True, editable=False
+    )
+
     organisation = models.ForeignKey(
         Organisation,
         null=True,
@@ -67,6 +81,17 @@ class HabilitationRequest(models.Model):
         max_length=150,
         choices=((origin, label) for origin, label in ORIGIN_LABELS.items()),
         default=ORIGIN_OTHER,
+    )
+
+    connexion_mode = models.CharField(
+        "Moyen de connexion",
+        max_length=150,
+        blank=True,
+        null=True,
+        default="",
+        choices=(
+            (con_mode, label) for con_mode, label in CONNEXION_MODE_LABELS.items()
+        ),
     )
 
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
@@ -105,12 +130,19 @@ class HabilitationRequest(models.Model):
     def origin_label(self):
         return self.ORIGIN_LABELS[self.origin]
 
+    @property
+    def connexion_mode_label(self):
+        if self.connexion_mode:
+            return self.CONNEXION_MODE_LABELS[self.connexion_mode]
+        return ""
+
     def __str__(self):
         return f"{self.aidant_full_name} ({self.email})"
 
     def validate_and_create_aidant(self):
         if self.status not in (
             ReferentRequestStatuses.STATUS_PROCESSING,
+            ReferentRequestStatuses.STATUS_PROCESSING_P2P,
             ReferentRequestStatuses.STATUS_NEW,
             ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
             ReferentRequestStatuses.STATUS_VALIDATED,
@@ -122,11 +154,15 @@ class HabilitationRequest(models.Model):
             if Aidant.objects.filter(username__iexact=self.email).count() > 0:
                 aidant: Aidant = Aidant.objects.get(username__iexact=self.email)
                 aidant.organisations.add(self.organisation)
-                aidant.is_active = True
+                # aidant.is_active = True
+                aidant.referent_non_aidant = False
                 aidant.can_create_mandats = True
                 aidant.save()
                 self.status = ReferentRequestStatuses.STATUS_VALIDATED
                 self.save()
+                # from aidants_connect_web.signals import aidant_activated
+                #
+                # aidant_activated.send(self.__class__, aidant=aidant, hrequest=self)
                 return True
 
             aidant = Aidant.objects.create(
@@ -136,6 +172,8 @@ class HabilitationRequest(models.Model):
                 organisation=self.organisation,
                 email=self.email,
                 username=self.email,
+                created_by_fne=self.created_by_fne,
+                id_fne=self.id_fne,
                 conseiller_numerique=self.conseiller_numerique,
             )
             self.status = ReferentRequestStatuses.STATUS_VALIDATED
@@ -143,7 +181,7 @@ class HabilitationRequest(models.Model):
 
         from aidants_connect_web.signals import aidant_activated
 
-        aidant_activated.send(self.__class__, aidant=aidant)
+        aidant_activated.send(self.__class__, aidant=aidant, hrequest=self)
 
         return True
 
@@ -334,3 +372,14 @@ class ReferentsFormation(models.Model):
         "A participé à la formation", default=False
     )
     replay_seen = models.BooleanField("A vu le replay", default=False)
+
+
+class LogEmailSending(models.Model):
+    created_at = models.DateTimeField("Date de création", auto_now_add=True)
+    updated_at = models.DateTimeField("Date de modification", auto_now=True)
+
+    last_sending_date = models.DateTimeField(
+        "Date de dernier envoi", null=True, blank=True
+    )
+    code_email = models.CharField("Code email", max_length=255)
+    aidant = models.ForeignKey(Aidant, on_delete=models.CASCADE)

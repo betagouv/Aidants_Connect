@@ -54,7 +54,7 @@ class Home(TemplateView):
 
         common_infos = {
             "extra_classes": "fr-tile--horizontal fr-tile--sm",
-            "heading_tag": self.tiles_heading_tag,
+            "heading_tag": "h2",
         }
 
         return [
@@ -107,7 +107,7 @@ class Home(TemplateView):
                 {
                     "title": "Créer un mandat avec un usager",
                     **tile_attr_from_file(
-                        "guides_aidants_connect/AC_Guide_CreerUnMandat.pdf"
+                        "guides_aidants_connect/AC_Guide_CreerunMandat.pdf"
                     ),
                 },
                 {
@@ -127,12 +127,12 @@ class Home(TemplateView):
                 },
                 *(
                     []
-                    if settings.SANDBOX_URL
+                    if not settings.SANDBOX_URL
                     else [
                         {
                             "title": "Site bac à sable",
                             "link": settings.SANDBOX_URL,
-                            "description": "aidantsconnect.beta.gouv.fr",
+                            "description": f"{settings.SANDBOX_URL}",
                             "new_tab": True,
                             "heading_tag": self.tiles_heading_tag,
                         }
@@ -162,7 +162,7 @@ class ValidateCGU(FormView):
         self.aidant.validated_cgu_version = settings.CGU_CURRENT_VERSION
         self.aidant.save(update_fields={"validated_cgu_version"})
         django_messages.success(
-            self.request, "Merci d’avoir validé les CGU Aidants Connect."
+            self.request, "Les CGU Aidants Connect ont été validées avec succès."
         )
         return super().form_valid(form)
 
@@ -186,7 +186,7 @@ class SwitchMainOrganisation(BaseFormView):
     def form_invalid(self, form):
         django_messages.error(
             self.request,
-            "Il est impossible de sélectionner cette organisation.",
+            "Erreur : il est impossible de sélectionner cette organisation.",
         )
 
         logger.error(
@@ -206,7 +206,8 @@ class SwitchMainOrganisation(BaseFormView):
 
         django_messages.success(
             self.request,
-            f"Organisation {self.aidant.organisation.name} selectionnée",
+            f"L'organisation {self.aidant.organisation.name} "
+            "a été sélectionnée avec succès.",
         )
 
         self.next_url = form.cleaned_data["next_url"]

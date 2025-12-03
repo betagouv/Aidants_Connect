@@ -16,6 +16,7 @@ from aidants_connect_web.views import (
     login,
     mandat,
     notifications,
+    others,
     renew_mandat,
     sandbox,
     service,
@@ -24,8 +25,40 @@ from aidants_connect_web.views import (
 )
 
 urlpatterns = [
+    # connexion choice
+    path(
+        f"{settings.URL_CONNEXIONCHOICE}/ad_connexion_choice",
+        others.ConnexionChoiceView.as_view(),
+        name="connexion_choice",
+    ),
+    # mobile asking
+    path(
+        f"{settings.URL_ASK_MOBILE}/<str:referent_id>/mobile_asking_referent/",
+        others.AskingMobileView.as_view(),
+        name="asking_mobile",
+    ),
+    path(
+        "thanks_asking_mobile/",
+        others.ThanksAskingMobileView.as_view(),
+        name="thanks_asking_mobile",
+    ),
     # service
     path("accounts/login/", login.LoginView.as_view(), name="login"),
+    path(
+        "accounts/manager_first_login/",
+        login.ManagerFirstLoginView.as_view(),
+        name="manager_first_login",
+    ),
+    path(
+        "accounts/manager_first_connexion_email_sent/",
+        login.ManagerFirstLoginEmailSentView.as_view(),
+        name="manager_first_connexion_email_sent",
+    ),
+    path(
+        f"accounts/manager_first_login_with_code/{settings.URL_FIRST_LOGIN_REFERENT}/<str:manager_id>/",  # noqa
+        login.ManagerFirstLoginWithCodeView.as_view(),
+        name="manager_first_login_with_code",
+    ),
     path(magicauth_settings.LOGIN_URL, login.LoginRedirect.as_view()),
     path("logout-session/", service.logout_page, name="logout"),
     path("activity_check/", service.activity_check, name="activity_check"),
@@ -181,11 +214,6 @@ urlpatterns = [
         name="espace_responsable_referents",
     ),
     path(
-        "espace-responsable/demandes/",
-        espace_responsable.DemandesView.as_view(),
-        name="espace_responsable_demandes",
-    ),
-    path(
         "espace-responsable/organisation/<int:organisation_id>/responsables/",
         espace_responsable.OrganisationResponsables.as_view(),
         name="espace_responsable_organisation_responsables",
@@ -226,6 +254,11 @@ urlpatterns = [
         name="espace_responsable_remove_aidant_from_organisation",
     ),
     path(
+        "espace-responsable/aidant/<int:aidant_id>/reactivate-aidant/<int:organisation_id>/",  # noqa: E501
+        espace_responsable.ReactivateAidantFromOrganisationView.as_view(),
+        name="espace_responsable_reactivate_aidant_from_organisation",
+    ),
+    path(
         "espace-responsable/aidant/<int:aidant_id>/type-carte",
         espace_responsable.ChooseTOTPDevice.as_view(),
         name="espace_responsable_choose_totp",
@@ -246,13 +279,20 @@ urlpatterns = [
         name="espace_responsable_cancel_habilitation",
     ),
     path(
+        "espace-responsable/demandes/",
+        espace_responsable.DemandesView.as_view(),
+        name="espace_responsable_demandes",
+    ),
+    path(
         "espace-responsable/aidant-a-former/<int:request_id>/inscription-formation/",
         espace_responsable.FormationRegistrationView.as_view(),
         name="espace_responsable_register_formation",
     ),
     # FC_as_FS
     path("fc_authorize/", FC_as_FS.FCAuthorize.as_view(), name="fc_authorize"),
+    path("fc_authorizev2/", FC_as_FS.FCAuthorize.as_view(), name="fc_authorizev2"),
     path("callback/", FC_as_FS.fc_callback, name="fc_callback"),
+    path("callbackv2/", FC_as_FS.fc_callback_v2, name="fc_callbackv2"),
     # public_website
     path("", service.home_page, name="home_page"),
     path("stats/", service.StatistiquesView.as_view(), name="statistiques"),
@@ -263,6 +303,7 @@ urlpatterns = [
         name="politique_confidentialite",
     ),
     path("mentions-legales/", service.mentions_legales, name="mentions_legales"),
+    path("budget/", service.budget, name="budget"),
     path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
     path("formation/", service.formation, name="habilitation_faq_formation"),
     path("habilitation/", service.habilitation, name="habilitation_faq_habilitation"),
@@ -309,6 +350,7 @@ urlpatterns = [
         formations.FormationsListing.as_view(),
         name="listing_formations",
     ),
+    path("plan-du-site/", service.SitemapView.as_view(), name="sitemap"),
 ]
 
 urlpatterns.extend(magicauth_urls)

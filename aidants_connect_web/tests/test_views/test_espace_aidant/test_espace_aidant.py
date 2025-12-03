@@ -39,6 +39,24 @@ class EspaceAidantHomePageTests(TestCase):
         self.assertTemplateUsed(response, "aidants_connect_web/espace_aidant/home.html")
 
 
+@tag("aidants")
+class BannerNotificationTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant_without_totp: Aidant = AidantFactory(
+            username="aidant_without_totp",
+            validated_cgu_version=settings.CGU_CURRENT_VERSION,
+            post__is_organisation_manager=True,
+        )
+
+    def test_ask_to_activate_totp_device(self):
+        self.assertFalse(self.aidant_without_totp.has_a_totp_device)
+        self.client.force_login(self.aidant_without_totp)
+        response = self.client.get("/espace-aidant/")
+        response_content = response.content.decode("utf-8")
+        self.assertIn("/type-carte", response_content)
+
+
 @tag("usagers")
 class ValidateCGU(TestCase):
     @classmethod
@@ -183,7 +201,8 @@ class SwitchOrganisationTests(TestCase):
         )
 
     def test_aidant_cannot_switch_to_an_unexisting_orga(self):
-        orgas = self.aidant_with_orgs.organisations.all()
+        # L'organisation initiale de l'aidant est first_org
+        initial_org_id = self.aidant_with_orgs.organisation.id
         self.client.force_login(self.aidant_with_orgs)
         response = self.client.post(
             reverse("espace_aidant_switch_main_organisation"),
@@ -197,14 +216,16 @@ class SwitchOrganisationTests(TestCase):
         response = self.client.get(reverse("espace_aidant_switch_main_organisation"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Il est impossible de sélectionner cette organisation.",
+            "Erreur : il est impossible de sélectionner cette organisation.",
             messages[0].message,
         )
         self.aidant_with_orgs.refresh_from_db()
-        self.assertEqual(self.aidant_with_orgs.organisation.id, orgas[0].id)
+        # Vérifier que l'organisation n'a pas changé
+        self.assertEqual(self.aidant_with_orgs.organisation.id, initial_org_id)
 
     def test_aidant_cannot_switch_to_an_org_they_dont_belong(self):
-        orgas = self.aidant_with_orgs.organisations.all()
+        # L'organisation initiale de l'aidant est first_org
+        initial_org_id = self.aidant_with_orgs.organisation.id
         unrelated_org = OrganisationFactory(name="Totally unrelated people")
         self.client.force_login(self.aidant_with_orgs)
         response = self.client.post(
@@ -218,11 +239,12 @@ class SwitchOrganisationTests(TestCase):
         )
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Il est impossible de sélectionner cette organisation.",
+            "Erreur : il est impossible de sélectionner cette organisation.",
             messages[0].message,
         )
         self.aidant_with_orgs.refresh_from_db()
-        self.assertEqual(self.aidant_with_orgs.organisation.id, orgas[0].id)
+        # Vérifier que l'organisation n'a pas changé
+        self.assertEqual(self.aidant_with_orgs.organisation.id, initial_org_id)
 
 
 @tag("usagers")
@@ -280,7 +302,7 @@ class UsagersDetailsPageTests(TestCase):
         response = self.client.get(f"/usagers/{self.usager.id}/")
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "<title>Aidants Connect - Homer Simpson</title>", response_content
+            "<title>Homer Simpson - Aidants Connect</title>", response_content
         )
 
     def test_usager_details_renew_mandat(self):

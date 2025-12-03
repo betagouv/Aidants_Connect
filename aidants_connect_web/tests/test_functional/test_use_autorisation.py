@@ -115,9 +115,12 @@ class UseAutorisationTests(FunctionalTestCase):
         # Select Démarche
         step2_title = self.selenium.find_element(By.CSS_SELECTOR, ".instructions").text
         self.assertIn("En sélectionnant une démarche", step2_title)
-        demarches = self.selenium.find_elements(By.ID, "button-demarche")
+        demarches = self.selenium.find_elements(
+            By.CSS_SELECTOR, "[id*='button-demarche']"
+        )
         self.assertEqual(len(demarches), 2)
         last_demarche = demarches[-1]
+
         last_demarche.click()
         time.sleep(2)
         self.assertIn("fcp.integ01.dev-franceconnect.fr", self.selenium.current_url)

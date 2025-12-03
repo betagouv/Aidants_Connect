@@ -6,7 +6,12 @@ from django.templatetags.static import static
 from django.urls import reverse
 
 from aidants_connect_common.models import MarkdownContentMixin
-from aidants_connect_pico_cms.constants import MANDATE_TRANSLATION_LANGUAGE_AVAILABLE
+from aidants_connect_pico_cms.constants import (
+    FAQ_THEME_AIDANT,
+    FAQ_THEME_PUBLIC,
+    FAQ_THEME_REFERENT,
+    MANDATE_TRANSLATION_LANGUAGE_AVAILABLE,
+)
 from aidants_connect_pico_cms.fields import MarkdownField
 from aidants_connect_pico_cms.utils import compute_correct_slug, is_lang_rtl
 
@@ -112,6 +117,22 @@ class FaqSection(CmsContent):
 
 
 class FaqCategory(FaqSection):
+
+    theme = models.CharField(
+        "Thème",
+        max_length=30,
+        null=True,
+        blank=True,
+        choices=[
+            (FAQ_THEME_PUBLIC, "Public"),
+            (FAQ_THEME_AIDANT, "Aidant"),
+            (FAQ_THEME_REFERENT, "Référent"),
+        ],
+    )
+
+    def __str__(self):
+        return f"{self.name} [{self.theme}]"
+
     def get_questions(self, see_draft=False):
         filter_kwargs = (
             {"published": True, "subcategory__published": True} if not see_draft else {}
@@ -123,7 +144,28 @@ class FaqCategory(FaqSection):
         )
 
     def get_absolute_url(self):
-        return reverse("faq_category_detail", kwargs={"slug": self.slug})
+        self.FAQ_THEME_AIDANT = FAQ_THEME_AIDANT
+        self.FAQ_THEME_PUBLIC = FAQ_THEME_PUBLIC
+        self.FAQ_THEME_REFERENT = FAQ_THEME_REFERENT
+
+        if self.theme is None:
+            return reverse("faq_category_detail", kwargs={"slug": self.slug})
+        else:
+            match self.theme:
+                case self.FAQ_THEME_PUBLIC:
+                    return reverse(
+                        "faq_public_category_detail", kwargs={"slug": self.slug}
+                    )
+                case self.FAQ_THEME_AIDANT:
+                    return reverse(
+                        "faq_aidant_category_detail", kwargs={"slug": self.slug}
+                    )
+                case self.FAQ_THEME_REFERENT:
+                    return reverse(
+                        "faq_referent_category_detail", kwargs={"slug": self.slug}
+                    )
+                case _:
+                    return reverse("faq_category_detail", kwargs={"slug": self.slug})
 
     class Meta:
         verbose_name = "Catégorie FAQ"

@@ -25,6 +25,8 @@ from aidants_connect_common.constants import (
 )
 from aidants_connect_common.models import Formation, FormationAttendant
 from aidants_connect_common.tests.factories import FormationFactory
+from aidants_connect_erp.constants import SendingStatusChoices
+from aidants_connect_erp.tests.factories import CardSendingFactory
 from aidants_connect_web.constants import (
     ReferentRequestStatuses,
     RemoteConsentMethodChoices,
@@ -36,6 +38,7 @@ from aidants_connect_web.models import (
     Connection,
     HabilitationRequest,
     Journal,
+    LogEmailSending,
     Mandat,
     Notification,
     Organisation,
@@ -965,15 +968,30 @@ class OrganisationModelTests(TestCase):
             aidant_c.organisations.set((orga_a, orga_b))
         self.assertEqual(orga_a.num_active_aidants, 5)
 
-    def test_organisation_allowed_demarches(self):
+    def test_organisation_having_formation_unregistered_habilitation_requests(self):
         formation: Formation = FormationFactory()
 
         OrganisationFactory()
 
         has_unregistered_hab = OrganisationFactory()
-        HabilitationRequestFactory(organisation=has_unregistered_hab)
+        HabilitationRequestFactory(
+            organisation=has_unregistered_hab,
+            status=ReferentRequestStatuses.STATUS_PROCESSING,
+        )
         formation.register_attendant(
             HabilitationRequestFactory(organisation=has_unregistered_hab)
+        )
+
+        has_unregistered_hab_but_not_processing = OrganisationFactory()
+        HabilitationRequestFactory(
+            organisation=has_unregistered_hab_but_not_processing,
+            status=ReferentRequestStatuses.STATUS_VALIDATED,
+        )
+
+        inactive_orga = OrganisationFactory(is_active=False)
+        HabilitationRequestFactory(
+            organisation=inactive_orga,
+            status=ReferentRequestStatuses.STATUS_PROCESSING,
         )
 
         other = OrganisationFactory()
@@ -984,6 +1002,47 @@ class OrganisationModelTests(TestCase):
             Organisation.objects.having_formation_unregistered_habilitation_requests().all()  # noqa E501
         )
         self.assertEqual({has_unregistered_hab}, set(actual))
+
+    def test_organisation_having_formation_unregistered_habilitation_requests_and_fne(
+        self,
+    ):  # noqa E501
+        has_fne_hab = OrganisationFactory()
+        HabilitationRequestFactory(
+            organisation=has_fne_hab,
+            created_by_fne=True,
+            status=ReferentRequestStatuses.STATUS_PROCESSING,
+        )
+        HabilitationRequestFactory(
+            organisation=has_fne_hab,
+            created_by_fne=True,
+            status=ReferentRequestStatuses.STATUS_VALIDATED,
+        )
+
+        self.assertEqual(
+            0,
+            Organisation.objects.having_formation_unregistered_habilitation_requests().count(),  # noqa E501
+        )
+
+    def test_responsables_is_active(self):
+        orga = OrganisationFactory()
+        aid1 = AidantFactory()
+        aid2 = AidantFactory()
+        aid1.responsable_de.add(orga)
+        aid2.responsable_de.add(orga)
+        self.assertEqual(2, orga.responsables_is_active.count())
+        aid2.is_active = False
+        aid2.save()
+        self.assertEqual(1, orga.responsables_is_active.count())
+        self.assertFalse(aid2 in orga.responsables_is_active)
+
+    def test_num_received_cards(self):
+        orga = OrganisationFactory()
+        CardSendingFactory(quantity=12, organisation=orga)
+        CardSendingFactory(
+            quantity=5, organisation=orga, status=SendingStatusChoices.PREPARING
+        )
+        self.assertEqual(12, orga.num_received_cards)
+        self.assertEqual(0, orga.num_cards_used)
 
 
 @tag("models", "aidant")
@@ -1158,6 +1217,41 @@ class AidantModelTests(TestCase):
         AidantFactory(referent_non_aidant=False, can_create_mandats=True)
         with self.assertRaises(IntegrityError):
             AidantFactory(referent_non_aidant=True, can_create_mandats=True)
+
+    def test_connexion_mode(self):
+        a_empty = AidantFactory(
+            email="testmodeemptyd@example.com", username="testmodeemptyd@example.com"
+        )
+        HabilitationRequestFactory(email="testmodeemptyd@example.com")
+        self.assertEqual(a_empty.connexion_mode, "")
+
+        a_card = AidantFactory(
+            email="testmodecard@example.com", username="testmodecard@example.com"
+        )
+        HabilitationRequestFactory(
+            email="testmodecard@example.com",
+            connexion_mode=HabilitationRequest.CONNEXION_MODE_CARD,
+        )
+        self.assertEqual(
+            a_card.connexion_mode,
+            HabilitationRequest.CONNEXION_MODE_LABELS[
+                HabilitationRequest.CONNEXION_MODE_CARD
+            ],
+        )
+
+        a_phone = AidantFactory(
+            email="testmodephone@example.com", username="testmodephone@example.com"
+        )
+        HabilitationRequestFactory(
+            email="testmodephone@example.com",
+            connexion_mode=HabilitationRequest.CONNEXION_MODE_PHONE,
+        )
+        self.assertEqual(
+            a_phone.connexion_mode,
+            HabilitationRequest.CONNEXION_MODE_LABELS[
+                HabilitationRequest.CONNEXION_MODE_PHONE
+            ],
+        )
 
 
 @tag("models", "aidant")
@@ -2076,6 +2170,21 @@ class HabilitationRequestTests(TestCase):
     def setUpTestData(cls):
         pass
 
+    def test_connexion_mode_label(self):
+        hr_card = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_PROCESSING.value,
+            connexion_mode=HabilitationRequest.CONNEXION_MODE_CARD,
+        )
+
+        self.assertEqual("Carte physique", hr_card.connexion_mode_label)
+
+        hr_phone = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_PROCESSING.value,
+            connexion_mode=HabilitationRequest.CONNEXION_MODE_PHONE,
+        )
+
+        self.assertEqual("Application mobile", hr_phone.connexion_mode_label)
+
     def test_validate_when_all_is_fine(self):
         for habilitation_request in (
             HabilitationRequestFactory(
@@ -2099,6 +2208,20 @@ class HabilitationRequestTests(TestCase):
                 ReferentRequestStatuses.STATUS_VALIDATED.value,
             )
 
+    def test_validate_when_aidant_is_pap(self):
+        habilitation_request = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_PROCESSING_P2P.value
+        )
+        self.assertTrue(habilitation_request.validate_and_create_aidant())
+        self.assertEqual(
+            1, Aidant.objects.filter(email=habilitation_request.email).count()
+        )
+        db_hab_request = HabilitationRequest.objects.get(id=habilitation_request.id)
+        self.assertEqual(
+            db_hab_request.status,
+            ReferentRequestStatuses.STATUS_VALIDATED.value,
+        )
+
     def test_validate_if_active_aidant_already_exists(self):
         aidant = AidantFactory()
         habilitation_request = HabilitationRequestFactory(
@@ -2117,7 +2240,7 @@ class HabilitationRequestTests(TestCase):
         aidant.refresh_from_db()
         self.assertIn(habilitation_request.organisation, aidant.organisations.all())
 
-    def test_validate_if_inactive_aidant_already_exists(self):
+    def test_do_not_validate_if_inactive_aidant_already_exists(self):
         aidant = AidantFactory(is_active=False)
         self.assertFalse(aidant.is_active)
         habilitation_request = HabilitationRequestFactory(
@@ -2134,7 +2257,7 @@ class HabilitationRequestTests(TestCase):
             ReferentRequestStatuses.STATUS_VALIDATED.value,
         )
         aidant.refresh_from_db()
-        self.assertTrue(aidant.is_active)
+        self.assertFalse(aidant.is_active)
         self.assertIn(habilitation_request.organisation, aidant.organisations.all())
 
     def test_do_not_validate_if_invalid_status(self):
@@ -2495,3 +2618,16 @@ class FormationAttendantTests(TestCase):
             FormationAttendant.objects.create(
                 formation=formation, attendant=hab_request
             )
+
+
+class LogEmailSendingTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant = AidantFactory()
+
+    def test_i_can_create_a_log_email_sending(self):
+        self.assertEqual(0, LogEmailSending.objects.all().count())
+
+        LogEmailSending.objects.create(aidant=self.aidant, code_email="CODE")
+
+        self.assertEqual(1, LogEmailSending.objects.all().count())

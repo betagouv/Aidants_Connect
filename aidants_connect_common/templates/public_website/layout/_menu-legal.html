@@ -8,6 +8,7 @@
     >Menu
     </button>
     <div class="fr-collapse" id="fr-sidemenu-wrapper">
+      <div class="fr-sidemenu__title" id="fr-sidemenu-title">Menu</div>
       <ul class="fr-sidemenu__list">
         <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'cgu' %} fr-sidemenu__item--active{% endif %}">
           <a
@@ -43,6 +44,24 @@
             href="{% url 'mentions_legales' %}"
             {% if request.resolver_match.url_name == 'mentions_legales' %}aria-current="page"{% endif %}
             >Mentions Légales</a
+          >
+        </li>
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'budget' %} fr-sidemenu__item--active{% endif %}">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="{% url 'budget' %}"
+            {% if request.resolver_match.url_name == 'budget' %}aria-current="page"{% endif %}
+            >Budget</a
+          >
+        </li>
+        <li class="fr-sidemenu__item{% if request.resolver_match.url_name == 'budget' %} fr-sidemenu__item--active{% endif %}">
+          <a
+            class="fr-sidemenu__link"
+            target="_self"
+            href="{% url 'sitemap' %}"
+            {% if request.resolver_match.url_name == 'sitemap' %}aria-current="page"{% endif %}
+            >Plan du site</a
           >
         </li>
       </ul>

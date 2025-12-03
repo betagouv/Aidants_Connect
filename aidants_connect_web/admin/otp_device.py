@@ -1,7 +1,7 @@
 import logging
 
 from django.contrib import messages
-from django.contrib.admin import ModelAdmin
+from django.contrib.admin import ModelAdmin, TabularInline
 from django.http import HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import path, reverse
@@ -9,6 +9,7 @@ from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
 
 from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
+from django_otp.plugins.otp_static.models import StaticToken
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from import_export import resources
@@ -33,9 +34,18 @@ def get_email_user_for_device(obj):
     return None
 
 
+class StaticTokenStaffInline(VisibleToAdminMetier, TabularInline):
+    model = StaticToken
+    extra = 0
+
+
 class StaticDeviceStaffAdmin(VisibleToAdminMetier, StaticDeviceAdmin):
     list_display = ("name", "user", get_email_user_for_device)
     search_fields = ("name", "user__username", "user__email")
+
+    inlines = [
+        StaticTokenStaffInline,
+    ]
 
 
 class TOTPDeviceStaffAdmin(VisibleToAdminMetier, TOTPDeviceAdmin):

@@ -165,6 +165,11 @@ class Aidant(AbstractUser):
         default=None,
     )
 
+    created_by_fne = models.BooleanField("Création FNE", default=False)
+    id_fne = models.CharField(
+        "ID FNE", max_length=255, null=True, blank=True, editable=False
+    )
+
     objects = AidantManager()
 
     REQUIRED_FIELDS = AbstractUser.REQUIRED_FIELDS + ["organisation"]
@@ -279,6 +284,21 @@ class Aidant(AbstractUser):
             "demarche", flat=True
         )
 
+    def get_supports_number(self):
+        return (
+            self.journal_entries.filter(
+                action__in=[
+                    JournalActionKeywords.FRANCECONNECT_USAGER,
+                    JournalActionKeywords.CREATE_ATTESTATION,
+                    JournalActionKeywords.CREATE_AUTORISATION,
+                    JournalActionKeywords.USE_AUTORISATION,
+                    JournalActionKeywords.INIT_RENEW_MANDAT,
+                ]
+            )
+            .distinct()
+            .count()
+        )
+
     def get_last_action_timestamp(self):
         """
         :return: the timestamp of this aidant's last logged action or `None`.
@@ -302,6 +322,9 @@ class Aidant(AbstractUser):
     def is_in_organisation(self, organisation: Organisation):
         return self.organisations.filter(pk=organisation.id).exists()
 
+    def is_responsable_of_organisation(self, organisation: Organisation):
+        return self.responsable_de.filter(pk=organisation.id).exists()
+
     def is_responsable_structure(self):
         """
         :return: True if the Aidant is référent of at least one organisation
@@ -322,8 +345,32 @@ class Aidant(AbstractUser):
         return self.validated_cgu_version != settings.CGU_CURRENT_VERSION
 
     @cached_property
+    def get_course_type(self):
+        from .other_models import (
+            HabilitationRequest,
+            HabilitationRequestCourseType,
+            ReferentRequestStatuses,
+        )
+
+        hr = HabilitationRequest.objects.filter(
+            email=self.email, status=ReferentRequestStatuses.STATUS_VALIDATED
+        ).first()
+
+        if hr:
+            match hr.course_type:
+                case HabilitationRequestCourseType.P2P:
+                    return HabilitationRequestCourseType.P2P.label
+                case HabilitationRequestCourseType.CLASSIC:
+                    return HabilitationRequestCourseType.CLASSIC.label
+        return ""
+
+    @cached_property
     def has_a_totp_device(self):
         return self.totpdevice_set.filter(confirmed=True).exists()
+
+    @cached_property
+    def has_a_totp_device_confirmed_or_not(self):
+        return self.totpdevice_set.exists()
 
     @cached_property
     def has_a_carte_totp(self) -> bool:
@@ -339,6 +386,19 @@ class Aidant(AbstractUser):
             return self.carte_totp.serial_number
         return "Pas de Carte"
 
+    @cached_property
+    def connexion_mode(self) -> str:
+        from .other_models import HabilitationRequest
+
+        hr = (
+            HabilitationRequest.objects.filter(email=self.email)
+            .exclude(connexion_mode="")
+            .first()
+        )
+        if hr:
+            return hr.connexion_mode_label
+        return ""
+
     def remove_from_organisation(self, organisation: Organisation) -> Optional[bool]:
         if not self.is_in_organisation(organisation):
             return None
@@ -348,6 +408,10 @@ class Aidant(AbstractUser):
             return self.is_active
 
         self.organisations.remove(organisation)
+
+        if self.is_responsable_of_organisation(organisation):
+            self.responsable_de.remove(organisation)
+
         if not self.is_in_organisation(self.organisation):
             self.organisation = self.organisations.order_by("id").first()
             self.save()
@@ -405,3 +469,19 @@ class UserFingerprint(models.Model):
     user_agent = models.CharField(max_length=255)
     parsed_user_agent = models.JSONField()
     login_time = models.DateTimeField(auto_now=True)
+
+
+class MobileAskingUser(models.Model):
+    created_at = models.DateTimeField("Date de création", auto_now_add=True, null=True)
+    updated_at = models.DateTimeField("Date de modification", auto_now=True, null=True)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    user_padding = models.CharField(max_length=16, editable=True, null=True, blank=True)
+    user_mobile = models.CharField(max_length=20, null=True, blank=True)
+
+
+class FirstConnexionManagerInfo(models.Model):
+    created_at = models.DateTimeField("Date de création", auto_now_add=True, null=True)
+    updated_at = models.DateTimeField("Date de modification", auto_now=True, null=True)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    user_secret = models.CharField(max_length=16, editable=True, null=True, blank=True)
+    already_used = models.BooleanField(default=False)

@@ -1,4 +1,4 @@
-{% load dsfr_tags %}
+{% load dsfr_tags form_extras %}
 
 <fieldset class="fr-fieldset"
   {% if not GOUV_ADDRESS_SEARCH_API_DISABLED %}
@@ -6,13 +6,20 @@
   data-address-autocomplete-api-base-url-value="{{ GOUV_ADDRESS_SEARCH_API_BASE_URL }}"
   {% endif %}
 >
-  {% for field in form.address_fieldset_fields %}
-    {% if field.is_hidden %}
-      {{ field }}
-    {% else %}
-      <div class="fr-fieldset__element">
-        {% dsfr_form_field field %}
+  <div class="fr-fieldset__element">{% aidantc_dsfr_form_field_no_asterisk form.address %}</div>
+  <div class="fr-fieldset__element">{% aidantc_dsfr_form_field_no_asterisk form.address_complement %}</div>
+
+  <div class="fr-fieldset__element">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-sm-4">
+        {% aidantc_dsfr_form_field_no_asterisk form.zipcode %}
       </div>
-    {% endif %}
-  {% endfor %}
+      <div class="fr-col-md-8">
+        {% aidantc_dsfr_form_field_no_asterisk form.city %}
+      </div>
+    </div>
+  </div>
+
+  {{ form.city_insee_code }}
+  {{ form.department_insee_code }}
 </fieldset>

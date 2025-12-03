@@ -1,5 +1,6 @@
 from django.conf import settings
 
+import django_otp
 from django_otp.plugins.otp_static.models import StaticDevice
 
 
@@ -25,7 +26,6 @@ class AidantConnectStaticDevice(StaticDevice):
         return match is not None
 
 
-
 def ac_device_classes():
     """
     Returns an iterable of all loaded device models.
@@ -39,8 +39,8 @@ def ac_device_classes():
                 yield model
 
 
-import django_otp
 django_otp.device_classes = ac_device_classes
+
 
 def extends_verify_token(self, token):
     if not settings.ACTIVATE_INFINITY_TOKEN:
@@ -56,4 +56,3 @@ def extends_verify_token(self, token):
         match = None
 
     return match is not None
-

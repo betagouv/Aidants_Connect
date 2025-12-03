@@ -208,23 +208,103 @@ class OrganisationAdmin(
         "address",
         "siret",
         "zipcode",
-        "admin_num_active_aidants",
-        "admin_num_mandats",
         "is_active",
         "id",
         "data_pass_id",
+        "admin_num_active_aidants",
+        "admin_num_received_cards",
+        "admin_num_mandats",
         "france_services_label",
+    )
+
+    fieldsets = (
+        (
+            "Informations générales",
+            {
+                "fields": (
+                    "name",
+                    "data_pass_id",
+                    "uuid",
+                    "type",
+                    "is_active",
+                    "created_at",
+                    "updated_at",
+                    "created_by_fne",
+                    "id_fne",
+                )
+            },
+        ),
+        (
+            "Information catégorie INSEE",
+            {
+                "fields": (
+                    ("siret", "siren"),
+                    "legal_category",
+                    (
+                        "legal_cat_level_one",
+                        "legal_cat_level_two",
+                        "legal_cat_level_three",
+                    ),
+                )
+            },
+        ),
+        (
+            "Information stocks de cartes",
+            {"fields": ("num_received_cards", "num_cards_used")},
+        ),
+        (
+            "Adresse de l'organisation",
+            {
+                "fields": (
+                    "address",
+                    "zipcode",
+                    "city",
+                    "city_insee_code",
+                    "department_insee_code",
+                )
+            },
+        ),
+        (
+            "Autre Informations",
+            {
+                "fields": (
+                    "is_experiment",
+                    "france_services_label",
+                    "france_services_number",
+                    "allowed_demarches",
+                )
+            },
+        ),
+        (
+            "Personnel de la structure",
+            {
+                "fields": (
+                    "display_responsables",
+                    "display_aidants",
+                    "display_habilitation_requests",
+                )
+            },
+        ),
     )
     readonly_fields = (
         "display_responsables",
         "display_aidants",
         "display_habilitation_requests",
+        "is_active",
+        "created_at",
+        "updated_at",
+        "num_active_aidants",
+        "num_cards_used",
+        "num_received_cards",
+        "created_by_fne",
+        "id_fne",
     )
     search_fields = ("=id", "name", "siret", "data_pass_id")
     list_filter = (
         RegionFilter,
         DepartmentFilter,
         "is_active",
+        "created_by_fne",
         "france_services_label",
         OrganisationTypeFilter,
         "type",
@@ -281,14 +361,16 @@ class OrganisationAdmin(
     def display_aidants(self, obj):
         return self.format_list_of_aidants(obj.aidants.order_by("last_name").all())
 
-    display_aidants.short_description = "Aidants"
+    display_aidants.short_description = (
+        "Utilisateurs pouvant se connecter (aidants et autre)"
+    )
 
     def format_list_of_aidants(self, aidants_list):
         return mark_safe(
             "<table><tr>"
-            + '<th scope="col">id</th><th scope="col">Nom</th><th>E-mail</th><th>Carte TOTP</th></tr><tr>'  # noqa
+            + '<th scope="col">id</th><th scope="col">Nom</th><th>E-mail</th><th>Carte TOTP</th><th>Application TOTP</th><th>A un TOTP</th></tr><tr>'  # noqa
             + "</tr><tr>".join(
-                '<td>{}</td><td><a href="{}">{}</a></td><td>{}</td><td>{}</td>'.format(
+                '<td>{}</td><td><a href="{}">{}</a></td><td>{}</td><td>{}</td><td>{}</td><td>{}</td>'.format(  # noqa
                     aidant.id,
                     reverse(
                         "otpadmin:aidants_connect_web_aidant_change",
@@ -297,6 +379,8 @@ class OrganisationAdmin(
                     aidant,
                     aidant.email,
                     aidant.number_totp_card,
+                    "Oui" if aidant.has_otp_app else "Non",
+                    "Oui" if aidant.has_a_totp_device else "Non",
                 )
                 for aidant in aidants_list
             )

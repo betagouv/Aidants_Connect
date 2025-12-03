@@ -1,115 +1,53 @@
-{% load ac_common form_extras ac_extras %}
+{% load ac_common ac_extras form_extras %}
 <div class="fr-table fr-table--no-caption d-table fr-table--bordered fr-table--layout-fixed">
   <table>
     <caption>Table des aidants</caption>
     <thead>
       <tr>
-        <th scope="col" class="fr-text--md fr-col-3">Nom</th>
-        <th scope="col" class="fr-text--md fr-col-8">Carte(s) Aidants Connect</th>
-        <th scope="col" class="fr-text--md fr-col-1">
-          <div class="flex flex-right">Outils</div>
-        </th>
+        <th scope="col" class="fr-text--md fr-col-3">Nom {% if is_referent %} du référent {% else %} de l'aidant {% endif %} </th>
+        <th scope="col" class="fr-text--md fr-col-5">Moyen de connexion associé au compte</th>
+        <th scope="col" class="fr-text--md fr-col-4">Actions</th>
       </tr>
     </thead>
     <tbody{% class_attr table_class|default:"" %}>
-    {% for aidant in aidants %}
-      <tr>
-        <td>
-          {% if aidant.statut %}
-            {{ aidant.get_full_name }}
-          {% elif aidant.pk == responsable.pk %}
-            {{ aidant.get_full_name }} (Référent)
-          {% else %}
-            <a class="fr-link" href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
+      {% for aidant in aidants %}
+        <tr>
+          <td>
+            <p class="fr-text--md">
               {{ aidant.get_full_name }}
-            </a>
-          {% endif %}
-        </td>
-        <td>
-          {% if aidant.status %}
-            <p class="fr-badge {% referent_request_status_badge aidant.status %}">{{ aidant.get_status_display }}</p>
-          {% else %}
-            {% if aidant.has_a_carte_totp %}
-              <div class="fr-text--md">
-                {{ aidant.number_totp_card }}
-                {% if not aidant.carte_totp.totp_device.confirmed and aidant.is_active %}
-                  <div class="fr-alert fr-alert--error fr-mt-2w">
-                    <p>
-                      Attention : Le fonctionnement de cette carte n’a pas été vérifié.
-                      Vous devez valider la carte pour permettre à {{ aidant.get_full_name }}
-                      de se connecter à Aidants Connect.
-                    </p>
-                  </div>
-                {% endif %}
-                {% if not aidant.is_active %}
-                  <div class="fr-alert fr-alert--error fr-mt-2w">
-                    <p>Attention, veillez à bien délier et récupérer la carte de cet aidant désactivé</p>
-                  </div>
-                {% endif %}
-              </div>
-            {% else %}
-              <div class="fr-text--md">
-                {% if aidant.is_active %}
-                  <a
-                    id="manage-totp-cards-for-aidant-{{ aidant.id }}"
-                    href='{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}' class="fr-link"
-                  >
-                  Lier une carte
-                  </a>
-                {% else %}
-                  Pas de carte associée
-                {% endif %}
-              </div>
-            {% endif %}
-            {% if aidant.has_otp_app %}
-              <p>Une carte numérique est associée à ce profil</p>
-            {% endif %}
-          {% endif %}
-        </td>
-        <td>
-          <div class="flex flex-right">
-            {% if not aidant.status %}
-              {% if aidant.has_a_carte_totp or aidant.is_active %}
-                <details id="aidant-{{ aidant.id }}-contextual-actions" class="menu-table">
-                  <summary>
-                    <span>…</span>
-                  </summary>
-                  <div class="details-content fr-p-2w">
-                    <div class="referent-attribution">
-                      {% if aidant.is_active %}
-                        <form method="post">
-                          {% csrf_token %}
-                          <input type="hidden" name="candidate" value="{{ aidant.pk }}" />
-                          <button type="submit">Désigner comme référent</button>
-                        </form>
-                      {% endif %}
-                    </div>
-                    {% if aidant.pk != referent.pk and aidant.is_active %}
-                      <a
-                        id="remove-aidant-{{ aidant.id }}-from-organisation"
-                        href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}" class="fr-px-1v"
-                      >
-                        {% if aidant.organisations.count > 1 %}
-                          Retirer l’aidant de l’organisation
-                        {% else %}
-                          Désactiver l’aidant
-                        {% endif %}
-                      </a>
-                    {% endif %}
-                    <a
-                      id="manage-totp-cards-for-aidant-{{ aidant.id }}"
-                      href='{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}' class="fr-px-1v"
-                      >
-                      Gérer les cartes OTP
-                    </a>
-                  </div>
-                </details>
+            </p>
+          </td>
+          <td>
+            <div class="fr-grid fr-grid-row fr-grid-row--middle">
+              {% if not aidant.has_a_carte_totp and not aidant.has_otp_app %}
+                <p class="fr-badge fr-badge--warning">Aucun</p>
+                <a
+                  id="manage-totp-cards-for-aidant-{{ aidant.id }}"
+                  href='{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}' class="fr-btn fr-btn--tertiary fr-ml-2w"
+                >
+                  Associer un moyen de connexion
+                </a>
               {% endif %}
-            {% endif %}
-          </div>
-        </td>
-      </tr>
-    {% endfor %}
+              {% if aidant.has_a_carte_totp %}
+                <p class="fr-tag fr-tag--blue fr-text--md fr-mr-1w"><span class="fr-icon-checkbox-circle-fill fr-btn--icon-left">Carte OTP</span></p>
+                {% if not aidant.carte_totp.totp_device.confirmed %}
+                  <p class="fr-badge fr-badge--warning fr-ml-2w">
+                    A valider
+                  </p>
+                {% endif %}
+              {% endif %}
+              {% if aidant.has_otp_app %}
+                <p class="fr-tag fr-tag--blue fr-text--md fr-mr-1w"><span class="fr-icon-checkbox-circle-fill fr-btn--icon-left">Application mobile</span></p>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <a class="fr-btn fr-btn--secondary fr-icon-arrow-right-line fr-btn--icon-left" href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
+              Détail et gestion {% if is_referent %} du référent {% else %} de l'aidant {% endif %}
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
     </tbody>
   </table>
 </div>

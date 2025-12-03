@@ -1,6 +1,6 @@
 {% extends 'layouts/main.html' %}
 
-{% load dsfr_tags static %}
+{% load dsfr_tags form_extras static %}
 
 {% block title %}Session expirée - Aidants Connect{% endblock %}
 
@@ -15,7 +15,10 @@
             <p>Votre session a expiré<p>
           </div>
           <form method="post">
-            {% dsfr_form %}
+          <div class="fr-my-6v">
+            <p class="fr-text--sm">Sauf mention contraire, tous les champs sont obligatoires.</p>
+          </div>
+            {% aidantc_dsfr_form_field_no_asterisk form.otp_token %}
             {% csrf_token %}
             <button type="submit" class="fr-btn">Valider</button>
           </div>

@@ -14,12 +14,12 @@
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-8">
         <p class="fr-text-mention--grey fr-text--xl fr-mb-0">RÉFÉRENTS</p>
-        <h1>Lier une carte</h1>
+        <h1>Lier un moyen de connexion</h1>
         <p class="fr-text--xl">
-          Affectez une carte Aidant à {{ aidant.get_full_name }} en suivant les étapes ci-dessous.
+          Affectez un moyen de connexion à {{ aidant.get_full_name }} en suivant les étapes ci-dessous.
         </p>
         <div class="fr-grid-row flex-between fr-grid-row--middle fr-mb-3w">
-          <div><strong>Sélectionnez le type de carte que vous souhaitez lier à {{ aidant.get_full_name }} :</strong></div>
+          <div><strong>Sélectionnez le moyen de connexion que vous souhaitez lier à {{ aidant.get_full_name }} :</strong></div>
           <details>
             <summary>
               <div class="fr-btn fr-btn--secondary">Guides</div>
@@ -102,7 +102,7 @@
             <div class="fr-card fr-pt-4w">
               <div class="fr-card__body">
                 <p>
-                  Une carte numérique, sous la forme d’une application OTP qui génère un code à intervalles réguliers.
+                  Une application d'authentification qui génère un code à intervalles réguliers.
                   Vous avez besoin du téléphone utilisé par l’aidant pour configurer cette option.
                 </p>
                 <div class="fr-grid-row fr-grid-row--center">
@@ -116,7 +116,7 @@
                     href="{% url 'espace_responsable_aidant_remove_app_otp' aidant_id=aidant.id %}"
                     class="fr-btn"
                   >
-                    Délier une carte numérique
+                    Délier une application d'authentification
                   </a>
                 {% else %}
                   <a
@@ -124,7 +124,7 @@
                     {% if digital_option_available %}href="{% url 'espace_responsable_aidant_add_app_otp' aidant_id=aidant.id %}"{% endif %}
                     class="fr-btn"
                   >
-                    Utiliser une carte numérique
+                    Utiliser une application d'authentification
                   </a>
                 {% endif %}
               </div>

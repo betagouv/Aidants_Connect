@@ -4,7 +4,7 @@
 #
 version: "2.1"
 orbs:
-  browser-tools: circleci/browser-tools@1.4.8
+  browser-tools: circleci/browser-tools@1.5.1
 
 parameters:
   python-img-tag:
@@ -40,6 +40,9 @@ workflows:
           requires:
             - build
       - coverage:
+          requires:
+            - test
+      - accessibility:
           requires:
             - test
 
@@ -115,7 +118,7 @@ jobs:
 
             . /tmp/venv/bin/activate
             python manage.py collectstatic --noinput
-            coverage run --parallel-mode manage.py test --verbosity=2 $TESTFILES
+            coverage run --parallel-mode manage.py test --verbosity=2 --exclude-tag=accessibility $TESTFILES
       - persist_to_workspace:
           root: .
           paths: [".coverage*"]
@@ -144,3 +147,28 @@ jobs:
 
       - store_artifacts:
           path: htmlcov
+
+  accessibility:
+    executor: testbed
+    parallelism: 8
+    working_directory: << pipeline.parameters.workingdir >>
+    steps:
+      - checkout
+      - browser-tools/install-chrome
+
+      - restore_cache:
+          keys:
+            - << pipeline.parameters.cache-version >>-{{ checksum "Pipfile.lock" }}
+
+      - run:
+          name: Install npm dependencies
+          command: npm install
+
+      - run:
+          name: Run accessibility tests
+          command: |
+            . /tmp/venv/bin/activate
+
+            python manage.py collectstatic --noinput
+
+            coverage run --parallel-mode manage.py test --tag=accessibility --verbosity=2

@@ -1,6 +1,10 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 
-{% load ac_common static %}
+{% load ac_common partials static %}
+
+
+
+
 
 {% block title %}Espace Référent - Aidants Connect{% endblock %}
 
@@ -13,7 +17,7 @@
     <div class="fr-container">
       <h1>Bienvenue {{ referent.get_full_name }} !</h1>
 
-      {% include "aidants_connect_web/espace_aidant/home.html#messages" %}
+      {% include "aidants_connect_web/espace_aidant/home.html#messages" with aidant=referent %}
 
       <div class="fr-grid-row fr-grid-row--gutters">
         <div class=" fr-col-md-3 fr-col-12">

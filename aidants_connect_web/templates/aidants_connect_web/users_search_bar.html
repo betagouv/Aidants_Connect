@@ -5,8 +5,18 @@ aidants_connect_web/static/js/users_search.js
 Just add it anywhere you display users along with the following static files:
 - aidants_connect_web/static/css/users_search.css
 - aidants_connect_web/static/js/users_search.js
+
+DSFR component - Search bar label is hidden by default, so we need to pick it up
+
 {% endcomment %}
-<div class="user-search row fr-my-8v" hidden data-search-target="searchBar">
-  <label id="filter-input-label" class="fr-label" for="filter-input">Rechercher un usager ou une usagère :</label>
-  <input id="filter-input" class="fr-input" type="text" data-search-target="searchInput" data-action="search#search" />
+<div class="fr-col-12 fr-col-md-8 fr-col-lg-6">
+  <label class="fr-label fr-mb-2v" for="search-input">
+    Rechercher un usager ou une usagère :
+  </label>
+  <div class="fr-search-bar fr-search-bar--md fr-mb-8v" role="search" data-search-target="searchBar">
+    <input class="fr-input" aria-describedby="search-input-messages" placeholder="Rechercher" id="search-input" type="search"  data-search-target="searchInput" data-action="search#search">
+    <div class="fr-messages-group" id="search-input-messages" aria-live="polite">
+    </div>
+    <button title="Rechercher" type="button" class="fr-btn">Rechercher</button>
+  </div>
 </div>

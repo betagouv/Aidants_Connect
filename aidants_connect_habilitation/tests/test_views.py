@@ -3,13 +3,11 @@ from unittest.mock import patch
 from uuid import UUID, uuid4
 
 from django.core import mail
-from django.db import transaction
 from django.forms import model_to_dict
 from django.http import HttpResponse
 from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 from django.urls import resolve, reverse
-from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 
@@ -272,7 +270,7 @@ class IssuerEmailConfirmationViewTests(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "habilitation_new_organisation",
+                "habilitation_siret_verification",
                 kwargs={"issuer_id": confirmed_issuer.issuer_id},
             ),
         )
@@ -399,7 +397,7 @@ class ModifyIssuerFormViewTests(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "habilitation_new_organisation",
+                "habilitation_siret_verification",
                 kwargs={"issuer_id": self.issuer.issuer_id},
             ),
         )
@@ -424,13 +422,18 @@ class NewOrganisationRequestFormViewTests(TestCase):
         uuid = uuid4()
 
         response: HttpResponse = self.client.get(
-            reverse(self.pattern_name, kwargs={"issuer_id": uuid})
+            reverse(
+                self.pattern_name, kwargs={"issuer_id": uuid, "siret": "12345678901234"}
+            )
         )
         self.assertEqual(response.status_code, 404)
 
         cleaned_data = utils.get_form(OrganisationRequestForm).clean()
         response: HttpResponse = self.client.post(
-            reverse(self.pattern_name, kwargs={"issuer_id": uuid}), cleaned_data
+            reverse(
+                self.pattern_name, kwargs={"issuer_id": uuid, "siret": "12345678901234"}
+            ),
+            cleaned_data,
         )
         self.assertEqual(response.status_code, 404)
 
@@ -438,7 +441,11 @@ class NewOrganisationRequestFormViewTests(TestCase):
         unverified_issuer: Issuer = IssuerFactory(email_verified=False)
         response = self.client.get(
             reverse(
-                self.pattern_name, kwargs={"issuer_id": unverified_issuer.issuer_id}
+                self.pattern_name,
+                kwargs={
+                    "issuer_id": unverified_issuer.issuer_id,
+                    "siret": "12345678901234",
+                },
             )
         )
         self.assertRedirects(
@@ -451,7 +458,10 @@ class NewOrganisationRequestFormViewTests(TestCase):
 
     def test_template(self):
         response = self.client.get(
-            reverse(self.pattern_name, kwargs={"issuer_id": self.issuer.issuer_id})
+            reverse(
+                self.pattern_name,
+                kwargs={"issuer_id": self.issuer.issuer_id, "siret": "12345678901234"},
+            )
         )
         self.assertTemplateUsed(response, self.template_name)
 
@@ -465,7 +475,7 @@ class NewOrganisationRequestFormViewTests(TestCase):
         response = self.client.post(
             reverse(
                 self.pattern_name,
-                kwargs={"issuer_id": self.issuer.issuer_id},
+                kwargs={"issuer_id": self.issuer.issuer_id, "siret": "12345678901234"},
             ),
             cleaned_data,
         )
@@ -599,7 +609,7 @@ class ModifyOrganisationRequestFormViewTests(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "habilitation_new_referent",
+                "habilitation_validation",
                 kwargs={
                     "issuer_id": model.issuer.issuer_id,
                     "uuid": model.uuid,
@@ -883,7 +893,26 @@ class ValidationRequestFormViewTests(TestCase):
         )
         self.assertTemplateUsed(response, self.template_name)
         # expected button count = 4 -> issuer, org,, manager, aidant
-        self.assertContains(response, "Éditer", 4)
+        self.assertContains(
+            response,
+            f"/demandeur/{self.organisation.issuer.issuer_id}/organisation/"
+            f"{self.organisation.uuid}/modifier-demandeur/",
+        )
+        self.assertContains(
+            response,
+            f"/demandeur/{self.organisation.issuer.issuer_id}/organisation/"
+            f"{self.organisation.uuid}/infos-generales/",
+        )
+        self.assertContains(
+            response,
+            f"/demandeur/{self.organisation.issuer.issuer_id}/organisation/"
+            f"{self.organisation.uuid}/referent/",
+        )
+        self.assertContains(
+            response,
+            f"/demandeur/{self.organisation.issuer.issuer_id}/organisation/"
+            f"{self.organisation.uuid}/aidants/",
+        )
 
     def test_do_the_job_and_redirect_valid_post_to_org_view(self):
         self.assertIsNone(self.organisation.data_pass_id)
@@ -1060,12 +1089,12 @@ class RequestReadOnlyViewTests(TestCase):
             issuer=issuer,
             status__in=(
                 set(RequestStatusConstants)
-                - set(RequestStatusConstants.aidant_registrable)
+                - set(RequestStatusConstants.personel_editable)
             ),
         ).all()
 
         cls.do_add_aidants = OrganisationRequest.objects.filter(
-            issuer=issuer, status__in=RequestStatusConstants.aidant_registrable
+            issuer=issuer, status__in=RequestStatusConstants.personel_editable
         ).all()
 
         cls.do_not_validate = OrganisationRequest.objects.filter(
@@ -1077,6 +1106,18 @@ class RequestReadOnlyViewTests(TestCase):
 
         cls.do_validate = OrganisationRequest.objects.filter(
             issuer=issuer, status__in=RequestStatusConstants.validatable
+        ).all()
+
+        cls.do_edit_organisation = OrganisationRequest.objects.filter(
+            issuer=issuer, status__in=RequestStatusConstants.organisation_editable
+        ).all()
+
+        cls.do_not_edit_organisation = OrganisationRequest.objects.filter(
+            issuer=issuer,
+            status__in=(
+                set(RequestStatusConstants)
+                - set(RequestStatusConstants.organisation_editable)
+            ),
         ).all()
 
     def get_url(self, issuer_id, uuid):
@@ -1132,7 +1173,7 @@ class RequestReadOnlyViewTests(TestCase):
         )
 
     def test_can_edit_organisation_in_right_circumstances(self):
-        for organisation in self.do_validate:
+        for organisation in self.do_edit_organisation:
             with self.subTest(f"Modifiable {organisation.status}"):
                 response = self.client.get(
                     self.get_url(organisation.issuer.issuer_id, organisation.uuid)
@@ -1149,7 +1190,7 @@ class RequestReadOnlyViewTests(TestCase):
                     ),
                 )
 
-        for organisation in self.do_not_validate:
+        for organisation in self.do_not_edit_organisation:
             with self.subTest(f"Unmodifiable {organisation.status}"):
                 response = self.client.get(
                     self.get_url(organisation.issuer.issuer_id, organisation.uuid)
@@ -1176,7 +1217,7 @@ class RequestReadOnlyViewTests(TestCase):
         self.assertNotContains(response, "Modifier votre demande")
 
     def test_can_add_aidant_in_right_circumstances(self):
-        text_to_search = "Ajouter un aidant à la demande"
+        text_to_search = "Ajouter un autre aidant à la demande"
 
         for organisation in self.do_not_add_aidants:
             response = self.client.get(
@@ -1224,122 +1265,6 @@ class RequestReadOnlyViewTests(TestCase):
                         },
                     ),
                 )
-
-    def test_referent_formation_registration(self):
-        with self.subTest(
-            "Do not display formation registration button when manager is aidant"
-        ):
-            organisation = OrganisationRequestFactory(
-                manager=ManagerFactory(is_aidant=True)
-            )
-            # Assert organisation has no registered aidant; we just want to test manager
-            self.assertEqual(0, organisation.aidant_requests.count())
-
-            response = self.client.get(
-                self.get_url(organisation.issuer.issuer_id, organisation.uuid)
-            )
-            self.assertNotContains(response, "Inscrire en formation")
-            self.assertNotContains(response, "Inscrit au wébinaire référent")
-            self.assertNotContains(response, reverse("espace_responsable_organisation"))
-            self.assertNotContains(
-                response,
-                reverse(
-                    "habilitation_manager_formation_registration",
-                    kwargs={
-                        "issuer_id": organisation.issuer.issuer_id,
-                        "uuid": organisation.uuid,
-                    },
-                ),
-            )
-
-        with self.subTest("Display espace referent button"):
-            with transaction.atomic():
-                organisation: OrganisationRequest = OrganisationRequestFactory(
-                    manager=ManagerFactory(
-                        is_aidant=True,
-                        habilitation_request=HabilitationRequestFactory(
-                            status=ReferentRequestStatuses.STATUS_PROCESSING
-                        ),
-                    )
-                )
-                organisation.accept_request_and_create_organisation()
-                organisation.manager.aidant.last_login = timezone.now()
-                organisation.manager.aidant.save()
-
-            # Assert organisation has no registered aidant; we just want to test manager
-            self.assertEqual(0, organisation.aidant_requests.count())
-
-            response = self.client.get(
-                self.get_url(organisation.issuer.issuer_id, organisation.uuid)
-            )
-            self.assertContains(response, "Inscrire en formation")
-            self.assertNotContains(response, "Inscrit au wébinaire référent")
-            self.assertContains(response, reverse("espace_responsable_organisation"))
-            self.assertNotContains(
-                response,
-                reverse(
-                    "habilitation_manager_formation_registration",
-                    kwargs={
-                        "issuer_id": organisation.issuer.issuer_id,
-                        "uuid": organisation.uuid,
-                    },
-                ),
-            )
-
-        with self.subTest("Display formation button"):
-            with transaction.atomic():
-                organisation: OrganisationRequest = OrganisationRequestFactory(
-                    manager=ManagerFactory(is_aidant=True)
-                )
-                organisation.accept_request_and_create_organisation()
-
-            # Assert organisation has no registered aidant; we just want to test manager
-            self.assertEqual(0, organisation.aidant_requests.count())
-
-            response = self.client.get(
-                self.get_url(organisation.issuer.issuer_id, organisation.uuid)
-            )
-            self.assertContains(response, "Inscrire en formation")
-            self.assertNotContains(response, "Inscrit au wébinaire référent")
-            self.assertNotContains(response, reverse("espace_responsable_organisation"))
-            self.assertContains(
-                response,
-                reverse(
-                    "habilitation_manager_formation_registration",
-                    kwargs={
-                        "issuer_id": organisation.issuer.issuer_id,
-                        "uuid": organisation.uuid,
-                    },
-                ),
-            )
-
-        with self.subTest("Is registered to formation"):
-            with transaction.atomic():
-                organisation: OrganisationRequest = OrganisationRequestFactory(
-                    manager=ManagerFactory(is_aidant=True)
-                )
-                organisation.accept_request_and_create_organisation()
-                FormationFactory(attendants=[organisation.manager.habilitation_request])
-
-            # Assert organisation has no registered aidant; we just want to test manager
-            self.assertEqual(0, organisation.aidant_requests.count())
-
-            response = self.client.get(
-                self.get_url(organisation.issuer.issuer_id, organisation.uuid)
-            )
-            self.assertContains(response, "Inscrire en formation")
-            self.assertContains(response, "Inscrit au wébinaire référent")
-            self.assertNotContains(response, reverse("espace_responsable_organisation"))
-            self.assertContains(
-                response,
-                reverse(
-                    "habilitation_manager_formation_registration",
-                    kwargs={
-                        "issuer_id": organisation.issuer.issuer_id,
-                        "uuid": organisation.uuid,
-                    },
-                ),
-            )
 
 
 class TestFormationRegistrationView(TestCase):
@@ -1750,4 +1675,101 @@ class TestHabilitationRequestCancelationView(TestCase):
         self.aidant_with_ongoing_habilitation.habilitation_request.refresh_from_db()
         self.assertFalse(
             self.aidant_with_ongoing_habilitation.habilitation_request.status_cancellable_by_responsable  # noqa: E501
+        )
+
+
+@tag("habilitation")
+class NewOrganisationSiretVerificationRequestFormViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.pattern_name = "habilitation_siret_verification"
+        cls.template_name = "aidants_connect_habilitation/organisation-siret-verification-form-view.html"  # noqa: E501
+        cls.issuer: Issuer = IssuerFactory()
+
+    def test_404_on_bad_issuer_id(self):
+        response = self.client.get(
+            reverse(self.pattern_name, kwargs={"issuer_id": uuid4()})
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_redirect_on_unverified_issuer_email(self):
+        unverified_issuer: Issuer = IssuerFactory(email_verified=False)
+        response = self.client.get(
+            reverse(
+                self.pattern_name, kwargs={"issuer_id": unverified_issuer.issuer_id}
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_issuer_email_confirmation_waiting",
+                kwargs={"issuer_id": unverified_issuer.issuer_id},
+            ),
+        )
+
+    def test_template(self):
+        response = self.client.get(
+            reverse(self.pattern_name, kwargs={"issuer_id": self.issuer.issuer_id})
+        )
+        self.assertTemplateUsed(response, self.template_name)
+
+
+@tag("habilitation")
+class NewOrganisationSiretNavigationViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.pattern_name = "habilitation_siret_navigation"
+        cls.issuer: Issuer = IssuerFactory()
+
+    def test_404_on_bad_issuer_id(self):
+        response = self.client.post(
+            reverse(self.pattern_name, kwargs={"issuer_id": uuid4()}),
+            {"siret": "78866504300012", "organisation_choice": "0"},
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_redirect_on_unverified_issuer_email(self):
+        unverified_issuer: Issuer = IssuerFactory(email_verified=False)
+        response = self.client.post(
+            reverse(
+                self.pattern_name, kwargs={"issuer_id": unverified_issuer.issuer_id}
+            ),
+            {"siret": "78866504300012", "organisation_choice": "0"},
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_issuer_email_confirmation_waiting",
+                kwargs={"issuer_id": unverified_issuer.issuer_id},
+            ),
+        )
+
+    def test_redirect_to_new_organisation_when_siret_new(self):
+        siret = "78866504300012"
+        response = self.client.post(
+            reverse(self.pattern_name, kwargs={"issuer_id": self.issuer.issuer_id}),
+            {"siret": siret, "organisation_choice": "0"},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_new_organisation",
+                kwargs={"issuer_id": self.issuer.issuer_id, "siret": siret},
+            ),
+        )
+
+    def test_redirect_to_siret_verification_when_no_siret(self):
+        response = self.client.post(
+            reverse(self.pattern_name, kwargs={"issuer_id": self.issuer.issuer_id}), {}
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "habilitation_siret_verification",
+                kwargs={"issuer_id": self.issuer.issuer_id},
+            ),
         )

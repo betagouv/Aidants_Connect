@@ -1,11 +1,9 @@
-
 {% extends 'layouts/main.html' %}
 
 
-{% load dsfr_tags %}
-{% load static form_extras %}
+{% load dsfr_tags form_extras static %}
 
-{% block title %}Aidants Connect - Récapitulatif du nouveau mandat{% endblock %}
+{% block title %}Récapitulatif du nouveau mandat - Aidants Connect{% endblock %}
 
 {% block content %}
   <div class="fr-container">
@@ -15,11 +13,11 @@
       {% csrf_token %}
 
       <h1>Récapitulatif du mandat{% if is_remote %} à distance{% endif %}</h1>
+      <p class="fr-text fr-mv-4w">Sauf mention contraire, tous les champs sont obligatoires.</p>
 
       <h2 >Éléments du mandat</h2>
 
       {% include "aidants_connect_web/new_mandat/_mandate-elements.html" %}
-
       <h2 class="fr-mt-8w">Validation de l’usager</h2>
 
       <section>
@@ -27,16 +25,16 @@
           En cochant ces cases, <strong>{{ aidant.get_full_name }}</strong> confirme :
         </p>
         <div class="fr-mb-4w">
-          {% dsfr_form_field form.personal_data %} 
+          {% dsfr_form_field form.personal_data %}
         </div>
       </section>
 
       <h2 class="fr-mt-8w">Validation de l’aidant</h2>
 
       <section class="fr-col-md-5 fr-col-12 fr-background-alt--grey fr-p-4w">
-        {% dsfr_form_field form.otp_token %}
+        {% aidantc_dsfr_form_field_no_asterisk form.otp_token %}
         <input type="submit" class=" fr-btn" value="Enregistrer le mandat"/>
       </section>
     </form>
   </div>
-{% endblock %}
+{% endblock content %}

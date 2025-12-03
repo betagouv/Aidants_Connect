@@ -57,6 +57,8 @@ class CancelAutorisationTests(FunctionalTestCase):
         self.selenium.find_element(By.XPATH, f'.//a[@href="{path}"]').click()
 
         self.wait.until(lambda driver: len(driver.window_handles) == 2)
+        self.check_accessibility("mandat_cancellation_attestation", strict=False)
+
         self.selenium.switch_to.window(self.selenium.window_handles[1])
 
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text

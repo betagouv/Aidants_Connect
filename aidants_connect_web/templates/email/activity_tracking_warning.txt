@@ -2,18 +2,26 @@
 
 Bonjour, {{ user.get_full_name }}
 
-Votre habilitation Aidants Connect vous permet d’accompagner de façon sécurisée des usagers dans la réalisation de leurs démarches en ligne.
+Nous avons remarqué que cela fait un moment que vous n'avez pas utilisé votre compte Aidants Connect. Nous espérons vous revoir bientôt.
 
-📚 Vous avez besoin d’un rappel au sujet de l’utilisation du dispositif ? Retrouvez nos guides de prise en main via ce lien : https://aidantsconnect.beta.gouv.fr/ressources/
+Nous tenions à vous rappeler que votre compte est toujours actif et prêt à être utilisé. Connectez-vous dès maintenant pour accompagner vos usagers.
 
-⚙️ Vous rencontrez des difficultés techniques ? Contactez-nous à l’adresse suivante : contact@aidantsconnect.beta.gouv.fr
+Vous avez des difficultés à utiliser l’outil ? Nous mettons à disposition :
 
-🗣️ Vous souhaitez participer à un temps d’échange où nous lèverons les freins liés à l’utilisation de l’outil ? Inscrivez-vous à l’un de nos webinaires ici : https://tally.so/r/wkeNk1
+✅ Un site d'entraînement sécurisé (bac à sable) : https://sandbox.aidantsconnect.beta.gouv.fr/
 
-🤔 Vous avez des informations à nous partager ? Utilisez ce formulaire : https://tally.so/r/wvD6Kd
+🎓 Un module d’autoformation : https://incubateurdesterritoires.notion.site/Module-d-auto-formation-en-ligne-1f8744bf03dd8081a9becea68e0e14bc
+
+📘 Des guides pratiques pour chaque étape (création, révocation, renouvellement de mandats, etc.) : https://aidantsconnect.beta.gouv.fr/ressources/
+
+Vous ne comprenez pas l’intérêt d’Aidants Connect ? Nous mettons à disposition :
+
+✍️ Un document juridique sur l’intérêt du mandat : https://lesbases.anct.gouv.fr/ressources/ressources-juridiques-autour-d-aidants-connect
+
+🎥 Un webinaire juridique en présence d’un juriste spécialisé : https://tally.so/r/Bz4yve
 
 À bientôt sur Aidants Connect !
 
 L’équipe Aidants Connect
 Accompagnez vos usagers en toute sécurité
-Pour toute demande : contact@aidantsconnect.beta.gouv.fr
+Pour toute demande : https://tally.so/r/mKE7Yg

@@ -1,7 +1,5 @@
 {% load ac_common static %}
 
-{% include 'layouts/_skip-links.html' %}
-
 <header role="banner" class="fr-header">
   {% with view_name=request.resolver_match.view_name %}
     <div class="fr-header__body">
@@ -32,6 +30,7 @@
               <ul class="fr-btns-group">
                 {% if user_is_authenticated %}
                   {% if user_is_responsable_structure %}
+                  <li>
                     <a
                       class="fr-btn fr-icon-arrow-right-line"
                       href="{% url 'espace_responsable' %}"
@@ -39,7 +38,9 @@
                     >
                       Espace référent
                     </a>
+                  </li>
                   {% endif %}
+                  {% if user_can_create_mandats %}
                   <li>
                     <a
                       class="fr-btn fr-icon-arrow-right-line"
@@ -49,6 +50,7 @@
                       Espace aidant
                     </a>
                   </li>
+                  {% endif %}
                 {% endif %}
                 <li>
                   {% if user_is_authenticated %}
@@ -92,7 +94,7 @@
                     href="{% url 'usagers' %}"
                     {% if view_name|startswith:'usager' %}aria-current="true"{% endif %}
                   >
-                    Mes mandats
+                    Mandats
                   </a>
                 </li>
                 {% if request.user.can_create_mandats %}
@@ -135,6 +137,16 @@
                     {% if view_name|startswith:'temoignages' %}aria-current="true"{% endif %}
                   >
                     Témoignages
+                  </a>
+                </li>
+                <li class="fr-nav__item">
+                  <a
+                    class="fr-nav__link"
+                    target="_self"
+                    href="{% url 'faq_aidant_generale' %}"
+                    {% if view_name|startswith:'fad' %}aria-current="true"{% endif %}
+                  >
+                    Aide
                   </a>
                 </li>
                 <li class="fr-nav__item">

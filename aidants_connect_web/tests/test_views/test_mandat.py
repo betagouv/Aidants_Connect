@@ -245,15 +245,13 @@ class NewMandatTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         response = self.client.get("/creation_mandat/")
         self.assertNotContains(
-            response, "Attention, vous allez créer un mandat au nom de cette structure"
+            response, "Vous allez créer un mandat au nom de cette structure"
         )
 
     def test_warning_displayed_for_multi_structure_aidant(self):
         self.client.force_login(self.aidant_nour)
         response = self.client.get("/creation_mandat/")
-        self.assertContains(
-            response, "Attention, vous allez créer un mandat au nom de cette structure"
-        )
+        self.assertContains(response, "Vous allez créer un mandat au nom de")
 
     def test_badly_formatted_form_triggers_original_template(self):
         self.client.force_login(self.aidant_thierry)
@@ -267,7 +265,7 @@ class NewMandatTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        self.assertRedirects(response, "/fc_authorizev2/", target_status_code=302)
 
         # When mandate is remote and consent method is absent,
         # mandate creation should fail
@@ -288,7 +286,7 @@ class NewMandatTests(TestCase):
             "remote_constent_method": RemoteConsentMethodChoices.LEGACY.name,
         }
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        self.assertRedirects(response, "/fc_authorizev2/", target_status_code=302)
 
         # When mandate is remote and consent method is SMS and phone number is absent,
         # mandate creation should fail
@@ -310,7 +308,7 @@ class NewMandatTests(TestCase):
 
         data = {"demarche": ["papiers", "logement"], "duree": "LONG"}
         response = self.client.post("/creation_mandat/", data=data)
-        self.assertRedirects(response, "/fc_authorize/", target_status_code=302)
+        self.assertRedirects(response, "/fc_authorizev2/", target_status_code=302)
         data = {
             "demarche": ["papiers", "logement"],
             "duree": "LONG",
@@ -960,7 +958,7 @@ class AttestationVisualisationTests(TestCase):
 
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Ce mandat est introuvable ou inaccessible.",
+            "Erreur : ce mandat est introuvable ou inaccessible.",
             messages[0].message,
         )
 
@@ -975,7 +973,7 @@ class AttestationVisualisationTests(TestCase):
 
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Ce mandat est introuvable ou inaccessible.",
+            "Erreur : ce mandat est introuvable ou inaccessible.",
             messages[0].message,
         )
 
@@ -1152,7 +1150,7 @@ class AttestationFinalTests(TestCase):
 
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Ce mandat est introuvable ou inaccessible.",
+            "Erreur : ce mandat est introuvable ou inaccessible.",
             messages[0].message,
         )
 
@@ -1188,3 +1186,33 @@ class AttestationFinalTests(TestCase):
                     got: {response.context[key]}"""
                 ),
             )
+
+
+class RemoteSecondStepMissingFirstStepTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant = AidantFactory()
+
+    def test_direct_access_without_first_step_shows_error(self):
+        """Test direct access to remote second step without SMS recap shows error"""
+        self.client.force_login(self.aidant)
+
+        connection = ConnectionFactory(
+            aidant=self.aidant,
+            organisation=self.aidant.organisation,
+            mandat_is_remote=True,
+            remote_constent_method=RemoteConsentMethodChoices.SMS.name,
+            consent_request_id="test-uuid",
+            user_phone="0800840800",
+        )
+
+        session = self.client.session
+        session["connection"] = connection.pk
+        session.save()
+
+        response = self.client.post(reverse("new_mandat_remote_second_step"))
+
+        self.assertRedirects(response, reverse("new_mandat"))
+        messages = list(django_messages.get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertIn("récapitulatif de mandat n'a pas été envoyé", messages[0].message)

@@ -416,7 +416,11 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "last_name",
             "email",
             "phone",
+            "course_type",
             "profession",
+            "created_by_fne",
+            "id_fne",
+            "last_modification_date",
             "deactivation_warning_at",
             "referent",
             "can_create_mandats",
@@ -427,6 +431,10 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "totp_card_date_activated",
             "has_otp_app",
             "is_active",
+            "connexion_mode_choosed",
+            "connexion_mode_activated",
+            "formation_date",
+            "formation_organisation",
             "has_connected_once",
             "nb_mandat_created",
             "nb_mandat_remote_created",
@@ -435,6 +443,7 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "nb_demarches",
             "organisation__name",
             "organisation__data_pass_id",
+            "organisation__created_by_fne",
             "organisation__siret",
             "organisation__address",
             "organisation__zipcode",
@@ -457,6 +466,57 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             return self.aidant.responsable_de.exists()
 
         referent.csv_column = "Est référent"
+
+        def last_modification_date(self):
+            return self.aidant.updated_at.strftime("%d-%m-%Y")
+
+        last_modification_date.csv_column = "Derniere Modification Aidant"
+
+        def course_type(self):
+            return self.aidant.get_course_type
+
+        course_type.csv_column = "Type de Parcours"
+
+        def connexion_mode_choosed(self):
+            return self.aidant.connexion_mode
+
+        connexion_mode_choosed.csv_column = "Moyen de connexion choisi"
+
+        def connexion_mode_activated(self):
+            if self.aidant.has_a_carte_totp:
+                return HabilitationRequest.CONNEXION_MODE_CARD
+            if self.aidant.has_otp_app:
+                return HabilitationRequest.CONNEXION_MODE_PHONE
+            return ""
+
+        connexion_mode_activated.csv_column = "Moyen de connexion Activé"
+
+        def formation_date(self):
+            hr = (
+                HabilitationRequest.objects.filter(email=self.aidant.email)
+                .exclude(date_formation__isnull=True)
+                .first()
+            )
+            if hr:
+                return hr.date_formation.strftime("%d-%m-%Y")
+            return ""
+
+        formation_date.csv_column = "Date de formation"
+
+        def formation_organisation(self):
+            try:
+                from aidants_connect_common.models import FormationAttendant
+
+                hr = HabilitationRequest.objects.filter(email=self.aidant.email).first()
+                if hr:
+                    fa = FormationAttendant.objects.filter(attendant=hr).first()
+                    if fa and fa.formation and fa.formation.organisation:
+                        return fa.formation.organisation.name
+            except Exception:
+                return "ERREUR"
+            return "NC"
+
+        formation_organisation.csv_column = "Nom Organisme de formation"
 
         def active_totp_card(self):
             return getattr(
@@ -814,25 +874,61 @@ def import_referent_formation_from_livestorm(*, logger=None):
 
 @shared_task
 def notifiy_organisation_having_formation_unregistered_habilitation_requests():
+    url_formulaire = settings.URL_WEBINAIRE_REFERENT
+
     for (
         org
     ) in Organisation.objects.having_formation_unregistered_habilitation_requests():
-        text_message, html_message = render_email(
+        text_message_with_connexion, html_message_with_connexion = render_email(
             "email/having_formation_unregistered_habilitation_requests.mjml",
             {
                 "habilitation_requests_url": build_url(
                     reverse("espace_responsable_demandes")
-                )
+                ),
+                "espace_referent_url": build_url(reverse("espace_responsable")),
+                "url_formulaire": url_formulaire,
             },
         )
 
-        send_mail(
-            from_email=settings.SUPPORT_EMAIL,
-            subject="Sessions de formation à Aidants Connect",
-            recipient_list=org.responsables.values_list("email", flat=True),
-            message=text_message,
-            html_message=html_message,
-        )
+        recipients_with_connexion_list = []
+        recipients_without_connexion_list = []
+
+        for one_rcpt in org.responsables_is_active.filter(created_by_fne=False):
+            if one_rcpt.has_a_totp_device_confirmed_or_not:
+                recipients_with_connexion_list.append(one_rcpt.email)
+            else:
+                recipients_without_connexion_list.append(one_rcpt.email)
+
+        if len(recipients_with_connexion_list) > 0:
+            send_mail(
+                from_email=settings.SUPPORT_EMAIL,
+                subject="Inscription en formation des aidants",
+                recipient_list=recipients_with_connexion_list,
+                message=text_message_with_connexion,
+                html_message=html_message_with_connexion,
+            )
+
+        if len(recipients_without_connexion_list) > 0:
+            orga_request = org.organisationrequest_set.all().first()
+            if orga_request:
+                text_message_without_connexion, html_message_without_connexion = (
+                    render_email(
+                        "email/having_formation_unregistered_manager_not_activated.mjml",  # noqa
+                        {
+                            "habilitation_requests_url": build_url(
+                                orga_request.get_absolute_url()
+                            ),
+                            "url_formulaire": url_formulaire,
+                        },
+                    )
+                )
+                send_mail(
+                    from_email=settings.SUPPORT_EMAIL,
+                    subject="Inscription des aidants à la formation Aidants Connect",
+                    recipient_list=recipients_with_connexion_list,
+                    message=text_message_without_connexion,
+                    html_message=html_message_without_connexion,
+                )
 
 
 @shared_task

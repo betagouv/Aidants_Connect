@@ -6,6 +6,7 @@
 
 {% block extracss %}
   <link href="{% static 'css/ressources.css' %}" rel="stylesheet">
+  <link href="{% static 'css/custom-dropdown.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block body %}
@@ -13,14 +14,18 @@
     <div id="ressource_demarrer" class="fr-mb-8w">
       {% include "public_website/_ressource_demarrer.html" %}
     </div>
-    <div id="fiches" class="fr-mb-8w">
+    <div id="fiches_pratiques" class="fr-mb-8w">
       <h2 class="fr-h3 fr-mb-1w">Fiches pratiques</h2>
       <p class="fr-text--lg fr-text-mention--grey fr-mb-4w">
         Pour vous aider dans l’accompagnement
       </p>
       {% include "aidants_connect_web/common/resources-block.html" %}
     </div>
-    <div id="video" class="fr-mb-8w">
+    <div id="video" class="fr-mb-4w">
+      <h2 class="fr-h3">Vidéos</h2>
+      <p class="fr-text--lg fr-text-mention--grey fr-mb-3w">
+        Comprendre Aidants Connect en quelques minutes
+      </p>
       {% include 'public_website/_ressource_video.html' %}
     </div>
     <!-- Bloc Kit de communication pas prêt pour le moment -->
@@ -28,8 +33,8 @@
       <h2 class="h3">Kit de communication</h2>
       {% include 'public_website/_ressource_kit.html' %}
     </div> -->
-    <div id="externe">
-      <h2 class="h3">Ressources externes</h2>
+    <div id="externe" class="fr-mb-4w">
+       <h2 class="fr-h3">Ressources externes</h2>
       {% include 'public_website/_ressource_externe.html' %}
     </div>
   </div>

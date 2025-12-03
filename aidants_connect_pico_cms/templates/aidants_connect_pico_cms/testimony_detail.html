@@ -1,9 +1,8 @@
 {% extends 'layouts/main.html' %}
 {% load form_extras static %}
-$
 
 {% block title %}
-  témoignage {{ object.name }} - Aidants Connect
+  Témoignage {{ object.name }} - Aidants Connect
 {% endblock title %}
 
 {% block content %}
@@ -23,7 +22,6 @@ $
             >Menu
             </button>
             <div class="fr-collapse" id="fr-sidemenu-wrapper">
-              <div class="fr-sidemenu__title" id="fr-sidemenu-title">Menu</div>
               <ul class="fr-sidemenu__list">
                 {% for testimony in all_testimonies %}
                   <li
@@ -35,7 +33,7 @@ $
                       href="{{ testimony.get_absolute_url }}"
                       {% if testimony.slug == object.slug %}aria-current="true"{% endif %}
                     >
-                      <p><span class="fr-text--lg fr-mb-0">{{ testimony.name }}</span><br/><span class="text-thin">{{ testimony.job }}</span></p>
+                      <p><span class="fr-text--lg fr-mb-0">{{ testimony.name }}</span></p>
                     </a>
                   </li>
                 {% endfor %}

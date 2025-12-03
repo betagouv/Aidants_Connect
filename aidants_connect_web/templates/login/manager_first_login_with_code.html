@@ -1,0 +1,76 @@
+{% extends 'layouts/main.html' %}
+{% load ac_common dsfr_tags form_extras static %}
+
+{% block extracss %}
+  <link href="{% static 'css/login.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block title %}
+  Connectez-vous{% if form.errors|length > 0 %} (Erreur dans le formulaire){% endif %} - Aidants Connect
+{% endblock title %}
+
+{% block content %}
+  <div class="fr-container main-content-fluid">
+    <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--center">
+      <div class="fr-col-12 fr-col-md-6 main-content-item">
+        <div class="fr-alert fr-alert--info fr-mb-6v">
+          <p>
+            <b>Vous êtes une structure qui souhaite utiliser Aidants Connect ?</b>
+            Nous vous invitons à remplir <a href="{% url 'habilitation_faq_habilitation' %}" class="fr-link">
+            <b>notre formulaire d'habilitation</b>
+          </a>
+          </p>
+        </div>
+
+        <div class="fr-container fr-background-alt--grey fr-px-md-0 fr-py-10v fr-py-md-14v">
+          <div class="fr-grid-row fr-grid-row-gutters fr-grid-row--center">
+            <div class="fr-col-12 fr-col-md-9 fr-col-lg-8">
+              <form id="login-1760" method="post">
+                {% csrf_token %}
+                <fieldset
+                  class="fr-fieldset fr-py-0 fr-my-0"
+                  id="login-1760-fieldset"
+                  aria-labelledby="login-1760-fieldset-legend"
+                >
+                  <legend class="flex width-100" id="login-1760-fieldset-legend">
+                    <h1 class="fr-h3 fr-m-0 fr-p-0">Première connexion référent</h1>
+                    <div class="spacer"></div>
+                  </legend>
+
+                  <div class="fr-fieldset__element fr-my-6v">
+                    <p class="fr-text--sm">
+                      Entrez le code à 6 chiffres reçu par SMS.
+                      Sauf mention contraire, tous les champs sont obligatoires.
+                    </p>
+                  </div>
+                  <div class="fr-fieldset__element fr-my-6v">
+                    <fieldset class="fr-fieldset fr-my-0" id="credentials">
+                      <div class="fr-fieldset__element">
+                        {% aidantc_dsfr_form_field_no_asterisk form.code_otp %}
+                      </div>
+                      <div class="fr-fieldset__element fr-my-0">
+                      </div>
+                    </fieldset>
+                  </div>
+                  <div class="fr-fieldset__element fr-my-0">
+                    <ul class="fr-btns-group">
+                      <li>
+                        <button type="submit" class="fr-btn">Accéder à l’espace référent</button>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="fr-messages-group" id="login-1760-fieldset-messages" aria-live="assertive">
+                  </div>
+                </fieldset>
+              </form>
+
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+{% endblock content %}

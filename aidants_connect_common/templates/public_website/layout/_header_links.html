@@ -14,7 +14,7 @@
     class="fr-nav__link"
     target="_self"
     href="{% url 'habilitation_faq_habilitation' %}"
-    {% if request.resolver_match.url_name == 'habilitation_faq_habilitation' %}aria-current="true"{% endif %}
+    {% if request.resolver_match.url_name|startswith:'habilitation' and request.resolver_match.url_name != 'habilitation_faq_formation' %}aria-current="true"{% endif %}
   >
     Habilitation
   </a>
@@ -65,8 +65,8 @@
   <a
     class="fr-nav__link"
     target="_self"
-    href="{% url 'faq_generale' %}"
-    {% if view_name == 'faq_generale' %}aria-current="true"{% endif %}
+    href="{% url 'faq_public_generale' %}"
+    {% if view_name|startswith:'faq' %}aria-current="true"{% endif %}
   >
     Aide
   </a>
