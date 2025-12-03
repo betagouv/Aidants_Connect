@@ -20,7 +20,10 @@ from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_common.models import Department
 from aidants_connect_common.utils import build_url, render_email
-from aidants_connect_web.constants import ReferentRequestStatuses
+from aidants_connect_web.constants import (
+    HabilitationRequestCourseType,
+    ReferentRequestStatuses,
+)
 from aidants_connect_web.forms import MassEmailActionForm
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
 
@@ -262,18 +265,25 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         "display_datapass_id",
         "profession",
         "status",
+        "connexion_mode",
+        "course_type",
+        "id_fne",
         "created_at",
     )
-    readonly_fields = ("created_at", "updated_at")
+    readonly_fields = ("created_at", "updated_at", "id_fne", "course_type")
     raw_id_fields = ("organisation",)
     actions = ("mark_validated", "mark_refused", "mark_processing")
     list_filter = (
+        "status",
+        "origin",
+        "formation_done",
+        "test_pix_passed",
+        "connexion_mode",
+        "course_type",
+        "created_by_fne",
         HabilitationRequestRegionFilter,
         HabilitationDepartmentFilter,
         HabilitationRequestOrgaTypeFilter,
-        "status",
-        "origin",
-        "test_pix_passed",
     )
     search_fields = (
         "first_name",
@@ -283,6 +293,48 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         "organisation__data_pass_id",
     )
     ordering = ("email",)
+
+    fieldsets = (
+        (
+            "Informations personnelles et professionnelles",
+            {
+                "fields": (
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "organisation",
+                    "profession",
+                    "conseiller_numerique",
+                )
+            },
+        ),
+        (
+            "Informations Habilitation",
+            {
+                "fields": (
+                    "status",
+                    "origin",
+                    "course_type",
+                    "connexion_mode",
+                    "formation_done",
+                    "date_formation",
+                    "test_pix_passed",
+                    "date_test_pix",
+                )
+            },
+        ),
+        (
+            "Informations Technique",
+            {
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                    "created_by_fne",
+                    "id_fne",
+                )
+            },
+        ),
+    )
 
     resource_classes = [HabilitationRequestResource]
 
@@ -367,7 +419,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
 
     mark_refused.short_description = "Refuser les demandes sélectionnées"
 
-    def mark_processing(self, request, queryset):
+    def mark_processing(self, request, queryset, send_messages=True):
         habilitation_requests = queryset.filter(
             status__in=[
                 ReferentRequestStatuses.STATUS_NEW,
@@ -376,15 +428,24 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         )
 
         for habilitation_request in habilitation_requests:
-            habilitation_request.status = ReferentRequestStatuses.STATUS_PROCESSING
+            if habilitation_request.course_type == HabilitationRequestCourseType.P2P:
+                habilitation_request.status = (
+                    ReferentRequestStatuses.STATUS_PROCESSING_P2P
+                )
+            else:
+                habilitation_request.status = ReferentRequestStatuses.STATUS_PROCESSING
             habilitation_request.save()
-        for habilitation_request in habilitation_requests:
+
+        for habilitation_request in queryset.filter(
+            status=ReferentRequestStatuses.STATUS_PROCESSING, created_by_fne=False
+        ):
             self.send_validation_email(habilitation_request)
 
-        self.message_user(
-            request,
-            f"{habilitation_requests.count()} demandes sont maintenant en cours.",
-        )
+        if send_messages:
+            self.message_user(
+                request,
+                f"{habilitation_requests.count()} demandes sont maintenant en cours.",
+            )
 
     mark_processing.short_description = (
         "Passer les demandes sélectionnées au statut "

@@ -48,7 +48,7 @@ def home_page(request):
 @login_required
 def logout_page(request):
     logout(request)
-    django_messages.success(request, "Vous êtes maintenant déconnecté·e.")
+    django_messages.success(request, "Vous avez été déconnecté avec succès.")
     return redirect(settings.LOGOUT_REDIRECT_URL)
 
 
@@ -197,6 +197,14 @@ def politique_confidentialite(request):
 
 def mentions_legales(request):
     return render(request, "public_website/mentions_legales.html")
+
+
+def budget(request):
+    return render(request, "public_website/budget.html")
+
+
+class SitemapView(TemplateView):
+    template_name = "public_website/plan_site.html"
 
 
 class AccessibiliteView(TemplateView):

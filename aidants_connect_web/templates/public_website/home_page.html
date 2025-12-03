@@ -7,19 +7,22 @@
   <link href="{% static 'css/basicLightbox.min.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
+{% block title %}Accueil - Aidants Connect{% endblock %}
+
 {% block content %}
   <div class="fr-container">
     <div class="fr-alert fr-alert--info fr-my-4v">
       <p>
-        Plusieurs webinaires d'information présenteront les nouvelles modalités de formation et de financement.
+        Vous souhaitez en savoir davantage sur le dispositif Aidants Connect et les conditions d'éligibilité ?
       </p>
       <p>
-        Pour vous inscrire, il vous suffit de <a
-        href="https://app.livestorm.co/aidants-connect/webinaire-dinformation-aidants-connect?s=6e66cc17-a18e-4fa6-bd38-6f6eae468743"
+        <a
+        href="https://tally.so/r/Bz4yve"
         class="fr-link"
         target="_blank"
-      >
-        cliquer sur ce lien .</a>
+        >
+      Inscrivez-vous</a>
+       à l’un de nos webinaires d’information.
       </p>
     </div>
 
@@ -128,7 +131,7 @@
     <div class="fr-container fr-py-8w">
       <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle fr-grid-row--center">
         <div class="fr-col-md-4 fr-col-12">
-          <img src="{% static 'images/icons/icon_faq.svg' %}">
+          <img src="{% static 'images/icons/icon_faq.svg' %}" alt="">
         </div>
         <div class="fr-col-md-8 fr-col-12">
           <h2 class="fr-h3">Les questions les plus fréquentes</h2>
@@ -239,41 +242,7 @@
               <h2 class="fr-h5">Abonnez-vous à notre lettre d’information</h2>
               <p class="fr-text--sm">Inscrivez-vous à notre infolettre pour vous tenir au courant des nouveautés du projet :</p>
             </div>
-            <div>
-              <form
-                id="sb_form"
-                method="post"
-                data-connect-url="{{ SARBACANE_CONNECT_URL }}"
-              >
-                <div class="fr-input-group">
-                  <label class="fr-label" for="newsletter-email">
-                    Votre adresse électronique (ex. : nom@domaine.fr)
-                  </label>
-                  <div class="fr-input-wrap fr-input-wrap--addon">
-                    <input
-                      class="fr-input"
-                      title="Votre adresse électronique (ex. : nom@domaine.fr)"
-                      aria-describedby="newsletter-email-hint-text newsletter-email-messages"
-                      placeholder="Votre adresse électronique (ex. : nom@domaine.fr)"
-                      id="input-email"
-                      type="text"
-                      name="email"
-                      required
-                      sb-form-input
-                    >
-                    <button class="fr-btn" id="submitInput" title="S‘abonner à notre lettre d’information"
-                      type="submit">
-                      S'abonner
-                    </button>
-                  </div>
-                  <div class="fr-messages-group" id="newsletter-email-messages" aria-live="assertive">
-                  </div>
-                </div>
-                <p id="newsletter-email-hint-text" class="fr-hint-text">En renseignant votre adresse électronique, vous
-                  acceptez de recevoir nos actualités par courriel. Vous pouvez vous désinscrire à tout moment à l’aide
-                  des liens de désinscription ou en nous contactant.</p>
-              </form>
-            </div>
+<iframe width="540" height="310" src="{{ BREVO_IFRAME_URL }}" title="infolettre"></iframe>
           </div>
         </div>
       </div>
@@ -290,6 +259,6 @@
     data-video-url="{% static 'videos/AidantsConnect.mp4' %}"
   ></script>
   <script defer type="text/javascript" src="{{ SARBACANE_SCRIPT_URL }}"></script>
-  <script defer type="text/javascript" src="{% static 'js/newsletter-form.js' %}"></script>
+{# <script defer type="text/javascript" src="{% static 'js/newsletter-form.js' %}"></script> #}
   <script defer type="text/javascript" src="{% static 'js/youtube-cookie.js' %}"></script>
 {% endblock extrajs %}

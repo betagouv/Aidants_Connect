@@ -1,0 +1,16 @@
+{% load ac_common %}
+
+Bonjour {{ user.get_full_name }},
+
+Pour obtenir votre code de première connexion à Aidants Connect, vous avez juste à coller le lien suivant dans votre navigateur :
+
+{{ href }}
+
+Ce lien n'est valable que {{ TOKEN_DURATION_MINUTES }} minutes. Il est à usage unique.
+
+
+À bientôt sur Aidants Connect !
+
+L’équipe Aidants Connect
+Accompagnez vos usagers en toute sécurité
+Pour toute demande : {% mailto "contact@aidantsconnect.beta.gouv.fr" %}

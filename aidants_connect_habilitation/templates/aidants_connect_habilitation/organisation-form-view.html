@@ -8,23 +8,32 @@
 {% block content %}
   <div class="fr-container">
     {% include "layouts/_js-unavailable-alert.html" %}
-    <h1 class="fr-mb-0">Formulaire d’habilitation</h1>
+    <div class="fr-mb-1w">
+      <h1 class="fr-mb-2w">Formulaire d’habilitation</h1>
+      <p class="fr-text--lg">
+        Sauf mention contraire, tous les champs sont obligatoires.
+      </p>
+    </div>
     <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col-12 fr-col-md-6">
+      <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
         {% include "layouts/_breadcrumbs.html" %}
+        <p class="fr-text--md">
+          Vous pouvez faire autant de demandes qu’il existe de structures d’accueil.
+        </p>
         <form
           method="post"
           class="fr-my-8v"
           data-controller="dynamic-form"
           data-dynamic-form-type-other-value="{{ type_other_value }}"
+          data-dynamic-form-associations-value-value="13"
         >
           {% csrf_token %}
           {{ form }}
-          <ul class="fr-btns-group fr-btns-group--inline-md fr-my-6w">
+          <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--between fr-my-6w">
             <li>
               <a
-                class="fr-btn fr-btn--secondary"
-                href="{% url 'habilitation_issuer_page' issuer_id=issuer_id %}"
+                class="fr-btn fr-btn--tertiary"
+                href="{% url 'habilitation_siret_verification' issuer_id=issuer_id %}"
               >
                 Revenir à l’étape précédente
               </a>
@@ -34,8 +43,6 @@
             </li>
           </ul>
         </form>
-
-        {% dsfr_alert type="info" extra_classes="fr-alert--sm" content="Les informations saisies sont sauvegardées à chaque étape. Vous pouvez revenir plus tard en cliquant sur le lien reçu par email." %}
       </div>
     </div>
   </div>

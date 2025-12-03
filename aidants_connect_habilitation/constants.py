@@ -11,11 +11,12 @@ else:
 
 
 class HabilitationFormStep(IntegerChoices):
-    ISSUER = auto(), "Le demandeur"
-    ORGANISATION = auto(), "La structure"
-    REFERENT = auto(), "Le référent Aidants Connect"
-    PERSONNEL = auto(), "Les aidants de ma structure"
-    SUMMARY = auto(), "Récapitulatif & validation"
+    ISSUER = auto(), "Informations demandeur"
+    SIRET_VERIFICATION = auto(), "Numéro Siret de la structure"
+    ORGANISATION = auto(), "Informations structure"
+    REFERENT = auto(), "Référent Aidants Connect"
+    PERSONNEL = auto(), "Aidants à habiliter"
+    SUMMARY = auto(), "Récapitulatif et validation de la demande"
 
     @enum_property
     def enum(self):

@@ -1,6 +1,8 @@
 import contextlib
 import operator
+import os
 import re
+import time
 from typing import Any, Callable, Iterable, Mapping, Optional
 from urllib.parse import urlencode
 
@@ -12,6 +14,7 @@ from django.db import models
 from django.test import tag
 from django.urls import reverse
 
+from axe_selenium_python import Axe
 from faker.proxy import Faker
 from selenium.common.exceptions import (
     NoSuchElementException,
@@ -56,7 +59,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
             log_output="./geckodriver.log", service_args=["--log", "debug"]
         )
         cls.selenium = WebDriver(options=firefox_options, service=service)
-        cls.selenium.implicitly_wait(0.5)
+        cls.selenium.implicitly_wait(3)
         cls.wait = WebDriverWait(cls.selenium, 10)
 
         # In some rare cases, the first connection to the Django LiveServer
@@ -68,6 +71,25 @@ class FunctionalTestCase(StaticLiveServerTestCase):
                 cls.selenium.get(f"{cls.live_server_url}/")
             except WebDriverException:
                 pass
+
+        # Initialize accessibility testing tools
+        cls.axe = None
+        cls._axe_injected = False
+
+        # Monkey-patch WebDriver to slow down functional test execution in browser
+        # useful to debug if HEADLESS_FUNCTIONAL_TESTS is True
+        if os.getenv("HEADLESS_FUNCTIONAL_TESTS") == "False":
+            delay = 0.5
+
+            def slow_command_executor(self, *args, **kwargs):
+                result = self._original_execute(*args, **kwargs)
+                time.sleep(delay)
+                return result
+
+            cls.selenium._original_execute = cls.selenium.execute
+            cls.selenium.execute = slow_command_executor.__get__(
+                cls.selenium, type(cls.selenium)
+            )
 
     @classmethod
     def tearDownClass(cls):
@@ -243,6 +265,16 @@ class FunctionalTestCase(StaticLiveServerTestCase):
                 )
 
     @contextlib.contextmanager
+    def dropdown_opened(self, by=By.ID, value: Optional[str] = None):
+        dropdown = self.selenium.find_element(by, value)
+        button = dropdown.find_element(By.TAG_NAME, "button")
+        button.click()
+        try:
+            yield dropdown
+        finally:
+            self.selenium.find_element(By.TAG_NAME, "body").click()
+
+    @contextlib.contextmanager
     def implicitely_wait(self, time_to_wait: float, driver=None):
         """time_to_wait: time to wait in seconds"""
         driver = driver or self.selenium
@@ -297,3 +329,70 @@ class FunctionalTestCase(StaticLiveServerTestCase):
             re.sub(r"\s+", " ", f"{first}", flags=re.M).strip(),
             re.sub(r"\s+", " ", f"{second}", flags=re.M).strip(),
         )
+
+    # on exclue le warning aria-allowed-role sur les balises nav des skips-links car
+    # role="navigation" explicitement demandé dans le composant skip link DSFR
+    # Selon la doc dsfr, les composants fr-skiplinks, header, nav et footer doivent
+    # déclarer les roles. axe-core considère que c'est redondant: on privilégie le dsfr
+    def check_accessibility(
+        self,
+        page_name="page",
+        strict=False,
+        options={
+            "exclude": [
+                ["nav[aria-label='Accès rapide']"],
+                ["header[role='banner']"],
+                ["nav[role='navigation']"],
+                ["footer[role='contentinfo']"],
+            ]
+        },
+    ):
+        """
+        Check accessibility of the current page using axe-core
+
+        Args:
+            page_name: Name for the results file
+            strict: If True, fail the test on violations
+            options: Custom options for axe-core
+
+        Returns:
+            dict: axe-core results
+        """
+        if self.axe is None:
+            self.axe = Axe(self.selenium)
+
+        if not self._axe_injected:
+            self.axe.inject()
+            self._axe_injected = True
+
+        try:
+            results = self.axe.run(options=options)
+        except Exception:
+            # Re-inject if necessary (page/domain change)
+            self.axe.inject()
+            results = self.axe.run(options=options)
+
+        # persist results
+        # self.axe.write_results(results, f'{page_name}_a11y.json')
+
+        # Handle violations
+        violations_count = len(results["violations"])
+        if violations_count > 0:
+            violation_message = self.axe.report(results["violations"])
+
+            if strict:
+                self.assertEqual(violations_count, 0, violation_message)
+            else:
+                print(
+                    f"\n{'=' * 100}\n",
+                    f"\n⚠️  ACCESSIBILITY WARNING [{page_name}]:",
+                    f"{violations_count} violation(s) detected",
+                )
+                print(f"{'=' * 100}\n")
+                print(violation_message)
+
+        return results
+
+    def reset_axe_injection(self):
+        """Reset injection flag (useful after navigating to a new domain)"""
+        self._axe_injected = False

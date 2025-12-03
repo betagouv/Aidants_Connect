@@ -7,6 +7,7 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from faker import Faker
 
 from aidants_connect import settings
+from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
 from aidants_connect_web.models.other_models import CoReferentNonAidantRequest
 from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 from aidants_connect_web.views import espace_responsable
@@ -151,11 +152,127 @@ class EspaceResponsableAidantPage(TestCase):
         self.assertRedirects(response, reverse("espace_responsable_organisation"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
-            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "Erreur : ce profil aidant nʼexiste pas ou nʼest pas membre "
+            "de votre organisation active. "
+            "Si ce profil existe et que vous faites partie de ses référents, "
             "veuillez changer dʼorganisation pour le gérer.",
             messages[0].message,
         )
+
+    def test_espace_responsable_aidant_deactivated(self):
+        """
+        A referent can access a deactivated aidant's profile
+        and only the card unlinking action is available
+        """
+        # Create a deactivated aidant with a TOTP card
+        aidant_desactive = AidantFactory(
+            organisation=self.responsable_tom.organisation,
+            is_active=False,
+            post__with_carte_totp=True,
+        )
+
+        TOTPDevice.objects.create(
+            user=aidant_desactive,
+            name=OTP_APP_DEVICE_NAME % aidant_desactive.pk,  # "OTP App for user 123"
+            confirmed=True,
+        )
+        aidant_desactive.refresh_from_db()
+
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(f"/espace-responsable/aidant/{aidant_desactive.id}/")
+
+        # The referent can access the profile
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response, "aidants_connect_web/espace_responsable/aidant.html"
+        )
+
+        serial_number = aidant_desactive.carte_totp.serial_number
+
+        # The 'Unlink card' action is available
+        self.assertContains(response, "Délier")
+        self.assertContains(response, serial_number)
+        self.assertContains(response, "ASSOCIÉ")
+
+        # Other actions are not available
+        self.assertNotContains(response, "Désigner comme référent")
+        self.assertNotContains(response, "Désactiver")
+        self.assertNotContains(response, "Associer")
+        self.assertNotContains(response, "INACTIF")
+
+    def test_espace_responsable_aidant_type(self):
+        """
+        An aidant type is displayed in front of organisation
+        """
+        # a user (leloo) connected to 3 organisations
+        organisation_1 = OrganisationFactory(name="Organisation 1")
+        organisation_2 = OrganisationFactory(name="Organisation 2")
+        organisation_3 = OrganisationFactory(name="Organisation 3")
+
+        # aidant only in organisation_1
+        leloo = AidantFactory(is_active=True, organisation=organisation_1)
+
+        # manager only in organisation_2
+        leloo.responsable_de.add(organisation_2)
+
+        # aidant and manager only in organisation_3
+        leloo.organisations.add(organisation_3)
+        leloo.responsable_de.add(organisation_3)
+
+        korben = AidantFactory(
+            is_active=True,
+            organisation=organisation_1,
+            can_create_mandats=False,
+            referent_non_aidant=True,
+        )
+        korben.responsable_de.add(organisation_1)
+        korben.responsable_de.add(organisation_2)
+
+        self.client.force_login(korben)
+        response_1 = self.client.get(f"/espace-responsable/aidant/{leloo.id}/")
+
+        referent_count = response_1.content.decode().count('id="badge-referent"')
+        referent_aidant_count = response_1.content.decode().count(
+            'id="badge-referent-aidant"'
+        )
+
+        # Test the different statuses displayed for Korben
+        self.assertContains(response_1, organisation_1.name)
+        self.assertContains(response_1, organisation_2.name)
+        self.assertContains(response_1, "REFERENT-AIDANT")
+        self.assertEqual(referent_aidant_count, 1)
+        self.assertEqual(referent_count, 0)
+
+        # he cannot see organisation_3
+        self.assertNotContains(response_1, organisation_3.name)
+
+        # now korben can also see organisation_3
+        korben.responsable_de.add(organisation_3)
+        response_2 = self.client.get(f"/espace-responsable/aidant/{leloo.id}/")
+        referent_count = response_2.content.decode().count('id="badge-referent"')
+        referent_aidant_count = response_2.content.decode().count(
+            'id="badge-referent-aidant"'
+        )
+
+        self.assertContains(response_2, organisation_1.name)
+        self.assertContains(response_2, organisation_2.name)
+        self.assertContains(response_2, organisation_3.name)
+        self.assertContains(response_2, "REFERENT-AIDANT")
+        self.assertEqual(referent_aidant_count, 2)
+        self.assertEqual(referent_count, 0)
+
+        response_3 = self.client.get(f"/espace-responsable/aidant/{korben.id}/")
+        referent_count = response_3.content.decode().count('id="badge-referent"')
+        referent_aidant_count = response_3.content.decode().count(
+            'id="badge-referent-aidant"'
+        )
+
+        self.assertContains(response_3, organisation_1.name)
+        self.assertContains(response_3, organisation_2.name)
+        self.assertContains(response_3, organisation_3.name)
+        self.assertContains(response_3, "REFERENT")
+        self.assertEqual(referent_aidant_count, 0)
+        self.assertEqual(referent_count, 3)
 
 
 @tag("responsable-structure")
@@ -186,7 +303,7 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
 
         response = self.client.get(self.get_aidant_url(aidant))
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "Changer les organisations de rattachement")
+        self.assertContains(response, "Modifier l'organisation")
 
     def test_responsable_of_several_structures_can_see_the_form(self):
         responsable = self.responsable_of_2
@@ -197,7 +314,7 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Changer les organisations de rattachement")
+        self.assertContains(response, "Modifier l'organisation")
 
     def test_organisations_are_modified(self):
         responsable = self.responsable_of_2
@@ -283,8 +400,9 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
         self.assertRedirects(response, reverse("espace_responsable_organisation"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
-            "Ce profil aidant nʼexiste pas ou nʼest pas membre de votre organisation "
-            "active. Si ce profil existe et que vous faites partie de ses référents, "
+            "Erreur : ce profil aidant nʼexiste pas ou nʼest pas membre "
+            "de votre organisation active. "
+            "Si ce profil existe et que vous faites partie de ses référents, "
             "veuillez changer dʼorganisation pour le gérer.",
             messages[0].message,
         )
@@ -337,7 +455,7 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
             response = self.client.get(page)
             response_content = response.content.decode("utf-8")
             self.assertIn(
-                "activer votre carte Aidants Connect",
+                "associer une application d’authentification",
                 response_content,
                 f"TOTP message is hidden on '{page}', it should be visible",
             )
@@ -348,7 +466,7 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
             response = self.client.get(page)
             response_content = response.content.decode("utf-8")
             self.assertIn(
-                "activer votre carte Aidants Connect",
+                "associer une application d’authentification",
                 response_content,
                 f"TOTP message is hidden on '{page}', it should be visible",
             )
@@ -359,7 +477,7 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
             response = self.client.get(page)
             response_content = response.content.decode("utf-8")
             self.assertNotIn(
-                "activer votre carte Aidants Connect",
+                "associer une application d’authentification",
                 response_content,
                 f"TOTP message is shown on '{page}', it should be hidden",
             )
@@ -369,7 +487,7 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
         response = self.client.get("/espace-aidant/")
         response_content = response.content.decode("utf-8")
         self.assertNotIn(
-            "activer votre carte Aidants Connect",
+            "associer une application d’authentification",
             response_content,
             "TOTP message is shown on espace-aidant, it should be hidden",
         )

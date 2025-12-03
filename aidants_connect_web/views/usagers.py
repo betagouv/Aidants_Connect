@@ -99,7 +99,8 @@ def _get_usagers_dict_from_mandats(mandats: Iterable[Mandat]) -> dict:
             mandat.autorisations.filter(revocation_date=None).all().order_by("pk")
         )
 
-        has_no_autorisations = autorisations.count() == 0
+        has_autorisations = autorisations.count() > 0
+        has_no_autorisations = not has_autorisations
 
         if expired or has_no_autorisations:
             usagers[mandat.usager]["inactive_mandats"].append(
@@ -143,9 +144,7 @@ def _get_mandats_dicts_from_queryset_mandats(mandats: Iterable[Mandat]) -> tuple
 
     for mandat in mandats:
         expired = mandat.expiration_date if mandat.expiration_date < now() else False
-        autorisations = (
-            mandat.autorisations.filter(revocation_date=None).all().order_by("pk")
-        )
+        autorisations = mandat.autorisations.all().order_by("pk")
 
         l_autorisations = list(autorisations.values_list("demarche", flat=True))
         has_no_autorisations = autorisations.count() == 0
@@ -233,7 +232,7 @@ class UsagerView(DetailView):
 
         if not self.usager:
             django_messages.error(
-                request, "Cet usager est introuvable ou inaccessible."
+                request, "Erreur : cet usager est introuvable ou inaccessible."
             )
             return redirect("espace_aidant_home")
 
@@ -256,6 +255,7 @@ class UsagerView(DetailView):
         )
         revoked_mandats = (
             Mandat.objects.prefetch_related("autorisations")
+            .filter(organisation=self.aidant.organisation, usager=self.usager)
             .exclude_outdated()
             .seperatly_revoked()
         )
@@ -278,7 +278,7 @@ def confirm_autorisation_cancelation(request, usager_id, autorisation_id):
         )
     except Autorisation.DoesNotExist:
         django_messages.error(
-            request, "Cette autorisation est introuvable ou inaccessible."
+            request, "Erreur : cette autorisation est introuvable ou inaccessible."
         )
         return redirect("espace_aidant_home")
 
@@ -329,7 +329,7 @@ def autorisation_cancelation_success(request, usager_id, autorisation_id):
         )
     except Autorisation.DoesNotExist:
         django_messages.error(
-            request, "Cette autorisation est introuvable ou inaccessible."
+            request, "Erreur : cette autorisation est introuvable ou inaccessible."
         )
         return redirect("espace_aidant_home")
 
@@ -343,7 +343,7 @@ def autorisation_cancelation_success(request, usager_id, autorisation_id):
         )
 
     if not authorization.is_revoked:
-        django_messages.error(request, "Cette autorisation est encore active.")
+        django_messages.error(request, "Erreur : cette autorisation est encore active.")
         return redirect("espace_aidant_home")
 
     return render(
@@ -370,14 +370,14 @@ def autorisation_cancelation_attestation(request, usager_id, autorisation_id):
         )
     except Autorisation.DoesNotExist:
         django_messages.error(
-            request, "Cette autorisation est introuvable ou inaccessible."
+            request, "Erreur : cette autorisation est introuvable ou inaccessible."
         )
         return redirect("espace_aidant_home")
 
     mandat: Mandat = autorisation.mandat
 
     if not autorisation.is_revoked:
-        django_messages.error(request, "Cette autorisation est encore active.")
+        django_messages.error(request, "Erreur : cette autorisation est encore active.")
         return redirect("espace_aidant_home")
 
     if not autorisation.was_separately_revoked:
@@ -410,7 +410,9 @@ def confirm_mandat_cancelation(request, mandat_id):
     try:
         mandat = Mandat.objects.get(pk=mandat_id, organisation=aidant.organisation)
     except Mandat.DoesNotExist:
-        django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
+        django_messages.error(
+            request, "Erreur : ce mandat est introuvable ou inaccessible."
+        )
         return redirect("espace_aidant_home")
 
     usager = mandat.usager
@@ -481,13 +483,15 @@ def mandat_cancelation_success(request, mandat_id: int):
     try:
         mandate = Mandat.objects.get(pk=mandat_id, organisation=aidant.organisation)
     except Mandat.DoesNotExist:
-        django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
+        django_messages.error(
+            request, "Erreur : ce mandat est introuvable ou inaccessible."
+        )
         return redirect("espace_aidant_home")
     user = mandate.usager
     revoked_autorisations = []
 
     if mandate.is_active:
-        django_messages.error(request, "Ce mandat est toujours actif.")
+        django_messages.error(request, "Erreur : ce mandat est toujours actif.")
         return redirect("usager_details", usager_id=user.id)
     else:
         for autorisation in mandate.autorisations.filter(
@@ -523,7 +527,9 @@ def mandat_cancellation_attestation(request, mandat_id):
         if not mandat.was_explicitly_revoked:
             return redirect("espace_aidant_home")
     except Mandat.DoesNotExist:
-        django_messages.error(request, "Ce mandat est introuvable ou inaccessible.")
+        django_messages.error(
+            request, "Erreur : ce mandat est introuvable ou inaccessible."
+        )
         return redirect("espace_aidant_home")
     usager = mandat.usager
 

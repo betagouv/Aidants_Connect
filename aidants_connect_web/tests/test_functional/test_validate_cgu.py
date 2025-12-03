@@ -25,18 +25,20 @@ class ValidateCGUTests(FunctionalTestCase):
         self.login_aidant(self.aidant)
 
         self.assertIsNone(self.aidant.validated_cgu_version)
+        self.check_accessibility("espace_aidant_cgu", strict=True)
 
         # Espace Aidant home
         self.selenium.find_element(By.CSS_SELECTOR, 'label[for="id_agree"]').click()
         self.selenium.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
 
         self.wait.until(self.path_matches("espace_aidant_home"))
+        self.check_accessibility("espace_aidant_home", strict=True)
 
         el = self.selenium.find_element(
             By.XPATH, "//*[contains(@class, 'fr-alert') and contains(., 'CGU')]"
         )
         self.assertEqual(
-            "Merci d’avoir validé les CGU Aidants Connect.", el.text.strip()
+            "Les CGU Aidants Connect ont été validées avec succès.", el.text.strip()
         )
 
         self.aidant.refresh_from_db()

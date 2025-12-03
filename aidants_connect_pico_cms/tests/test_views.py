@@ -1,10 +1,16 @@
-from django.test import TestCase, tag
+from django.test import RequestFactory, TestCase, tag
 from django.test.client import Client
 
+from aidants_connect_pico_cms import constants
 from aidants_connect_pico_cms.models import FaqCategory
 from aidants_connect_pico_cms.tests.factories import (  # FaqQuestionFactory,
     FaqCategoryFactory,
     TestimonyFactory,
+)
+from aidants_connect_pico_cms.views import (
+    AidantFaqDefaultView,
+    PublicFaqDefaultView,
+    ReferentFaqDefaultView,
 )
 from aidants_connect_web.tests.factories import AidantFactory
 
@@ -91,3 +97,48 @@ class TestFaqViews(TestCase):
         self.client.force_login(self.aidant_2)
         response = self.client.get(f"{self.faq_section_1.get_absolute_url()}?see_draft")
         self.assertEqual(response.status_code, 404)
+
+
+class FaqCategoryViewsTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.rf = RequestFactory()
+        cls.user = AidantFactory(
+            is_staff=True,
+            is_superuser=False,
+        )
+        cls.request = cls.rf.get("/", {})
+        cls.request.user = cls.user
+        # Création des catégories de test avec FactoryBoy
+        cls.public_category = FaqCategoryFactory(theme=constants.FAQ_THEME_PUBLIC)
+        cls.aidant_category = FaqCategoryFactory(theme=constants.FAQ_THEME_AIDANT)
+        cls.referent_category = FaqCategoryFactory(theme=constants.FAQ_THEME_REFERENT)
+
+    def test_public_faq_category_view(self):
+        view = PublicFaqDefaultView()
+        view.request = self.request
+        view.see_draft = True
+        queryset = view.get_queryset()
+
+        self.assertEqual(queryset.count(), 1)
+        self.assertEqual(queryset.first(), self.public_category)
+
+    def test_aidant_faq_category_view(self):
+
+        view = AidantFaqDefaultView()
+        view.see_draft = True
+        view.request = self.request
+
+        queryset = view.get_queryset()
+
+        self.assertEqual(queryset.count(), 1)
+        self.assertEqual(queryset.first(), self.aidant_category)
+
+    def test_referent_faq_category_view(self):
+        view = ReferentFaqDefaultView()
+        view.see_draft = True
+        view.request = self.request
+        queryset = view.get_queryset()
+
+        self.assertEqual(queryset.count(), 1)
+        self.assertEqual(queryset.first(), self.referent_category)

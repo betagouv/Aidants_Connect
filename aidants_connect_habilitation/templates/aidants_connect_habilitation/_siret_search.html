@@ -1,0 +1,42 @@
+{% comment %}
+This search bar is designed to be used with JS logic in
+aidants_connect_habilitation/static/js/siret_search.js
+
+Just add it anywhere you display users along with the following static files:
+- aidants_connect_habilitation/static/css/siret_search.css
+- aidants_connect_habilitation/static/js/siret_search.js
+
+DSFR component - Search bar label is hidden by default, so we need to pick it up
+
+{% endcomment %}
+<div class="fr-col-6 fr-input-group {% if form.siret.errors %}fr-input-group--error{% endif %}">
+  <label class="fr-label fr-mb-2v" for="id_siret">
+    Renseignez le numéro Siret de votre structure
+  </label>
+  <p class="fr-hint-text fr-mb-2v">Format attendu : 14 chiffres</p>
+  <div class="fr-search-bar fr-search-bar--sm fr-mb-2v" role="search" data-search-target="searchBar" data-controller="siret-formatter">
+    <input
+      class="fr-input"
+      aria-describedby="siret-input-messages"
+      placeholder="Saisissez le numéro SIRET"
+      id="id_siret"
+      name="siret"
+      type="search"
+      value="{{ form.siret.value|default:'' }}"
+      data-search-target="searchInput"
+      data-organisation-choice-target="siretInput"
+      data-siret-formatter-target="input"
+      data-action="search#search input->siret-formatter#onInput paste->siret-formatter#onPaste"
+      {% if form.siret.field.required %}required{% endif %}
+      {% if siret_verified %}readonly{% endif %}
+    >
+    <button title="Rechercher" type="submit" class="fr-btn">Rechercher</button>
+  </div>
+   <div class="fr-messages-group" id="siret-input-messages" aria-live="polite">
+      {% if form.siret.errors %}
+        {% for error in form.siret.errors %}
+          <p class="fr-message fr-message--error">{{ error }}</p>
+        {% endfor %}
+      {% endif %}
+    </div>
+</div>

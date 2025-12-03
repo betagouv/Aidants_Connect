@@ -1,0 +1,45 @@
+{% load ac_common ac_extras form_extras %}
+<div class="fr-table fr-table--no-caption d-table fr-table--bordered fr-table--layout-fixed">
+  <table>
+    <caption>Table {% if is_referent %} des référents {% else %} des aidants {% endif %}</caption>
+    <thead>
+      <tr>
+        <th scope="col" class="fr-text--md fr-col-3">Nom {% if is_referent %} du référent {% else %} de l'aidant {% endif %} </th>
+        <th scope="col" class="fr-text--md fr-col-5">Moyen de connexion associé au compte</th>
+        <th scope="col" class="fr-text--md fr-col-4">Actions</th>
+      </tr>
+    </thead>
+    <tbody{% class_attr table_class|default:"" %}>
+      {% for aidant in aidants %}
+        <tr>
+          <td>
+            <p class="fr-text--md">
+              {{ aidant.get_full_name }}
+            </p>
+          </td>
+          <td>
+            <div class="fr-grid fr-grid-row fr-grid-row--middle">
+              {% if not aidant.has_a_carte_totp and not aidant.has_otp_app %}
+                <p class="fr-badge fr-badge--success">Aucun</p>
+              {% else %}
+                {% if aidant.has_a_carte_totp %}
+                  <p class="fr-tag fr-tag--blue fr-text--md fr-mr-1w"><span class="fr-icon-checkbox-circle-fill fr-btn--icon-left">carte OTP</span></p>
+                {% endif %}
+                {% if aidant.has_otp_app %}
+                  <p class="fr-tag fr-tag--blue fr-text--md fr-mr-1w"><span class="fr-icon-checkbox-circle-fill fr-btn--icon-left">Application mobile</span></p>
+                {% endif %}
+                <p class="fr-badge fr-badge--warning fr-ml-2w">A dissocier</p>
+              {% endif %}
+            </div>
+
+          </td>
+          <td>
+            <a class="fr-btn fr-btn--secondary fr-icon-arrow-right-line fr-btn--icon-left" href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
+              Détail et gestion {% if is_referent %} du référent {% else %} de l'aidant {% endif %}
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+  </tbody>
+  </table>
+</div>

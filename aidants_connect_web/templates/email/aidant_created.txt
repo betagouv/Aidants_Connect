@@ -1,6 +1,6 @@
 Bienvenue sur Aidants Connect,
 
-Votre compte vient d’être créé. Pour y accéder, vous devez utiliser la carte Aidants Connect reçue et activée par votre référent. Vous pourrez ensuite créer vos premiers mandats et accompagner les usagers dans la réalisation de leurs démarches en ligne.
+Votre compte vient d’être créé. Pour y accéder, le ou la référente Aidants Connect de votre structure doit associer un moyen de connexion à votre compte (application d’authentification ou carte physique). Un e-mail lui a été envoyé en ce sens. Vous pourrez ensuite créer vos premiers mandats et accompagner les usagers dans la réalisation de leurs démarches en ligne.
 
 📚 En attendant, voici quelques ressources à votre disposition :
 
@@ -8,10 +8,7 @@ Votre compte vient d’être créé. Pour y accéder, vous devez utiliser la car
 - Fiches tangibles Etsijaccompagnais : {{ etsijaccompagnais_url }}
 - Foire aux questions : {{ faq_url }}
 
-🗞️ Chaque mois, une newsletter avec des informations et nouveautés sur le dispositif est envoyée. Pour la recevoir, n’hésitez pas à vous inscrire ici : {{ home_url }}
-
 ⚙️ Si vous rencontrez des difficultés de connexion ou pour toute autre question, contactez-nous à l’adresse suivante : {{ AC_CONTACT_EMAIL }}
-
 
 À bientôt sur Aidants Connect !
 

@@ -1,0 +1,36 @@
+{% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
+
+{% load ac_common ac_extras static %}
+
+{% block title %}
+  Aidants Connect - Activer à nouveau l'aidant
+{% endblock title %}
+
+{% block content %}
+  <div class="fr-container">
+    {% include "layouts/_messages.html" %}
+
+    <div class="fr-grid-row fr-grid-row--center fr-my-8v">
+      <h1 class="fr-h2 fr-col-12 fr-text--center">
+          Activer à nouveau le profil de {{ aidant.get_full_name }}
+      </h1>
+      <form method="post" class="fr-col-12 fr-col-lg-6 fr-col-md-8">
+        {% csrf_token %}
+        <p>
+            Vous allez activer à nouveau {{ aidant.get_full_name }}. <br/>Cette personne sera à nouveau
+            en mesure d'effectuer des démarches pour le compte d'autre personnes au sein de cette organisation.
+        </p>
+        <div class="fr-text--center">
+          <a
+          href="{% url 'espace_responsable_aidants' %}"
+          class="fr-btn fr-btn--secondary"
+          >
+            Annuler
+          </a>
+          <button class="fr-btn" type="submit">Confirmer</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+{% endblock content %}

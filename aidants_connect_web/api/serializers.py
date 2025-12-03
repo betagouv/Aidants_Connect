@@ -1,8 +1,9 @@
 from rest_framework import serializers
 
-from aidants_connect_web.models import Organisation
+from aidants_connect_web.models import Aidant, Organisation
 
 _organisation_meta = Organisation()._meta
+_aidant_meta = Aidant()._meta
 
 
 class OrganisationSerializer(serializers.HyperlinkedModelSerializer):
@@ -41,8 +42,64 @@ class OrganisationSerializer(serializers.HyperlinkedModelSerializer):
             "code_postal",
             "code_insee",
             "adresse",
+            "address_complement",
             "service",
             "date_de_creation",
             "date_de_modification",
         ]
         extra_kwargs = {"url": {"lookup_field": "uuid"}}
+
+
+class FNEOrganisationSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="fne_organisations-detail", lookup_field="uuid"
+    )
+
+    class Meta:
+        model = Organisation
+        fields = [
+            "id",
+            "uuid",
+            "is_active",
+            "url",
+            "name",
+            "siret",
+            "city",
+            "zipcode",
+            "city_insee_code",
+            "address",
+            "address_complement",
+            "created_at",
+            "updated_at",
+            "num_mandats",
+            "france_services_label",
+            "france_services_number",
+        ]
+
+
+class FNEAidantSerializer(serializers.HyperlinkedModelSerializer):
+    formation_fne = serializers.SerializerMethodField(method_name="get_formation_fne")
+    organisation = FNEOrganisationSerializer(many=False, read_only=True)
+    url = serializers.HyperlinkedIdentityField(
+        view_name="fne_aidants-detail", lookup_field="id"
+    )
+
+    def get_formation_fne(self, obj):
+        return True
+
+    class Meta:
+        model = Aidant
+        fields = [
+            "id",
+            "url",
+            "first_name",
+            "last_name",
+            "is_active",
+            "created_at",
+            "updated_at",
+            "formation_fne",
+            "organisation",
+            "profession",
+            "conseiller_numerique",
+            "get_supports_number",
+        ]

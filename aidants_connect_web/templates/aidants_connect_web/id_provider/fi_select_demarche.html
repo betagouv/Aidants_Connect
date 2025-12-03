@@ -11,7 +11,10 @@
 {% block content %}
   <div class="fr-container">
     <h1 id="welcome_aidant" class="fr-mb-2w">Bienvenue {{ aidant.first_name }} !</h1>
-    <p>Vous êtes bien connecté à votre espace Aidants Connect. Veuillez suivre les étapes ci-dessous afin de réaliser la démarche pour la personne accompagnée</p>
+    <p class="fr-text fr-mt-6w">
+      Vous êtes bien connecté à votre espace Aidants Connect. Veuillez suivre les étapes ci-dessous afin de réaliser la démarche pour la personne accompagnée.
+      Sauf mention contraire, tous les champs sont obligatoires.
+    </p>
     <div class="fr-grid-row">
     <div class="fr-col-12 fr-col-md-6">
       <div class="fr-col-12">
@@ -54,7 +57,7 @@
                   </h3>
                   <p class="fr-tile__desc">{{ demarche_info.description }}
                   </p>
-                  <button id="button-demarche" value="{{ demarche }}" name="chosen_demarche" class="fr-tile__detail fr-btn fr-btn--sm" type="submit">
+                  <button id="button-demarche-{{ demarche }}" value="{{ demarche }}" name="chosen_demarche" class="fr-tile__detail fr-btn fr-btn--sm" type="submit">
 
                     Sélectionner cette démarche
                   </button>
@@ -73,8 +76,7 @@
       <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
       <div class="fr-alert fr-alert--info fr-alert--sm fr-mt-3w">
         <p>
-          Si vous ne trouvez pas le type de démarche que vous souhaitez effectuer, il se peut que vous n'ayez pas de mandat ou que le mandat ait expiré.<br>
-          Pour créer un nouveau mandat, rendez-vous sur votre <a href="{% url 'espace_aidant_home' %}" class="fr-link">Espace Aidant</a>.
+          Si aucune démarche ne correspond, vérifiez que le mandat couvre bien la démarche souhaitée ou créez un nouveau mandat depuis votre <a href="{% url 'espace_aidant_home' %}" class="fr-link">Espace Aidant</a>.
         </p>
       </div>
     </form>

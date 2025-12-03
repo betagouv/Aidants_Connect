@@ -53,8 +53,9 @@
           {% for widget in form.course_type.type %}
             <div class="fr-col-6">
               <div class="fr-radio-group">
-                {{ widget }}
+
                 {% if widget.data.value == form.course_type.Type.CLASSIC %}
+                   {{ widget }}
                   <div class="additionnal-informations">
                     <p>
                       Les nouveaux aidants seront formés par un organisme de formation habilité. Cette formation est
@@ -70,20 +71,25 @@
                     <p>Pour tous les autres cas, la formation doit être financée par la structure.</p>
                   </div>
                 {% elif widget.data.value == form.course_type.Type.P2P %}
-                  <div class="additionnal-informations">
-                    <p>
-                      Les nouveaux aidants seront formés par l’un de leur collègue habilité et utilisateur d’Aidants
-                      Connect.
-                    </p>
-                    <div class="fr-alert fr-alert--info">
+                    <div class="fr-alert fr-alert--warning">
                       <p>
-                        La formation entre pairs permet aux nouveaux aidants d’être formés par l’un de leur collègue
-                        habilité et utilisateur d’Aidants Connect. Pour être éligible à la formation entre pairs, au
-                        moins un aidant de votre structure doit avoir créé au moins 5 mandats. Cet aidant pourra alors
-                        être désigné comme formateur.
+                        <strong>Important : arrêt temporaire des formations entre pairs.</strong> Les nouveaux aidants ne peuvent actuellement plus être formés par leurs collègues. La formation classique, via un organisme de formation habilité, est obligatoire pour tout nouvel aidant ajouté.
                       </p>
                     </div>
-                  </div>
+{# <div class="additionnal-informations"> #}
+{# <p> #}
+{# Les nouveaux aidants seront formés par l’un de leur collègue habilité et utilisateur d’Aidants #}
+{# Connect. #}
+{# </p> #}
+{# <div class="fr-alert fr-alert--info"> #}
+{# <p> #}
+{# La formation entre pairs permet aux nouveaux aidants d’être formés par l’un de leur collègue #}
+{# habilité et utilisateur d’Aidants Connect. Pour être éligible à la formation entre pairs, au #}
+{# moins un aidant de votre structure doit avoir créé au moins 5 mandats. Cet aidant pourra alors #}
+{# être désigné comme formateur. #}
+{# </p> #}
+{# </div> #}
+{# </div> #}
                 {% endif %}
               </div>
             </div>

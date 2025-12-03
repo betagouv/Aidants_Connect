@@ -23,6 +23,12 @@ class EspaceResponsableRemoveAidantOrganisationsTest(TestCase):
         aidant.organisations.add(OrganisationFactory())
         cls.aidant = aidant
 
+        aidant_referent = AidantFactory(organisation=responsable.organisation)
+        aidant_referent.organisations.set(responsable.responsable_de.all())
+        aidant_referent.responsable_de.set(responsable.responsable_de.all())
+        aidant_referent.organisations.add(OrganisationFactory())
+        cls.aidant_referent = aidant_referent
+
     def get_form_url(self, aidant, organisation):
         return (
             f"/espace-responsable/aidant/{aidant.id}/"
@@ -53,3 +59,17 @@ class EspaceResponsableRemoveAidantOrganisationsTest(TestCase):
         self.assertIn(
             "Vous ne pouvez plus créer des mandats pour Beta Gouv", mail_content
         )
+
+    def test_remove_referent_from_organisation(self):
+        responsable = self.responsable_of_2
+        aidant_referent = self.aidant_referent
+        self.client.force_login(responsable)
+
+        self.assertEqual(len(aidant_referent.organisations.all()), 3)
+        self.assertEqual(len(aidant_referent.responsable_de.all()), 2)
+        self.client.post(
+            self.get_form_url(aidant_referent, responsable.organisation),
+        )
+        aidant_referent.refresh_from_db()
+        self.assertEqual(len(aidant_referent.organisations.all()), 2)
+        self.assertEqual(len(aidant_referent.responsable_de.all()), 1)

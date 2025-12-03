@@ -29,7 +29,7 @@
             <div class="fr-col-12 fr-col-md-8">
               {% csrf_token %}
               {# Wait for the merge of https://github.com/numerique-gouv/django-dsfr/pull/101 #}
-              {# {% dsfr_form %} #}
+              {# {{ form }} #}
               {% for field in form.visible_fields %}
               	{% dsfr_form_field field %}
               {% endfor %}
@@ -37,7 +37,7 @@
             </div>
           </div>
           <div class="fr-alert fr-alert--info fr-mb-8v">
-            <p>Cet ajout sera soumis à validation par nos équipes</p>
+            <p>L’ajout du référent sera confirmé après vérification des informations par nos équipes.</p>
           </div>
           <button class="fr-btn" type="submit">Ajouter un référent</button>
         </form>

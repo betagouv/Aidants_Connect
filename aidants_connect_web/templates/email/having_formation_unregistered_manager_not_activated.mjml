@@ -1,0 +1,43 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% load ac_common %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>Bonjour,</mj-text>
+    <mj-text>
+
+<p>Sauf erreur de notre part, vous n’avez toujours pas activé votre compte Aidants Connect. Rendez-vous sur la page
+<a href="{{ url_first_login }}">Première connexion référent</a> et suivez les instructions.
+</p>
+
+<p>Si vous n’arrivez pas à activer votre compte et souhaitez inscrire les aidants en formation, retournez sur votre
+   demande d’habilitation, cliquez sur « Inscrire à une formation » au niveau de l’aidant
+   puis sélectionnez une date de session. </p>
+
+   <p>L’organisme de formation concerné vous contactera par la suite pour confirmer l’inscription.
+   Notez que des financements sont possibles via Uniformation, le marché des
+   conseillers numérique ou France Numérique Ensemble. </p>
+
+<p> ⚠️ Si vous avez sollicité un financement France Numérique Ensemble et que celui-ci est validé,
+ vous n’avez pas à inscrire les aidants en formation, c’est le récipiendaire des
+ fonds qui se charge de l’organisation de la formation. </p>
+
+
+    <mj-button href="{{ habilitation_requests_url }}">Lien vers ma demande d’habilitation</mj-button>
+
+  <h2>Tout savoir sur le rôle de référent</h2>
+        <p>Pour mieux comprendre le rôle de référent et assister à une démonstration de l'espace référent,
+participez au webinaire dédié. Plusieurs créneaux sont disponibles, inscrivez-vous via <a href="{{ url_formulaire }}">ce formulaire.</a>
+</p>
+
+        <h2>Nous contacter</h2>
+        <p>Si vous rencontrez un problème pour activer votre compte,
+        envoyez un e-mail à {% mailto AC_CONTACT_EMAIL %} en précisant votre numéro d’habilitation. </p>
+
+        <p>Nous vous remercions de votre implication sur le dispositif et nous tenons à disposition pour toute demande.</p>
+
+  </mj-column>
+</mj-section>
+{% endblock email_body %}

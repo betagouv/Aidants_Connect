@@ -1,33 +1,22 @@
-Bonjour,
-
 Bienvenue sur Aidants Connect !
 
-La demande d'habilitation Aidants Connect n° {{ organisation.data_pass_id }}, déposée par {{ organisation.issuer }}, concernant la structure {{ organisation.name }}, a été acceptée. Pour finaliser l'habilitation des aidants et leur apporter les bases de connaissance nécessaires à l'utilisation du service, une formation à Aidants Connect est nécessaire.
+La demande d’habilitation n° {{ organisation.data_pass_id }} concernant la structure {{ organisation.name }} a été validée par notre équipe.
 
-Quelles sont les modalités de financement de la formation ?
+En tant que référent de votre structure, vous pouvez dès à présent activer votre compte. Cette étape est indispensable pour inscrire en formation les aidants de votre structure.
 
-La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en 2023. Cette formation est dorénavant financée selon différentes modalités.
+Comment activer mon compte ?
 
-Nous vous invitons à vous rendre sur ce simulateur de financement https://tally.so/r/mO0Xkg pour découvrir comment la financer.
+👉 Connectez-vous depuis la page "Première connexion référent" (https://aidantsconnect.beta.gouv.fr/accounts/manager_first_login/) et renseignez les informations demandées. Un code de première connexion vous sera alors envoyé par SMS.
 
-Attention : il peut arriver que dans certains cas (structures non adhérentes à l'OPCO uniformation, conseillers numériques ayant consommés leurs modules annuels, etc.) la formation doive être financée par la structure.
+👉 Une fois connecté à votre espace, vous devrez activer la double authentification par application mobile en suivant les étapes décrites dans cette vidéo : https://tube.numerique.gouv.fr/w/pkamuvHJtg1LdcEtGV32a3
 
-Les aidants des structures déjà habilitées peuvent bénéficier de la formation entre pairs qui est gratuite.
+Tout savoir sur le rôle de référent :
 
-Retrouvez plus de détails sur notre site internet : {{ habilitation_faq_formation }}
+Pour mieux comprendre le rôle de référent et assister à une démonstration de l'espace référent, participez au webinaire dédié. Plusieurs créneaux sont disponibles, inscrivez-vous via ce formulaire (https://tally.so/r/Bz4yve).
 
-Comment inscrire les aidants en formation ?
+Nous contacter :
 
-Rendez-vous sur votre demande d’habilitation : {{ organisation_request_url }}
+Si vous rencontrez un problème pour activer votre compte, envoyez un e-mail à : contact@aidantsconnect.beta.gouv.fr en précisant votre numéro d’habilitation.
 
-Vérifiez que la liste des aidants à former est à jour, cliquez sur « Inscrire à une formation » en bas de page et choisissez une date de formation pour chaque aidant. L’organisme de formation vous contactera par la suite pour valider l’inscription.
-
-Comment s'inscrire au wébinaire référent ?
-
-En parallèle de la formation, le ou la référent(e) Aidants Connect est tenu(e) de participer à un webinaire de présentation de l’outil et du rôle de référent. L'inscription se fait via ce formulaire : https://app.livestorm.co/aidants-connect/webinaire-referent?type=detailed
-
-Une fois les aidants formés, un kit de bienvenue, contenant les accès aux comptes, sera livré par voie postale à l’adresse de la structure.
-
-Nous vous rappelons que les personnes accompagnées via Aidants Connect doivent être en capacité de donner leur consentement pour conclure un mandat. Les personnes sous tutelle ou sous curatelle ne peuvent pas être accompagnées via Aidants Connect.
 
 Nous vous remercions de votre implication sur le dispositif et nous tenons à disposition pour toute demande.

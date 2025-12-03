@@ -10,6 +10,9 @@ def settings_variables(request):
         "user_is_responsable_structure": (
             isinstance(request.user, Aidant) and request.user.is_responsable_structure
         ),
+        "user_can_create_mandats": (
+            isinstance(request.user, Aidant) and request.user.can_create_mandats
+        ),
         "testimonies_count": Testimony.objects.for_display().count(),
         "SUPPORT_EMAIL": settings.SUPPORT_EMAIL,
         "AC_CONTACT_EMAIL": settings.AC_CONTACT_EMAIL,
@@ -21,6 +24,7 @@ def settings_variables(request):
         "AUTOCOMPLETE_SCRIPT_SRC": settings.AUTOCOMPLETE_SCRIPT_SRC,
         "SARBACANE_SCRIPT_URL": settings.SARBACANE_SCRIPT_URL,
         "SARBACANE_CONNECT_URL": settings.SARBACANE_CONNECT_URL,
+        "BREVO_IFRAME_URL": settings.BREVO_IFRAME_URL,
         "COOKIE_BANNER_JS_URL": settings.COOKIE_BANNER_JS_URL,
         "COOKIE_BANNER_LANG_URL": settings.COOKIE_BANNER_LANG_URL,
         "COOKIE_BANNER_SERVICES_URL": settings.COOKIE_BANNER_SERVICES_URL,

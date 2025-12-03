@@ -51,14 +51,14 @@ class FCAuthorize(RequireConnectionView):
             "birthcountry",
         ]
 
-        if settings.GET_PREFERRED_USERNAME_FROM_FC:
-            fc_scopes.append("preferred_username")
+        # if settings.GET_PREFERRED_USERNAME_FROM_FC:
+        #     fc_scopes.append("preferred_username")
 
-        redirect_uri = f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('fc_callback')}"
+        redirect_uri = f"{settings.FC_AS_FS_CALLBACK_URL_V2}{reverse('fc_callbackv2')}"
         parameters = urlencode(
             {
                 "response_type": "code",
-                "client_id": settings.FC_AS_FS_ID,
+                "client_id": settings.FC_AS_FS_ID_V2,
                 "redirect_uri": redirect_uri,
                 "scope": " ".join(fc_scopes),
                 "state": self.connection.state,
@@ -68,7 +68,7 @@ class FCAuthorize(RequireConnectionView):
             quote_via=quote,
         )
 
-        authorize_url = f"{settings.FC_AS_FS_BASE_URL}/authorize?{parameters}"
+        authorize_url = f"{settings.FC_AS_FS_BASE_URL_V2}/authorize?{parameters}"
 
         return redirect(authorize_url)
 
@@ -190,6 +190,132 @@ def fc_callback(request):
     return redirect(logout_url)
 
 
+def fc_callback_v2(request):
+    def fc_error(log_msg, connection_id=None):
+        log.error(log_msg)
+        django_messages.error(
+            request,
+            "Nous avons rencontré une erreur en tentant d'interagir avec "
+            "France Connect. C'est probabablement temporaire. Pouvez-vous réessayer "
+            "votre requête ?",
+        )
+
+        query_params = (
+            f"?{urlencode({'connection_id': connection_id})}" if connection_id else ""
+        )
+
+        return redirect(f"{reverse('new_mandat')}{query_params}")
+
+    fc_base = settings.FC_AS_FS_BASE_URL_V2
+    fc_id = settings.FC_AS_FS_ID_V2
+    fc_secret = settings.FC_AS_FS_SECRET_V2
+    state = request.GET.get("state")
+
+    try:
+        connection = Connection.objects.get(state=state)
+    except Connection.DoesNotExist:
+        return fc_error(f"FC as FS - This state does not seem to exist: {state}")
+
+    if request.GET.get("error"):
+        return fc_error(
+            f"FranceConnect returned an error: "
+            f"{request.GET.get('error_description')}",
+            connection.pk,
+        )
+
+    if connection.is_expired:
+        return fc_error("408: FC connection has expired.", connection.pk)
+
+    code = request.GET.get("code")
+    if not code:
+        return fc_error("FC AS FS: no code has been provided", connection.pk)
+
+    token_url = f"{fc_base}/token"
+    redirect_uri = f"{settings.FC_AS_FS_CALLBACK_URL_V2}{reverse('fc_callbackv2')}"
+    payload = {
+        "grant_type": "authorization_code",
+        "redirect_uri": redirect_uri,
+        "client_id": fc_id,
+        "client_secret": fc_secret,
+        "code": code,
+    }
+    headers = {"Accept": "application/json"}
+
+    request_for_token = python_request.post(token_url, data=payload, headers=headers)
+
+    try:
+        content = request_for_token.json()
+    except ValueError:  # not a valid JSON
+        return fc_error(
+            f"Request to {token_url} failed. Status code: "
+            f"{request_for_token.status_code}, body: {request_for_token.text}",
+            connection.pk,
+        )
+
+    connection.access_token = content.get("access_token")
+    if connection.access_token is None:
+        return fc_error(
+            f"No access_token return when requesting {token_url}. JSON response: "
+            f"{repr(content)}",
+            connection.pk,
+        )
+
+    connection.save()
+    fc_id_token = content.get("id_token")
+
+    try:
+        dict_pk = {
+            "kty": "RSA",
+            "use": "sig",
+            "kid": settings.FC_AS_FS_KID_V2,
+            "alg": "RS256",
+            "e": "AQAB",
+            "n": settings.FC_AS_FS_N_V2,
+        }
+        public_key = jwt.algorithms.RSAAlgorithm.from_jwk(dict_pk)
+        decoded_token = jwt.decode(
+            fc_id_token,
+            public_key,
+            audience=settings.FC_AS_FS_ID_V2,
+            algorithms=["RS256"],
+            leeway=timedelta(seconds=30),
+        )
+    except ExpiredSignatureError:
+        return fc_error("403: token signature has expired.", connection.pk)
+
+    if connection.nonce != decoded_token.get("nonce"):
+        return fc_error(
+            "FC as FS: The nonce is different than the one expected", connection.pk
+        )
+
+    if connection.is_expired:
+        log.info("408: FC connection has expired.", connection.pk)
+        return render(request, "408.html", status=408)
+
+    usager, error = get_user_infov2(connection)
+    if error:
+        return fc_error(error, connection.pk)
+
+    connection.usager = usager
+    connection.save()
+
+    Journal.log_franceconnection_usager(
+        aidant=connection.aidant,
+        usager=connection.usager,
+    )
+
+    logout_base = f"{fc_base}/session/end"
+    logout_id_token = f"id_token_hint={fc_id_token}"
+    logout_state = f"state={state}"
+
+    fc_callback_uri_logout = (
+        f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('logout_callback')}"
+    )
+    logout_redirect = f"post_logout_redirect_uri={fc_callback_uri_logout}"
+    logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
+    return redirect(logout_url)
+
+
 def get_user_info(connection: Connection) -> tuple:
     fc_base = settings.FC_AS_FS_BASE_URL
     fc_user_info = python_request.get(
@@ -197,6 +323,88 @@ def get_user_info(connection: Connection) -> tuple:
         headers={"Authorization": f"Bearer {connection.access_token}"},
     )
     user_info = fc_user_info.json()
+
+    user_phone = connection.user_phone if len(connection.user_phone) > 0 else None
+
+    if user_info.get("birthplace") == "":
+        user_info["birthplace"] = None
+
+    user_sub = user_info.get("sub")
+    if not user_sub:
+        return None, "Unable to find sub in FC user info"
+
+    usager_sub = generate_sha256_hash(
+        f"{user_sub}{settings.FC_AS_FI_HASH_SALT}".encode()
+    )
+
+    try:
+        usager = Usager.objects.get(sub=usager_sub)
+
+        if usager.email != user_info.get("email"):
+            usager.email = user_info.get("email")
+            usager.save()
+            Journal.log_update_email_usager(aidant=connection.aidant, usager=usager)
+
+        if user_phone is not None and usager.phone != user_phone:
+            usager.phone = user_phone
+            Journal.log_update_phone_usager(aidant=connection.aidant, usager=usager)
+            usager.save()
+
+        if not usager.preferred_username and user_info.get("preferred_username"):
+            usager.preferred_username = user_info.get("preferred_username")
+            usager.save()
+
+        return usager, None
+
+    except Usager.DoesNotExist:
+        kwargs = {
+            "given_name": user_info.get("given_name"),
+            "family_name": user_info.get("family_name"),
+            "birthdate": user_info.get("birthdate"),
+            "gender": user_info.get("gender"),
+            "birthplace": user_info.get("birthplace"),
+            "birthcountry": user_info.get("birthcountry"),
+            "preferred_username": user_info.get("preferred_username"),
+            "sub": usager_sub,
+            "email": user_info.get("email"),
+        }
+
+        if user_phone is not None:
+            kwargs["phone"] = user_phone
+
+        try:
+            usager = Usager.objects.create(**kwargs)
+            return usager, None
+
+        except IntegrityError as e:
+            log.error("Error happened in Recap")
+            log.error(e)
+            return None, f"The FranceConnect ID is not complete: {e}"
+
+
+def get_user_infov2(connection: Connection) -> tuple:
+    fc_base = settings.FC_AS_FS_BASE_URL_V2
+    fc_user_info = python_request.get(
+        f"{fc_base}/userinfo?schema=openid",
+        headers={"Authorization": f"Bearer {connection.access_token}"},
+    )
+
+    dict_pk = {
+        "kty": "RSA",
+        "use": "sig",
+        "kid": settings.FC_AS_FS_KID_V2,
+        "alg": "RS256",
+        "e": "AQAB",
+        "n": settings.FC_AS_FS_N_V2,
+    }
+    public_key = jwt.algorithms.RSAAlgorithm.from_jwk(dict_pk)
+    user_info = jwt.decode(
+        fc_user_info.text,
+        public_key,
+        audience=settings.FC_AS_FS_ID_V2,
+        algorithms=["RS256"],
+        leeway=timedelta(seconds=30),
+    )
 
     user_phone = connection.user_phone if len(connection.user_phone) > 0 else None
 

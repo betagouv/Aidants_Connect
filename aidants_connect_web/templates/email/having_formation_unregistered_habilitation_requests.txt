@@ -1,8 +1,28 @@
 Bonjour,
 
-La prochaine étape de la procédure d’habilitation à Aidants Connect est la formation des aidants. Rendez-vous sur votre demande d’habilitation, cliquez sur « Inscrire à une formation » en bas de page et choisissez une date de formation pour chaque aidant.
 
-Aller sur ma demande d’habilitation : {{ habilitation_requests_url }}
+🎉 Félicitations, votre compte Aidants Connect est actif ! Vous pouvez maintenant inscrire les aidants en formation.
+
+Comment inscrire les aidants en formation ?
+
+👉 Rendez-vous sur votre espace référent {{ espace_referent_url }}
+
+👉 Allez sur “Demandes en cours” et inscrivez individuellement les aidants à une formation depuis la liste des demandes validées.
+
+👉  L’organisme de formation concerné vous contactera par la suite pour confirmer l’inscription. Notez que des financements sont possibles via Uniformation, le marché des conseillers numérique ou France Numérique Ensemble.
+
+*⚠️ Si vous avez sollicité un financement France Numérique Ensemble et que celui-ci est validé, vous n’avez pas à inscrire les aidants en formation, c’est le récipiendaire des fonds qui se charge de l’organisation de la formation.*
+
+Tout savoir sur le rôle de référent
+
+Pour mieux comprendre le rôle de référent et assister à une démonstration de l'espace référent, participez au webinaire dédié. Plusieurs créneaux sont disponibles, inscrivez-vous via ce [formulaire](https://app.livestorm.co/aidants-connect/webinaire-referent).
+
+Nous contacter
+
+Si vous rencontrez un problème pour inscrire les aidants en formation, envoyez un e-mail à contact@aidantsconnect.beta.gouv.fr en précisant votre numéro d’habilitation.
+
+Nous vous remercions de votre implication sur le dispositif et nous tenons à disposition pour toute demande.
+
 
 
 À bientôt sur Aidants Connect !

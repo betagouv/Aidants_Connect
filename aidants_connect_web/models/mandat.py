@@ -653,6 +653,7 @@ class CarteTOTP(models.Model):
             user=self.aidant,
             step=60,  # todo: some devices may have a different step!
             confirmed=confirmed,
+            tolerance=10,
             name=f"Carte n° {self.serial_number}",
         )
         device.save()

@@ -7,9 +7,10 @@
   <mj-column>
     <mj-text>Bienvenue sur Aidants Connect,</mj-text>
     <mj-text>
-      Votre compte vient d’être créé. Pour y accéder, vous devez utiliser la carte Aidants Connect reçue et activée par
-      votre référent. Vous pourrez ensuite créer vos premiers mandats et accompagner les usagers dans la réalisation de
-      leurs démarches en ligne.
+      Votre compte vient d’être créé. Pour y accéder, le ou la référente Aidants Connect de votre structure
+      doit associer un moyen de connexion à votre compte (application d’authentification ou carte physique).
+      Un e-mail lui a été envoyé en ce sens. Vous pourrez ensuite créer vos premiers mandats et accompagner
+      les usagers dans la réalisation de leurs démarches en ligne.
     </mj-text>
     <mj-text>
       <p>📚 En attendant, voici quelques ressources à votre disposition :</p>
@@ -24,10 +25,6 @@
           <a href="{{ faq_url }}">Foire aux questions</a>
         </li>
       </ul>
-    </mj-text>
-    <mj-text>
-      🗞️ Chaque mois, une newsletter avec des informations et nouveautés sur le dispositif est envoyée. Pour la
-      recevoir, <a href="{{ home_url }}">n’hésitez pas à vous inscrire ici</a>
     </mj-text>
     <mj-text>
       ⚙️ Si vous rencontrez des difficultés de connexion ou pour toute autre question, contactez-nous à l’adresse

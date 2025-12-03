@@ -20,6 +20,7 @@ class CancelAutorisationTests(FunctionalTestCase):
 
     def test_aidant_can_login(self):
         self.open_live_url("/accounts/login/")
+        self.check_accessibility("login", strict=True)
         login_field = self.selenium.find_element(By.ID, "id_email")
         login_field.send_keys(self.aidant_thierry.email)
         otp_field = self.selenium.find_element(By.ID, "id_otp_token")
@@ -29,6 +30,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         email_sent_title = self.selenium.find_element(By.TAG_NAME, "h1").text
         self.assertEqual("Confirmation de connexion", email_sent_title)
         self.assertEqual(len(mail.outbox), 1)
+        self.check_accessibility("confirmation_connexion", strict=True)
         url = re.findall(r"https?://\S+", mail.outbox[0].body, flags=re.M)[0].replace(
             "https", "http", 1
         )

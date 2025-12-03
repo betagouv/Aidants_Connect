@@ -1,99 +1,229 @@
-{% extends 'layouts/main-legacy.html' %}
+{% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 
-{% load static %}
-{% load ac_extras %}
+{% load ac_common ac_extras dsfr_tags static %}
 
-{% block title %}Aidants Connect - Fiche aidant : {{ aidant.get_full_name }}{% endblock %}
+{% block title %}{{ aidant.get_full_name }} - Aidants Connect{% endblock %}
 
 {% block content %}
-  <section class="section">
-    <div class="container">
-      {% include "layouts/_messages.html" %}
-      <h1>Fiche aidant : {{ aidant.get_full_name }}, {{ aidant.profession }}</h1>
-      <div class="tiles">
-        <div class="grid">
-          <div class="tile background-color-grey text-center">
-            <h2>Carte Aidants Connect</h2>
-            {% with aidant.carte_totp.serial_number as sn %}{% if sn %}
-              <p><span aria-hidden="true">💳 </span>{{ sn }}</p>
-            {% else %}
-              <p>
-                Aucune carte associée à {{ aidant.get_full_name }}.
-              </p>{% endif %}{% endwith %}
-          </div>
-          <div class="tile background-color-grey text-center">
-            <h2>Profession</h2>
-            <p>{{ aidant.profession }}</p>
-          </div>
-          <div class="tile background-color-grey text-center">
-            <h2>Adresse e-mail</h2>
-            <p>{{ aidant.email }}</p>
+  <div class="fr-container">
+
+    <div class="fr-grid-row flex-between" >
+      <h1>{{ aidant.get_full_name }}</h1>
+
+      <div>
+        <div class="fr-btns-group fr-btns-group--inline fr-btns-group--md">
+        {% if aidant.is_active and not is_aidant_referent_of_current_org %}
+          <form method="post" action="{% url 'espace_responsable_aidants' %}">
+            {% csrf_token %}
+            <input type="hidden" name="candidate" value="{{ aidant.pk }}">
+            <button type="submit" class="fr-btn fr-btn--secondary">
+              Désigner comme référent
+            </button>
+          </form>
+        {% endif %}
+
+        {% if aidant.is_active and aidant != responsable %}
+          <a href="{% url 'espace_responsable_remove_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
+              class="fr-btn fr-btn--secondary"
+              id="remove-aidant-{{ aidant.id }}-from-organisation">
+          Désactiver
+          </a>
+        {% elif not aidant.is_active and aidant != responsable %}
+          <a href="{% url 'espace_responsable_reactivate_aidant_from_organisation' aidant_id=aidant.id organisation_id=organisation.id %}"
+              class="fr-btn fr-btn--secondary"
+              id="reactivate-aidant-{{ aidant.id }}-from-organisation">
+          Réactiver
+          </a>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% dsfr_django_messages %}
+    <div class="fr-col-12 fr-col-md-8">
+
+    <section class="fr-mt-8v">
+      <h2 class="fr-h3 fr-mb-4 fr-title-icon-left fr-icon-user-line">
+        Informations
+      </h2>
+      <div class="fr-card">
+        <div class="fr-card__body">
+          <div class="fr-card__content ">
+            <div class="fr-grid-row fr-grid-row--gutters">
+              <div class="fr-col-12 fr-col-md-6">
+                <h3 class="fr-h6">Profession</h3>
+                <p class="fr-text">
+                  {{ aidant.profession }}
+                </p>
+              </div>
+              <div class="fr-col-12 fr-col-md-6">
+                <h3 class="fr-h6">Adresse e-mail</h3>
+                <p class="fr-text">{{ aidant.email }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="section actions">
-        <h2>Actions</h2>
-        {% if aidant.has_a_totp_device %}
-          <a
-            id="manage-totp-cards-for-aidant-{{ aidant.id }}"
-            href="{% url "espace_responsable_choose_totp" aidant_id=aidant.id %}"
-            class="fr-btn fr-mb-8v"
-          >
-            Gérer les cartes OTP
-          </a>
-        {% else %}
-          <p>
-            <a href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"
-               class="fr-btn fr-btn--icon-left fr-icon-bank-card-fill"
-            >
-              Lier une carte Aidants Connect
-            </a>
-          </p>
-        {% endif %}
-        {% if responsable.responsable_de.all|length > 1 %}
-          <details class="fr-p-2v background-color-grey">
-            <summary>Changer les organisations de rattachement</summary>
-            <form method="post" action="{% url "espace_responsable_aidant_change_organisations" aidant_id=aidant.id %}">
-              {% csrf_token %}
-              <fieldset class="checkbox-list">
-                <legend>
-                  Cochez la ou les organisations auxquelles rattacher {{ aidant }}.
-                  Cela lui permettra de créer des mandats en leur nom.
-                  {% if form.errors.organisations %}
-                    {{ form.errors.organisations }}
-                  {% endif %}
-                </legend>
-                <ul class="grid checkbox-list small-checkboxes">
-                  {% for value, label in form.organisations.field.choices %}
-                    <li class="tile input-container">
-                      <input
-                          type="checkbox"
-                          class="sr-only"
-                          name="organisations"
-                          value="{{ value }}"
-                          id="org_{{ value }}"
-                          {% if value in form.organisations.value or value in form.organisations.initial %}
-                          checked
-                          {% endif %}
-                      >
-                      <label for="org_{{ value }}">
-                        <span>
-                          <strong>{{ label }}</strong><br>
-                          {{ value.instance.address }}
-                        </span>
-                      </label>
-                    </li>
-                  {% endfor %}
-                </ul>
-              </fieldset>
-              <p>
-                <button class="fr-btn" type="submit">Valider</button>
-              </p>
-            </form>
-          </details>
-        {% endif %}
-        {# todo : actions d'activation / désactivation des comptes #}
+        <div class="fr-card fr-mt-2w">
+          <div class="fr-card__body">
+            <div class="fr-card__content">
+                <h3 class="fr-h6">
+                  Organisation{% if common_organisations|length > 1 %}s{% endif %}
+                </h3>
+                {% for org in common_organisations %}
+                  <p class="fr-text">{{ org.name }}
+                      {% if aidant in org.responsables.all %}
+                        {% if aidant.referent_non_aidant %}
+                          <span id="badge-referent" class="fr-badge fr-badge--purple-glycine fr-ml-2v">REFERENT</span>
+                        {% else %}
+                          <span id="badge-referent-aidant" class="fr-badge fr-badge--no-icon fr-badge--info fr-ml-2v">REFERENT-AIDANT</span>
+                        {% endif %}
+                      {% endif %}
+                  </p>
+                {% endfor %}
+                {% if referent_orgs|length > 1 %}
+                 <button
+                  class="fr-btn fr-btn--secondary"
+                  data-fr-opened="false"
+                  aria-controls="modal-change-organisations-{{ aidant.id }}"
+                  data-fr-js-modal-button="true"
+                >
+                  Modifier l'organisation
+                </button>
+                {% endif %}
+            </div>
+          </div>
+        </div>
+      {% include "aidants_connect_web/espace_responsable/_modale_change_aidant_organisations.html" %}
+    </section>
+
+    {% if formation.info_available %}
+      <section class="fr-mt-8v">
+        <h2 class="fr-h3 fr-mb-4 fr-title-icon-left fr-icon-book-2-line">
+          Formation
+        </h2>
+        <div class="fr-card fr-mt-2w">
+          <div class="fr-card__body">
+            <div class="fr-card__content">
+              {% if formation.status.value == "formation_attendance" %}
+                {% if formation.type.value == "p2p" %}
+                  <p class="fr-text">Inscrit à une formation pair à pair</p>
+                {% elif formation.type.value == "fne" %}
+                  <p class="fr-text">Inscrit à une formation FNE</p>
+                {% else %}
+                  <p class="fr-text">Inscrit à la formation du {{ formation.date_formation }}
+                      par {{ formation.organisation_name }}
+                  </p>
+                   <div class="fr-alert fr-alert--info">
+                    <p class="fr-text">Information : si vous souhaitez modifier ou annuler l'inscription, rapprochez-vous de l'organisme en charge de la formation :
+                      <a class="fr-link" href="mailto:{{ formation_attendant.formation.organisation_email }}">
+                        {{ formation.organisation_email }}
+                      </a>
+                    </p>
+                  </div>
+                {% endif %}
+              {% elif formation.status.value == "formation_completed" %}
+                {% if formation.type.value == "classic" %}
+                  <p class="fr-text">Formation classique réalisée
+                    {% if formation.date_formation %}
+                      le {{ formation.date_formation }}
+                    {% endif %}
+                    {% if formation.organisation_name %}
+                      par {{ formation.organisation_name }}
+                    {% endif %}
+                  </p>
+                {% elif formation.type.value == "fne" %}
+                  <p class="fr-text">Formation FNE réalisée
+                    {% if formation.date_formation %}
+                      le {{ formation.date_formation }}
+                    {% endif %}
+                  </p>
+                {% else %}
+                  <p class="fr-text">Formation pair à pair</p>
+                {% endif %}
+                {% if formation.date_test_pix %}
+                  <p class="fr-text">Test PIX réalisé le {{ formation.date_test_pix }}</p>
+                {% endif %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+
+    <section class="fr-mt-8v">
+      <h2 class="fr-h3 fr-mb-4 fr-title-icon-left fr-icon-device-line">
+        Moyen de connexion
+      </h2>
+
+      <div class="fr-card fr-mt-2w">
+        <div class="fr-card__body">
+          <div class="fr-card__content">
+            <div class="fr-grid-row" id="section-otp-card">
+              <h3 class="fr-h6">Carte OTP</h3>
+              <div class="fr-mb-8v fr-ml-4v">
+                {% if aidant.has_a_carte_totp %}
+                  <span class="fr-badge fr-badge--success">ASSOCIÉ</span>
+                {% else %}
+                  <span class="fr-badge fr-badge--warning">INACTIF</span>
+                {% endif %}
+              </div>
+            </div>
+            {% if aidant.has_a_carte_totp %}
+              <h3 class="fr-h6">Référence : <span class="fr-text--regular">{{ aidant.carte_totp.serial_number }}</span></h3>
+              <a
+                id="remove-totp-card-from-aidant-{{ aidant.id }}"
+                href="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
+                class="fr-btn fr-btn--secondary"
+              >
+                Délier la carte
+              </a>
+            {% elif aidant.is_active %}
+              <a
+                id="manage-totp-cards-for-aidant-{{ aidant.id }}"
+                href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"
+                class="fr-btn fr-btn--secondary"
+              >
+                Associer un moyen de connexion
+              </a>
+            {% endif %}
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
+      <div class="fr-card fr-mt-2w">
+        <div class="fr-card__body">
+          <div class="fr-card__content">
+            <div class="fr-grid-row" id="section-mobile-app">
+              <h3 class="fr-h6">Application mobile</h3>
+              <div class="fr-mb-8v fr-ml-4v">
+                {% if aidant.has_otp_app %}
+                  <span class="fr-badge fr-badge--success">ASSOCIÉ</span>
+                {% else %}
+                  <span class="fr-badge fr-badge--warning">INACTIF</span>
+                {% endif %}
+              </div>
+            </div>
+            {% if aidant.has_otp_app %}
+              <a
+                id="manage-totp-cards-for-aidant-{{ aidant.id }}"
+                href="{% url 'espace_responsable_aidant_remove_app_otp' aidant_id=aidant.id %}"
+                class="fr-btn fr-btn--secondary fr-mt-8v"
+              >
+                Délier l'application mobile
+              </a>
+            {% elif aidant.is_active %}
+              <a
+                id="manage-totp-cards-for-aidant-{{ aidant.id }}"
+                href="{% url 'espace_responsable_aidant_add_app_otp' aidant_id=aidant.id %}"
+                class="fr-btn fr-btn--secondary"
+              >
+                Associer une application mobile
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 {% endblock content %}

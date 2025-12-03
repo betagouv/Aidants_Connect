@@ -11,6 +11,7 @@ from django.utils.safestring import mark_safe
 
 from celery.result import AsyncResult
 from celery.states import FAILURE, SUCCESS
+from rest_framework.authtoken.admin import TokenAdmin
 
 from aidants_connect.admin import VisibleToAdminMetier, admin_site
 from aidants_connect_web.constants import ReferentRequestStatuses
@@ -19,6 +20,9 @@ from aidants_connect_web.models import CoReferentNonAidantRequest, ExportRequest
 from ..tasks import email_co_rerefent_creation
 
 logger = logging.getLogger()
+
+
+TokenAdmin.raw_id_fields = ["user"]
 
 
 class ConnectionAdmin(ModelAdmin):
@@ -70,11 +74,11 @@ class ExportRequestAdmin(VisibleToAdminMetier, ModelAdmin):
             new_object = ExportRequest.objects.get(
                 aidant=request.user, state=ExportRequest.ExportRequestState.ONGOING
             )
-            django_messages.warning(request, "Un export est déjà en cours")
+            django_messages.warning(request, "Attention : un export est déjà en cours")
             return self._response_post_save(request, new_object)
         except ExportRequest.DoesNotExist:
             new_object = ExportRequest.objects.create(aidant=request.user)
-            django_messages.success(request, "Un export a été lancé")
+            django_messages.success(request, "Un export a été lancé avec succès.")
             self.log_addition(
                 request, new_object, f"Un export a été lancé par {new_object.aidant}"
             )

@@ -1,0 +1,45 @@
+/* Custom dropdown component */
+.custom-dropdown {
+  position: relative;
+}
+
+.custom-dropdown__menu .fr-btn {
+  width: 100%;
+}
+
+.custom-dropdown__menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 2;
+  min-width: 200px;
+  background: var(--background-default-grey);
+  border-radius: 0.25rem;
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 0;
+  margin-top: 0.25rem;
+  display: none; /* Caché par défaut */
+}
+
+/* Affichage du menu uniquement au focus (clic) */
+.custom-dropdown:focus-within .custom-dropdown__menu {
+  display: block;
+}
+
+.custom-dropdown__menu > * {
+  display: block;
+}
+
+/* Alignement à gauche pour tous les boutons */
+.custom-dropdown__menu .fr-btn {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+tr:nth-last-child(-n+2) .custom-dropdown__menu {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 0.1rem;
+}

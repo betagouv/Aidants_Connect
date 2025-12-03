@@ -1,0 +1,28 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block title %}Aidants Connect - Email envoyé (connexion){% endblock %}
+
+{% block content %}
+  <div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-lg-8">
+        <h1 class="fr-mb-6v">Confirmez votre adresse e-mail</h1>
+        <p class="fr-text--xl fr-mb-16v">Un e-mail vous a été envoyé pour confirmer votre adresse e-mail.
+          Le code de première connexion vous sera envoyé par SMS une fois la vérification de l’e-mail effectuée.</p>
+
+        <div class="fr-alert fr-alert--info">
+          <p>Si vous n’avez pas reçu d'e-mail, vérifiez dans vos indésirables ou essayez de <a href="{% url 'manager_first_login' %}" class="fr-link">vous connecter</a> à nouveau.</p>
+        </div>
+      </div>
+      <div class="fr-col-3 fr-col-offset-xl-1 fr-hidden fr-unhidden-lg">
+        <img
+          class="full-width margin-bottom-1rem margin-top-1rem"
+          src="{% static 'images/icons/mail-sent.svg' %}"
+          alt=""
+        >
+      </div>
+    </div>
+  </div>
+{% endblock content %}

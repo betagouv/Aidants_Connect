@@ -1,0 +1,128 @@
+{% extends 'layouts/main.html' %}
+{% load ac_common dsfr_tags form_extras static %}
+
+{% block extracss %}
+  <link href="{% static 'css/login.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block title %}
+  Connectez-vous{% if form.errors|length > 0 %} (Erreur dans le formulaire){% endif %} - Aidants Connect
+{% endblock title %}
+
+{% block content %}
+  <div class="fr-container main-content-fluid">
+    <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--center">
+      <div class="fr-col-12 fr-col-md-6 main-content-item">
+        <div class="fr-alert fr-alert--info fr-mb-6v">
+          <p>
+            <b>Vous êtes une structure qui souhaite utiliser Aidants Connect ?</b>
+            Nous vous invitons à remplir <a href="{% url 'habilitation_faq_habilitation' %}" class="fr-link">
+            <b>notre formulaire d'habilitation</b>
+          </a>
+          </p>
+        </div>
+
+        <div class="fr-container fr-background-alt--grey fr-px-md-0 fr-py-10v fr-py-md-14v">
+          <div class="fr-grid-row fr-grid-row-gutters fr-grid-row--center">
+            <div class="fr-col-12 fr-col-md-9 fr-col-lg-8">
+              <form id="login-1760" method="post">
+                {% csrf_token %}
+                <fieldset
+                  class="fr-fieldset fr-py-0 fr-my-0"
+                  id="login-1760-fieldset"
+                  aria-labelledby="login-1760-fieldset-legend"
+                >
+                  <legend class="flex width-100" id="login-1760-fieldset-legend">
+                    <h1 class="fr-h3 fr-m-0 fr-p-0">Connectez-vous</h1>
+                    <div class="spacer"></div>
+                    <div>
+                      <a class="fr-btn fr-btn--secondary" aria-describedby="tooltip-2989" id="link-2990" href="#">
+                        Guide
+                      </a>
+                      <span class="fr-tooltip fr-placement" id="tooltip-2989" role="tooltip" aria-hidden="true">
+                        <a
+                          href="{% static 'guides_aidants_connect/AC_Guide_Sauthentifier.pdf' %}"
+                          class="fr-link"
+                          target="_blank"
+                          rel="noreferrer noopener"
+                        >
+                          Sʼauthentifier sur Aidants Connect
+                        </a><span> - pdf</span>
+                      </span>
+                    </div>
+                  </legend>
+
+                  <div class="fr-fieldset__element fr-my-6v">
+                    <p class="fr-text--sm">
+                      Vous êtes un ou une aidante professionnelle et vous faites partie d’une structure habilitée
+                      Aidants Connect ? Retrouvez votre espace en vous connectant ci-dessous.
+                      Sauf mention contraire, tous les champs sont obligatoires.
+                    </p>
+                  </div>
+                  <div class="fr-fieldset__element fr-my-6v">
+                    <fieldset class="fr-fieldset fr-my-0" id="credentials">
+                      <div class="fr-fieldset__element">
+                        {% aidantc_dsfr_form_field_no_asterisk form.email %}
+                      </div>
+                      <div class="fr-fieldset__element">
+                        {% aidantc_dsfr_form_field_no_asterisk OTP_form.otp_token %}
+                      </div>
+                      <div class="fr-fieldset__element fr-my-0">
+                        <p class="fr-m-0 fr-text--sm fr-info-text">
+                          Un nouveau code à 6 chiffres est généré toutes les minutes par votre carte physique ou
+                          numérique.
+                        </p>
+                      </div>
+                    </fieldset>
+                  </div>
+                  <div class="fr-fieldset__element">
+                    <ul class="fr-btns-group fr-mb-6v">
+                      <li>
+                        <button type="submit" class="fr-btn">Se connecter</button>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="fr-messages-group" id="login-1760-fieldset-messages" aria-live="assertive">
+                  </div>
+                </fieldset>
+              </form>
+
+                <div class="flex width-100">
+                  <h2 class="fr-h4 fr-m-0 fr-p-0">Première connexion référent</h2>
+                  <div class="spacer"></div>
+                </div>
+
+                <div class="fr-fieldset__element fr-my-6v">
+                  <p class="fr-text--sm">
+                    Si vous êtes référent Aidants Connect et qu’il s’agit de votre première connexion, un code dédié doit vous être envoyé par SMS.
+                  </p>
+                </div>
+
+                <div>
+                  <a class="fr-btn fr-btn--secondary"  href="{% url 'manager_first_login' %}">
+                    Obtenir un code de première connexion
+                  </a>
+                </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="fr-alert fr-alert--warning fr-mt-6v">
+          <h3 class="fr-alert__title fr-mb-1v">Un problème avec votre carte ou votre téléphone ?</h3>
+          <p><a href="{% url 'faq_category_detail' slug='utiliser-aidants-connect' %}" class="fr-link">Consultez notre FAQ</a></p>
+        </div>
+      </div>
+      <div class="fr-col-12 fr-col-md-6 otp-app-panel">
+        <section class="otp-app-explaination background">
+          <div class="fr-py-8v fr-px-16v">
+            <h1>Numérisez votre carte Aidant</h1>
+            <p>Vous pouvez désormais vous connecter et valider vos mandats avec votre téléphone !</p>
+            <p>Passez à la carte numérique en quelques minutes en vous adressant à votre référent Aidants Connect.</p>
+          </div>
+            <img src="{% static 'images/otp-app.png' %}" alt="">
+        </section>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

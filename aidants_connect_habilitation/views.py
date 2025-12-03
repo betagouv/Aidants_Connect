@@ -2,7 +2,7 @@ from abc import ABC
 from uuid import UUID
 
 from django.conf import settings
-from django.forms import Form
+from django.forms import Form, model_to_dict
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -23,6 +23,7 @@ from aidants_connect_habilitation.forms import (
     AidantRequestFormSet,
     IssuerForm,
     OrganisationRequestForm,
+    OrganisationSiretVerificationRequestForm,
     ReferentForm,
     ValidationForm,
 )
@@ -33,6 +34,7 @@ from aidants_connect_habilitation.models import (
     Manager,
     OrganisationRequest,
 )
+from aidants_connect_web.models import Organisation
 
 __all__ = [
     "NewHabilitationView",
@@ -41,6 +43,8 @@ __all__ = [
     "IssuerEmailConfirmationView",
     "IssuerPageView",
     "ModifyIssuerFormView",
+    "NewOrganisationSiretVerificationRequestFormView",
+    "NewOrganisationSiretNavigationView",
     "NewOrganisationRequestFormView",
     "ModifyOrganisationRequestFormView",
     "PersonnelRequestFormView",
@@ -232,7 +236,7 @@ class IssuerEmailConfirmationView(
 
     def __continue(self):
         return redirect(
-            "habilitation_new_organisation", issuer_id=self.issuer.issuer_id
+            "habilitation_siret_verification", issuer_id=self.issuer.issuer_id
         )
 
 
@@ -269,9 +273,84 @@ class ModifyIssuerFormView(VerifiedEmailIssuerView, NewIssuerFormView):
             )
 
         return reverse(
-            "habilitation_new_organisation",
+            "habilitation_siret_verification",
             kwargs={"issuer_id": self.saved_model.issuer_id},
         )
+
+
+class NewOrganisationSiretVerificationRequestFormView(
+    HabilitationStepMixin, VerifiedEmailIssuerView, FormView
+):
+    template_name = (
+        "aidants_connect_habilitation/organisation-siret-verification-form-view.html"
+    )
+    form_class = OrganisationSiretVerificationRequestForm
+
+    @property
+    def step(self) -> HabilitationFormStep:
+        return HabilitationFormStep.SIRET_VERIFICATION
+
+    def form_valid(self, form):
+        self.form = form
+        siret = self.form.cleaned_data["siret"]
+        orgas = Organisation.objects.filter(siret=siret)
+        return self.render_to_response(
+            self.get_context_data(
+                form=form,
+                siret_verified=True,
+                siret_value=siret,
+                existing_organisations=orgas,
+                siret_is_new=not orgas.exists(),
+            )
+        )
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "issuer_id": f"{self.issuer.issuer_id}",
+        }
+
+
+class NewOrganisationSiretNavigationView(
+    HabilitationStepMixin, VerifiedEmailIssuerView, View
+):
+    """
+    Vue de navigation pour rediriger vers la création d'organisation
+    dans les cas autorisés.
+    """
+
+    @property
+    def step(self) -> HabilitationFormStep:
+        return HabilitationFormStep.SIRET_VERIFICATION
+
+    def post(self, request, *args, **kwargs):
+        siret = request.POST.get("siret")
+        choice = request.POST.get("organisation_choice")
+
+        orgas = Organisation.objects.filter(siret=siret)
+
+        # Cas de sécurité : ne devrait jamais arriver
+        if not siret:
+            return redirect(
+                "habilitation_siret_verification",
+                issuer_id=f"{self.issuer.issuer_id}",
+            )
+
+        if not orgas.exists() or (choice and choice == "0"):
+            # Cas 1: SIRET nouveau (pas d'organisations en base)
+            # Cas 2: Choix explicite "Ma structure n'apparaît pas"
+            return redirect(
+                "habilitation_new_organisation",
+                issuer_id=f"{self.issuer.issuer_id}",
+                siret=siret,
+            )
+        else:
+            # Cas de sécurité : ne devrait jamais arriver
+            # si le template fonctionne correctement
+            return redirect(
+                "habilitation_siret_verification",
+                issuer_id=f"{self.issuer.issuer_id}",
+            )
 
 
 class NewOrganisationRequestFormView(
@@ -283,6 +362,16 @@ class NewOrganisationRequestFormView(
     @property
     def step(self) -> HabilitationFormStep:
         return HabilitationFormStep.ORGANISATION
+
+    def get_initial(self):
+        if "name" in self.request.GET:
+            return {
+                "siret": self.kwargs.get("siret"),
+                "name": self.request.GET.get("name"),
+            }
+        return {
+            "siret": self.kwargs.get("siret"),
+        }
 
     def form_valid(self, form):
         form.instance.issuer = self.issuer
@@ -315,6 +404,23 @@ class ModifyOrganisationRequestFormView(
 
     def get_form_kwargs(self):
         return {**super().get_form_kwargs(), "instance": self.organisation}
+
+    def get_initial(self):
+        # heritage from NewOrganisationRequestFormView => get_initial() None for siret
+        # because siret is in url on NewOrganisationRequestFormView
+        return {
+            **(super().get_initial()),
+            "siret": self.organisation.siret,
+        }
+
+    def get_success_url(self):
+        return reverse(
+            "habilitation_validation",
+            kwargs={
+                "issuer_id": self.organisation.issuer.issuer_id,
+                "uuid": self.organisation.uuid,
+            },
+        )
 
 
 class ReferentRequestFormView(OnlyNewRequestsView, UpdateView):
@@ -359,18 +465,35 @@ class PersonnelRequestFormView(LateStageRequestView, HabilitationStepMixin, Form
         return HabilitationFormStep.PERSONNEL
 
     def form_valid(self, form):
-        form.save()
-        return super().form_valid(form)
+        if "partial-submit" in self.request.POST:
+            data = self.request.POST.copy()
+            total_forms = int(data.get("form-TOTAL_FORMS", 0))
+            data["form-TOTAL_FORMS"] = str(total_forms + 1)
+
+            form_kwargs = self.get_form_kwargs()
+            form_kwargs.pop("data", None)
+            form_kwargs["data"] = data
+
+            new_form = self.form_class(**form_kwargs)
+            return self.render_to_response(self.get_context_data(form=new_form))
+        else:
+            form.save()
+            return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        kwargs.update({"organisation": self.organisation})
+        manager_data = {}
+        if self.organisation.manager:
+            manager_data = model_to_dict(
+                self.organisation.manager,
+                fields=["first_name", "last_name", "email", "profession"],
+            )
+        kwargs.update({"organisation": self.organisation, "manager_data": manager_data})
         return super().get_context_data(**kwargs)
 
     def get_form_kwargs(self):
         return {
             **super().get_form_kwargs(),
             "organisation": self.organisation,
-            "empty_permitted": True,
         }
 
     def get_success_url(self):
@@ -386,9 +509,9 @@ class PersonnelRequestFormView(LateStageRequestView, HabilitationStepMixin, Form
 class BaseValidationRequestFormView(
     HabilitationStepMixin, LateStageRequestView, FormView
 ):
-    # fmt: off
-    template_name = "aidants_connect_habilitation/validation-request-form-view.html"  # noqa: E501
-    # fmt: on
+    template_name = (
+        "aidants_connect_habilitation/validation-request-form-view.html"  # noqa: E501
+    )
     form_class = ValidationForm
     presenter_class = ProfileCardAidantRequestPresenter
 
