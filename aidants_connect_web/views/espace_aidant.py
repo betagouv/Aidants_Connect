@@ -107,7 +107,7 @@ class Home(TemplateView):
                 {
                     "title": "Créer un mandat avec un usager",
                     **tile_attr_from_file(
-                        "guides_aidants_connect/AC_Guide_CreerUnMandat.pdf"
+                        "guides_aidants_connect/AC_Guide_CreerunMandat.pdf"
                     ),
                 },
                 {
