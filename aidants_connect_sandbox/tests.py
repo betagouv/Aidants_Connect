@@ -103,6 +103,42 @@ class AutomaticAddUserTestCase(TestCase):
         self.assertEqual("msimpson@simpson.com", aidant.username)
         self.assertEqual("msimpson@simpson.com", aidant.email)
 
+    def test_dont_create_twice_aidant_different_lastname(self):
+        self.assertEqual(0, Organisation.objects.all().count())
+        self.assertEqual(0, Aidant.objects.all().count())
+        data = {
+            "first_name": "Marge",
+            "last_name": "Simpson",
+            "profession": "aidante",
+            "email": "msimpson@simpson.com",
+            "username": "msimpson@simpson.com",
+            "organisation__data_pass_id": 12121,
+            "organisation__name": "L'internationale",
+            "organisation__siret": "121212123",
+            "organisation__address": "Rue du petit puit",
+            "organisation__city": "Marseille",
+            "organisation__zipcode": "13001",
+            "datapass_id_managers": "",
+            "token": "TOKENSANDBOX",
+        }
+        response = self.client.post(reverse("sandbox_automatic_creation"), data)
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, Organisation.objects.all().count())
+        self.assertEqual(1, Aidant.objects.all().count())
+
+        data["last_name"] = "Simpson BIS"
+        response = self.client.post(reverse("sandbox_automatic_creation"), data)
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, Organisation.objects.all().count())
+        self.assertEqual(1, Aidant.objects.all().count())
+        orga = Organisation.objects.all()[0]
+        self.assertEqual(12121, orga.data_pass_id)
+        self.assertEqual("L'internationale", orga.name)
+        aidant = Aidant.objects.all()[0]
+        self.assertEqual("msimpson@simpson.com", aidant.username)
+        self.assertEqual("msimpson@simpson.com", aidant.email)
+        self.assertEqual("Simpson", aidant.last_name)
+
     def test_import_with_one_managed_orga_is_ok(self):
         self.assertEqual(0, Organisation.objects.all().count())
         self.assertEqual(0, Aidant.objects.all().count())
