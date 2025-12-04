@@ -67,13 +67,16 @@ class AutomaticCreationSerializer(serializers.Serializer):
                     zipcode=self.validated_data["organisation__zipcode"],
                 )[0]
 
-        new_aidant, created_aidant = Aidant.objects.get_or_create(
-            username=self.validated_data["email"],
-            email=self.validated_data["email"],
-            last_name=self.validated_data["last_name"],
-            first_name=self.validated_data["first_name"],
-            defaults={"organisation": orga},
-        )
+        if not Aidant.objects.filter(
+            username__iexact=self.validated_data["email"].lower()
+        ).exists():
+            new_aidant, created_aidant = Aidant.objects.get_or_create(
+                username=self.validated_data["email"],
+                email=self.validated_data["email"],
+                last_name=self.validated_data["last_name"],
+                first_name=self.validated_data["first_name"],
+                defaults={"organisation": orga},
+            )
 
         if (
             "datapass_id_managers" in self.validated_data
