@@ -16,6 +16,7 @@ from aidants_connect_web.tests.factories import (
     CarteTOTPFactory,
     MandatFactory,
     OrganisationFactory,
+    TOTPDeviceFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import service
@@ -146,7 +147,8 @@ class StatistiquesTests(TestCase):
     def setUpTestData(cls):
         mairie_de_houlbec = OrganisationFactory()
         aidant_thierry = AidantFactory()
-        CarteTOTPFactory(aidant=aidant_thierry)
+        carte = CarteTOTPFactory(aidant=aidant_thierry)
+        carte.get_or_create_totp_device()
         usager_homer = UsagerFactory()
         mandat_houlbec_homer = MandatFactory(
             organisation=mairie_de_houlbec, usager=usager_homer
@@ -262,6 +264,23 @@ class StatistiquesTests(TestCase):
             response.context["deployment_section"][0]["Aidants habilités"],
             1,
             "Should count aidant_thierry alone",
+        )
+
+    def test_stats_show_the_correct_number_of_aidants_totp_device_only(self):
+        # aidants should be non-staff_organisation
+
+        aidant_totp = AidantFactory(
+            can_create_mandats=True,
+            last_name="Dupont",
+            is_active=True,
+        )
+        TOTPDeviceFactory(user=aidant_totp)
+
+        response = self.client.get(reverse("statistiques"))
+        self.assertEqual(
+            response.context["deployment_section"][0]["Aidants habilités"],
+            2,
+            "Should count aidant_thierry and aidant_totp",
         )
 
     def test_stats_show_the_correct_number_of_mandats_non_staff_organisation(self):
