@@ -254,6 +254,19 @@ class AidantsView(DetailView, FormView):
             return redirect("espace_aidant_home")
         return self.organisation
 
+    def get_eligibility_validated_requests(self):
+        return (
+            self.object.habilitation_requests.filter(
+                status__in=[
+                    ReferentRequestStatuses.STATUS_PROCESSING.value,
+                    ReferentRequestStatuses.STATUS_PROCESSING_P2P.value,
+                ],
+                created_by_fne=False,
+            )
+            .exclude(id_fne__isnull=False)
+            .order_by("status", "last_name")
+        )
+
     def get_context_data(self, **kwargs):
         aidantq_qs = self.object.aidants_not_responsables.order_by(
             "last_name"
@@ -273,13 +286,7 @@ class AidantsView(DetailView, FormView):
             created_by_fne=False,
         ).order_by("status", "last_name")
 
-        eligibility_validated_requests = self.object.habilitation_requests.filter(
-            status__in=[
-                ReferentRequestStatuses.STATUS_PROCESSING.value,
-                ReferentRequestStatuses.STATUS_PROCESSING_P2P.value,
-            ],
-            created_by_fne=False,
-        ).order_by("status", "last_name")
+        eligibility_validated_requests = self.get_eligibility_validated_requests()
 
         return {
             **super().get_context_data(**kwargs),
