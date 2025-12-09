@@ -11,6 +11,8 @@ from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import TemplateView
 
+from django_otp.plugins.otp_totp.models import TOTPDevice
+
 from aidants_connect_pico_cms.models import Testimony
 from aidants_connect_web.forms import OTPForm
 from aidants_connect_web.models import Aidant, Journal, Mandat, Organisation
@@ -130,7 +132,12 @@ class StatistiquesView(TemplateView):
             .count()
         )
 
-        aidants_count = self.active_aidants_qs.filter(carte_totp__isnull=False).count()
+        aidant_totp_devices_id = TOTPDevice.objects.all().values_list(
+            "user_id", flat=True
+        )
+        aidants_count = self.active_aidants_qs.filter(
+            id__in=list(set(aidant_totp_devices_id))
+        ).count()
         aidants_not_accredited_count = self.active_aidants_qs.filter(
             carte_totp__isnull=True
         ).count()
