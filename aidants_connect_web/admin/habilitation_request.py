@@ -270,7 +270,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         "id_fne",
         "created_at",
     )
-    readonly_fields = ("created_at", "updated_at", "id_fne", "course_type")
+    readonly_fields = ("created_at", "updated_at", "course_type")
     raw_id_fields = ("organisation",)
     actions = ("mark_validated", "mark_refused", "mark_processing")
     list_filter = (

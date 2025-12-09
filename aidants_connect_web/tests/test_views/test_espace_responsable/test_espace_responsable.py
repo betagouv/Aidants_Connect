@@ -7,9 +7,13 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from faker import Faker
 
 from aidants_connect import settings
-from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
+from aidants_connect_web.constants import OTP_APP_DEVICE_NAME, ReferentRequestStatuses
 from aidants_connect_web.models.other_models import CoReferentNonAidantRequest
-from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
+from aidants_connect_web.tests.factories import (
+    AidantFactory,
+    HabilitationRequestFactory,
+    OrganisationFactory,
+)
 from aidants_connect_web.views import espace_responsable
 
 
@@ -126,6 +130,39 @@ class EspaceResponsableAidantPage(TestCase):
         cls.aidant_tim_url = f"/espace-responsable/aidant/{cls.aidant_tim.id}/"
         cls.autre_organisation = OrganisationFactory()
         cls.autre_aidant = AidantFactory()
+
+    def test_espace_responsable_get_eligibility_validated_requests(self):
+        orga = self.responsable_tom.organisation
+        HabilitationRequestFactory(
+            organisation=orga,
+            created_by_fne=False,
+            status=ReferentRequestStatuses.STATUS_PROCESSING.value,
+            id_fne=23,
+        )
+        HabilitationRequestFactory(
+            organisation=orga,
+            created_by_fne=True,
+            status=ReferentRequestStatuses.STATUS_PROCESSING.value,
+            id_fne=None,
+        )
+        HabilitationRequestFactory(
+            organisation=orga,
+            created_by_fne=True,
+            status=ReferentRequestStatuses.STATUS_PROCESSING.value,
+            id_fne=12,
+        )
+        hr_ok = HabilitationRequestFactory(
+            organisation=orga,
+            created_by_fne=False,
+            status=ReferentRequestStatuses.STATUS_PROCESSING.value,
+            id_fne=None,
+        )
+
+        aidants_view = espace_responsable.AidantsView()
+        aidants_view.object = orga
+        q_hr = aidants_view.get_eligibility_validated_requests()
+        self.assertEqual(q_hr.count(), 1)
+        self.assertEqual(q_hr.first().id, hr_ok.id)
 
     def test_espace_responsable_aidant_url_triggers_the_right_view(self):
         self.client.force_login(self.responsable_tom)
