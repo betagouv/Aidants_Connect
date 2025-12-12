@@ -1,115 +1,105 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
-{% load ac_common ac_extras dsfr_tags partials static widget_tweaks %}
+{% load ac_common ac_extras dsfr_tags form_extras partials static widget_tweaks %}
 
-{% block title %}Aidants Connect - Ajouter un aidant à une organisation{% endblock %}
+{% block title %}Ajouter un aidant à une organisation - Aidants Connect{% endblock %}
 
 {% block content %}
   <div class="fr-container">
     {% include "layouts/_js-unavailable-alert.html" %}
     {% dsfr_django_messages %}
 
-    <h1>Habiliter de nouveaux aidants</h1>
-    <p>
-      Pour ajouter un aidant à votre organisation, vous devez formuler une nouvelle demande d’habilitation à l’aide du
-      formulaire ci-dessous. Tous les champs sont obligatoires.
-    </p>
-    <p>
-      La formation à Aidants Connect a été exceptionnellement financée dans le cadre du Plan France Relance jusqu’en
-      2023. Cette formation est dorénavant financée selon différentes modalités.
-    </p>
-    <p>
-      Nous vous invitons à vous rendre sur ce <a href="https://tally.so/r/mO0Xkg">simulateur de financement</a>
-      pour découvrir comment la financer.
-    </p>
-    <p>
-      <strong>Attention :</strong> il peut arriver que dans certains cas (structures non adhérentes à l'OPCO
-      Uniformation, conseillers numériques ayant consommés leurs modules annuels, etc.) la formation doive être
-      financée par la structure.
-    </p>
-    <p>
-      Les aidants des structures déjà habilitées peuvent bénéficier de la formation entre pairs qui est gratuite.
-    </p>
+    <h1 class="fr-mb-2w">Ajouter un aidant</h1>
+      <p class="fr-text--lg">
+        Sauf mention contraire, tous les champs sont obligatoires.
+      </p>
+        <div class="fr-grid-row fr-grid-row--gutters">
+          <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
+            <div class="fr-alert fr-alert--info fr-mt-6v">
+              <p>
+                Information : si vous souhaitez ajouter un aidant qui a déjà été formé et habilité Aidants Connect dans une autre structure,
+                <a href="mailto:contact@aidantsconnect.beta.gouv.fr" class="fr-link">
+                    contactez le support
+                </a>.
+              </p>
+            </div>
+            <form
+              id="new-habilitation-request-form"
+              method="post"
+              action="{% url 'espace_responsable_aidant_new' %}"
+            >
+              {% csrf_token %}
 
-    <form
-      id="new-habilitation-request-form"
-      method="post"
-      action="{% url 'espace_responsable_aidant_new' %}"
-    >
-      {% csrf_token %}
-
-      {{ form.habilitation_requests }}
-
-      <section class="course-type fr-mt-8v">
-        <h2>Choisissez le type de formation</h2>
-        {# Inline checkboxes not yet supported by django-dsfr #}
-        <fieldset
-          class="fr-fieldset{% if form.course_type.type.errors %} fr-fieldset--error{% endif %}"
-          id="radio-inline"
-          aria-labelledby="radio-inline-legend radio-inline-messages"
-        >
-          <legend class="fr-fieldset__legend--regular fr-fieldset__legend" id="radio-inline-legend">
-            {{ form.course_type.type.label }}
-          </legend>
-          {% for widget in form.course_type.type %}
-            <div class="fr-col-6">
-              <div class="fr-radio-group">
-
-                {% if widget.data.value == form.course_type.Type.CLASSIC %}
-                   {{ widget }}
-                  <div class="additionnal-informations">
-                    <p>
-                      Les nouveaux aidants seront formés par un organisme de formation habilité. Cette formation est
-                      payante et financée seulement dans les 2 cas suivants :
-                    </p>
-                    <ul>
-                      <li>
-                        Pour les conseillers numériques, si elle fait partie des modules thématiques choisis lors de la
-                        formation initiale ou continue ;
-                      </li>
-                      <li>Pour les aidants des structures adhérentes à l’OPCO Uniformation.</li>
-                    </ul>
-                    <p>Pour tous les autres cas, la formation doit être financée par la structure.</p>
-                  </div>
-                {% elif widget.data.value == form.course_type.Type.P2P %}
-                    <div class="fr-alert fr-alert--warning">
-                      <p>
-                        <strong>Important : arrêt temporaire des formations entre pairs.</strong> Les nouveaux aidants ne peuvent actuellement plus être formés par leurs collègues. La formation classique, via un organisme de formation habilité, est obligatoire pour tout nouvel aidant ajouté.
-                      </p>
+              <section class="course-type fr-mt-6v"
+                       data-controller="formation-type"
+                       data-formation-type-p2p-value-value="{{ form.course_type.Type.P2P }}">
+                <h2 class="fr-h5 fr-mt-8v">Modalité de formation</h2>
+                  <fieldset
+                    class="fr-fieldset{% if form.course_type.type.errors and not is_partial_submit %} fr-fieldset--error{% endif %}"
+                    id="radio-inline"
+                    aria-labelledby="radio-inline-legend radio-inline-messages"
+                  >
+                  <legend class="fr-fieldset__legend--regular fr-fieldset__legend" id="radio-inline-legend">
+                    {{ form.course_type.type.label }}
+                  </legend>
+                  {% for widget in form.course_type.type %}
+                    <div class="fr-radio-group fr-ml-2v" data-action="change->formation-type#typeChanged">
+                      {% if widget.data.value == form.course_type.Type.CLASSIC %}
+                        <strong>{{ widget }}</strong>
+                        <div class="fr-ml-8v fr-mt-2v">
+                          <p class="fr-text--sm">
+                            Elle est dispensée par un organisme habilité et peut être financée selon <a class="fr-link fr-text--sm" href="https://tally.so/r/mO0Xkg">différentes modalités</a>. Il arrive que, dans certains cas, elle doive être financée par la structure.
+                          </p>
+                        </div>
+                      {% elif widget.data.value == form.course_type.Type.P2P %}
+                        <div class="fr-mt-4v"><strong>{{ widget }}</strong></div>
+                        <div class="fr-ml-8v fr-mt-2v">
+                          <p class="fr-text--sm">
+                            Elle est dispensée par un autre aidant de la structure, volontaire, habilité et utilisateur fréquent d'Aidants Connect. Si elle est dispensée en groupe, nous conseillons de réaliser des sessions de 5 aidants maximum.
+                          </p>
+                        </div>
+                      {% endif %}
                     </div>
-{# <div class="additionnal-informations"> #}
-{# <p> #}
-{# Les nouveaux aidants seront formés par l’un de leur collègue habilité et utilisateur d’Aidants #}
-{# Connect. #}
-{# </p> #}
-{# <div class="fr-alert fr-alert--info"> #}
-{# <p> #}
-{# La formation entre pairs permet aux nouveaux aidants d’être formés par l’un de leur collègue #}
-{# habilité et utilisateur d’Aidants Connect. Pour être éligible à la formation entre pairs, au #}
-{# moins un aidant de votre structure doit avoir créé au moins 5 mandats. Cet aidant pourra alors #}
-{# être désigné comme formateur. #}
-{# </p> #}
-{# </div> #}
-{# </div> #}
-                {% endif %}
-              </div>
-            </div>
-          {% endfor %}
+                  {% endfor %}
+                  <div class="fr-ml-2v fr-my-4v" data-formation-type-target="emailFormateurSection" hidden>
+                    <p class="fr-text--md">
+                      Renseignez l'adresse e-mail de l'aidant formateur. Nous conseillons de choisir un aidant qui a déjà effectué au moins 5 mandats avec des usagers.
+                    </p>
+                  </div>
+                  <div class="fr-fieldset__element fr-mb-0" data-formation-type-target="emailFormateurField" hidden>
+                    {% aidantc_dsfr_form_field_no_asterisk form.course_type.email_formateur %}
+                  </div>
 
-          {% if form.course_type.type.errors %}
-            <div class="fr-messages-group" id="{{ form.course_type.type.auto_id }}-messages">
-              {{ form.course_type.type.errors }}
-            </div>
-          {% endif %}
-        </fieldset>
-      </section>
-      <button
-        id="form-submit"
-        class="fr-btn fr-btn--icon-left fr-icon-check-line"
-        type="submit"
-        data-new-habilitation-request-target="submitBtn"
-      >
-        Valider la demande d’habilitation
-      </button>
-    </form>
+                  <div class="fr-fieldset__element fr-mb-4v">
+                  {% if form.course_type.type.errors and not is_partial_submit %}
+                    <div class="fr-messages-group" id="{{ form.course_type.type.auto_id }}-messages">
+                      {{ form.course_type.type.errors }}
+                    </div>
+                  {% endif %}
+
+                </fieldset>
+              </section>
+
+              {% include "aidants_connect_web/espace_responsable/forms/add-aidants-formset.html" with formset=form.habilitation_requests main_form=form %}
+              <div class="fr-alert fr-alert--info fr-mt-8v">
+                <p>
+                  Information : l'éligibilité du ou des aidants sera vérifiée par notre équipe.
+                </p>
+              </div>
+              <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--between fr-my-6w">
+                <li></li>
+                <li>
+                  <button
+                    id="form-submit"
+                    class="fr-btn"
+                    type="submit"
+                    data-new-habilitation-request-target="submitBtn"
+                  >
+                    Envoyer la demande
+                  </button>
+                </li>
+              </ul>
+            </form>
+          </div>
+        </div>
   </div>
 {% endblock content %}

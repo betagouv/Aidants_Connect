@@ -24,7 +24,6 @@ from django.forms import (
     BoundField,
     Field,
     Form,
-    Media,
     MediaDefiningClass,
     RadioSelect,
     TypedChoiceField,
@@ -42,7 +41,6 @@ from phonenumbers.phonenumber import PhoneNumber
 from aidants_connect.utils import strtobool
 from aidants_connect_common.models import Formation
 from aidants_connect_common.presenters import GenericHabilitationRequestPresenter
-from aidants_connect_common.widgets import JSModulePath
 
 
 class AsHiddenMixin:
@@ -186,7 +184,7 @@ class CleanEmailMixin:
 class ConseillerNumerique(Form):
     conseiller_numerique = TypedChoiceField(
         label=format_html(
-            'Fait partie du <a class="fr-link" href="{}">{}</a>',
+            'L\'aidant fait partie du <a class="fr-link" href="{}">{}</a>',
             settings.CONSEILLER_NUMERIQUE_PAGE,
             "dispositif conseiller numérique",
         ),
@@ -574,13 +572,6 @@ class BaseHabilitationRequestFormSet(BaseModelFormSet, abc.ABC):
     template_name = "forms/base-habilitation-request-formset.html"
     validate_min = True
     presenter_class = None
-
-    @property
-    def media(self):
-        return super().media + Media(
-            css={"all": ("css/new-habilitation-request.css",)},
-            js=(JSModulePath("js/new-habilitation-request.mjs"),),
-        )
 
     @property
     @abc.abstractmethod

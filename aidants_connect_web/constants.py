@@ -82,8 +82,8 @@ class ReferentRequestStatuses(TextChoices):
 
 
 class HabilitationRequestCourseType(IntegerChoices):
-    CLASSIC = (auto(), "Parcours classique")
-    P2P = (auto(), "Parcours pair-à-pair")
+    CLASSIC = (auto(), "Formation classique")
+    P2P = (auto(), "Formation entre pairs")
 
 
 CODE_EMAIL_FNE_MANAGER_CONNEXION_MODE = "FNECONNEXIONMODE"
