@@ -1,0 +1,37 @@
+{% load dsfr_tags form_extras %}
+
+{% if errors %}
+  <section class="fr-my-4v fr-input-group fr-input-group--error">
+    {{ errors }}
+  </section>
+{% endif %}
+{% for field in form.hidden_fields %}
+  {{ field }}
+{% endfor %}
+
+<fieldset class="fr-fieldset">
+    <div class="fr-fieldset__element fr-mt-4v fr-fieldset__element--inline fr-col-12 fr-col-md-6">
+      {% aidantc_dsfr_form_field_no_asterisk form.first_name %}
+    </div>
+    <div class="fr-fieldset__element fr-mt-4v fr-fieldset__element--inline fr-col-12 fr-col-md-6">
+      {% aidantc_dsfr_form_field_no_asterisk form.last_name %}
+    </div>
+</fieldset>
+
+<fieldset class="fr-fieldset">
+    <div class="fr-fieldset__element fr-mt-4v fr-fieldset__element--inline fr-col-12 fr-col-md-6">
+      {% aidantc_dsfr_form_field_no_asterisk form.profession %}
+    </div>
+    <div class="fr-fieldset__element fr-mt-4v fr-fieldset__element--inline fr-col-12 fr-col-md-6">
+      {% aidantc_dsfr_form_field_no_asterisk form.organisation %}
+    </div>
+</fieldset>
+<fieldset class="fr-fieldset">
+  <div class="fr-fieldset__element fr-mt-4v">
+    {% aidantc_dsfr_form_field_no_asterisk form.conseiller_numerique|dsfr_inline %}
+  </div>
+  <div class="fr-fieldset__element fr-mb-4v">
+    {% aidantc_dsfr_form_field_no_asterisk form.email %}
+    {% dsfr_alert type="warning" extra_classes="fr-alert--sm" content="Attention : l'adresses e-mail doivent être une adresse nominative (de type prenom-nom@exemple.fr)" %}
+  </div>
+</fieldset>

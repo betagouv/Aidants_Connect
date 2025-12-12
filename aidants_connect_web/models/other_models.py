@@ -106,6 +106,14 @@ class HabilitationRequest(models.Model):
         default=CourseType.CLASSIC,
     )
 
+    email_formateur = models.EmailField(
+        "Email du formateur",
+        max_length=150,
+        blank=True,
+        null=True,
+        help_text="Email du formateur P2P",
+    )
+
     def get_full_name(self):
         return self.aidant_full_name
 

@@ -1,11 +1,8 @@
-import itertools
-from unittest import skip
+import time
 
-from django.template.defaultfilters import yesno
 from django.test import tag
 from django.urls import reverse
 
-from faker import Faker
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 
@@ -285,16 +282,37 @@ class NewHabilitationRequestTests(FunctionalTestCase):
             )
         )
 
-        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
+        # Wait for the expected number of error messages to be fully loaded
         expected = (
             # We ignore course type error in JS mode since we're only checking
             # the profile form
             len(self._all_visible_fields())
-            - len(self._course_type_form.visible_fields())
+            - len(
+                [
+                    f
+                    for f in self._course_type_form.visible_fields()
+                    if f.name != "email_formateur"
+                ]
+            )
         )
-        self.assertEqual(expected, len(errors))
 
-        for error in errors:
+        self.wait.until(
+            lambda driver: len(
+                [
+                    error
+                    for error in driver.find_elements(By.CLASS_NAME, "errorlist")
+                    if error.text.strip() and "Ce champ est obligatoire." in error.text
+                ]
+            )
+            >= expected
+        )
+
+        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
+        # Filter out empty errors for the assertion
+        non_empty_errors = [error for error in errors if error.text.strip()]
+        self.assertEqual(expected, len(non_empty_errors))
+
+        for error in non_empty_errors:
             self.assertIn("Ce champ est obligatoire.", error.text)
 
         # First form is not empty but not filled either
@@ -322,12 +340,20 @@ class NewHabilitationRequestTests(FunctionalTestCase):
             # We ignore course type error in JS mode since we're only checking
             # the profile form
             len(self._all_visible_fields())
-            - len(self._course_type_form.visible_fields())
+            - len(
+                [
+                    f
+                    for f in self._course_type_form.visible_fields()
+                    if f.name != "email_formateur"
+                ]
+            )
             - 1
         )
-        self.assertEqual(expected, len(errors))
+        # Filter out empty errors for the assertion
+        non_empty_errors = [error for error in errors if error.text.strip()]
+        self.assertEqual(expected, len(non_empty_errors))
 
-        for error in errors:
+        for error in non_empty_errors:
             self.assertIn("Ce champ est obligatoire.", error.text)
 
         # ----------------------------------------------------------------------------
@@ -345,9 +371,11 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self.selenium.find_element(By.ID, "form-submit").click()
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        self.assertEqual(len(self._all_visible_fields()), len(errors))
+        # Filter out empty errors for the assertion
+        non_empty_errors = [error for error in errors if error.text.strip()]
+        self.assertEqual(len(self._all_visible_fields()), len(non_empty_errors))
 
-        for error in errors:
+        for error in non_empty_errors:
             self.assertIn("Ce champ est obligatoire.", error.text)
 
         # First form is not empty but not filled either
@@ -411,27 +439,26 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self.fill_form(req, self._all_visible_fields(), self._custom_getter)
         self.selenium.find_element(By.ID, "partial-submit").click()
 
+        # Check accordion title shows user info
+        accordion_title = self.selenium.find_element(
+            By.CSS_SELECTOR, ".fr-accordion__btn .fr-text--lg.fr-text--bold"
+        )
         self.assertNormalizedStringEqual(
-            f"{req.get_full_name()} {req.email}",
-            self.selenium.find_element(By.CSS_SELECTOR, "#added-form-0 summary").text,
+            req.get_full_name(),
+            accordion_title.text,
         )
 
-        # open the <details>
-        self.js_click(By.CSS_SELECTOR, "#added-form-0 summary")
-        self.assertNormalizedStringEqual(
-            " ".join(
-                [
-                    f"Email {req.email}",
-                    f"Profession {req.profession}",
-                    "Conseiller numérique",
-                    f"{yesno(req.conseiller_numerique, 'Oui,Non')}",
-                    f"Organisation {req.organisation}",
-                ]
-            ),
-            self.selenium.find_element(
-                By.CSS_SELECTOR, "#added-form-0 .user-informations"
-            ).text,
+        # open the accordion
+        self.js_click(By.CSS_SELECTOR, ".fr-accordion__btn")
+
+        # Check form fields contain the expected values
+        email_field = self.selenium.find_element(By.CSS_SELECTOR, 'input[id$="email"]')
+        self.assertEqual(req.email, email_field.get_attribute("value"))
+
+        profession_field = self.selenium.find_element(
+            By.CSS_SELECTOR, 'input[id$="profession"]'
         )
+        self.assertEqual(req.profession, profession_field.get_attribute("value"))
         # Asserting no new habilitation was created
         self.assertFalse(HabilitationRequest.objects.count())
         # Now submits the form
@@ -458,40 +485,66 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self.open_live_url(self.path)
         self.login_aidant(self.aidant_responsable)
         self.wait.until(self.dsfr_ready())
+
+        # Wait for email field to be visible before filling
+        self.wait.until(
+            expected_conditions.visibility_of_element_located(
+                (By.ID, "id_multiform-habilitation_requests-0-email")
+            )
+        )
+
         req1: HabilitationRequest = HabilitationRequestFactory.build(
             organisation=self.organisation
         )
         self.fill_form(req1, self._all_visible_fields(), self._custom_getter)
 
-        self.selenium.find_element(By.ID, "partial-submit").click()
+        # Scroll and click partial submit
+        partial_submit_btn = self.selenium.find_element(By.ID, "partial-submit")
+        self.selenium.execute_script(
+            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+            partial_submit_btn,
+        )
+        time.sleep(0.1)
+        partial_submit_btn.click()
 
+        # Check accordion title shows user info
+        accordion_title = self.selenium.find_element(
+            By.CSS_SELECTOR, ".fr-accordion__btn .fr-text--lg.fr-text--bold"
+        )
         self.assertNormalizedStringEqual(
-            f"{req1.get_full_name()} {req1.email}",
-            self.selenium.find_element(By.CSS_SELECTOR, "#added-form-0 summary").text,
+            req1.get_full_name(),
+            accordion_title.text,
         )
 
-        # open the <details>
-        self.js_click(By.CSS_SELECTOR, "#added-form-0 summary")
-        self.assertNormalizedStringEqual(
-            " ".join(
-                [
-                    f"Email {req1.email}",
-                    f"Profession {req1.profession}",
-                    "Conseiller numérique",
-                    f"{yesno(req1.conseiller_numerique, 'Oui,Non')}",
-                    f"Organisation {req1.organisation}",
-                ]
-            ),
-            self.selenium.find_element(
-                By.CSS_SELECTOR, "#added-form-0 .user-informations"
-            ).text,
+        # open the accordion
+        self.js_click(By.CSS_SELECTOR, ".fr-accordion__btn")
+
+        # Check form fields contain the expected values
+        email_field = self.selenium.find_element(By.CSS_SELECTOR, 'input[id$="email"]')
+        self.assertEqual(req1.email, email_field.get_attribute("value"))
+
+        profession_field = self.selenium.find_element(
+            By.CSS_SELECTOR, 'input[id$="profession"]'
         )
+        self.assertEqual(req1.profession, profession_field.get_attribute("value"))
         # Asserting not new habilitation was created
         self.assertFalse(HabilitationRequest.objects.count())
+
+        # Click "Ajouter un autre aidant" to add a second form
+        self.selenium.find_element(By.ID, "partial-submit").click()
+        self.wait.until(self.document_loaded())
 
         req2: HabilitationRequest = HabilitationRequestFactory.build(
             organisation=self.organisation
         )
+
+        # Wait for second form email field to be visible before filling
+        self.wait.until(
+            expected_conditions.visibility_of_element_located(
+                (By.ID, "id_multiform-habilitation_requests-1-email")
+            )
+        )
+
         self.fill_form(req2, self._all_visible_fields(1), self._custom_getter)
 
         # Now submits the form
@@ -527,162 +580,88 @@ class NewHabilitationRequestTests(FunctionalTestCase):
             },
         )
 
-    def test_editing_profile_checks_errors(self):
-        idx_to_modify = 1
-
+    def test_duplicate_email_error(self):
         self.open_live_url(self.path)
         self.login_aidant(self.aidant_responsable)
         self.wait.until(self.dsfr_ready())
 
-        existing_req = HabilitationRequestFactory(organisation=self.organisation)
+        # Add first aidant
+        req1 = HabilitationRequestFactory.build(organisation=self.organisation)
 
-        reqs = [
-            HabilitationRequestFactory.build(organisation=self.organisation)
-            for _ in range(3)
-        ]
-        for i, req in enumerate(reqs):
-            self.fill_form(req, self._all_visible_fields(i), self._custom_getter)
-            self.selenium.find_element(By.ID, "partial-submit").click()
-            self.assertEqual(
-                "Ajouter un autre aidant",
-                self.selenium.find_element(By.ID, "partial-submit").text,
+        # Wait for email field to be visible before filling
+        self.wait.until(
+            expected_conditions.visibility_of_element_located(
+                (By.ID, "id_multiform-habilitation_requests-0-email")
             )
-
-        self._try_open_modal(By.ID, "edit-button-1")
-
-        # Submit checks
-        self.selenium.find_element(
-            By.CSS_SELECTOR, '[data-test="edited-form"] input[id$="email"]'
-        ).clear()
-
-        self.selenium.find_element(
-            By.CSS_SELECTOR, "#main-modal #profile-edit-submit"
-        ).click()
-
-        self.assertNormalizedStringEqual(
-            "Ce champ est obligatoire.",
-            self.selenium.find_element(
-                By.CSS_SELECTOR,
-                '[data-test="edited-form"] [id$="email-desc-error"] .errorlist',
-            ).text,
         )
 
-        # Test conflict with another profile in this request
-        elt = self.selenium.find_element(
-            By.CSS_SELECTOR, '[data-test="edited-form"] input[id$="email"]'
+        self.fill_form(req1, self._all_visible_fields(0), self._custom_getter)
+
+        # Scroll and click partial submit
+        partial_submit_btn = self.selenium.find_element(By.ID, "partial-submit")
+        self.selenium.execute_script(
+            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+            partial_submit_btn,
         )
-        elt.clear()
-        elt.send_keys(reqs[idx_to_modify + 1].email)
-        self.selenium.find_element(
-            By.CSS_SELECTOR, "#main-modal #profile-edit-submit"
-        ).click()
-        self.assertNormalizedStringEqual(
-            "Corrigez les données en double dans email et "
-            "organisation qui doit contenir des valeurs uniques.",
-            self.selenium.find_element(By.CSS_SELECTOR, ".errorlist.nonform").text,
-        )
-
-        # Test conflict with existing request
-        elt = self.selenium.find_element(
-            By.CSS_SELECTOR, '[data-test="edited-form"] input[id$="email"]'
-        )
-        elt.clear()
-        elt.send_keys(existing_req.email)
-        self.selenium.find_element(
-            By.CSS_SELECTOR, "#main-modal #profile-edit-submit"
-        ).click()
-        self.assertNormalizedStringEqual(
-            "Erreur : une demande d’habilitation est déjà en cours pour "
-            "l’adresse e-mail. Vous n’avez pas besoin de déposer une nouvelle "
-            "demande pour cette adresse-ci.",
-            self.selenium.find_element(
-                By.CSS_SELECTOR,
-                '[data-test="edited-form"] [id$="email-desc-error"] .errorlist',
-            ).text,
-        )
-
-        for _ in range(10):
-            if (
-                new_email := Faker().email()
-            ) not in HabilitationRequest.objects.all().values_list("email", flat=True):
-                break
-        else:
-            self.fail("Coundl't generate a new email")
-
-        elt = self.selenium.find_element(
-            By.CSS_SELECTOR, '[data-test="edited-form"] input[id$="email"]'
-        )
-        elt.clear()
-        elt.send_keys(new_email)
-
-        self.selenium.find_element(
-            By.CSS_SELECTOR, "#main-modal #profile-edit-submit"
-        ).click()
-        self.wait.until(self._modal_closed())
-        self.selenium.find_element(By.ID, "form-submit").click()
-        self.wait.until(self.path_matches("espace_responsable_aidants"))
-
-        # Don't forget to modify the data for the test
-        reqs[idx_to_modify].email = new_email
-
-        self.assertEqual(4, len(HabilitationRequest.objects.all()))
-        self.assertEqual(
-            set(
-                HabilitationRequest.objects.values_list(
-                    "first_name",
-                    "last_name",
-                    "email",
-                    "profession",
-                    "conseiller_numerique",
-                    "organisation",
-                ).all()
-            ),
-            {
-                (
-                    req.first_name,
-                    req.last_name,
-                    req.email,
-                    req.profession,
-                    req.conseiller_numerique,
-                    req.organisation.pk,
-                )
-                for req in itertools.chain([existing_req], reqs)
-            },
-        )
-
-    @skip("will be deleted in new add aidant form")
-    def test_prevents_form_erase_when_editing(self):
-        self.open_live_url(self.path)
-        self.login_aidant(self.aidant_responsable)
-        self.wait.until(self.dsfr_ready())
-        req1: HabilitationRequest = HabilitationRequestFactory.build(
-            organisation=self.organisation
-        )
-        self.fill_form(req1, self._all_visible_fields(), self._custom_getter)
-        self.selenium.find_element(By.ID, "partial-submit").click()
-
-        # Attendre que le DOM soit stable après le clic et re-trouver l'élément
+        time.sleep(0.1)
+        partial_submit_btn.click()
         self.wait.until(self.document_loaded())
-        email_input = self.selenium.find_element(
-            By.CSS_SELECTOR, '#empty-form input[id$="email"]'
-        )
-        email_input.send_keys(req1.email)
 
-        self._try_open_modal(By.ID, "edit-button-0")
-
-        actual = self.selenium.execute_script(
-            "return arguments[0].value",
-            self.selenium.find_element(
-                By.CSS_SELECTOR, '#empty-form input[id$="email"]'
-            ),
+        # Wait for second accordion to appear
+        self.wait.until(
+            expected_conditions.visibility_of_element_located(
+                (By.ID, "id_multiform-habilitation_requests-1-email")
+            )
         )
 
+        # Add second aidant with same email
+        req2 = HabilitationRequestFactory.build(organisation=self.organisation)
+        req2.email = req1.email  # Same email to trigger error
+        self.fill_form(req2, self._all_visible_fields(1), self._custom_getter)
+
+        # Scroll and click partial submit again
+        partial_submit_btn = self.selenium.find_element(By.ID, "partial-submit")
+        self.selenium.execute_script(
+            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+            partial_submit_btn,
+        )
+        time.sleep(0.1)
+        partial_submit_btn.click()
+
+        # Wait for page to load and check for duplicate errors in email fields
+        self.wait.until(self.document_loaded())
+
+        # Check for errors in email fields
+        error_elements = self.selenium.find_elements(
+            By.CSS_SELECTOR, '[id$="email-desc-error"] .errorlist'
+        )
+
+        self.assertGreater(len(error_elements), 0, "No email validation errors found")
+
+        # Check that error message contains the duplicate email
+        error_found = False
+        for error_element in error_elements:
+            error_text = error_element.text
+            if "apparaît plusieurs fois" in error_text:
+                error_found = True
+                self.assertIn(
+                    "Chaque aidant doit avoir son propre e-mail nominatif", error_text
+                )
+                self.assertIn(req1.email, error_text)
+                break
+
+        self.assertTrue(error_found, "Expected duplicate email error message not found")
+
+        # We should have 2 accordions (first + second with error), not 3
+        accordions = self.selenium.find_elements(By.CSS_SELECTOR, ".fr-accordion")
         self.assertEqual(
-            req1.email,
-            actual,
-            "Editing form is not correctly filled. "
-            f"Expected email field to be {req1.email}, was {actual}",
+            2,
+            len(accordions),
+            "Third aidant should not be added due to duplicate email error",
         )
+
+        # Verify no requests were created in database due to validation errors
+        self.assertEqual(0, HabilitationRequest.objects.count())
 
     @property
     def _habilitation_requests_form(self) -> HabilitationRequestCreationFormSet:
@@ -696,10 +675,12 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         form = self._habilitation_requests_form._construct_form(
             form_idx, **self._habilitation_requests_form.get_form_kwargs(form_idx)
         )
-        return [
-            *form.visible_fields(),
-            *self._course_type_form.visible_fields(),
+        course_fields = [
+            f
+            for f in self._course_type_form.visible_fields()
+            if f.name != "email_formateur"
         ]
+        return [*form.visible_fields(), *course_fields]
 
     @staticmethod
     def _custom_getter(data, field, default_getter):
@@ -708,57 +689,3 @@ class NewHabilitationRequestTests(FunctionalTestCase):
             if field == "type"
             else default_getter(data, field)
         )
-
-    def _modal_closed(self):
-        def modal_has_no_open_attr(driver):
-            try:
-                with self.implicitely_wait(0, driver):
-                    element_attribute = driver.find_element(
-                        By.CSS_SELECTOR, "#main-modal"
-                    ).get_attribute("open")
-                return element_attribute is None
-            except:  # noqa: E722
-                return False
-
-        return expected_conditions.all_of(
-            expected_conditions.invisibility_of_element_located(
-                (By.CSS_SELECTOR, "#main-modal")
-            ),
-            modal_has_no_open_attr,
-        )
-
-    def _try_close_modal(self):
-        self.wait.until(self.document_loaded())
-        self.wait.until(self.dsfr_ready())
-        with self.implicitely_wait(0.1):
-            self.wait.until(
-                expected_conditions.presence_of_element_located(
-                    (By.CSS_SELECTOR, "#main-modal")
-                ),
-                "Modal didn't seem to have been initialized",
-            )
-
-            self.js_click(By.TAG_NAME, "body")
-
-            self.wait.until(self._modal_closed(), "Modal seems to be still visible")
-
-    def _try_open_modal(self, by, value: str):
-        self._try_close_modal()
-        self.js_click(by, value)
-        with self.implicitely_wait(0.1):
-            self.wait.until(
-                expected_conditions.text_to_be_present_in_element_attribute(
-                    (By.CSS_SELECTOR, "#main-modal"), "open", "true"
-                ),
-                "Modal was not opened",
-            )
-
-            self.wait.until(
-                expected_conditions.presence_of_element_located(
-                    (
-                        By.CSS_SELECTOR,
-                        '#main-modal input[id$="-email"]',
-                    )
-                ),
-                "Modal seems opened but form seems not visible",
-            )

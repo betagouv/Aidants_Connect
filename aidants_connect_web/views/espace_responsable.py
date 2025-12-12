@@ -1020,16 +1020,59 @@ class NewHabilitationRequest(FormView):
 
         return kwargs
 
+    def get_form_kwargs_with_data(self, data):
+        """Helper method to get form kwargs with custom data"""
+        kwargs = self.get_form_kwargs()
+        kwargs["data"] = data
+        return kwargs
+
+    def post(self, request, *args, **kwargs):
+        if "partial-submit" in request.POST:
+            data = request.POST.copy()
+            total_forms = int(
+                data.get("multiform-habilitation_requests-TOTAL_FORMS", 0)
+            )
+
+            # First validate the current form without adding a new one
+            form = self.get_form_class()(**self.get_form_kwargs_with_data(data))
+            is_valid = form.is_valid()
+
+            # Check specifically for email validation errors
+            has_email_errors = False
+            if hasattr(form, "forms") and "habilitation_requests" in form.forms:
+                habilitation_formset = form["habilitation_requests"]
+                for subform in habilitation_formset.forms:
+                    if "email" in subform.errors:
+                        has_email_errors = True
+                        break
+
+            # Only add a new form if validation passes AND there are no email errors
+            if is_valid and not has_email_errors:
+                data["multiform-habilitation_requests-TOTAL_FORMS"] = str(
+                    total_forms + 1
+                )
+                form = self.get_form_class()(**self.get_form_kwargs_with_data(data))
+                form.is_valid()  # Trigger validation for the new form structure
+
+            return self.render_to_response(
+                self.get_context_data(form=form, is_partial_submit=True)
+            )
+
+        return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
         result: list[HabilitationRequest] = form.save()["habilitation_requests"]
         django_messages.success(
             self.request,
             ngettext(
                 (
-                    "La demande d’habilitation pour %(person)s "
+                    "La demande d'habilitation pour %(person)s "
                     "a été enregistrée avec succès."
                 ),
-                "Les %(len)s demandes d’habilitation ont été enregistrées avec succès.",
+                (
+                    "Les %(len)s demandes d'habilitation ont été "
+                    "enregistrées avec succès."
+                ),
                 len(result),
             )
             % {"person": result[0].get_full_name(), "len": len(result)},
