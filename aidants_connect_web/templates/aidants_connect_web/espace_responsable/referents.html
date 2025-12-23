@@ -42,30 +42,6 @@
     <div class="fr-grid-row fr-grid-row--middle flex-between fr-mb-4w">
       <h1 class="fr-h2">Gestion des référents</h1>
       <div class="fr-grid-row fr-grid-row--middle">
-        <div class="unset-summary fr-mr-1w">
-          <details>
-            <summary>
-              <div class="fr-btn fr-btn--secondary">Guides</div>
-            </summary>
-            <div class="details-content fr-p-2w">
-              <a
-                href='{% static "guides_aidants_connect/AC_Guide_LierUneCarte.pdf" %}'
-                target="_blank"
-                rel="noreferrer noopener"
-                >
-                  Comment lier une carte ?
-                </a>
-                <br />
-                <a
-                  href='{% static "guides_aidants_connect/AC_Guide_Sauthentifier.pdf" %}'
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                Sʼauthentifier avec Aidants Connect
-              </a>
-            </div>
-          </details>
-        </div>
         <div>
           <a
           href="{% url 'espace_responsable_organisation_responsables' organisation_id=organisation.id %}"
