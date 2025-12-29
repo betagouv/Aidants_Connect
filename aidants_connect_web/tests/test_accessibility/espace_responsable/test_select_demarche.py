@@ -1,6 +1,8 @@
 from datetime import timedelta
 
 from django.conf import settings
+from django.test import Client
+from django.urls import reverse
 from django.utils import timezone
 
 from playwright.async_api import expect
@@ -13,6 +15,7 @@ from aidants_connect_web.models import Mandat
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AutorisationFactory,
+    ConnectionFactory,
     MandatFactory,
     UsagerFactory,
 )
@@ -73,15 +76,46 @@ class SelectDemarcheAccessibilityTests(AccessibilityTestCase):
             demarche="logement",
         )
 
-    async def _open_url(self):
-        url = f"/authorize/?{FC_URL_PARAMETERS}"
-        await self.login_aidant(self.aidant_1, "123456")
-        await self.navigate_to_url(url)
+        # Configure session with Connection data
+        self._setup_session()
 
-        await self.page.fill("#anonymous-filter-input", "Joséphine ST-PIERRE")
-        await self.page.click(f"li[data-value='{self.usager_josephine.id}']")
-        await self.page.click("#submit-button")
-        await self.page.wait_for_url("**/select_demarche/**")
+    def _setup_session(self):
+        """Configure Django session with Connection"""
+        # Create a complete Connection as required by FISelectDemarche
+        self.connection = ConnectionFactory(
+            usager=self.usager_josephine,
+            state="34",
+            nonce="45",
+            complete=False,  # Not yet completed
+            aidant=self.aidant_1,
+            organisation=self.aidant_1.organisation,
+        )
+
+        client = Client()
+        client.force_login(self.aidant_1)
+        session = client.session
+        session["connection"] = self.connection.pk
+        session.save()
+        self.session_key = session.session_key
+
+    async def _open_url(self):
+        await self.login_aidant(self.aidant_1, "123456")
+
+        # Set session cookie
+        await self.page.context.add_cookies(
+            [
+                {
+                    "name": "sessionid",
+                    "value": self.session_key,
+                    "domain": "localhost",
+                    "path": "/",
+                }
+            ]
+        )
+
+        # Navigate directly to select_demarche
+        url = reverse("fi_select_demarche")
+        await self.page.goto(self.live_server_url + url)
 
     @async_test
     async def test_accessibility(self):

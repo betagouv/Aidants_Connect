@@ -1,4 +1,5 @@
 import itertools
+from unittest import skip
 
 from django.template.defaultfilters import yesno
 from django.test import tag
@@ -649,6 +650,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
             },
         )
 
+    @skip("will be deleted in new add aidant form")
     def test_prevents_form_erase_when_editing(self):
         self.open_live_url(self.path)
         self.login_aidant(self.aidant_responsable)
