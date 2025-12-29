@@ -8,7 +8,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import EmailValidator, RegexValidator
-from django.forms import EmailField, RadioSelect, modelformset_factory
+from django.forms import EmailField, Media, RadioSelect, modelformset_factory
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -36,7 +36,7 @@ from aidants_connect_common.forms import (
     ErrorCodesManipulationMixin,
     PatchedForm,
 )
-from aidants_connect_common.widgets import DetailedRadioSelect, NoopWidget
+from aidants_connect_common.widgets import DetailedRadioSelect, JSModulePath, NoopWidget
 from aidants_connect_web.constants import (
     HabilitationRequestCourseType,
     RemoteConsentMethodChoices,
@@ -50,7 +50,6 @@ from aidants_connect_web.models import (
     UsagerQuerySet,
 )
 from aidants_connect_web.models.other_models import CoReferentNonAidantRequest
-from aidants_connect_web.presenters import HabilitationRequestItemPresenter
 from aidants_connect_web.utilities import generate_sha256_hash
 from aidants_connect_web.widgets import MandatDemarcheSelect, MandatDureeRadioSelect
 
@@ -592,6 +591,23 @@ class HabilitationRequestCreationForm(
             responsables=self.referent
         ).order_by("name")
 
+    @property
+    def clean_fullname(self):
+        first_name = (
+            self.data.get(f"{self.prefix}-first_name", "").strip() if self.data else ""
+        )
+        last_name = (
+            self.data.get(f"{self.prefix}-last_name", "").strip() if self.data else ""
+        )
+
+        if not first_name and not last_name and self.instance.pk:
+            first_name = self.instance.first_name or ""
+            last_name = self.instance.last_name or ""
+
+        if first_name or last_name:
+            return f"{first_name.capitalize()} {last_name.capitalize()}".strip()
+        return ""
+
     def clean_email(self):
         email = super().clean_email()
 
@@ -631,20 +647,25 @@ class HabilitationRequestCreationForm(
             "profession",
             "organisation",
         )
+        labels = {
+            "email": "Adresse e-mail",
+        }
+        help_texts = {
+            "email": "Exemple : prenom-nom@exemple.fr",
+        }
+
         error_messages = {
             NON_FIELD_ERRORS: {
                 "unique_together": (
-                    "Erreur : une demande d’habilitation est déjà en cours "
+                    "Erreur : une demande d'habilitation est déjà en cours "
                     "pour cette adresse e-mail. "
-                    "Vous n’avez pas besoin d’en déposer une nouvelle."
+                    "Vous n'avez pas besoin d'en déposer une nouvelle."
                 ),
             }
         }
 
 
 class HabilitationRequestCreationFormSet(BaseHabilitationRequestFormSet):
-    presenter_class = HabilitationRequestItemPresenter
-
     @property
     def action_url(self):
         return reverse("api_espace_responsable_aidant_new")
@@ -652,19 +673,115 @@ class HabilitationRequestCreationFormSet(BaseHabilitationRequestFormSet):
     def get_presenter_kwargs(self, idx, form) -> dict:
         return {"form": form, "idx": idx}
 
+    def total_form_count(self):
+        """Force l'affichage d'au moins un formulaire vide pour l'espace responsable"""
+        if self.is_bound:
+            return super().total_form_count()
+        else:
+            # Pour l'espace responsable, on veut toujours au moins 1 formulaire
+            return max(1, min(self.initial_form_count(), self.max_num))
+
+    def validate_unique(self):
+        """Validate that emails are unique within the formset"""
+        referent = self.forms[0].referent
+        organisation = referent.organisation
+
+        existing_emails = set()
+
+        existing_emails.update(
+            Aidant.objects.filter(organisation=organisation).values_list(
+                "email", flat=True
+            )
+        )
+
+        # Emails des demandes d'habilitation en cours dans l'organisation
+        existing_emails.update(
+            HabilitationRequest.objects.filter(organisation=organisation).values_list(
+                "email", flat=True
+            )
+        )
+
+        # Convertir en lowercase pour comparaison
+        existing_emails = {email.lower() for email in existing_emails}
+
+        # Vérifier les doublons dans le formset + contre la base
+        form_emails = {}
+        for form in self.forms:
+            email = form.cleaned_data.get("email")
+            if not email:
+                continue
+
+            email_lower = email.lower()
+
+            # Vérifier contre la base de données
+            if email_lower in existing_emails:
+                form.add_error(
+                    "email",
+                    ValidationError(
+                        "Erreur : il existe déjà un compte aidant ou une demande "
+                        "d'habilitation pour cette adresse e-mail "
+                        "dans cette organisation."
+                    ),
+                )
+
+            # Collecter pour vérifier les doublons internes
+            form_emails.setdefault(email_lower, []).append(form)
+
+        # Traiter les doublons internes
+        for email, form_list in form_emails.items():
+            if len(form_list) > 1:
+                for form in form_list:
+                    form.add_error(
+                        "email",
+                        ValidationError(
+                            f"L'adresse e-mail '{email}' apparaît plusieurs fois. "
+                            "Chaque aidant doit avoir son propre e-mail nominatif."
+                        ),
+                    )
+
+    def clean(self):
+        """Override clean to call validate_unique"""
+        super().clean()
+        if not self._errors:
+            self.validate_unique()
+
 
 class HabilitationRequestCreationFormationTypeForm(DsfrBaseForm, AsHiddenMixin):
     Type = HabilitationRequestCourseType
 
     type = forms.ChoiceField(
         label=(
-            "Renseignez le type de formation souhaité "
-            "pour la liste des aidants à habiliter."
+            "Choisissez la modalité de formation pour le ou les aidants "
+            "que vous souhaitez habiliter. "
+            "La même modalité s'appliquera pour tous les aidants."
         ),
         label_suffix=None,
         choices=Type.choices,
         widget=RadioSelect,
     )
+
+    email_formateur = forms.EmailField(
+        label="Adresse e-mail de l'aidant formateur",
+        help_text="Exemple : prenom-nom@exemple.fr",
+        required=False,
+    )
+
+    @property
+    def media(self):
+        return super().media + Media(
+            js=(JSModulePath("js/formation-type.mjs"),),
+        )
+
+    def clean_email_formateur(self):
+        email_formateur = self.cleaned_data.get("email_formateur")
+        type_formation = self.cleaned_data.get("type")
+
+        if type_formation == str(self.Type.P2P) and not email_formateur:
+            raise ValidationError(
+                "L'email du formateur est obligatoire pour une formation entre pairs."
+            )
+
+        return email_formateur
 
 
 class NewHabilitationRequestForm(BaseModelMultiForm):
@@ -680,10 +797,18 @@ class NewHabilitationRequestForm(BaseModelMultiForm):
         kwargs.setdefault("renderer", DsfrDjangoTemplates())  # Patched in Django 5)
         super().__init__(*args, **kwargs)
 
+    def is_valid(self):
+        if "partial-submit" in getattr(self, "data", {}):
+            return self["habilitation_requests"].is_valid()
+        return super().is_valid()
+
     def save(self, commit=True):
         super().save(commit=False)
         for form in self["habilitation_requests"].forms:
             form.instance.course_type = self["course_type"].cleaned_data["type"]
+            form.instance.email_formateur = self["course_type"].cleaned_data.get(
+                "email_formateur"
+            )
 
         return super().save(commit)
 
