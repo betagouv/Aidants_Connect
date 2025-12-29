@@ -1,75 +1,44 @@
 {% load ac_extras i18n %}
 
-{% with auth_badge_classes="auth-badge fr-badge fr-badge--no-icon fr-text--xs" %}
-  <tr data-search-target="item" data-search-terms="{{ usager.search_terms|json_attribute }}">
+<tr>
     <td>
-      <a class="fr-link" href="{% url 'usager_details' usager_id=usager.id %}">
         {% if usager.preferred_username %}
           {{ usager.preferred_username }}<br />
           Né(e)
         {% endif %}
         {{ usager.given_name }}
         {{ usager.family_name }}
+    </td>
+    <td>{{ usager.birthdate|date:"d F Y" }}</td>
+    {% if mandats|length > 1 %}
+      <td>
+        <ul>
+          {% for mandat in mandats %}
+            <li>{{ mandat.0.creation_date|date:"d F Y" }}</li>
+          {% endfor %}
+        </ul>
+      </td>
+    {% else %}
+      <td>{{ mandats.0.0.creation_date|date:"d F Y" }}</td>
+    {% endif %}
+    <td>
+      <div class="fr-tags-group">
+        {% with seen_permissions="" %}
+          {% for mandat in mandats %}
+            {% for autorisation in mandat.1 %}
+              {% if autorisation not in seen_permissions %}
+                <p class="fr-tag fr-tag--blue fr-text--xs">{{ autorisation|capfirst }}</p>
+                {% with seen_permissions=seen_permissions|add:"|"|add:autorisation|add:"|" %}{% endwith %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endwith %}
+      </div>
+    </td>
+    <td>
+      <a class="fr-btn fr-btn--secondary fr-text--sm" href="{% url 'usager_details' usager_id=usager.id %}">
+        <span class="fr-icon-arrow-right-line fr-icon--sm fr-mr-2v" aria-hidden="true"></span>
+        Accéder aux mandats
       </a>
     </td>
-    <td>{{ usager.birthdate|date:"d F" }}</td>
-    {% if mandats|length > 1 %}
-      <td></td>
-      <td></td>
-    {% else %}
-      {% for mandat in mandats %}
-        <td>
-          <div class="auth-badges">
-            {% for autorisation in mandat.1 %}
-              <p class="{{ auth_badge_classes }}">{{ autorisation }} </p>
-            {% endfor %}
-          </div>
-        </td>
-      {% endfor %}
-      <td>
-        <div class="custom-dropdown">
-          <button class="fr-btn fr-btn--tertiary-no-outline fr-icon-more-line"
-                  aria-expanded="false"
-                  aria-haspopup="true"
-                  tabindex="0">
-            <span class="fr-sr-only">Actions</span>
-          </button>
-          <div class="custom-dropdown__menu">
-            <a class="fr-btn fr-btn--tertiary-no-outline" href="{{ usager.renew_mandate_url }}">Renouveler</a>
-          </div>
-        </div>
-      </td>
-    {% endif %}
   </tr>
-  {% if mandats|length > 1 %}
-    {% for mandat in mandats %}
-      <tr data-search-target="item" data-search-terms="{{ usager.search_terms|json_attribute }}">
-        <td>
-          Mandat du {{ mandat.0.creation_date|date:"d F Y" }}
-        </td>
-        <td></td>
-        <td>
-          <div class="auth-badges">
-            {% for autorisation in mandat.1 %}
-              <p class="{{ auth_badge_classes }} fr-text-mention--grey">{{ autorisation }} </p>
-            {% endfor %}
-          </div>
-        </td>
-        <td>
-          <div class="custom-dropdown">
-            <button class="fr-btn fr-btn--tertiary-no-outline fr-icon-more-line"
-                    aria-expanded="false"
-                    aria-haspopup="true"
-                    aria-label="Actions"
-                    tabindex="0">
-                  <span class="fr-sr-only">Actions</span>
-            </button>
-            <div class="custom-dropdown__menu">
-              <a class="fr-btn fr-btn--tertiary-no-outline" href="{{ usager.renew_mandate_url }}">Renouveler</a>
-            </div>
-          </div>
-        </td>
-      </tr>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
