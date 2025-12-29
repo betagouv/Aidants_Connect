@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.test import Client
+from django.urls import reverse
 
 from playwright.async_api import expect
 
@@ -68,7 +69,8 @@ class NewMandatRecapAccessibilityTests(AccessibilityTestCase):
         )
 
         # Naviguer vers la page de récapitulatif
-        await self.navigate_to_url("/creation_mandat/recapitulatif/")
+        url = reverse("new_mandat_recap")
+        await self.page.goto(self.live_server_url + url)
 
     @async_test
     async def test_accessibility(self):

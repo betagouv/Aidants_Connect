@@ -1,3 +1,5 @@
+from django.urls import reverse
+
 from playwright.async_api import expect
 
 from aidants_connect_common.tests.test_accessibility.test_playwright import (
@@ -8,23 +10,23 @@ from aidants_connect_habilitation.models import Issuer
 
 
 class HabilitationNewIssuerCheckEmailAccessibilityTests(AccessibilityTestCase):
-    async def _open_url(self):
-        await self.page.goto(self.live_server_url + "/habilitation/demandeur")
-        issuer = Issuer(
+    def setUp(self):
+        super().setUp()
+        # Create issuer directly in database
+        self.issuer = Issuer.objects.create(
             first_name="Jean",
             last_name="Dupont",
             email="jean.dupont@yopmail.com",
             profession="Infirmier",
         )
-        fields = ["first_name", "last_name", "email", "profession"]
-        for field in fields:
-            try:
-                await self.page.fill(f"#id_{field}", str(getattr(issuer, field)))
-            except Exception as e:
-                raise ValueError(f"Error when setting input 'id_{field}'") from e
 
-        await self.page.click('[type="submit"]')
-        await self.page.wait_for_load_state("domcontentloaded")
+    async def _open_url(self):
+        # Navigate directly to email confirmation page
+        url = reverse(
+            "habilitation_issuer_email_confirmation_waiting",
+            args=[str(self.issuer.issuer_id)],
+        )
+        await self.page.goto(self.live_server_url + url)
 
     @async_test
     async def test_accessibility(self):

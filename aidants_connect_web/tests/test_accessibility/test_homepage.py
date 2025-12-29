@@ -1,3 +1,5 @@
+from django.urls import reverse
+
 from playwright.async_api import expect
 
 from aidants_connect_common.tests.test_accessibility.test_playwright import (
@@ -8,7 +10,8 @@ from aidants_connect_common.tests.test_accessibility.test_playwright import (
 
 class HomePageAccessibilityTests(AccessibilityTestCase):
     async def _open_url(self):
-        await self.navigate_to_url("/")
+        url = reverse("home_page")
+        await self.page.goto(self.live_server_url + url)
 
     @async_test
     async def test_accessibility(self):
