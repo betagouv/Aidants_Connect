@@ -1,0 +1,18 @@
+
+/* Badge "EXPIRE BIENTOT" sans icône */
+.fr-badge--warning::before {
+  display: none !important;
+}
+
+/* Permettre le retour à la ligne pour les noms longs */
+.mandats-table td:first-child {
+  word-wrap: break-word;
+  white-space: normal;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.mandats-table th:first-child {
+  white-space: normal;
+}
