@@ -12,14 +12,14 @@
 {% block content %}
 
 
-  <div class="fr-container" data-controller="search">
+  <div class="fr-container">
     <div class="fr-grid-row flex-between fr-mb-6w">
-      <h1 class="fr-mb-2w">Liste des mandats</h1>
+      <h1 class="fr-mb-2w">Mes mandats</h1>
       <div>
         <a
           href="{% url 'new_mandat' %}"
           id="add_usager"
-          class="fr-btn fr-btn--icon-left fr-icon-add-line"
+          class="fr-btn fr-btn--icon-left fr-icon-add-line fr-btn--icon-right fr-icon-arrow-right-line fr-text--sm"
         >
           Créer un mandat
         </a>
@@ -30,111 +30,121 @@
         {% dsfr_django_messages %}
       </div>
     {% endif %}
-    {% include "aidants_connect_web/users_search_bar.html" %}
-
-    <h2 class="fr-text-title">Mandats actifs</h2>
-
-    <div class="fr-table--lg fr-table fr-table" id="table-sm-component-actif">
-      <div class="fr-table__wrapper">
-        <div class="fr-table__container">
-          <div class="fr-table__content">
-            <table class="with-valid-mandate">
-              <caption class="sr-only">Table des mandats actifs</caption>
-              <thead>
-              <tr>
-                <th scope="col">Nom</th>
-                <th scope="col">Date de naissance</th>
-                <th scope="col">Périmètre</th>
-                <th scope="col">Validité</th>
-                <th scope="col">Actions</th>
-              </tr>
-              </thead>
-              <tbody>
-              {% if valid_mandats|length > 0 %}
-                {% for usager, mandats in valid_mandats.items %}
-                  {% include "aidants_connect_web/usagers/usager_row_active_mandate.html" %}
-                {% endfor %}
-              {% else %}
-                <tr>
-                  <td colspan="5" class="fr-text-center">Vous n'avez pas de mandats actifs</td>
-                </tr>
-              {% endif %}
-              </tbody>
-            </table>
+    <div class="fr-tabs">
+      <ul class="fr-tabs__list" role="tablist" aria-label="Mes mandats">
+        <li role="presentation">
+            <button type="button" id="tab-1" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="tab-1-panel">Mandats actifs</button>
+        </li>
+        <li role="presentation">
+            <button type="button" id="tab-2" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="tab-2-panel">Mandats expirés</button>
+        </li>
+        <li role="presentation">
+            <button type="button" id="tab-3" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="tab-3-panel">Mandats révoqués</button>
+        </li>
+      </ul>
+      <div id="tab-1-panel" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-1" tabindex="0">
+        <div class="fr-table--lg fr-table fr-table" id="table-sm-component-actif">
+          <div class="fr-table__wrapper">
+            <div class="fr-table__container">
+              <div class="fr-table__content">
+                <table class="with-valid-mandate">
+                  <caption class="sr-only">Table des mandats actifs</caption>
+                  <thead>
+                  <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Date de naissance</th>
+                    <th scope="col">Date des mandats</th>
+                    <th scope="col">Périmètre</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {% if valid_mandats|length > 0 %}
+                    {% for usager, mandats in valid_mandats.items %}
+                      {% include "aidants_connect_web/usagers/usager_row_active_mandate.html" %}
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="6" class="fr-text-center">Vous n'avez pas de mandats actifs</td>
+                    </tr>
+                  {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <h2>Mandats expirés</h2>
-
-    <div class="fr-table--lg fr-table fr-table" id="table-sm-component-expire">
-      <div class="fr-table__wrapper">
-        <div class="fr-table__container">
-          <div class="fr-table__content">
-            <table class="without-valid-mandate">
-              <caption class="sr-only">Table des mandats expirés</caption>
-              <thead>
-              <tr>
-                <th scope="col">Nom</th>
-                <th scope="col">Date de naissance</th>
-                <th scope="col">Périmètre</th>
-                <th scope="col">Actions</th>
-              </tr>
-              </thead>
-              <tbody>
-              {% if expired_mandats|length > 0 %}
-                {% for usager, mandats in expired_mandats.items %}
-                  {% include "aidants_connect_web/usagers/usager_row_expired_mandate.html" %}
-                {% endfor %}
-              {% else %}
-                <tr>
-                  <td colspan="4" class="fr-text-center">Vous n'avez pas de mandats expirés</td>
-                </tr>
-              {% endif %}
-              </tbody>
-            </table>
+      <div id="tab-2-panel" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-2" tabindex="0">
+        <div class="fr-table--lg fr-table fr-table" id="table-sm-component-expire">
+          <div class="fr-table__wrapper">
+            <div class="fr-table__container">
+              <div class="fr-table__content">
+                <table class="without-valid-mandate">
+                  <caption class="sr-only">Table des mandats expirés</caption>
+                  <thead>
+                  <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Date de naissance</th>
+                    <th scope="col">Date des mandats</th>
+                    <th scope="col">Périmètre</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {% if expired_mandats|length > 0 %}
+                    {% for usager, mandats in expired_mandats.items %}
+                      {% include "aidants_connect_web/usagers/usager_row_expired_mandate.html" %}
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="5" class="fr-text-center">Vous n'avez pas de mandats expirés</td>
+                    </tr>
+                  {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <h2>Mandats révoqués</h2>
-
-    <div class="fr-table--lg fr-table fr-table" id="table-sm-component-revoque">
-      <div class="fr-table__wrapper">
-        <div class="fr-table__container">
-          <div class="fr-table__content">
-            <table>
-              <caption class="sr-only">Table des mandats révoqués</caption>
-              <thead>
-              <tr>
-                <th scope="col">Nom</th>
-                <th scope="col">Date de naissance</th>
-                <th scope="col">Périmètre</th>
-              </tr>
-              </thead>
-              <tbody>
-              {% if revoked_mandats|length > 0 %}
-                {% for usager, mandats in revoked_mandats.items %}
-                  {% include "aidants_connect_web/usagers/usager_row_revoked_mandate.html" %}
-                {% endfor %}
-              {% else %}
-                <tr>
-                  <td colspan="3" class="fr-text-center fr-background-alt--grey">
-                    Vous n'avez pas de mandats révoqués
-                  </td>
-                </tr>
-              {% endif %}
-              </tbody>
-            </table>
+      <div id="tab-3-panel" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-3" tabindex="0">
+        <div class="fr-table--lg fr-table fr-table" id="table-sm-component-revoque">
+          <div class="fr-table__wrapper">
+            <div class="fr-table__container">
+              <div class="fr-table__content">
+                <table>
+                  <caption class="sr-only">Table des mandats révoqués</caption>
+                  <thead>
+                  <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Date de naissance</th>
+                    <th scope="col">Date des mandats</th>
+                    <th scope="col">Périmètre</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {% if revoked_mandats|length > 0 %}
+                    {% for usager, mandats in revoked_mandats.items %}
+                      {% include "aidants_connect_web/usagers/usager_row_revoked_mandate.html" %}
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="4" class="fr-text-center fr-background-alt--grey">
+                        Vous n'avez pas de mandats révoqués
+                      </td>
+                    </tr>
+                  {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+  </div>
+
+
+
   </div>
 {% endblock content %}
-
-{% block extrajs %}
-  <script type="module" src="{% static 'js/users-search.mjs' %}"></script>
-{% endblock extrajs %}
