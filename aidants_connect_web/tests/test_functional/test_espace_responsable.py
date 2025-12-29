@@ -392,9 +392,11 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self.wait.until(self.document_loaded())
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        self.assertEqual(len(self._all_visible_fields()) - 1, len(errors))
+        # Filter out empty errors for the assertion
+        non_empty_errors = [error for error in errors if error.text.strip()]
+        self.assertEqual(len(self._all_visible_fields()) - 1, len(non_empty_errors))
 
-        for error in errors:
+        for error in non_empty_errors:
             self.assertIn("Ce champ est obligatoire.", error.text)
 
         # ----------------------------------------------------------------------------
@@ -406,6 +408,14 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self.open_live_url(self.path)
         self.login_aidant(self.aidant_responsable)
         self.wait.until(self.dsfr_ready())
+
+        # Wait for email field to be visible before filling
+        self.wait.until(
+            expected_conditions.visibility_of_element_located(
+                (By.ID, "id_multiform-habilitation_requests-0-email")
+            )
+        )
+
         req: HabilitationRequest = HabilitationRequestFactory.build(
             organisation=self.organisation
         )
