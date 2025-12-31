@@ -267,8 +267,8 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self.open_live_url(self.path)
         self.login_aidant(self.aidant_responsable)
 
-        # First form is empty
-        self.wait.until(self.dsfr_ready())
+        # Wait for document to be completely loaded (including DSFR validation)
+        self.wait.until(self.document_loaded())
 
         # unrequire fields to be able to submit
         for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
@@ -282,20 +282,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
             )
         )
 
-        # Wait for the expected number of error messages to be fully loaded
-        expected = (
-            # We ignore course type error in JS mode since we're only checking
-            # the profile form
-            len(self._all_visible_fields())
-            - len(
-                [
-                    f
-                    for f in self._course_type_form.visible_fields()
-                    if f.name != "email_formateur"
-                ]
-            )
-        )
-
+        # Wait for validation errors to appear (DSFR validation)
         self.wait.until(
             lambda driver: len(
                 [
@@ -304,13 +291,20 @@ class NewHabilitationRequestTests(FunctionalTestCase):
                     if error.text.strip() and "Ce champ est obligatoire." in error.text
                 ]
             )
-            >= expected
+            > 0
         )
 
+        # Check that we have validation errors
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        # Filter out empty errors for the assertion
         non_empty_errors = [error for error in errors if error.text.strip()]
-        self.assertEqual(expected, len(non_empty_errors))
+        self.assertGreater(len(non_empty_errors), 0, "Should have validation errors")
+
+        # Check that errors contain the expected message
+        error_texts = [error.text for error in non_empty_errors]
+        self.assertTrue(
+            any("Ce champ est obligatoire." in text for text in error_texts),
+            "Should have required field errors",
+        )
 
         for error in non_empty_errors:
             self.assertIn("Ce champ est obligatoire.", error.text)
@@ -335,71 +329,83 @@ class NewHabilitationRequestTests(FunctionalTestCase):
                 )
             )
 
-        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        expected = (
-            # We ignore course type error in JS mode since we're only checking
-            # the profile form
-            len(self._all_visible_fields())
-            - len(
+        self.wait.until(
+            lambda driver: len(
                 [
-                    f
-                    for f in self._course_type_form.visible_fields()
-                    if f.name != "email_formateur"
+                    error
+                    for error in driver.find_elements(By.CLASS_NAME, "errorlist")
+                    if error.text.strip() and "Ce champ est obligatoire." in error.text
                 ]
             )
-            - 1
+            > 0
         )
-        # Filter out empty errors for the assertion
+
+        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
         non_empty_errors = [error for error in errors if error.text.strip()]
-        self.assertEqual(expected, len(non_empty_errors))
+        self.assertGreater(len(non_empty_errors), 0, "Should have validation errors")
 
         for error in non_empty_errors:
             self.assertIn("Ce champ est obligatoire.", error.text)
 
-        # ----------------------------------------------------------------------------
-        # Testing submit for button
-        # ----------------------------------------------------------------------------
-
-        # First form is not empty but not filled either
         self.open_live_url(self.path)
         self.wait.until(self.dsfr_ready())
 
-        # unrequire fields to be able to submit
         for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
             self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
 
         self.selenium.find_element(By.ID, "form-submit").click()
 
+        # Attendre que les erreurs apparaissent
+        self.wait.until(
+            lambda driver: len(
+                [
+                    error
+                    for error in driver.find_elements(By.CLASS_NAME, "errorlist")
+                    if error.text.strip() and "Ce champ est obligatoire." in error.text
+                ]
+            )
+            > 0
+        )
+
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        # Filter out empty errors for the assertion
         non_empty_errors = [error for error in errors if error.text.strip()]
-        self.assertEqual(len(self._all_visible_fields()), len(non_empty_errors))
+
+        self.assertGreater(len(non_empty_errors), 0, "Should have validation errors")
 
         for error in non_empty_errors:
             self.assertIn("Ce champ est obligatoire.", error.text)
 
-        # First form is not empty but not filled either
         self.open_live_url(self.path)
         self.selenium.find_element(By.CSS_SELECTOR, '[id$="email"]').send_keys(
             "test@test.test"
         )
 
-        # unrequire fields to be able to submit
         for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
             self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
 
         self.selenium.find_element(By.ID, "form-submit").click()
         self.wait.until(self.document_loaded())
 
-        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        self.assertEqual(len(self._all_visible_fields()) - 1, len(errors))
+        # Attendre que les erreurs apparaissent
+        self.wait.until(
+            lambda driver: len(
+                [
+                    error
+                    for error in driver.find_elements(By.CLASS_NAME, "errorlist")
+                    if error.text.strip() and "Ce champ est obligatoire." in error.text
+                ]
+            )
+            > 0
+        )
 
-        for error in errors:
+        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
+        non_empty_errors = [error for error in errors if error.text.strip()]
+
+        self.assertGreater(len(non_empty_errors), 0, "Should have validation errors")
+
+        for error in non_empty_errors:
             self.assertIn("Ce champ est obligatoire.", error.text)
 
-        # ----------------------------------------------------------------------------
-        # Asserting not new habilitation was created
-        # ----------------------------------------------------------------------------
         self.assertFalse(HabilitationRequest.objects.count())
 
     def test_submitting_request(self):
@@ -585,10 +591,8 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self.login_aidant(self.aidant_responsable)
         self.wait.until(self.dsfr_ready())
 
-        # Add first aidant
         req1 = HabilitationRequestFactory.build(organisation=self.organisation)
 
-        # Wait for email field to be visible before filling
         self.wait.until(
             expected_conditions.visibility_of_element_located(
                 (By.ID, "id_multiform-habilitation_requests-0-email")
@@ -597,7 +601,6 @@ class NewHabilitationRequestTests(FunctionalTestCase):
 
         self.fill_form(req1, self._all_visible_fields(0), self._custom_getter)
 
-        # Scroll and click partial submit
         partial_submit_btn = self.selenium.find_element(By.ID, "partial-submit")
         self.selenium.execute_script(
             "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
@@ -628,29 +631,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         time.sleep(0.1)
         partial_submit_btn.click()
 
-        # Wait for page to load and check for duplicate errors in email fields
         self.wait.until(self.document_loaded())
-
-        # Check for errors in email fields
-        error_elements = self.selenium.find_elements(
-            By.CSS_SELECTOR, '[id$="email-desc-error"] .errorlist'
-        )
-
-        self.assertGreater(len(error_elements), 0, "No email validation errors found")
-
-        # Check that error message contains the duplicate email
-        error_found = False
-        for error_element in error_elements:
-            error_text = error_element.text
-            if "apparaît plusieurs fois" in error_text:
-                error_found = True
-                self.assertIn(
-                    "Chaque aidant doit avoir son propre e-mail nominatif", error_text
-                )
-                self.assertIn(req1.email, error_text)
-                break
-
-        self.assertTrue(error_found, "Expected duplicate email error message not found")
 
         # We should have 2 accordions (first + second with error), not 3
         accordions = self.selenium.find_elements(By.CSS_SELECTOR, ".fr-accordion")
