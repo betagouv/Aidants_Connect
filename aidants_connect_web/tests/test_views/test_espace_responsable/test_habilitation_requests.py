@@ -57,7 +57,7 @@ class HabilitationRequestsTests(TestCase):
         response = self.client.get(self.organisation_url)
         response_content = response.content.decode("utf-8")
         self.assertNotIn(
-            "Demandes d’habilitation en cours",
+            "Demandes d'habilitation en cours",
             response_content,
             "Confirmation message should be displayed.",
         )
@@ -126,7 +126,7 @@ class HabilitationRequestsTests(TestCase):
             response_content = response.content.decode("utf-8")
             self.assertIn(
                 (
-                    "La demande d’habilitation pour Angela Dubois "
+                    "La demande d'habilitation pour Angela Dubois "
                     "a été enregistrée avec succès."
                 ),
                 response_content,
@@ -272,7 +272,7 @@ class HabilitationRequestsTests(TestCase):
         response = self.client.get(reverse("espace_responsable_aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "La demande d’habilitation pour Bob Dubois a été enregistrée avec succès.",
+            "La demande d'habilitation pour Bob Dubois a été enregistrée avec succès.",
             response_content,
             "Confirmation message should be displayed.",
         )
@@ -307,7 +307,7 @@ class HabilitationRequestsTests(TestCase):
         response = self.client.get(reverse("espace_responsable_aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
-            "La demande d’habilitation pour Bob Dubois a été enregistrée avec succès.",
+            "La demande d'habilitation pour Bob Dubois a été enregistrée avec succès.",
             response_content,
             "Confirmation message should be displayed.",
         )
