@@ -26,6 +26,7 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.expected_conditions import url_matches
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
@@ -232,6 +233,10 @@ class FunctionalTestCase(StaticLiveServerTestCase):
             else:
                 try:
                     elt: WebElement = selector.find_element(By.ID, bf.auto_id)
+                    # Attendre que l'élément soit interactif avant de le manipuler
+                    WebDriverWait(selector, 10).until(
+                        EC.element_to_be_clickable((By.ID, bf.auto_id))
+                    )
                     elt.clear()
                     elt.send_keys(val_getter(data, bf.name))
                 except Exception:
