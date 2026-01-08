@@ -780,6 +780,12 @@ class HabilitationRequestCreationFormationTypeForm(DsfrBaseForm, AsHiddenMixin):
             raise ValidationError(
                 "L'email du formateur est obligatoire pour une formation entre pairs."
             )
+        if type_formation == str(self.Type.P2P) and email_formateur:
+            if not Aidant.objects.filter(email__iexact=email_formateur).exists():
+                raise ValidationError(
+                    "Cette adresse mail n'est pas connue du service Aidants Connect. "
+                    "Veuillez renseigner l'adresse d'un aidant déjà habilité."
+                )
 
         return email_formateur
 
