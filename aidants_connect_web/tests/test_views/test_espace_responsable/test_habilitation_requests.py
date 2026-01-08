@@ -170,6 +170,63 @@ class HabilitationRequestsTests(TestCase):
         last_request = HabilitationRequest.objects.last()
         self.assertEqual(last_request.email, lowercased_email)
 
+    def test_check_p2p_trainer_is_a_real_aidant(self):
+        self.client.force_login(self.responsable_tom)
+        real_trainer = AidantFactory(email="realtrainer@example.com")
+
+        data = {
+            f"{self.prefix}-TOTAL_FORMS": "1",
+            f"{self.prefix}-INITIAL_FORMS": "0",
+            f"{self.prefix}-MIN_NUM_FORMS": "0",
+            f"{self.prefix}-MAX_NUM_FORMS": "1000",
+            f"{self.prefix}-0-id": "",
+            f"{self.prefix}-0-email": "angela.dubois@doe.du",
+            f"{self.prefix}-0-first_name": "Angela",
+            f"{self.prefix}-0-last_name": "Dubois",
+            f"{self.prefix}-0-profession": "Assistante sociale",
+            f"{self.prefix}-0-organisation": f"{self.org_a.id}",
+            f"{self.prefix}-0-conseiller_numerique": "False",
+            "multiform-course_type-type": "2",
+            "multiform-course_type-email_formateur": real_trainer.email,
+        }
+
+        self.client.post(
+            self.add_aidant_url,
+            data=data,
+        )
+
+        self.assertEqual(HabilitationRequest.objects.count(), 1)
+        self.assertEqual(
+            HabilitationRequest.objects.first().email, "angela.dubois@doe.du"
+        )
+
+    def test_fail_if_p2p_trainer_is_not_a_real_aidant(self):
+        self.client.force_login(self.responsable_tom)
+        fake_trainer_email = "faketrainer@example.com"
+
+        data = {
+            f"{self.prefix}-TOTAL_FORMS": "1",
+            f"{self.prefix}-INITIAL_FORMS": "0",
+            f"{self.prefix}-MIN_NUM_FORMS": "0",
+            f"{self.prefix}-MAX_NUM_FORMS": "1000",
+            f"{self.prefix}-0-id": "",
+            f"{self.prefix}-0-email": "angela.dubois_fake_trainer@doe.du",
+            f"{self.prefix}-0-first_name": "Angela",
+            f"{self.prefix}-0-last_name": "Dubois",
+            f"{self.prefix}-0-profession": "Assistante sociale",
+            f"{self.prefix}-0-organisation": f"{self.org_a.id}",
+            f"{self.prefix}-0-conseiller_numerique": "False",
+            "multiform-course_type-type": "2",
+            "multiform-course_type-email_formateur": fake_trainer_email,
+        }
+
+        self.client.post(
+            self.add_aidant_url,
+            data=data,
+        )
+
+        self.assertEqual(HabilitationRequest.objects.count(), 0)
+
     def test_submit_habilitation_request_for_same_email_and_sister_organisation(self):
         self.client.force_login(self.responsable_tom)
 
