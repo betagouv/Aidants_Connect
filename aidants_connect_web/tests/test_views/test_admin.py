@@ -166,28 +166,28 @@ class VisibilityAdminPageTests(TestCase):
 
     def test_views_visible_only_by_atac_dont_visible_by_amac_users(self):
         for model in self.only_by_atac_models:
-            url_root = f"admin:{model._meta.app_label}_{model.__name__.lower()}"
+            url_root = f"otpadmin:{model._meta.app_label}_{model.__name__.lower()}"
             list_url = reverse(url_root + "_changelist")
             response = self.amac_client.get(list_url)
             self.assertEqual(response.status_code, 403)
 
     def test_views_visible_only_by_atac_were_visible_by_atac_users(self):
         for model in self.only_by_atac_models:
-            url_root = f"admin:{model._meta.app_label}_{model.__name__.lower()}"
+            url_root = f"otpadmin:{model._meta.app_label}_{model.__name__.lower()}"
             list_url = reverse(url_root + "_changelist")
             response = self.atac_client.get(list_url)
             self.assertEqual(response.status_code, 200)
 
     def test_views_visible_by_amac_were_visible_by_amac_users(self):
         for model in self.amac_models:
-            url_root = f"admin:{model._meta.app_label}_{model.__name__.lower()}"
+            url_root = f"otpadmin:{model._meta.app_label}_{model.__name__.lower()}"
             list_url = reverse(url_root + "_changelist")
             response = self.amac_client.get(list_url)
             self.assertEqual(response.status_code, 200)
 
     def test_views_visible_by_amac_were_visible_by_atac_users(self):
         for model in self.amac_models:
-            url_root = f"admin:{model._meta.app_label}_{model.__name__.lower()}"
+            url_root = f"otpadmin:{model._meta.app_label}_{model.__name__.lower()}"
             list_url = reverse(url_root + "_changelist")
             response = self.atac_client.get(list_url)
             self.assertEqual(response.status_code, 200)
@@ -210,7 +210,7 @@ class JournalAdminPageTests(TestCase):
         atac_session = cls.atac_client.session
         atac_session[DEVICE_ID_SESSION_KEY] = cls.atac_device.persistent_id
         atac_session.save()
-        url_root = f"admin:{Journal._meta.app_label}_{Journal.__name__.lower()}"
+        url_root = f"otpadmin:{Journal._meta.app_label}_{Journal.__name__.lower()}"
         cls.url_root = url_root
 
     def test_cant_delete_journal_by_admin_views(cls):
@@ -245,7 +245,7 @@ class UsagerAdminPageTests(TestCase):
         atac_session = cls.atac_client.session
         atac_session[DEVICE_ID_SESSION_KEY] = cls.atac_device.persistent_id
         atac_session.save()
-        url_root = f"admin:{Journal._meta.app_label}_{Usager.__name__.lower()}"
+        url_root = f"otpadmin:{Journal._meta.app_label}_{Usager.__name__.lower()}"
         cls.url_root = url_root
 
     def test_can_change_usager_by_admin_views(self):

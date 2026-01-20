@@ -39,7 +39,7 @@ from phonenumber_field.phonenumber import to_python
 from phonenumbers.phonenumber import PhoneNumber
 
 from aidants_connect.utils import strtobool
-from aidants_connect_common.models import Formation
+from aidants_connect_common.models import Formation, FormationAttendant
 from aidants_connect_common.presenters import GenericHabilitationRequestPresenter
 
 
@@ -637,3 +637,23 @@ class BaseHabilitationRequestFormSet(BaseModelFormSet, abc.ABC):
             "action_url": self.action_url,
             "objects": self.get_objects(),
         }
+
+
+class AdminValidateorDisableForm(PatchedForm):
+
+    def __init__(self, f_attendant, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.f_attendant = f_attendant
+
+
+class AdminChangeFormationForm(PatchedForm, forms.ModelForm):
+
+    # def __init__(self, f_attendant, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     self.f_attendant = f_attendant
+
+    class Meta:
+        model = FormationAttendant
+        fields = [
+            "formation",
+        ]

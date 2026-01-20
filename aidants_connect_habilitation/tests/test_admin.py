@@ -197,7 +197,7 @@ class OrganisationRequestAdminTests(TestCase):
 
     def test_metier_user_can_see_manager(self):
         org_request = OrganisationRequestFactory()
-        url_root = f"admin:{OrganisationRequest._meta.app_label}_{OrganisationRequest.__name__.lower()}"  # noqa
+        url_root = f"otpadmin:{OrganisationRequest._meta.app_label}_{OrganisationRequest.__name__.lower()}"  # noqa
         url = reverse(url_root + "_change", args=(org_request.pk,))
         response = self.amac_client.get(url)
         self.assertContains(response, "<h2>Référent</h2>")

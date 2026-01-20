@@ -5,7 +5,7 @@
 {% endblock extracss %}
 
 {% block content %}
-  <div class="fr-container">
+    <div class="fr-container">
     {% include "layouts/_js-unavailable-alert.html" %}
 
     <section>
@@ -73,6 +73,9 @@
                       <td>
                         {{ formation_widget.data.value.instance.date_range_str }}
                         <br /> {{ formation_widget.data.value.instance.description|linebreaksbr }}
+                        {% for half_day in formation_widget.data.value.instance.half_day_classes.all %}
+                          <br /> le {{ half_day.start_datetime|date:"d-j-Y" }} de {{ half_day.start_datetime|date:"H:i" }} à {{ half_day.end_time.hour }}:{{ half_day.end_time.minute }}
+                        {% endfor %}
                       </td>
                       <td>{{ formation_widget.data.value.instance.duration }}h</td>
                       <td>{{ formation_widget.data.value.instance.get_status_display }}</td>

@@ -13,14 +13,48 @@
   <h2 class="fr-h4 fr-mb-3w">Formations ouvertes à l'inscription ce jour</h2>
 
 
-        <div class="fr-grid-row">
-        <div class="fr-col-md-8 fr-col-12">
-          <ul>
-          {% for formation in list_formations %}
-          <li> {{ formation.organisation.name }} ({{ formation.type.label }}) - Début : {{ formation.start_datetime|date:"d F Y" }} - Durée en heures : {{ formation.duration }} - Lieu : {{ formation.place }}  - Nb Inscrits : {{ formation.number_of_attendants }} Nb Max: {{ formation.max_attendants }} </li>
-          {% endfor %}
-          </ul>
+  <div class="fr-container">
+          <div class="fr-table fr-table--lg fr-table--no-scroll" id="table-sm-component">
+          <div class="fr-table__wrapper">
+            <div class="fr-table__container">
+              <div class="fr-table__content">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Organisme</th>
+                      <th scope="col">Dates</th>
+                      <th scope="col">Durée</th>
+                      <th scope="col">Format</th>
+                      <th scope="col">Lieu</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for one_formation in list_formations %}
+                    <tr data-row-key="{{ forloop.counter }}">
+                      <td>
+                        {{ one_formation.type.label }}
+                        ({{ one_formation.organisation.name }})
+                      </td>
+                      <td>
+                        {{ one_formation.date_range_str }}
+                        <br /> {{ one_formation.description|linebreaksbr }}
+                        {% for half_day in one_formation.half_day_classes.all %}
+                          <br /> le {{ half_day.start_datetime|date:"d-j-Y" }} de {{ half_day.start_datetime|date:"H:i" }} à {{ half_day.end_time.hour }}:{{ half_day.end_time.minute }}
+                        {% endfor %}
+                      </td>
+                      <td>{{ one_formation.duration }}h</td>
+                      <td>{{ one_formation.get_status_display }}</td>
+                      <td>{{ one_formation.place }}</td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
-        </div>
+
+  </div>
+
 
 {% endblock body %}

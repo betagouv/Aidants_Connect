@@ -170,6 +170,10 @@ class Aidant(AbstractUser):
         "ID FNE", max_length=255, null=True, blank=True, editable=False
     )
 
+    is_of_user = models.BooleanField(
+        "Est un utilisateur Organisame de Frmation", default=False
+    )
+    is_admin_metier = models.BooleanField("Est un administrateur métier", default=False)
     objects = AidantManager()
 
     REQUIRED_FIELDS = AbstractUser.REQUIRED_FIELDS + ["organisation"]
@@ -183,7 +187,19 @@ class Aidant(AbstractUser):
                     | Q(referent_non_aidant=True, can_create_mandats=False)
                 ),
                 name="referent_non_aidant_and_can_create_mandats_incompatible",
-            )
+            ),
+            # models.CheckConstraint(
+            #     check=(
+            #          Q(is_of_user=False, can_create_mandats=True)
+            #     ),
+            #     name="is_of_user_and_can_create_mandats_incompatible",
+            # ),
+            # models.CheckConstraint(
+            #     check=(
+            #         Q(is_of_user=False, referent_non_aidant=True)
+            #     ),
+            #     name="is_of_user_and_is_referent_incompatible",
+            # )
         ]
 
     def __str__(self):
