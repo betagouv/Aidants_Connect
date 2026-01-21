@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin, register
+from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 
 from aidants_connect.admin import (
@@ -111,9 +112,12 @@ class FormationAttendantOFAdmin(VisibleToOFUserEditOnly, FormationAttendantAdmin
 
     @admin.display(description="Personne inscrite")
     def registered(self, obj: FormationAttendant):
-
-        return mark_safe(
-            f'<ul> <li>Prénom : {obj.attendant.first_name} </li><li>Nom : {obj.attendant.last_name} </li><li>Email: <a href="mailto:{obj.attendant.email}">{obj.attendant.email}</a></li></ul> '  # noqa
+        return format_html(
+            '<ul><li>Prénom : {}</li><li>Nom : {}</li><li>Email: <a href="mailto:{}">{}</a></li></ul>',  # noqa: E501
+            obj.attendant.first_name,
+            obj.attendant.last_name,
+            obj.attendant.email,
+            obj.attendant.email,
         )
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
@@ -131,16 +135,22 @@ class FormationAttendantOFAdmin(VisibleToOFUserEditOnly, FormationAttendantAdmin
     display_responsables.short_description = "Référents"
 
     def format_list_of_aidants(self, aidants_list):
-        return mark_safe(
-            "<table><tr>"
-            + '<th scope="col">Nom</th><th>E-mail</th><th>Téléphone</th><tr>'  # noqa
-            + "</tr><tr>".join(
-                "<td>{}</td><td>{}</td><td>{}".format(  # noqa
-                    aidant, aidant.email, aidant.phone
+        rows = format_html_join(
+            "",
+            "<tr><td>{}</td><td>{}</td><td>{}</td></tr>",
+            (
+                (
+                    aidant,
+                    aidant.email,
+                    aidant.phone,
                 )
                 for aidant in aidants_list
-            )
-            + "</tr></table>"
+            ),
+        )
+
+        return format_html(
+            '<table><tr><th scope="col">Nom</th><th>E-mail</th><th>Téléphone</th></tr>{}</table>',  # noqa: E501
+            mark_safe(rows),
         )
 
 
