@@ -9,42 +9,37 @@
 
 {% block content %}
 <div class="fr-container">
-  <h1 class="fr-mb-4w">Vous êtes sur le point de finaliser votre habilitation Aidants Connect !</h1>
+  <h1 class="fr-mb-4w">Vous venez de réaliser une formation Aidants Connect ? Réalisez le test Pix pour finaliser votre habilitation !</h1>
 
 {% block body %}
   <div class="fr-container">
     <div id="connexion_choice" class="fr-mb-8w">
 
-      <p>Merci de lire les informations ci-dessous puis de remplir le formulaire pour accéder au test Pix.</p>
 
-      <p>⚠️ Le formulaire est à remplir individuellement et une seule fois</p>
+<p >
 
-      <h2>Se connecter à Aidants Connect</h2>
-
-      <p>
-        Aidants Connect est un outil juridique sensible, son accès est fortement sécurisé et nécessite une double authentification. Pour vous connecter à votre espace, vous devrez renseigner un mot de passe à usage unique (OTP), généré soit par une application sur son téléphone (par exemple Free OTP), soit par une carte physique envoyée par notre équipe à votre structure.
-
-      Nous vous conseillons de privilégier l'application mobile pour les raisons suivantes :
-        <ul>
-      <li> Accès instantané au service Aidants Connect, contrairement à la carte physique où les délais de livraison peuvent aller jusqu’à 6 semaines</li>
-<li>  Sans risque de perte ou de dégradation</li>
-<li>  Ce n’est pas une application spécifique à Aidants Connect et elle peut être utilisée pour d’autres services nécessitant une authentification par OTP</li>
-</ul>
-      </p>
-
-      <h2>Vos informations</h2>
-
-      <form method="post" class="fr-col-12">
+      <form method="post" class="fr-col-12   fr-text--center">
         {% csrf_token %}
         {{ form }}
         <button
       class="fr-btn"
       type="submit"
       data-follow-request-modale-target="submitBtn"
-    >Valider et effectuer le test PIX</button>
+    >Effectuer le test PIX</button>
 
 
       </form>
+   </p>
+      <p>
+        Aidants Connect est un outil juridique sensible, son accès est fortement sécurisé et nécessite une double authentification. Pour vous connecter à votre espace, vous devrez renseigner un mot de passe à usage unique (OTP), généré par une application sur votre téléphone (par exemple Free OTP).
+
+      </p>
+      <p>⚠️ Aidants Connect ne fournit plus de cartes aux structures.
+        L’application d’authentification est dorénavant le moyen de connexion par défaut.
+        Pour plus d’informations, consultez nos <a href="/cgu">conditions générales d'utilisations</a>.
+      </p>
+
+
 
     </div>
   </div>

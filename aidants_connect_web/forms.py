@@ -1238,19 +1238,20 @@ class OrganisationRestrictDemarchesForm(PatchedForm):
 
 
 class ConnexionChoiceForm(DsfrBaseForm):
-    email = forms.CharField(
-        label="E-mail professionnel",
-        required=True,
-        help_text="⚠️ Il s'agit de l'e-mail renseigné lors de la demande d'habilitation (e-mail nominatif de type prenom-nom@structure.fr)",  # noqa
-    )
-    connexion_mode = forms.ChoiceField(
-        label="Moyen de connexion choisi",
-        required=True,
-        choices=[
-            (HabilitationRequest.CONNEXION_MODE_PHONE, "Application Mobile"),
-            (HabilitationRequest.CONNEXION_MODE_CARD, "Carte Physique"),
-        ],
-    )
+    pass
+    # email = forms.CharField(
+    #     label="E-mail professionnel",
+    #     required=True,
+    #     help_text="⚠️ Il s'agit de l'e-mail renseigné lors de la demande d'habilitation (e-mail nominatif de type prenom-nom@structure.fr)",  # noqa
+    # )
+    # connexion_mode = forms.ChoiceField(
+    #     label="Moyen de connexion choisi",
+    #     required=True,
+    #     choices=[
+    #         (HabilitationRequest.CONNEXION_MODE_PHONE, "Application Mobile"),
+    #         # (HabilitationRequest.CONNEXION_MODE_CARD, "Carte Physique"),
+    #     ],
+    # )
 
 
 class AskingMobileForm(DsfrBaseForm):
