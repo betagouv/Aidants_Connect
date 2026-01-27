@@ -8,7 +8,7 @@ from django.views import View
 from django.views.generic import FormView
 
 from ..forms import AskingMobileForm, ConnexionChoiceForm
-from ..models import HabilitationRequest, MobileAskingUser
+from ..models import MobileAskingUser
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -17,15 +17,6 @@ log = logging.getLogger()
 class ConnexionChoiceView(FormView):
     template_name = "public_website/connexion_choice.html"
     form_class = ConnexionChoiceForm
-
-    def form_valid(self, form):
-        h_requests = HabilitationRequest.objects.filter(
-            email=form.cleaned_data["email"]
-        )
-        for h_request in h_requests:
-            h_request.connexion_mode = form.cleaned_data["connexion_mode"]
-            h_request.save()
-        return super().form_valid(form)
 
     def get_success_url(self):
         return settings.URL_TEST_PIX
