@@ -1,6 +1,6 @@
 Bienvenue sur Aidants Connect,
 
-Votre compte vient d’être créé. Pour y accéder, le ou la référente Aidants Connect de votre structure doit associer un moyen de connexion à votre compte (application d’authentification ou carte physique). Un e-mail lui a été envoyé en ce sens. Vous pourrez ensuite créer vos premiers mandats et accompagner les usagers dans la réalisation de leurs démarches en ligne.
+Votre compte vient d’être créé. Pour y accéder, le ou la référente Aidants Connect de votre structure ({{ referent.get_full_name }} : {{ referent.email }}) doit associer un moyen de connexion à votre compte (application d’authentification ou carte physique). Un e-mail lui a été envoyé en ce sens. Vous pourrez ensuite créer vos premiers mandats et accompagner les usagers dans la réalisation de leurs démarches en ligne.
 
 📚 En attendant, voici quelques ressources à votre disposition :
 
