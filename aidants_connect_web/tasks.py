@@ -939,3 +939,56 @@ def get_new_formations_from_grist():
 @shared_task
 def push_attendants_into_grist():
     push_attendees_in_grist()
+
+
+def send_email_annonce_formateur_pap(hab_request_id, logger):
+    logger: Logger = logger or get_task_logger(__name__)
+    hab_request = HabilitationRequest.objects.get(id=hab_request_id)
+    from aidants_connect_web.models import LogEmailSending
+
+    if hab_request.email_annonce_formateur_pap_send:
+        return
+
+    str_referent_full_name = ""
+    str_referent_email = ""
+
+    formateur = Aidant.objects.filter(email__iexact=hab_request.email_formateur).first()
+    if not formateur:
+        return
+
+    referent = hab_request.organisation.responsables_is_active.first()
+    str_formateur_full_name = str(formateur)
+    if referent:
+        str_referent_full_name = str(referent)
+        str_referent_email = str(referent.email)
+    text_message, html_message = render_email(
+        "email/formateur_pap_annonce.mjml",
+        {
+            "FORMATEUR_FULL_NAME": str_formateur_full_name,
+            "REFERENT_FULL_NAME": str_referent_full_name,
+            "REFERENT_EMAIL": str_referent_email,
+        },
+    )
+
+    send_mail(
+        from_email=settings.EMAIL_WELCOME_AIDANT_FROM,
+        subject="Formation pair à pair Aidants Connect",
+        recipient_list=[hab_request.email_formateur],
+        message=text_message,
+        html_message=html_message,
+    )
+
+    HabilitationRequest.objects.filter(pk=hab_request.pk).update(
+        email_annonce_formateur_pap_send=True
+    )
+    log_email, _ = LogEmailSending.objects.get_or_create(
+        code_email=settings.FORMATEURPAPANNONCELOGEMAIL, aidant=formateur
+    )
+    log_email.last_sending_date = now()
+    log_email.save()
+    logger.info(f"Formateur annonce email sent to {formateur}")
+
+
+@shared_task
+def email_annonce_formateur_pap(hab_request_id, *, logger=None):
+    send_email_annonce_formateur_pap(hab_request_id, logger=logger)

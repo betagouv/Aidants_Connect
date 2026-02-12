@@ -1,0 +1,42 @@
+{% load ac_common %}
+
+
+Bonjour,
+
+Vous allez assurer la formation Aidants Connect auprès d’un ou plusieurs de vos collègues. Merci pour votre implication ! Vous trouverez ci-dessous les informations nécessaires pour mener cette formation.
+
+### Qui sont les aidants à former ?
+
+Pour connaître le détails des aidants concernés, rapprochez-vous du référent de structure : {{ referent.first_name }} {{ referent.last_name }}, {{ referent.email }}
+
+⚠️ Seuls les aidants ajoutés par le référent et dont l’éligibilité a été validée par notre équipe peuvent être formés.
+
+### Comment se déroule une formation Aidants Connect ?
+
+La formation Aidants Connect se déroule en deux étapes :
+
+1️⃣ A**pprentissage et prise en main du dispositif**
+
+Vous trouverez en pièce jointe un guide de formation. Ce guide regroupe les notions clés d’Aidants Connect ainsi que des mises en situation pour familiariser l’aidant avec l’ensemble des fonctionnalités.
+
+Libre à vous de prendre le temps nécessaire pour passer en revue l’ensemble du guide, il n’y a pas de durée imposée.
+
+2️⃣ **La réalisation d’un test Pix**
+
+Le test Pix permet de valider les compétences acquises lors de la formation. Chaque aidant doit le réaliser individuellement et dans l’idéal le jour même, suite à la formation.
+
+⚠️ Pour s’identifier sur Pix, l’aidant doit impérativement utiliser **l’adresse e-mail nominative fournie lors de la demande d’habilitation.**
+
+### Comment sont activés les comptes des aidants formés ?
+
+Pour que le compte de l’aidant soit activé il doit obligatoirement avoir passer le test Pix avec la bonne  adresse e-mail. Une fois le test réalisé, l’activation se fait automatiquement : aucune action n’est requise de votre part ni de celle du référent.
+
+Le référent devra ensuite associer un moyen d’authentification (carte ou application mobile) au compte de l’aidant pour lui permettre de se connecter.
+
+⚠️ En cas d’erreur ou si vous ne souhaitez pas assurer cette formation, merci d’en informer {{ referent.first_name }} {{ referent.last_name }}.
+
+À bientôt sur Aidants Connect !
+L’équipe Aidants Connect
+
+Accompagnez vos usagers en toute sécurité
+Pour toute demande : {% mailto AC_CONTACT_EMAIL %}

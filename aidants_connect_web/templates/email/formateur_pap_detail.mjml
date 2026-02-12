@@ -1,0 +1,84 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% load ac_common %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>Bonjour,</mj-text>
+    <mj-text>
+    Vous allez assurer la formation Aidants Connect auprès
+    d’un ou plusieurs de vos collègues. Merci pour votre implication !
+        Vous trouverez ci-dessous les informations nécessaires pour mener cette formation.
+    </mj-text>
+
+<mj-text>
+      <p>Pour connaître le détails des aidants concernés,
+      rapprochez-vous du référent de structure :
+      {{ referent.first_name }} {{ referent.last_name }}, {{ referent.email }}
+      </p>
+</mj-text>
+
+<mj-text>Comment se déroule une formation Aidants Connect ?</mj-text>
+
+
+
+    <mj-text>
+        La formation Aidants Connect se déroule en deux étapes :
+    </mj-text>
+
+    <mj-text>
+        <p>1️⃣ Apprentissage et prise en main du dispositif </p>
+        <p>Vous trouverez en pièce jointe un guide de formation.
+        Ce guide regroupe les notions clés d’Aidants Connect ainsi que
+         des mises en situation pour familiariser l’aidant avec l’ensemble des fonctionnalités.
+        </p>
+        <p>Libre à vous de prendre le temps nécessaire pour
+         passer en revue l’ensemble du guide, il n’y a pas de durée imposée.
+        </p>
+        <p>
+        2️⃣ La réalisation d’un test Pix
+        </p>
+        <p>Le test Pix permet de valider les compétences acquises lors de la
+        formation. Chaque aidant
+        doit le réaliser individuellement et dans l’idéal
+        le jour même, suite à la formation.
+        </p>
+        <p>⚠️ Pour s’identifier sur Pix, l’aidant doit impérativement utiliser
+        l’adresse e-mail nominative fournie lors de la demande d’habilitation.
+        </p>
+    </mj-text>
+
+    <mj-text>
+        <p>Comment sont activés les comptes des aidants formés ?</p>
+        <p>Pour que le compte de l’aidant soit activé il doit obligatoirement
+        avoir passer le test Pix avec la bonne  adresse e-mail. Une fois
+        le test réalisé, l’activation se fait automatiquement : aucune action
+         n’est requise de votre part ni de celle du référent.
+        </p>
+        <p>
+        Le référent devra ensuite associer un moyen d’authentification
+        (carte ou application mobile) au compte de l’aidant
+        pour lui permettre de se connecter.
+        </p>
+
+        <p>
+        ⚠️ En cas d’erreur ou si vous ne souhaitez pas assurer cette
+        formation, merci d’en informer {{ referent.first_name }} {{ referent.last_name }}.
+        </p>
+    </mj-text>
+
+    <mj-text>
+        <p>À bientôt sur Aidants Connect !</p>
+        <p>L’équipe Aidants Connect
+        </p>
+    </mj-text>
+    <mj-text>
+        <p>Accompagnez vos usagers en toute sécurité
+        </p>
+         <p> Pour toute demande : {% mailto AC_CONTACT_EMAIL %}.</p>
+    </mj-text>
+
+  </mj-column>
+</mj-section>
+{% endblock email_body %}
