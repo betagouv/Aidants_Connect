@@ -180,7 +180,7 @@ class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
         user_email = super().clean_email()
         if not Aidant.objects.filter(email__iexact=user_email, is_active=True).exists():
             raise ValidationError(
-                "Les informations saisies "
+                "Les informations saisies ne "
                 "permettent pas de vous identifier. Si vous pensez"
                 " que c’est une erreur, prenez contact avec Aidants Connect."
             )
@@ -220,7 +220,7 @@ class ManagerFirstLoginForm(DsfrBaseForm):
 
         if aidant is None:
             raise ValidationError(
-                "Les informations saisies "
+                "Les informations saisies ne "
                 "permettent pas de vous identifier. Si vous pensez"
                 " que c’est une erreur, prenez contact avec Aidants Connect."
             )
