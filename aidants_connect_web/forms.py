@@ -180,9 +180,9 @@ class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
         user_email = super().clean_email()
         if not Aidant.objects.filter(email__iexact=user_email, is_active=True).exists():
             raise ValidationError(
-                "Erreur : votre compte a été désactivé. "
-                "Si vous pensez que c’est une erreur, prenez contact avec votre "
-                "référent ou avec Aidants Connect."
+                "Les informations saisies "
+                "permettent pas de vous identifier. Si vous pensez"
+                " que c’est une erreur, prenez contact avec Aidants Connect."
             )
         return user_email
 
@@ -220,9 +220,9 @@ class ManagerFirstLoginForm(DsfrBaseForm):
 
         if aidant is None:
             raise ValidationError(
-                "Erreur : votre compte a été désactivé. "
-                "Si vous pensez que c’est une erreur, prenez contact avec "
-                "Aidants Connect."
+                "Les informations saisies "
+                "permettent pas de vous identifier. Si vous pensez"
+                " que c’est une erreur, prenez contact avec Aidants Connect."
             )
 
         if not user_mobile == aidant.phone:
