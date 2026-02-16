@@ -29,8 +29,9 @@ from aidants_connect_web.constants import (
 from aidants_connect_web.forms import MassEmailActionForm
 from aidants_connect_web.models import (
     Aidant,
+    AidantEmailStats,
+    EmailStatistics,
     HabilitationRequest,
-    LogEmailSending,
     Organisation,
 )
 
@@ -519,11 +520,24 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             msg.send()
 
         for manager in h_request.organisation.responsables.all():
-            log_email, _ = LogEmailSending.objects.get_or_create(
-                code_email=settings.VALIDATIONPAPAIDANTLOGEMAIL, aidant=manager
+            email_stats, _ = EmailStatistics.objects.get_or_create(
+                code_email=settings.VALIDATIONPAPAIDANTLOGEMAIL
             )
-            log_email.last_sending_date = now()
-            log_email.save()
+            email_stats.nb_emails_sent += 1
+            email_stats.last_sending_date = now()
+            email_stats.save()
+
+            AidantEmailStats.objects.create(
+                aidant=manager,
+                email_type=email_stats,
+                code_email=settings.VALIDATIONPAPAIDANTLOGEMAIL,
+                sending_date=now(),
+            )
+            # log_email, _ = LogEmailSending.objects.get_or_create(
+            #     code_email=settings.VALIDATIONPAPAIDANTLOGEMAIL, aidant=manager
+            # )
+            # log_email.last_sending_date = now()
+            # log_email.save()
         logger.info("Formateur validateur email to referents")
         HabilitationRequest.objects.filter(pk=h_request.pk).update(
             email_hr_validated_pap_send=True
@@ -559,11 +573,26 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
                 "application/pdf",
             )
             msg.send()
-        log_email, _ = LogEmailSending.objects.get_or_create(
-            code_email=settings.FORMATEURPAPDETAILSLOGEMAIL, aidant=formateur
+
+        email_stats, _ = EmailStatistics.objects.get_or_create(
+            code_email=settings.FORMATEURPAPDETAILSLOGEMAIL
         )
-        log_email.last_sending_date = now()
-        log_email.save()
+        email_stats.nb_emails_sent += 1
+        email_stats.last_sending_date = now()
+        email_stats.save()
+
+        AidantEmailStats.objects.create(
+            aidant=formateur,
+            email_type=email_stats,
+            code_email=settings.FORMATEURPAPDETAILSLOGEMAIL,
+            sending_date=now(),
+        )
+
+        # log_email, _ = LogEmailSending.objects.get_or_create(
+        #     code_email=settings.FORMATEURPAPDETAILSLOGEMAIL, aidant=formateur
+        # )
+        # log_email.last_sending_date = now()
+        # log_email.save()
         HabilitationRequest.objects.filter(pk=h_request.pk).update(
             email_detail_formateur_pap_send=True
         )

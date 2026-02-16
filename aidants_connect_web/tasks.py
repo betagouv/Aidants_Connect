@@ -944,7 +944,7 @@ def push_attendants_into_grist():
 def send_email_annonce_formateur_pap(hab_request_id, logger):
     logger: Logger = logger or get_task_logger(__name__)
     hab_request = HabilitationRequest.objects.get(id=hab_request_id)
-    from aidants_connect_web.models import LogEmailSending
+    from aidants_connect_web.models import AidantEmailStats, EmailStatistics
 
     if hab_request.email_annonce_formateur_pap_send:
         return
@@ -981,11 +981,21 @@ def send_email_annonce_formateur_pap(hab_request_id, logger):
     HabilitationRequest.objects.filter(pk=hab_request.pk).update(
         email_annonce_formateur_pap_send=True
     )
-    log_email, _ = LogEmailSending.objects.get_or_create(
-        code_email=settings.FORMATEURPAPANNONCELOGEMAIL, aidant=formateur
+
+    email_stats, _ = EmailStatistics.objects.get_or_create(
+        code_email=settings.FORMATEURPAPANNONCELOGEMAIL
     )
-    log_email.last_sending_date = now()
-    log_email.save()
+    email_stats.nb_emails_sent += 1
+    email_stats.last_sending_date = now()
+    email_stats.save()
+
+    AidantEmailStats.objects.create(
+        aidant=formateur,
+        email_type=email_stats,
+        code_email=settings.FORMATEURPAPANNONCELOGEMAIL,
+        sending_date=now(),
+    )
+
     logger.info(f"Formateur annonce email sent to {formateur}")
 
 

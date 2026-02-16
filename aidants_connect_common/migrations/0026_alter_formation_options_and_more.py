@@ -9,7 +9,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-
         ('aidants_connect_common', '0025_halfdayclass_end_time_alter_formation_publish_or_not'),
     ]
 

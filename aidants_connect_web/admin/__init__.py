@@ -5,12 +5,14 @@ from rest_framework.authtoken.models import Token
 from aidants_connect.admin import admin_of_site, admin_site
 from aidants_connect_web.models import (
     Aidant,
+    AidantEmailStats,
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
     AidantStatistiquesbyRegion,
     AidantType,
     CarteTOTP,
     Connection,
+    EmailStatistics,
     FirstConnexionManagerInfo,
     HabilitationRequest,
     Journal,
@@ -22,6 +24,7 @@ from aidants_connect_web.models import (
 )
 
 from .aidant import AidantAdmin, FirstConnexionManagerInfoAdmin, MobileAskingUserAdmin
+from .email_stats import AidantEmailStatsAdmin, EmailStatisticsAdmin
 from .habilitation_request import HabilitationRequestAdmin
 from .journal import JournalAdmin
 from .mandat import MandatAdmin
@@ -38,6 +41,9 @@ from .statistiques import (
 from .usager import UsagerAdmin
 
 # Display the following tables in the admin
+admin_site.register(EmailStatistics, EmailStatisticsAdmin)
+admin_site.register(AidantEmailStats, AidantEmailStatsAdmin)
+
 admin_site.register(Organisation, OrganisationAdmin)
 admin_of_site.register(Organisation, OrganisationOFAdmin)
 admin_site.register(Aidant, AidantAdmin)
