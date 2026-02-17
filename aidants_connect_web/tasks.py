@@ -986,7 +986,7 @@ def send_email_annonce_formateur_pap(hab_request_id, logger):
         code_email=settings.FORMATEURPAPANNONCELOGEMAIL
     )
     email_stats.nb_emails_sent += 1
-    email_stats.last_sending_date = now()
+    email_stats.last_sent_at = now()
     email_stats.save()
 
     AidantEmailStats.objects.create(

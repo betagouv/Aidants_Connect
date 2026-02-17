@@ -524,7 +524,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
                 code_email=settings.VALIDATIONPAPAIDANTLOGEMAIL
             )
             email_stats.nb_emails_sent += 1
-            email_stats.last_sending_date = now()
+            email_stats.last_sent_at = now()
             email_stats.save()
 
             AidantEmailStats.objects.create(
@@ -578,7 +578,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
             code_email=settings.FORMATEURPAPDETAILSLOGEMAIL
         )
         email_stats.nb_emails_sent += 1
-        email_stats.last_sending_date = now()
+        email_stats.last_sent_at = now()
         email_stats.save()
 
         AidantEmailStats.objects.create(
