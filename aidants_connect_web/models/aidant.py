@@ -107,7 +107,7 @@ class AidantType(models.Model):
 
 
 class Aidant(AbstractUser):
-    profession = models.TextField(blank=False)
+    profession = models.TextField(blank=True)
     phone = models.TextField("Téléphone", blank=True)
 
     aidant_type = models.ForeignKey(
@@ -171,8 +171,13 @@ class Aidant(AbstractUser):
     )
 
     is_of_user = models.BooleanField(
-        "Est un utilisateur Organisame de Frmation", default=False
+        "Est un utilisateur Organisme de Formation", default=False
     )
+
+    is_of_admin = models.BooleanField(
+        "Est un administrateur Organisme de Formation", default=False
+    )
+
     is_admin_metier = models.BooleanField("Est un administrateur métier", default=False)
     objects = AidantManager()
 

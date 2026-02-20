@@ -24,6 +24,7 @@ from aidants_connect_web.models import (
 )
 
 from .aidant import AidantAdmin, FirstConnexionManagerInfoAdmin, MobileAskingUserAdmin
+from .aidant_of import AidantOFAdmin
 from .email_stats import AidantEmailStatsAdmin, EmailStatisticsAdmin
 from .habilitation_request import HabilitationRequestAdmin
 from .journal import JournalAdmin
@@ -47,6 +48,7 @@ admin_site.register(AidantEmailStats, AidantEmailStatsAdmin)
 admin_site.register(Organisation, OrganisationAdmin)
 admin_of_site.register(Organisation, OrganisationOFAdmin)
 admin_site.register(Aidant, AidantAdmin)
+admin_of_site.register(Aidant, AidantOFAdmin)
 admin_site.register(AidantType)
 admin_site.register(AidantStatistiques, AidantStatistiquesAdmin)
 admin_site.register(AidantStatistiquesbyDepartment, AidantStatistiquesbyDepartmentAdmin)
