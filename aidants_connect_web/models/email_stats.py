@@ -23,6 +23,7 @@ class AidantEmailStats(models.Model):
         EmailStatistics, verbose_name="Type d'email", on_delete=models.CASCADE
     )
     sending_date = models.DateTimeField("Date d'envoi", null=True, blank=True)
+    infos = models.TextField("Informations supplémentaire", blank=True, null=True)
 
     class Meta:
         verbose_name = "Envoi d'email pour un aidant"
