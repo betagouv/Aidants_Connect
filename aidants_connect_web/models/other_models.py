@@ -113,6 +113,16 @@ class HabilitationRequest(models.Model):
         null=True,
         help_text="Email du formateur P2P",
     )
+    email_annonce_formateur_pap_send = models.BooleanField(
+        "Email PAP annonce formateur envoyé", default=False, editable=False
+    )
+    email_detail_formateur_pap_send = models.BooleanField(
+        "Email PAP détail formateur envoyé", default=False, editable=False
+    )
+
+    email_hr_validated_pap_send = models.BooleanField(
+        "Email validation formation pap envoyé", default=False, editable=False
+    )
 
     def get_full_name(self):
         return self.aidant_full_name
@@ -144,6 +154,15 @@ class HabilitationRequest(models.Model):
 
     def __str__(self):
         return f"{self.aidant_full_name} ({self.email})"
+
+    def save(self, *args, **kwargs):
+        from aidants_connect_web import tasks
+
+        super().save(*args, **kwargs)
+        if not self.email_annonce_formateur_pap_send and self.email_formateur:
+
+            # tasks.email_annonce_formateur_pap.delay(self.id)
+            tasks.send_email_annonce_formateur_pap(self.id, None)
 
     def validate_and_create_aidant(self):
         if self.status not in (

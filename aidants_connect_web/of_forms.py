@@ -1,0 +1,124 @@
+from django import forms
+from django.conf import settings
+from django.contrib.auth import password_validation
+from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.forms import EmailField
+from django.utils.translation import gettext_lazy as _
+
+from aidants_connect_web.models import Aidant
+
+
+class OFAidantCreationForm(forms.ModelForm):
+    """
+    A form that creates an aidant, with no privileges, from the given email and
+    password.
+    """
+
+    password = forms.CharField(
+        label=_("Password"),
+        strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+        help_text=password_validation.password_validators_help_text_html(),
+    )
+    first_name = forms.CharField(label="Prénom")
+    email = forms.EmailField(label="Email", widget=forms.EmailInput())
+
+    last_name = forms.CharField(label="Nom de famille")
+
+    class Meta:
+        model = Aidant
+        fields = (
+            "email",
+            "last_name",
+            "first_name",
+            "phone",
+        )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        aidant_email = cleaned_data.get("email")
+        if Aidant.objects.filter(email__iexact=aidant_email).exists():
+            self.add_error(
+                "email", forms.ValidationError("This email is already taken")
+            )
+        else:
+            cleaned_data["email"] = aidant_email.lower()
+
+        return cleaned_data
+
+    def _post_clean(self):
+        super()._post_clean()
+        # Validate the password after self.instance is updated with form data
+        # by super().
+        password = self.cleaned_data.get("password")
+        if password:
+            try:
+                password_validation.validate_password(password, self.instance)
+            except forms.ValidationError as error:
+                self.add_error("password", error)
+
+    def save(self, commit=True):
+        aidant = super().save(commit=False)
+        aidant.organisation_id = settings.PK_OF_ORGANISATION
+        aidant.username = aidant.email.lower()
+        aidant.can_create_mandats = False
+        aidant.is_staff = True
+        aidant.is_of_user = True
+        aidant.set_password(self.cleaned_data["password"])
+        if commit:
+            aidant.save()
+        return aidant
+
+
+class OFAidantChangeForm(forms.ModelForm):
+    password = ReadOnlyPasswordHashField(
+        label=_("Password"),
+        help_text=_(
+            "Raw passwords are not stored, so there is no way to see this "
+            "aidant’s password, but you can change the password using "
+            '<a href="../password/">this form</a>.'
+        ),
+    )
+
+    class Meta:
+        model = Aidant
+        fields = (
+            "email",
+            "last_name",
+            "first_name",
+            "profession",
+            "phone",
+            "username",
+        )
+        field_classes = {"email": EmailField}
+
+    def clean_password(self):
+        # Regardless of what the aidant provides, return the initial value.
+        # This is done here, rather than on the field, because the
+        # field does not have access to the initial value
+        return self.initial.get("password")
+
+    def clean(self):
+        super().clean()
+        cleaned_data = self.cleaned_data
+        data_email = cleaned_data.get("email")
+        initial_email = self.instance.email
+        initial_id = self.instance.id
+
+        if data_email != initial_email:
+            if (
+                Aidant.objects.filter(email__iexact=data_email).exists()
+                or Aidant.objects.exclude(id=initial_id)
+                .filter(username__iexact=data_email)
+                .exists()
+            ):
+                self.add_error(
+                    "email", forms.ValidationError("Erreur : cet e-mail existe déjà")
+                )
+            else:
+                cleaned_data["username"] = data_email
+
+        return cleaned_data

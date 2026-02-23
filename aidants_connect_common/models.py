@@ -312,8 +312,20 @@ class Formation(models.Model):
                 return f"Début le {date(self.start_datetime, 'd F Y')} "
             return f"Début le {date(self.start_datetime, 'd F Y à H:i')} "
 
+    @property
+    def date_range_without_hour_str(self):
+        if self.end_datetime:
+            return (
+                f"Du {date(self.start_datetime, 'd F Y')} "
+                f"au {date(self.end_datetime, 'd F Y')}"
+            )
+        else:
+            if self.start_datetime.hour in (0, 1, 2):
+                return f"Début le {date(self.start_datetime, 'd F Y')} "
+            return f"Début le {date(self.start_datetime, 'd F Y')} "
+
     def __str__(self):
-        return f"{self.type.label} {self.date_range_str.casefold()}"
+        return f"{self.type.label} {self.date_range_without_hour_str.casefold()}"
 
     def register_attendant(self, attendant: HabilitationRequest):
         Formation.objects.filter(pk=self.pk).register_attendant(attendant)
