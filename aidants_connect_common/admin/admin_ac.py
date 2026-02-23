@@ -446,6 +446,12 @@ class FormationAttendantAdmin(VisibleToAdminMetier, ExportMixin, ModelAdmin):
                 name="aidants_connect_common_validate_inscription",
             ),
             path(
+                "<path:object_id>/unaccept/",
+                # self.admin_site.admin_view(self.validate_one_inscription),
+                admin_of_site.admin_view(self.unvalidate_one_inscription),
+                name="aidants_connect_common_unvalidate_inscription",
+            ),
+            path(
                 "<path:object_id>/refuse/",
                 # self.admin_site.admin_view(self.disable_one_inscription),
                 admin_of_site.admin_view(self.disable_one_inscription),
@@ -475,6 +481,14 @@ class FormationAttendantAdmin(VisibleToAdminMetier, ExportMixin, ModelAdmin):
             return self.__validate_inscription_get(request, object_id)
         else:
             return self.__validate_inscription_post(request, object_id)
+
+    def unvalidate_one_inscription(self, request, object_id):
+        if request.method not in ["GET", "POST"]:
+            return HttpResponseNotAllowed(["GET", "POST"])
+        elif request.method == "GET":
+            return self.__unvalidate_inscription_get(request, object_id)
+        else:
+            return self.__unvalidate_inscription_post(request, object_id)
 
     def change_one_inscription(self, request, object_id):
         if request.method not in ["GET", "POST"]:
@@ -611,6 +625,49 @@ class FormationAttendantAdmin(VisibleToAdminMetier, ExportMixin, ModelAdmin):
             (
                 f"Tout s'est bien passé. La présence en formation de {object.attendant}  "  # noqa
                 f"a bien été validée."
+            ),
+        )
+        return HttpResponseRedirect(redirect_path)
+
+    def __unvalidate_inscription_get(self, request: HttpRequest, object_id):
+        one_fattendant = FormationAttendant.objects.get(id=object_id)
+
+        view_context = {
+            **self.admin_site.each_context(request),
+            "media": self.media,
+            "object_id": object_id,
+            "object": one_fattendant,
+            "subject": "Invalider la présence de l'apprenant",
+            "form": AdminValidateorDisableForm(one_fattendant),
+        }
+
+        return render(
+            request,
+            "aidants_connect_common/admin/formation_attendant/unaccept_form.html",
+            view_context,
+        )
+
+    def __unvalidate_inscription_post(self, request, object_id):
+        object = FormationAttendant.objects.get(id=object_id)
+        form = AdminValidateorDisableForm(object, data=request.POST)
+        if not form.is_valid():
+            return HttpResponseNotAllowed()
+        object.attendant.formation_done = False
+        object.attendant.date_formation = None
+        object.attendant.save()
+        redirect_path = reverse(
+            "adminof:aidants_connect_common_formationattendant_changelist"
+        )
+        preserved_filters = self.get_preserved_filters(request)
+        opts = self.model._meta
+        redirect_path = add_preserved_filters(
+            {"preserved_filters": preserved_filters, "opts": opts}, redirect_path
+        )
+        self.message_user(
+            request,
+            (
+                f"Tout s'est bien passé. La présence en formation de {object.attendant}  "  # noqa
+                f"a bien été invalidée."
             ),
         )
         return HttpResponseRedirect(redirect_path)
