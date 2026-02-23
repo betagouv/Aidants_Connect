@@ -249,6 +249,7 @@ class FormationOrganizationOFAdmin(VisibleToOFUserEditOnly, ModelAdmin):
     list_display = ("name", "type", "region")
     search_fields = ("name", "contacts", "private_contacts", "region")
     readonly_fields = ("users_of", "contacts", "private_contacts")
+    readonly_admin_of_fields = ("contacts", "private_contacts")
     fieldsets = (
         (
             "Informations Organisation",
@@ -272,6 +273,11 @@ class FormationOrganizationOFAdmin(VisibleToOFUserEditOnly, ModelAdmin):
         ),
     )
     inlines = (FormationContactPublicInlineAdmin, FormationContactPrivateInlineAdmin)
+
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.is_of_admin:
+            return self.readonly_admin_of_fields
+        return self.readonly_fields
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
