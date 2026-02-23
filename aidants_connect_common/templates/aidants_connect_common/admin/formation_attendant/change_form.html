@@ -10,9 +10,17 @@
     <a class="viewsitelink" href="{% url "adminof:aidants_connect_common_disable_inscription" object_id=object_id %}">
       <span aria-hidden="true">💔 </span> Annuler l'inscription
     </a>
+
+{% if not original.attendant.formation_done %}
       <a class="viewsitelink" href="{% url "adminof:aidants_connect_common_validate_inscription" object_id=object_id %}">
       <span aria-hidden="true">🤘 </span> Valider la présence à la formation
     </a>
+ {% else %}
+
+      <a class="viewsitelink" href="{% url "adminof:aidants_connect_common_unvalidate_inscription" object_id=object_id %}">
+      Invalider la présence à la formation
+    </a>
+{% endif %}
   </li>
 
   {% endif %}
