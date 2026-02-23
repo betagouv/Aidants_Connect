@@ -85,7 +85,7 @@ class FNEAidantSerializer(serializers.HyperlinkedModelSerializer):
     )
 
     def get_formation_fne(self, obj):
-        return True
+        return bool(obj.id_fne)
 
     class Meta:
         model = Aidant
