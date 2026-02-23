@@ -1,13 +1,20 @@
+from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
 from aidants_connect.admin import VisibleToOFAdmin
+from aidants_connect_common.models import FormationOrganization
 from aidants_connect_web.of_forms import OFAidantChangeForm, OFAidantCreationForm
+
+
+class AidantInOFOrganizationAdmin(VisibleToOFAdmin, admin.TabularInline):
+    model = FormationOrganization.users_of.through
 
 
 class AidantOFAdmin(VisibleToOFAdmin, DjangoUserAdmin):
     # The forms to add and change `Aidant` instances
     form = OFAidantChangeForm
     add_form = OFAidantCreationForm
+    show_delete = False
     raw_id_fields = ("responsable_de", "organisation", "organisations")
     readonly_fields = (
         "created_at",
@@ -19,6 +26,8 @@ class AidantOFAdmin(VisibleToOFAdmin, DjangoUserAdmin):
         "is_superuser",
         "organisation",
     )
+
+    inlines = (AidantInOFOrganizationAdmin,)
 
     # The fields to be used in displaying the `Aidant` model.
     # These override the definitions on the base `UserAdmin`
@@ -89,6 +98,11 @@ class AidantOFAdmin(VisibleToOFAdmin, DjangoUserAdmin):
             },
         ),
     )
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        return self.changeform_view(
+            request, object_id, form_url, {"show_delete": False}
+        )
 
     def get_queryset(self, request):
 

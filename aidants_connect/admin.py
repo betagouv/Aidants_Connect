@@ -41,7 +41,15 @@ class VisibleToOFAdmin:
         return self.has_module_permission(request)
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        from aidants_connect_web.models import Aidant
+
+        if obj is None:
+            return False
+        else:
+            if isinstance(obj, Aidant):
+                return True
+            else:
+                return False
 
 
 class VisibleToOFUser:
