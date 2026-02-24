@@ -1,6 +1,7 @@
 // basic layout -----------------------------------------
 
-html, body {
+html,
+body {
   min-height: 100vh;
 }
 
@@ -10,7 +11,8 @@ body {
   font-weight: 400; // Marianne-Regular
 }
 
-ul, ol {
+ul,
+ol {
   margin: var(--text-spacing);
 
   p:has(+&) {
@@ -25,7 +27,9 @@ $main-padding: 3rem;
   padding: $main-padding 0;
 }
 
-.main-content-fluid { // cancels #main padding
+.main-content-fluid {
+
+  // cancels #main padding
   &:first-child {
     margin-top: -$main-padding;
   }
@@ -44,11 +48,15 @@ $main-padding: 3rem;
   }
 }
 
-h1, .fr-h1 {
+h1,
+.fr-h1 {
   margin: 0 0 3rem 0;
 }
 
-h3, .fr-h3, h4, .fr-h4 {
+h3,
+.fr-h3,
+h4,
+.fr-h4 {
   margin-bottom: 2rem;
   margin-top: 2rem;
 
@@ -98,7 +106,9 @@ p:last-child {
 
 // Cancel DSFR modal transition as it's messing with functionnal tests
 .fr-modal {
-  &, & * {
+
+  &,
+  & * {
     transition: none !important;
   }
 }
@@ -172,6 +182,7 @@ p:last-child {
 .fr-height-100 {
   height: 100%;
 }
+
 .text-thin {
   font-weight: 400;
 }
@@ -193,11 +204,13 @@ p:last-child {
     color: var(--text-default-warning);
   }
 }
+
 summary::marker {
   content: "";
 }
+
 .box-shadow-none {
-  box-shadow: none!important;
+  box-shadow: none !important;
 }
 
 @for $i from 0 through 32 {
@@ -215,6 +228,7 @@ summary::marker {
 }
 
 @media print {
+
   .no-print,
   .no-print * {
     display: none !important;
@@ -224,4 +238,8 @@ summary::marker {
   [id^="tarteaucitron"] {
     display: none !important;
   }
+}
+
+.fr-input-otp-token {
+  max-width: calc(6ch + 2rem);
 }

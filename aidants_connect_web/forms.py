@@ -1173,18 +1173,19 @@ class TokenFormV2(TokenForm):
 
 class AddAppOTPToAidantForm(PatchedForm):
     otp_token = forms.CharField(
-        label=(
-            "Entrez ici le code de vérification donné par "
-            "votre application pour valider la création"
-        ),
+        label="Entrez le code de vérification donné par votre application.",
         label_suffix=" :",
         min_length=6,
-        max_length=8,
+        max_length=6,
+        widget=forms.TextInput(attrs={"class": "fr-input fr-input-otp-token"}),
     )
 
     def __init__(self, otp_device: TOTPDevice, *args, **kwargs):
         self.otp_device = otp_device
         super().__init__(*args, **kwargs)
+        self.fields["otp_token"].help_text = (
+            f"Format attendu : {self.otp_device.digits} chiffres"
+        )
 
     def clean_otp_token(self):
         try:

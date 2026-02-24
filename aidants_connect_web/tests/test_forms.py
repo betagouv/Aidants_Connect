@@ -610,7 +610,7 @@ class TestAddAppOTPToAidantForm(TestCase):
             [
                 (
                     "Assurez-vous que cette valeur comporte "
-                    "au plus 8 caractères (actuellement 11)."
+                    "au plus 6 caractères (actuellement 11)."
                 )
             ],
             form.errors["otp_token"],
@@ -631,22 +631,6 @@ class TestAddAppOTPToAidantForm(TestCase):
 
     def test_clean_otp_token_non_numeric_error(self):
         form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "abc123"})
-        self.assertFalse(form.is_valid())
-        self.assertIn("otp_token", form.errors)
-        self.assertEqual(
-            form.errors["otp_token"][0],
-            "Erreur : le code OTP doit être composé de chiffres",
-        )
-
-        form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "12-34-56"})
-        self.assertFalse(form.is_valid())
-        self.assertIn("otp_token", form.errors)
-        self.assertEqual(
-            form.errors["otp_token"][0],
-            "Erreur : le code OTP doit être composé de chiffres",
-        )
-
-        form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "12 34 56"})
         self.assertFalse(form.is_valid())
         self.assertIn("otp_token", form.errors)
         self.assertEqual(
