@@ -213,7 +213,7 @@ class ManagerFirstLoginForm(DsfrBaseForm):
         aidant = Aidant.objects.filter(email__iexact=user_email, is_active=True).first()
         if aidant and aidant.has_a_totp_device:
             raise ValidationError(
-                "Erreur : vous avez déjà un moyen de configuration configuré. "
+                "Erreur : vous avez déjà un moyen de connexion configuré. "
                 "Vous devez utiliser le formulaire de connexion classique "
                 "et non pas le formulaire de première connexion référent."
             )
