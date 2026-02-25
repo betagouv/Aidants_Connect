@@ -724,7 +724,7 @@ EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES = os.getenv(
 )
 EMAIL_WELCOME_AIDANT_TUTORIEL_INTERACTIF = os.getenv(
     "EMAIL_WELCOME_AIDANT_TUTORIEL_INTERACTIF",
-    "https://www.etsijaccompagnais.fr/tutoriel-aidants-connect",
+    "https://www.figma.com/proto/nLpomUha2sNgBYk1ysMP0C/INTERACTIF---Tutoriel-Aidants-Connect?node-id=2608-155&t=wq8Vd9C4Q7jZMcOl-0&scaling=min-zoom&content-scaling=fixed&page-id=1%3A3&starting-point-node-id=2608%3A155",
 )
 EMAIL_WELCOME_AIDANT_CONTACT_URL = os.getenv(
     "EMAIL_WELCOME_AIDANT_CONTACT_URL", "contact@aidantsconnect.beta.gouv.fr"

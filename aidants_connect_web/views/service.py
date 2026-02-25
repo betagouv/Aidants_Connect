@@ -222,5 +222,8 @@ def ressources(request):
     return render(
         request,
         "public_website/ressource_page.html",
-        {"should_render_testimonies": Testimony.objects.for_display().count() > 0},
+        {
+            "should_render_testimonies": Testimony.objects.for_display().count() > 0,
+            "TUTORIEL_INTERACTIF_URL": settings.EMAIL_WELCOME_AIDANT_TUTORIEL_INTERACTIF,  # noqa: E501
+        },
     )
