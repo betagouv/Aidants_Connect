@@ -12,32 +12,17 @@
       <div class="fr-col-12 fr-col-md-10">
         <h1>Espace référent</h1>
         <h2>Associer un moyen de connexion</h2>
-        <p class="subtitle">Affectez une carte Aidant à {{ aidant.get_full_name }} en suivant les étapes ci-dessous.</p>
-
+        <p class="fr-text--lead">Affectez une carte Aidant à <strong>{{ aidant.get_full_name }}</strong> en suivant les étapes ci-dessous.</p>
         <div class="fr-grid-row fr-grid-row--gutters">
-          <div class="fr-col-12 fr-col-md-8 margin-bottom-1rem">
-            <p class="bold blue-text">Validation de la carte</p>
-
-            <form class="margin-bottom-4rem" method="post">
+          <div class="fr-col-12 fr-col-md-8">
+            <p><strong>Validation de la carte</strong></p>
+            <form method="post">
               {% csrf_token %}
-              <div class="shadowed margin-bottom-2rem padding-1rem">
-                <label
-                  class="margin-bottom-1rem"
-                  for="{{ form.otp_token.id_for_label }}"
-                >
-                  Entrez le code à 6 chiffres fourni par votre carte.
-                  Sauf mention contraire, tous les champs sont obligatoires.
-                </label>
-              {% dsfr_form_field form.otp_token %}
+              <div class="fr-mb-2w">
+                {% dsfr_form_field form.otp_token %}
               </div>
-
               <button class="fr-btn" type="submit">Valider le code</button>
             </form>
-            <p class="em bold">* Aide</p>
-            <p class="em">
-              <span class="bold">Carte physique</span> Appuyez sur le bouton « PRESS » pour afficher le code.<br />
-              <span class="bold">Carte numérique</span> Appuyez sur la ligne Aidant Connect dans l’application.
-            </p>
           </div>
         </div>
       </div>
