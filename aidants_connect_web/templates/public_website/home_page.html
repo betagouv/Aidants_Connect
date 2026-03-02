@@ -4,7 +4,6 @@
 
 {% block extracss %}
   <link href="{% static 'css/home.css' %}" rel="stylesheet">
-  <link href="{% static 'css/basicLightbox.min.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block title %}Accueil - Aidants Connect{% endblock %}
@@ -251,13 +250,6 @@
 {% endblock content %}
 
 {% block extrajs %}
-  <script defer src="{% static 'js/basicLightbox.min.js' %}"></script>
-  <script
-    defer
-    id="lightbox-video-script"
-    src="{% static 'js/lightbox-video.js' %}"
-    data-video-url="{% static 'videos/AidantsConnect.mp4' %}"
-  ></script>
   <script defer type="text/javascript" src="{{ SARBACANE_SCRIPT_URL }}"></script>
 {# <script defer type="text/javascript" src="{% static 'js/newsletter-form.js' %}"></script> #}
   <script defer type="text/javascript" src="{% static 'js/youtube-cookie.js' %}"></script>
