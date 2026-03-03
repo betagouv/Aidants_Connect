@@ -478,10 +478,14 @@ class CarteOTPSerialNumberForm(forms.Form):
 
 class CarteTOTPValidationForm(forms.Form):
     otp_token = forms.CharField(
+        label="Code à 6 chiffres",
+        help_text="Appuyez sur le bouton « PRESS » de la carte pour afficher le code.",
         max_length=6,
         min_length=6,
         validators=[RegexValidator(r"^\d{6}$")],
-        widget=forms.TextInput(attrs={"autocomplete": "off"}),
+        widget=forms.TextInput(
+            attrs={"autocomplete": "off", "class": "fr-input fr-input-otp-token"}
+        ),
     )
 
 
