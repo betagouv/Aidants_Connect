@@ -1,4 +1,4 @@
-{% load ac_common static %}
+{% load ac_common dsfr_tags static %}
 <footer class="fr-footer" role="contentinfo" id="footer">
   <div class="fr-container">
     <div class="fr-footer__body">
@@ -109,6 +109,11 @@
         <li class="fr-footer__bottom-item">
           <a class="fr-footer__bottom-link" href="/accessibilite">Accessibilité&nbsp;: non conforme</a>
         </li>
+        <li class="fr-footer__bottom-item">
+          <button aria-controls="fr-theme-modal" data-fr-opened="false" title="Paramètres d'affichage" type="button" class="fr-btn--display fr-btn">
+            Paramètres d'affichage
+          </button>
+        </li>
       </ul>
       <div class="fr-footer__bottom-copy">
         <p>Sauf mention explicite de propriété intellectuelle détenue par des tiers, les contenus de ce site sont
@@ -124,3 +129,5 @@
     </div>
   </div>
 </footer>
+
+{% dsfr_theme_modale %}
