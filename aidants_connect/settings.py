@@ -153,7 +153,6 @@ INSTALLED_APPS = [
     "widget_tweaks",
     "dsfr",
     "django_blocklist",
-    "django_js_reverse",
     "aidants_connect",
     "aidants_connect_common",
     "aidants_connect_web",
@@ -277,7 +276,6 @@ ACTIVITY_CHECK_DURATION = timedelta(minutes=ACTIVITY_CHECK_THRESHOLD)
 
 AUTH_USER_MODEL = "aidants_connect_web.Aidant"
 
-JS_REVERSE_EXCLUDE_NAMESPACES = ["admin", "djdt", "otpadmin"]
 JS_MINIFY = False
 
 DEMARCHES = {

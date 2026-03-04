@@ -98,6 +98,7 @@
         <section
           class="fr-grid-row fr-bordered fr-mt-6v"
           data-controller="formation-informations"
+          data-formation-informations-url-value="{% url 'formation_informations' pk=0 %}"
           hidden="hidden"
           aria-hidden="true"
         >
@@ -134,6 +135,5 @@
 {% endblock content %}
 
 {% block extrajs %}
-  <script defer src="{% url 'js_reverse' %}"></script>
   <script type="module" src="{% static 'js/formation-informations.mjs' %}"></script>
 {% endblock extrajs %}
