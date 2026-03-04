@@ -18,6 +18,7 @@ django-csp = "==3.8"
 django-extensions = "~=3.2.1"
 django-import-export = {version =  "~=4.0", extras = ["all"]}
 django-ipware = "~=7.0.1"
+django-js-reverse = "~=0.10.0"
 django-magicauth = "==1.0.2"
 django-nested-admin = "~=4.0"
 django-otp = "~=1.5"
