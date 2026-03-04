@@ -318,64 +318,6 @@ class AidantsView(DetailView, FormView):
 
 
 @responsable_logged_with_activity_required
-class DemandesView(DetailView, FormView):
-    template_name = "aidants_connect_web/espace_responsable/demandes.html"
-    context_object_name = "organisation"
-    model = Organisation
-    form_class = OrganisationRestrictDemarchesForm
-    success_url = reverse_lazy("espace_responsable_demandes")
-
-    def dispatch(self, request, *args, **kwargs):
-        self.referent: Aidant = request.user
-        # Needed when following the FormView path
-        self.object = self.get_object()
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_object(self, queryset=None):
-        self.organisation: Organisation = self.referent.organisation
-
-        if not self.organisation:
-            django_messages.error(
-                self.request, "Erreur : vous n'êtes pas rattaché à une organisation."
-            )
-            return redirect("espace_aidant_home")
-        return self.organisation
-
-    def get_context_data(self, **kwargs):
-        organisation_habilitation_requests = self.object.habilitation_requests.filter(
-            status__in=[
-                ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
-                ReferentRequestStatuses.STATUS_NEW.value,
-            ],
-            created_by_fne=False,
-        ).order_by("status", "last_name")
-        organisation_habilitation_validated = self.object.habilitation_requests.filter(
-            status__in=[
-                ReferentRequestStatuses.STATUS_PROCESSING.value,
-                ReferentRequestStatuses.STATUS_PROCESSING_P2P.value,
-            ],
-            created_by_fne=False,
-        ).order_by("status", "last_name")
-        organisation_habilitation_refused = self.object.habilitation_requests.filter(
-            status__in=[
-                ReferentRequestStatuses.STATUS_REFUSED.value,
-                ReferentRequestStatuses.STATUS_CANCELLED.value,
-                ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE.value,
-            ],
-            created_by_fne=False,
-        ).order_by("status", "last_name")
-
-        return {
-            **super().get_context_data(**kwargs),
-            "notification_type": NotificationType,
-            "organisation_habilitation_requests": organisation_habilitation_requests,
-            "organisation_habilitation_validated": organisation_habilitation_validated,
-            "organisation_habilitation_refused": organisation_habilitation_refused,
-            "perimetres_form": super().get_form(),
-        }
-
-
-@responsable_logged_with_activity_required
 class OrganisationResponsables(FormView):
     template_name = "aidants_connect_web/espace_responsable/responsables.html"
     success_url = reverse_lazy("espace_responsable_referents")
@@ -998,7 +940,9 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
 @method_decorator(activity_required, name="get")
 @responsable_logged_required
 class NewHabilitationRequest(FormView):
-    template_name = "aidants_connect_web/espace_responsable/new-habilitation-request.html"  # noqa: E501
+    template_name = (
+        "aidants_connect_web/espace_responsable/new-habilitation-request.html"
+    )
     form_class = NewHabilitationRequestForm
     success_url = reverse_lazy("espace_responsable_aidants")
 
@@ -1085,7 +1029,9 @@ class CancelHabilitationRequestView(DetailView):
     pk_url_kwarg = "request_id"
     model = HabilitationRequest
     context_object_name = "request"
-    template_name = "aidants_connect_web/espace_responsable/cancel-habilitation-request.html"  # noqa: E501
+    template_name = (
+        "aidants_connect_web/espace_responsable/cancel-habilitation-request.html"
+    )
 
     def dispatch(self, request, *args, **kwargs):
         self.aidant: Aidant = request.user
@@ -1119,4 +1065,4 @@ class FormationRegistrationView(CommonFormationRegistrationView):
         )
 
     def get_cancel_url(self) -> str:
-        return reverse("espace_responsable_demandes")
+        return reverse("espace_responsable_aidants")
