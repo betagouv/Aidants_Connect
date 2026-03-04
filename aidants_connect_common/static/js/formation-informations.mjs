@@ -1,4 +1,4 @@
-import {BaseController, aidantsConnectApplicationReady} from "AidantsConnectApplication"
+import { BaseController, aidantsConnectApplicationReady } from "AidantsConnectApplication"
 
 /**
  * @property {HTMLSelectElement} regionsInputTarget
@@ -7,25 +7,26 @@ import {BaseController, aidantsConnectApplicationReady} from "AidantsConnectAppl
  */
 class FormationInformation extends BaseController {
     static targets = ["informationsContainer", "regionsInput"]
-    static values = {regionSelect: String}
+    static values = { regionSelect: String, url: String }
 
-    initialize () {
+    initialize() {
         this.showElement(this.element);
-        if(this.regionsInputTarget.value) {
+        if (this.regionsInputTarget.value) {
             this.regionSelectValue = this.regionsInputTarget.value;
         }
     }
 
     regionSelectValueChanged(val) {
-        fetch(Urls.formationInformations({pk: val}))
+        if (!val || !this.urlValue) return;
+        fetch(this.urlValue.replace("/0/", `/${val}/`))
             .then(async response => {
                 if (response.ok) {
                     this.informationsContainerTarget.innerHTML = await response.text();
                 }
-            }).catch(() => {});
+            }).catch(() => { });
     }
 
-    regionChanged (evt) {
+    regionChanged(evt) {
         this.regionSelectValue = evt.target.value;
     }
 }
