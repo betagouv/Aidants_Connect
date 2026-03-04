@@ -276,7 +276,6 @@ ACTIVITY_CHECK_DURATION = timedelta(minutes=ACTIVITY_CHECK_THRESHOLD)
 
 AUTH_USER_MODEL = "aidants_connect_web.Aidant"
 
-JS_REVERSE_EXCLUDE_NAMESPACES = ["admin", "djdt", "otpadmin"]
 JS_MINIFY = False
 
 DEMARCHES = {
