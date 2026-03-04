@@ -206,8 +206,7 @@ def notify_new_habilitation_requests(*, logger=None):
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=recipient_list,
         subject=(
-            f"[Aidants Connect] {habilitation_requests_count} "
-            "nouveaux aidants à former"
+            f"[Aidants Connect] {habilitation_requests_count} nouveaux aidants à former"
         ),
         message=text_message,
         html_message=html_message,
@@ -882,9 +881,6 @@ def notifiy_organisation_having_formation_unregistered_habilitation_requests():
         text_message_with_connexion, html_message_with_connexion = render_email(
             "email/having_formation_unregistered_habilitation_requests.mjml",
             {
-                "habilitation_requests_url": build_url(
-                    reverse("espace_responsable_demandes")
-                ),
                 "espace_referent_url": build_url(reverse("espace_responsable")),
                 "url_formulaire": url_formulaire,
             },
