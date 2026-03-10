@@ -823,51 +823,11 @@ class NewHabilitationRequestForm(BaseModelMultiForm):
         return super().save(commit)
 
 
-class DatapassForm(forms.Form):
-    data_pass_id = forms.IntegerField()
-    organization_name = forms.CharField()
-    organization_siret = forms.IntegerField()
-    organization_address = forms.CharField()
-    organization_postal_code = forms.CharField()
-    organization_type = forms.CharField()
-
-
 class ValidateCGUForm(DsfrBaseForm):
     agree = forms.BooleanField(
         label="J’ai lu et j’accepte les conditions d’utilisation Aidants Connect.",
         required=True,
     )
-
-
-class DatapassHabilitationForm(forms.ModelForm):
-    data_pass_id = forms.IntegerField()
-
-    class Meta:
-        model = HabilitationRequest
-        fields = [
-            "first_name",
-            "last_name",
-            "email",
-            "profession",
-        ]
-
-    def clean_data_pass_id(self):
-        data_pass_id = self.cleaned_data["data_pass_id"]
-        organisations = Organisation.objects.filter(data_pass_id=data_pass_id)
-        if not organisations.exists():
-            raise ValidationError("No organisation for data_pass_id")
-        self.cleaned_data["organisation"] = organisations[0]
-
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-        if email:
-            return email.lower()
-        return email
-
-    def save(self, commit=True):
-        self.instance.organisation = self.cleaned_data["organisation"]
-        self.instance.origin = HabilitationRequest.ORIGIN_DATAPASS
-        return super().save(commit)
 
 
 class MassEmailActionForm(forms.Form):
