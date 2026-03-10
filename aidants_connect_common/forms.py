@@ -648,6 +648,13 @@ class AdminValidateorDisableForm(PatchedForm):
 
 class AdminChangeFormationForm(PatchedForm, forms.ModelForm):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # self.f_attendant = f_attendant
+        self.fields["formation"].queryset = Formation.objects.filter(
+            organisation=self.instance.formation.organisation
+        )
+
     # def __init__(self, f_attendant, *args, **kwargs):
     #     super().__init__(*args, **kwargs)
     #     self.f_attendant = f_attendant

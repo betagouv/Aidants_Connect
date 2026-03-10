@@ -14,6 +14,7 @@ from aidants_connect_common.models import (
     FormationAttendant,
     FormationOrganization,
     FormationType,
+    FundingConum,
 )
 
 from .admin_ac import (
@@ -26,6 +27,11 @@ from .admin_ac import (
 from .filter import FormationFillingFilter
 
 
+@register(FundingConum, site=admin_of_site)
+class FundingConumAdmin(VisibleToOFUserReadOnly, ModelAdmin):
+    list_display = ("name",)
+
+
 @register(FormationAttendant, site=admin_of_site)
 class FormationAttendantOFAdmin(VisibleToOFUserEditOnly, FormationAttendantAdmin):
     list_filter = [
@@ -34,6 +40,8 @@ class FormationAttendantOFAdmin(VisibleToOFUserEditOnly, FormationAttendantAdmin
         "attendant__formation_done",
         "attendant__test_pix_passed",
         "formation__intra",
+        "attendant__conseiller_numerique",
+        "financement_conum",
     ]
     list_display = (
         # "id_grist",
@@ -41,6 +49,8 @@ class FormationAttendantOFAdmin(VisibleToOFUserEditOnly, FormationAttendantAdmin
         "formation",
         "state",
         "formation_participation",
+        "conseiller_numerique",
+        "financement_conum",
         "get_pix_result",
         "created_at",
         "updated_at",
@@ -49,10 +59,12 @@ class FormationAttendantOFAdmin(VisibleToOFUserEditOnly, FormationAttendantAdmin
     )
     readonly_fields = [
         "created_at",
+        "conseiller_numerique",
         "get_formation_id_grist",
         "id_grist",
         "state",
         "registered",
+        "financement_conum",
         "attendant_structure",
         "formation_participation",
         "get_formation_id",
@@ -61,7 +73,9 @@ class FormationAttendantOFAdmin(VisibleToOFUserEditOnly, FormationAttendantAdmin
     ]
     readonly_fields_for_edit = [
         "created_at",
+        "conseiller_numerique",
         "get_formation_id_grist",
+        "financement_conum",
         "attendant_structure",
         "registered",
         "formation",
@@ -83,6 +97,15 @@ class FormationAttendantOFAdmin(VisibleToOFUserEditOnly, FormationAttendantAdmin
                     "registered",
                     "attendant_structure",
                     "display_responsables",
+                )
+            },
+        ),
+        (
+            "Informations Conseiller numérique",
+            {
+                "fields": (
+                    "conseiller_numerique",
+                    "financement_conum",
                 )
             },
         ),
@@ -120,10 +143,14 @@ class FormationAttendantOFAdmin(VisibleToOFUserEditOnly, FormationAttendantAdmin
             obj.attendant.email,
         )
 
+    @admin.display(description="Conseiller numérique")
+    def conseiller_numerique(self, obj: FormationAttendant):
+        return "Oui" if obj.attendant.conseiller_numerique else "Non"
+
     def change_view(self, request, object_id, form_url="", extra_context=None):
         one_fattendant = self.get_object(request, object_id)
         extra_context = {
-            "view_action_button": True if one_fattendant.state == 1 else False
+            "view_action_button": True if one_fattendant.state in [1, 4] else False
         }
         return self.changeform_view(request, object_id, form_url, extra_context)
 

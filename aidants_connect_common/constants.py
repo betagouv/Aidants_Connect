@@ -348,3 +348,4 @@ class FormationAttendantState(IntegerChoices):
     DEFAULT = (enum.auto(), "Par défaut")
     WAITING = (enum.auto(), "En attente")
     CANCELLED = (enum.auto(), "Annulé")
+    INSCRIT = (enum.auto(), "Inscrit")
