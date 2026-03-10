@@ -14,9 +14,9 @@
 {% endblock extrahead %}
 
 {% block content %}
-  <h1>Vers organisation transférer&nbsp;?</h1>
+  <h1>Vers quelle organisation transférer&nbsp;?</h1>
 
-  <p>Sélectionner l'ogranisation vers laquelle vous souhaitez transférer les mandats.</p>
+  <p>Sélectionnez l'organisation vers laquelle vous souhaitez transférer les mandats.</p>
 
   <form action="{% url 'otpadmin:aidants_connect_web_mandat_transfer' %}" method="POST">
     <fieldset class="module aligned">
@@ -29,7 +29,7 @@
       </p>
     </div>
     {% csrf_token %}
-    <input type="text" name="ids" value="{{ ids }}" hidden="hidden">
+    <input type="hidden" name="ids" value="{{ ids }}">
   </form>
 
   <h2>
