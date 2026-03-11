@@ -164,6 +164,13 @@ class HabilitationRequest(models.Model):
             # tasks.email_annonce_formateur_pap.delay(self.id)
             tasks.send_email_annonce_formateur_pap(self.id, None)
 
+    def switch_classic_to_pap(self, save=True):
+        if self.status == ReferentRequestStatuses.STATUS_PROCESSING:
+            self.status = ReferentRequestStatuses.STATUS_PROCESSING_P2P
+        self.course_type = HabilitationRequestCourseType.P2P
+        if save:
+            self.save()
+
     def validate_and_create_aidant(self):
         if self.status not in (
             ReferentRequestStatuses.STATUS_PROCESSING,
