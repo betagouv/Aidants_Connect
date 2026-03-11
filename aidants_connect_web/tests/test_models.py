@@ -44,6 +44,7 @@ from aidants_connect_web.models import (
     Notification,
     Organisation,
     OrganisationType,
+    StructureChangeRequest,
     Usager,
 )
 from aidants_connect_web.tests.factories import (
@@ -2646,6 +2647,38 @@ class FormationAttendantTests(TestCase):
             FormationAttendant.objects.create(
                 formation=formation, attendant=hab_request
             )
+
+
+@tag("models")
+class StructureChangeRequestTests(TestCase):
+    def test_create_structure_change_request(self):
+        old_org = OrganisationFactory()
+        new_org = OrganisationFactory()
+        aidant = AidantFactory(organisation=old_org)
+        req = StructureChangeRequest.objects.create(
+            aidant=aidant,
+            email=aidant.email,
+            organisation=new_org,
+            previous_organisation=old_org,
+            new_email="newemail@example.com",
+        )
+        self.assertEqual(req.email, aidant.email)
+        self.assertEqual(req.new_email, "newemail@example.com")
+        self.assertEqual(req.organisation, new_org)
+        self.assertEqual(req.previous_organisation, old_org)
+        self.assertEqual(req.aidant, aidant)
+
+    def test_get_full_name_returns_aidant_name(self):
+        old_org = OrganisationFactory()
+        new_org = OrganisationFactory()
+        aidant = AidantFactory(organisation=old_org)
+        req = StructureChangeRequest.objects.create(
+            aidant=aidant,
+            email=aidant.email,
+            organisation=new_org,
+            previous_organisation=old_org,
+        )
+        self.assertEqual(req.get_full_name(), aidant.get_full_name())
 
 
 class LogEmailSendingTests(TestCase):
