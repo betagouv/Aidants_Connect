@@ -16,7 +16,6 @@ from aidants_connect_web.forms import (
     AddAppOTPToAidantForm,
     AidantChangeForm,
     AidantCreationForm,
-    DatapassHabilitationForm,
     HabilitationRequestCreationForm,
     MandatForm,
     MassEmailActionForm,
@@ -482,49 +481,6 @@ class RecapMandatFormTests(TestCase):
             data={"brief": ["on"], "personal_data": ["on"], "otp_token": "123456"},
         )
         self.assertFalse(form_2.is_valid())
-
-
-@tag("forms")
-class DatapassAccreditationFormTests(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.organisation = OrganisationFactory(data_pass_id=42)
-
-    def test_raise_error_with_invalid_data_pass_id(self):
-        form = DatapassHabilitationForm(
-            data={
-                "first_name": "Mario",
-                "last_name": "Brosse",
-                "email": "mario.brossse@world.fr",
-                "profession": "plombier",
-                "data_pass_id": 33,
-            }
-        )
-        self.assertFalse(form.is_valid())
-        self.assertEqual(
-            form.errors["data_pass_id"], ["No organisation for data_pass_id"]
-        )
-
-    def test_forms_is_ok(self):
-        form = DatapassHabilitationForm(
-            data={
-                "first_name": "Mario",
-                "last_name": "Brosse",
-                "email": "mario.brossse@world.fr",
-                "profession": "plombier",
-                "data_pass_id": 42,
-            }
-        )
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data["organisation"], self.organisation)
-
-        habilitation = form.save()
-
-        self.assertEqual(habilitation.organisation, self.organisation)
-        self.assertEqual(habilitation.first_name, "Mario")
-        self.assertEqual(habilitation.last_name, "Brosse")
-        self.assertEqual(habilitation.email, "mario.brossse@world.fr")
-        self.assertEqual(habilitation.profession, "plombier")
 
 
 @tag("forms")
