@@ -24,6 +24,7 @@ from .other_models import (
     ExportRequest,
     HabilitationRequest,
     LogEmailSending,
+    StructureChangeRequest,
 )
 from .stats import (
     AidantStatistiques,
@@ -50,6 +51,7 @@ __all__ = [
     EmailStatistics,
     ExportRequest,
     HabilitationRequest,
+    StructureChangeRequest,
     FirstConnexionManagerInfo,
     IdGenerator,
     Journal,

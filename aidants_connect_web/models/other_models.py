@@ -23,20 +23,38 @@ from .organisation import Organisation
 logger = logging.getLogger()
 
 
-class HabilitationRequest(models.Model):
+def _validatable_statuses():
+    return (
+        ReferentRequestStatuses.STATUS_PROCESSING,
+        ReferentRequestStatuses.STATUS_PROCESSING_P2P,
+        ReferentRequestStatuses.STATUS_NEW,
+        ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
+        ReferentRequestStatuses.STATUS_VALIDATED,
+        ReferentRequestStatuses.STATUS_CANCELLED,
+    )
+
+
+class AbstractHabilitationRequest(models.Model):
+    """
+    Abstract base for habilitation-related requests (new aidant or structure change).
+    Common fields and logic;
+    organisation is on concrete models for distinct related_name.
+    """
+
     ReferentRequestStatuses = ReferentRequestStatuses
-    CourseType = HabilitationRequestCourseType
 
     ORIGIN_DATAPASS = "datapass"
     ORIGIN_RESPONSABLE = "responsable"
     ORIGIN_OTHER = "autre"
     ORIGIN_HABILITATION = "habilitation"
+    ORIGIN_STRUCTURE_CHANGE = "structure_change"
 
     ORIGIN_LABELS = {
         ORIGIN_DATAPASS: "Datapass",
         ORIGIN_RESPONSABLE: "Référent Structure",
         ORIGIN_OTHER: "Autre",
         ORIGIN_HABILITATION: "Formulaire Habilitation",
+        ORIGIN_STRUCTURE_CHANGE: "Changement de structure",
     }
 
     CONNEXION_MODE_CARD = "card"
@@ -47,25 +65,7 @@ class HabilitationRequest(models.Model):
         CONNEXION_MODE_PHONE: "Application mobile",
     }
 
-    first_name = models.CharField("Prénom", max_length=150)
-    last_name = models.CharField("Nom", max_length=150)
-    email = models.EmailField(
-        max_length=150,
-    )
-
-    created_by_fne = models.BooleanField("Création FNE", default=False)
-    id_fne = models.CharField("ID FNE", max_length=255, null=True, blank=True)
-
-    organisation = models.ForeignKey(
-        Organisation,
-        null=True,
-        on_delete=models.CASCADE,
-        related_name="habilitation_requests",
-    )
-    profession = models.CharField(blank=False, max_length=150)
-    conseiller_numerique = models.BooleanField(
-        "Est un conseiller numérique", default=False
-    )
+    email = models.EmailField(max_length=150)
     status = models.CharField(
         "État",
         blank=False,
@@ -80,7 +80,8 @@ class HabilitationRequest(models.Model):
         choices=((origin, label) for origin, label in ORIGIN_LABELS.items()),
         default=ORIGIN_OTHER,
     )
-
+    created_by_fne = models.BooleanField("Création FNE", default=False)
+    id_fne = models.CharField("ID FNE", max_length=255, null=True, blank=True)
     connexion_mode = models.CharField(
         "Moyen de connexion",
         max_length=150,
@@ -91,13 +92,71 @@ class HabilitationRequest(models.Model):
             (con_mode, label) for con_mode, label in CONNEXION_MODE_LABELS.items()
         ),
     )
-
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
     updated_at = models.DateTimeField("Date de modification", auto_now=True)
     formation_done = models.BooleanField("Formation faite", default=False)
     date_formation = models.DateTimeField("Date de formation", null=True, blank=True)
     test_pix_passed = models.BooleanField("Test PIX", default=False)
     date_test_pix = models.DateTimeField("Date test PIX", null=True, blank=True)
+
+    @property
+    def status_label(self):
+        return ReferentRequestStatuses(self.status).label
+
+    @property
+    def status_cancellable_by_responsable(self):
+        return (
+            ReferentRequestStatuses(self.status)
+            in ReferentRequestStatuses.cancellable_by_responsable()
+        )
+
+    @property
+    def origin_label(self):
+        return self.ORIGIN_LABELS.get(self.origin, self.origin)
+
+    @property
+    def connexion_mode_label(self):
+        if self.connexion_mode:
+            return self.CONNEXION_MODE_LABELS.get(self.connexion_mode, "")
+        return ""
+
+    def cancel_by_responsable(self):
+        if not self.status_cancellable_by_responsable:
+            return
+        self.status = ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE
+        self.save(update_fields={"status"})
+
+    def _add_existing_aidant_to_organisation(self, aidant: Aidant) -> bool:
+        """Add existing aidant to this request's organisation and update flags."""
+        aidant.organisations.add(self.organisation)
+        aidant.referent_non_aidant = False
+        aidant.can_create_mandats = True
+        aidant.save()
+        self.status = ReferentRequestStatuses.STATUS_VALIDATED
+        self.save()
+        return True
+
+    class Meta:
+        abstract = True
+
+
+class HabilitationRequest(AbstractHabilitationRequest):
+    ReferentRequestStatuses = ReferentRequestStatuses
+    CourseType = HabilitationRequestCourseType
+
+    first_name = models.CharField("Prénom", max_length=150)
+    last_name = models.CharField("Nom", max_length=150)
+    profession = models.CharField(blank=False, max_length=150)
+    conseiller_numerique = models.BooleanField(
+        "Est un conseiller numérique", default=False
+    )
+
+    organisation = models.ForeignKey(
+        Organisation,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="habilitation_requests",
+    )
 
     course_type = models.IntegerField(
         "Type de parcours",
@@ -119,7 +178,6 @@ class HabilitationRequest(models.Model):
     email_detail_formateur_pap_send = models.BooleanField(
         "Email PAP détail formateur envoyé", default=False, editable=False
     )
-
     email_hr_validated_pap_send = models.BooleanField(
         "Email validation formation pap envoyé", default=False, editable=False
     )
@@ -131,27 +189,6 @@ class HabilitationRequest(models.Model):
     def aidant_full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
 
-    @property
-    def status_label(self):
-        return ReferentRequestStatuses(self.status).label
-
-    @property
-    def status_cancellable_by_responsable(self):
-        return (
-            ReferentRequestStatuses(self.status)
-            in ReferentRequestStatuses.cancellable_by_responsable()
-        )
-
-    @property
-    def origin_label(self):
-        return self.ORIGIN_LABELS[self.origin]
-
-    @property
-    def connexion_mode_label(self):
-        if self.connexion_mode:
-            return self.CONNEXION_MODE_LABELS[self.connexion_mode]
-        return ""
-
     def __str__(self):
         return f"{self.aidant_full_name} ({self.email})"
 
@@ -160,34 +197,16 @@ class HabilitationRequest(models.Model):
 
         super().save(*args, **kwargs)
         if not self.email_annonce_formateur_pap_send and self.email_formateur:
-
-            # tasks.email_annonce_formateur_pap.delay(self.id)
             tasks.send_email_annonce_formateur_pap(self.id, None)
 
     def validate_and_create_aidant(self):
-        if self.status not in (
-            ReferentRequestStatuses.STATUS_PROCESSING,
-            ReferentRequestStatuses.STATUS_PROCESSING_P2P,
-            ReferentRequestStatuses.STATUS_NEW,
-            ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION,
-            ReferentRequestStatuses.STATUS_VALIDATED,
-            ReferentRequestStatuses.STATUS_CANCELLED,
-        ):
+        if self.status not in _validatable_statuses():
             return False
 
         with transaction.atomic():
-            if Aidant.objects.filter(username__iexact=self.email).count() > 0:
-                aidant: Aidant = Aidant.objects.get(username__iexact=self.email)
-                aidant.organisations.add(self.organisation)
-                # aidant.is_active = True
-                aidant.referent_non_aidant = False
-                aidant.can_create_mandats = True
-                aidant.save()
-                self.status = ReferentRequestStatuses.STATUS_VALIDATED
-                self.save()
-                # from aidants_connect_web.signals import aidant_activated
-                #
-                # aidant_activated.send(self.__class__, aidant=aidant, hrequest=self)
+            existing = Aidant.objects.filter(username__iexact=self.email).first()
+            if existing:
+                self._add_existing_aidant_to_organisation(existing)
                 return True
 
             aidant = Aidant.objects.create(
@@ -207,19 +226,10 @@ class HabilitationRequest(models.Model):
         from aidants_connect_web.signals import aidant_activated
 
         aidant_activated.send(self.__class__, aidant=aidant, hrequest=self)
-
         return True
-
-    def cancel_by_responsable(self):
-        if not self.status_cancellable_by_responsable:
-            return
-
-        self.status = ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE
-        self.save(update_fields={"status"})
 
     def generate_dict_for_sandbox(self):
         orga = self.organisation
-
         return {
             "first_name": self.first_name,
             "last_name": self.last_name,
@@ -273,6 +283,78 @@ class HabilitationRequest(models.Model):
                 ),
             ),
         )
+
+
+class StructureChangeRequest(AbstractHabilitationRequest):
+    """
+    Request to add an already-trained aidant to a new structure (change of structure).
+    Only email (and optional new_email) are needed; no first_name/last_name/profession.
+    """
+
+    organisation = models.ForeignKey(
+        Organisation,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="structure_change_requests",
+    )
+    # Override default origin from abstract
+    origin = models.CharField(
+        "Origine",
+        blank=False,
+        max_length=150,
+        choices=(
+            (orig, label)
+            for orig, label in AbstractHabilitationRequest.ORIGIN_LABELS.items()
+        ),
+        default=AbstractHabilitationRequest.ORIGIN_STRUCTURE_CHANGE,
+    )
+    new_email = models.EmailField(
+        "Adresse e-mail (nouvelle structure)",
+        max_length=150,
+        blank=True,
+        null=True,
+    )
+
+    def get_full_name(self):
+        aidant = Aidant.objects.filter(username__iexact=self.email).first()
+        if aidant:
+            return aidant.get_full_name()
+        return self.email
+
+    def __str__(self):
+        return f"{self.get_full_name()} ({self.email})"
+
+    def validate_and_create_aidant(self):
+        if self.status not in _validatable_statuses():
+            return False
+
+        aidant = Aidant.objects.filter(username__iexact=self.email).first()
+        if not aidant:
+            return False
+
+        with transaction.atomic():
+            if self.new_email:
+                new_email = self.new_email.strip().lower()
+                aidant.email = new_email
+                aidant.username = new_email
+                aidant.save(update_fields=["email", "username"])
+
+            self._add_existing_aidant_to_organisation(aidant)
+
+        from aidants_connect_web.signals import aidant_activated
+
+        aidant_activated.send(self.__class__, aidant=aidant, hrequest=self)
+        return True
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=("email", "organisation"),
+                name="structurechangerequest_unique_email_per_orga",
+            ),
+        )
+        verbose_name = "demande de changement de structure"
+        verbose_name_plural = "demandes de changement de structure"
 
 
 def _filepath_generator():
