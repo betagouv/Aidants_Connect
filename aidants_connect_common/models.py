@@ -364,6 +364,17 @@ class HalfDayClass(models.Model):
         verbose_name_plural = "Demi-journées de formation"
 
 
+class FundingConum(models.Model):
+    name = models.CharField("Nom de financement", max_length=150, blank=True)
+
+    class Meta:
+        verbose_name = "Financement Conum"
+        verbose_name_plural = "Financement Conum"
+
+    def __str__(self):
+        return self.name
+
+
 class FormationAttendant(models.Model):
     State = FormationAttendantState
 
@@ -376,7 +387,9 @@ class FormationAttendant(models.Model):
         verbose_name="Aidant inscrit",
         related_name="formations",
     )
-
+    financement_conum = models.ForeignKey(
+        FundingConum, on_delete=models.SET_NULL, null=True, blank=True
+    )
     formation = models.ForeignKey(
         Formation,
         on_delete=models.PROTECT,

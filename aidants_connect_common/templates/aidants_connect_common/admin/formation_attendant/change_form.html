@@ -4,9 +4,9 @@
 {% block object-tools-items %}
   <li>
   {% if view_action_button %}
-{# <a class="viewsitelink" href="{% url "adminof:aidants_connect_common_change_inscription" object_id=object_id %}"> #}
-{# <span aria-hidden="true">💫  </span> Basculer l'inscription sur une autre formation #}
-{# </a> #}
+ <a class="viewsitelink" href="{% url "adminof:aidants_connect_common_change_inscription" object_id=object_id %}">
+ <span aria-hidden="true">💫  </span> Basculer l'inscription sur une autre formation
+ </a>
     <a class="viewsitelink" href="{% url "adminof:aidants_connect_common_disable_inscription" object_id=object_id %}">
       <span aria-hidden="true">💔 </span> Annuler l'inscription
     </a>

@@ -29,6 +29,7 @@ from aidants_connect_common.models import (
     FormationContactPublic,
     FormationOrganization,
     FormationType,
+    FundingConum,
     HalfDayClass,
     Region,
 )
@@ -41,6 +42,11 @@ from .resources import (
     FormationResource,
     ZRRResource,
 )
+
+
+@register(FundingConum, site=admin_site)
+class FundingConumAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_display = ("name",)
 
 
 @register(Commune, site=admin_site)
@@ -389,7 +395,7 @@ class FormationAttendantAdmin(VisibleToAdminMetier, ExportMixin, ModelAdmin):
         "attendant__email",
     )
 
-    actions = ["validate_inscription", "disable_inscription"]
+    actions = ["validate_inscription", "disable_inscription", "set_state_to_inscrit"]
     change_form_template = (
         "aidants_connect_common/admin/formation_attendant/change_form.html"
     )
@@ -418,6 +424,19 @@ class FormationAttendantAdmin(VisibleToAdminMetier, ExportMixin, ModelAdmin):
         self.message_user(request, f"{queryset.count()} inscriptions ont été annulées")
 
     disable_inscription.short_description = "Annuler les inscriptions sélectionnées"
+
+    def set_state_to_inscrit(self, request: HttpRequest, queryset: QuerySet):
+        from aidants_connect_common.constants import FormationAttendantState
+
+        queryset.update(state=FormationAttendantState.INSCRIT)
+        self.message_user(
+            request,
+            f"{queryset.count()} inscriptions ont été passés en inscription validées",
+        )
+
+    set_state_to_inscrit.short_description = (
+        "Passer les inscriptions sélectionnées statut inscrit"
+    )
 
     def validate_inscription(self, request: HttpRequest, queryset: QuerySet):
         for one_fattendant in queryset:
