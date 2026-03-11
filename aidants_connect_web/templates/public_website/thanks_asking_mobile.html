@@ -1,7 +1,7 @@
-é{% extends 'public_website/layout/main.html' %}
+{% extends 'public_website/layout/main.html' %}
 {% load ac_common dsfr_tags form_extras static %}
 
-{% block title %}Référent - Information, Numéro de Mobile{{% endblock %}
+{% block title %}Référent - Numéro de mobile enregistré - Aidants Connect{% endblock %}
 
 {% block extracss %}
 
@@ -12,16 +12,10 @@
   <h1 class="fr-mb-4w">Merci</h1>
 
 {% block body %}
-  <div class="fr-container">
     <div id="thank_asking_mobile" class="fr-mb-8w">
-
       <p>Votre numéro de téléphone a bien été sauvegardé,
         vous allez pouvoir recevoir votre code de première connexion</p>
-
     </div>
-  </div>
 {% endblock body %}
-    </div>
-  </div>
 </div>
 {% endblock content %}
