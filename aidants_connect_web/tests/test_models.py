@@ -28,6 +28,7 @@ from aidants_connect_common.tests.factories import FormationFactory
 from aidants_connect_erp.constants import SendingStatusChoices
 from aidants_connect_erp.tests.factories import CardSendingFactory
 from aidants_connect_web.constants import (
+    HabilitationRequestCourseType,
     ReferentRequestStatuses,
     RemoteConsentMethodChoices,
 )
@@ -2207,6 +2208,33 @@ class HabilitationRequestTests(TestCase):
                 db_hab_request.status,
                 ReferentRequestStatuses.STATUS_VALIDATED.value,
             )
+
+    def test_switch_classic_to_pap(self):
+        hr_processing = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_PROCESSING.value
+        )
+
+        self.assertEqual(
+            hr_processing.status, ReferentRequestStatuses.STATUS_PROCESSING.value
+        )
+        hr_processing.switch_classic_to_pap()
+        hr_processing.refresh_from_db()
+        self.assertEqual(
+            hr_processing.status, ReferentRequestStatuses.STATUS_PROCESSING_P2P.value
+        )
+        self.assertEqual(
+            hr_processing.course_type, HabilitationRequestCourseType.P2P.value
+        )
+
+        hr_new = HabilitationRequestFactory(
+            status=ReferentRequestStatuses.STATUS_NEW.value
+        )
+
+        self.assertEqual(hr_new.status, ReferentRequestStatuses.STATUS_NEW.value)
+        hr_new.switch_classic_to_pap()
+        hr_new.refresh_from_db()
+        self.assertEqual(hr_new.status, ReferentRequestStatuses.STATUS_NEW.value)
+        self.assertEqual(hr_new.course_type, HabilitationRequestCourseType.P2P.value)
 
     def test_validate_when_aidant_is_pap(self):
         habilitation_request = HabilitationRequestFactory(

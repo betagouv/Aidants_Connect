@@ -287,7 +287,12 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         "email_hr_validated_pap_send",
     )
     raw_id_fields = ("organisation",)
-    actions = ("mark_validated", "mark_refused", "mark_processing")
+    actions = (
+        "mark_validated",
+        "mark_refused",
+        "mark_processing",
+        "switch_classic_to_pap",
+    )
     list_filter = (
         "status",
         "origin",
@@ -408,6 +413,13 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         self.message_user(request, f"{rows_updated} demandes ont été validées.")
 
     mark_validated.short_description = "Créer les comptes aidants sélectionnés"
+
+    def switch_classic_to_pap(self, request, queryset):
+        for habilitation_request in queryset:
+            habilitation_request.switch_classic_to_pap()
+        self.message_user(
+            request, f"{queryset.count()} demandes ont été passées en pap."
+        )
 
     def mark_refused(self, request, queryset):
         rows_updated = queryset.filter(
