@@ -406,15 +406,11 @@ class StructureChangeRequest(models.Model):
                 new_email = self.new_email.strip().lower()
                 aidant.email = new_email
                 aidant.username = new_email
+                aidant.save()
 
             aidant.organisations.add(self.organisation)
-            aidant.referent_non_aidant = False
-            aidant.can_create_mandats = True
-            aidant.save()
-
             if self.previous_organisation:
                 aidant.organisations.remove(self.previous_organisation)
-
             self.status = StructureChangeRequestStatuses.STATUS_VALIDATED
             self.save()
 

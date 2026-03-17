@@ -31,6 +31,7 @@ from aidants_connect_web.constants import (
     HabilitationRequestCourseType,
     ReferentRequestStatuses,
     RemoteConsentMethodChoices,
+    StructureChangeRequestStatuses,
 )
 from aidants_connect_web.models import (
     Aidant,
@@ -2679,6 +2680,89 @@ class StructureChangeRequestTests(TestCase):
             previous_organisation=old_org,
         )
         self.assertEqual(req.get_full_name(), aidant.get_full_name())
+
+    def test_validate_moves_aidant_to_new_org_and_removes_from_old(self):
+        old_org = OrganisationFactory()
+        new_org = OrganisationFactory()
+        aidant = AidantFactory(organisation=old_org)
+        req = StructureChangeRequest.objects.create(
+            aidant=aidant,
+            email=aidant.email,
+            organisation=new_org,
+            previous_organisation=old_org,
+        )
+
+        result = req.validate_structure_change()
+
+        self.assertTrue(result)
+        req.refresh_from_db()
+        aidant.refresh_from_db()
+        self.assertEqual(req.status, StructureChangeRequestStatuses.STATUS_VALIDATED)
+        self.assertIn(new_org, aidant.organisations.all())
+        self.assertNotIn(old_org, aidant.organisations.all())
+        self.assertFalse(aidant.referent_non_aidant)
+        self.assertTrue(aidant.can_create_mandats)
+
+    def test_validate_updates_email_when_new_email_set(self):
+        old_org = OrganisationFactory()
+        new_org = OrganisationFactory()
+        aidant = AidantFactory(organisation=old_org)
+        req = StructureChangeRequest.objects.create(
+            aidant=aidant,
+            email=aidant.email,
+            organisation=new_org,
+            previous_organisation=old_org,
+            new_email="changed@example.com",
+        )
+
+        result = req.validate_structure_change()
+
+        self.assertTrue(result)
+        aidant.refresh_from_db()
+        self.assertEqual(aidant.email, "changed@example.com")
+        self.assertEqual(aidant.username, "changed@example.com")
+
+    def test_validate_returns_false_when_status_is_not_new(self):
+        old_org = OrganisationFactory()
+        new_org = OrganisationFactory()
+        aidant = AidantFactory(organisation=old_org)
+
+        for status in (
+            StructureChangeRequestStatuses.STATUS_VALIDATED,
+            StructureChangeRequestStatuses.STATUS_REFUSED,
+            StructureChangeRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE,
+        ):
+            req = StructureChangeRequest.objects.create(
+                aidant=aidant,
+                email=aidant.email,
+                organisation=new_org,
+                previous_organisation=old_org,
+                status=status,
+            )
+            self.assertFalse(req.validate_structure_change())
+            # Clean up constraint for next iteration
+            req.delete()
+
+    def test_validate_keeps_can_create_mandats_false_on_referent_non_aidant(self):
+        old_org = OrganisationFactory()
+        new_org = OrganisationFactory()
+        aidant = AidantFactory(
+            organisation=old_org,
+            referent_non_aidant=True,
+            can_create_mandats=False,
+        )
+        req = StructureChangeRequest.objects.create(
+            aidant=aidant,
+            email=aidant.email,
+            organisation=new_org,
+            previous_organisation=old_org,
+        )
+
+        req.validate_structure_change()
+
+        aidant.refresh_from_db()
+        self.assertTrue(aidant.referent_non_aidant)
+        self.assertFalse(aidant.can_create_mandats)
 
 
 class LogEmailSendingTests(TestCase):
