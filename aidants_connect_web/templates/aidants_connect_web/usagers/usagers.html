@@ -12,7 +12,7 @@
 {% block content %}
 
 
-  <div class="fr-container">
+<div class="fr-container" data-controller="search">
     <div class="fr-grid-row flex-between fr-mb-6w">
       <h1 class="fr-mb-2w">Mes mandats</h1>
       <div>
@@ -30,6 +30,9 @@
         {% dsfr_django_messages %}
       </div>
     {% endif %}
+
+{% include "aidants_connect_web/users_search_bar.html" %}
+
     <div class="fr-tabs">
       <ul class="fr-tabs__list" role="tablist" aria-label="Mes mandats">
         <li role="presentation">
@@ -148,3 +151,7 @@
 
   </div>
 {% endblock content %}
+
+{% block extrajs %}
+  <script type="module" src="{% static 'js/users-search.mjs' %}"></script>
+{% endblock extrajs %}
