@@ -77,10 +77,11 @@
                     {% aidantc_dsfr_form_field_no_asterisk form.course_type.email_formateur %}
                   </div>
 
-                  <div class="fr-fieldset__element fr-mb-4v">
                   {% if form.course_type.type.errors and not is_partial_submit %}
-                    <div class="fr-messages-group" id="{{ form.course_type.type.auto_id }}-messages">
-                      {{ form.course_type.type.errors }}
+                    <div class="fr-fieldset__element fr-mb-4v">
+                      <div class="fr-messages-group" id="{{ form.course_type.type.auto_id }}-messages">
+                        {{ form.course_type.type.errors }}
+                      </div>
                     </div>
                   {% endif %}
 
