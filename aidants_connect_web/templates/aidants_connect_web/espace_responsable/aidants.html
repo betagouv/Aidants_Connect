@@ -41,7 +41,7 @@
     <div class="fr-grid-row fr-grid-row--middle flex-between fr-mb-4w">
       <h1 class="fr-h2">Gestion des aidants</h1>
       <div>
-        <a href="{% url "espace_responsable_aidant_new" %}" class="fr-btn fr-btn--icon-left fr-icon-user-add-fill">
+        <a href="{% url 'espace_responsable_aidant_new_profile' %}" class="fr-btn fr-btn--icon-left fr-icon-user-add-fill">
           Ajouter un aidant
         </a>
       </div>
@@ -66,10 +66,10 @@
         {% endif %}
       </div>
       <div id="tab-2-panel" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-2" tabindex="0">
-        {% if eligibility_validated_requests or unregistrable_requests %}
-          {% include "aidants_connect_web/espace_responsable/_organisation_habilitation_requests_list.html" with eligibility_validated_requests=eligibility_validated_requests unregistrable_requests=unregistrable_requests %}
+        {% if eligibility_validated_requests or unregistrable_requests or pending_structure_requests or closed_structure_requests %}
+          {% include "aidants_connect_web/espace_responsable/_organisation_pending_requests_table.html" with eligibility_validated_requests=eligibility_validated_requests unregistrable_requests=unregistrable_requests pending_structure_requests=pending_structure_requests closed_structure_requests=closed_structure_requests %}
         {% else %}
-          Il n'y a pas de demandes d'habilitation en cours pour cette organisation.
+          Il n'y a pas de demande en cours pour cette organisation.
         {% endif %}
       </div>
       <div id="tab-3-panel" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-3" tabindex="0">

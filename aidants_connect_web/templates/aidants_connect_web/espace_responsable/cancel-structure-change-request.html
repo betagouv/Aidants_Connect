@@ -1,0 +1,28 @@
+{% extends "aidants_connect_web/espace_responsable/layout/main.html" %}
+
+{% load ac_common static %}
+
+{% block title %}Aidants Connect - Annuler la demande de changement de structure{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="fr-container">
+      {% include "layouts/_messages.html" %}
+
+      <h1>Annuler la demande de changement de structure</h1>
+
+      <form method="post">
+        {% csrf_token %}
+        <p>Confirmez-vous l'annulation de la demande de changement de structure pour ce profil ?</p>
+        <p>
+          {{ request.get_full_name }}<br/>
+          {% mailto recipient=request.email %}<br/>
+        </p>
+        <a class="fr-btn fr-btn--secondary" href="{% url 'espace_responsable_aidants' %}">Retour</a>
+        <button type="submit" class="fr-btn fr-btn--primary">
+          Annuler la demande
+        </button>
+      </form>
+    </div>
+  </section>
+{% endblock content %}

@@ -228,9 +228,24 @@ urlpatterns = [
         name="espace_responsable_aidant",
     ),
     path(
-        "espace-responsable/aidant/ajouter/",
-        espace_responsable.NewHabilitationRequest.as_view(),
-        name="espace_responsable_aidant_new",
+        "espace-responsable/aidant/ajouter/profil/",
+        espace_responsable.AddAidantProfileChoiceView.as_view(),
+        name="espace_responsable_aidant_new_profile",
+    ),
+    path(
+        "espace-responsable/aidant/ajouter/aidants-formes/",
+        espace_responsable.AddAidantTrainedView.as_view(),
+        name="espace_responsable_aidant_new_trained",
+    ),
+    path(
+        "espace-responsable/aidant/ajouter/aidants-non-formes/",
+        espace_responsable.AddAidantUntrainedView.as_view(),
+        name="espace_responsable_aidant_new_untrained",
+    ),
+    path(
+        "espace-responsable/aidant/ajouter/confirmation/",
+        espace_responsable.AddAidantConfirmationView.as_view(),
+        name="espace_responsable_aidant_new_confirmation",
     ),
     path(
         "espace-responsable/aidant/<int:aidant_id>/supprimer-carte/",
@@ -281,6 +296,11 @@ urlpatterns = [
         "espace-responsable/aidant-a-former/<int:request_id>/annuler-demande",
         espace_responsable.CancelHabilitationRequestView.as_view(),
         name="espace_responsable_cancel_habilitation",
+    ),
+    path(
+        "espace-responsable/demande-changement-structure/<int:request_id>/annuler",
+        espace_responsable.CancelStructureChangeRequestView.as_view(),
+        name="espace_responsable_cancel_structure_change",
     ),
     path(
         "espace-responsable/aidant-a-former/<int:request_id>/inscription-formation/",

@@ -1,22 +1,15 @@
-import time
-
 from django.test import tag
 from django.urls import reverse
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.select import Select
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
-from aidants_connect_web.forms import (
-    HabilitationRequestCreationFormSet,
-    NewHabilitationRequestForm,
-)
+from aidants_connect_web.constants import AddAidantProfileChoice
 from aidants_connect_web.models import Aidant, HabilitationRequest
-from aidants_connect_web.tests.factories import (
-    AidantFactory,
-    HabilitationRequestFactory,
-    OrganisationFactory,
-)
+from aidants_connect_web.models.other_models import StructureChangeRequest
+from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 
 
 @tag("functional")
@@ -247,426 +240,388 @@ class RestrictDemarchesTests(FunctionalTestCase):
 @tag("functional")
 class NewHabilitationRequestTests(FunctionalTestCase):
     def setUp(self):
-        self.organisation = OrganisationFactory(allowed_demarches=[], with_aidants=True)
+        self.organisation = OrganisationFactory(allowed_demarches=[])
         self.aidant_responsable: Aidant = AidantFactory(
             organisation=self.organisation,
             post__with_otp_device=True,
             post__is_organisation_manager=True,
         )
+        self.other_org = OrganisationFactory(name="Autre structure")
+        self.trained_aidant = AidantFactory(organisation=self.other_org)
 
-        self.path = reverse("espace_responsable_aidant_new")
-        self.empty_form = NewHabilitationRequestForm(
-            form_kwargs={
-                "habilitation_requests": {
-                    "form_kwargs": {"referent": self.aidant_responsable}
-                }
-            }
-        )
+        self.step1_url = reverse("espace_responsable_aidant_new_profile")
 
-    def test_submit_form_errors(self):
-        self.open_live_url(self.path)
+    # ── helpers ──────────────────────────────────────────────────────────
+
+    def _login_and_go_to_step1(self):
+        self.open_live_url(self.step1_url)
         self.login_aidant(self.aidant_responsable)
+        self.wait.until(self.path_matches("espace_responsable_aidant_new_profile"))
 
-        # Wait for document to be completely loaded (including DSFR validation)
-        self.wait.until(self.document_loaded())
+    def _choose_profile(self, choice):
+        radio_idx = choice - 1
+        self.js_click(By.ID, f"id_profile_{radio_idx}")
+        self.selenium.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
 
-        # unrequire fields to be able to submit
-        for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
-            self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
+    def _select_course_type_classic(self):
+        self.js_click(By.ID, "id_multiform-course_type-type_0")
 
-        self.selenium.find_element(By.ID, "partial-submit").click()
-
+    def _fill_untrained_aidant(self, idx, email, first_name, last_name, profession):
+        prefix = f"id_multiform-habilitation_requests-{idx}"
         self.wait.until(
-            expected_conditions.presence_of_element_located(
-                (By.CSS_SELECTOR, ".errorlist .fr-error-text")
+            expected_conditions.visibility_of_element_located(
+                (By.ID, f"{prefix}-email")
             )
         )
+        for field_name, value in [
+            ("email", email),
+            ("first_name", first_name),
+            ("last_name", last_name),
+            ("profession", profession),
+        ]:
+            elt = self.selenium.find_element(By.ID, f"{prefix}-{field_name}")
+            elt.clear()
+            elt.send_keys(value)
+        Select(
+            self.selenium.find_element(By.ID, f"{prefix}-organisation")
+        ).select_by_value(str(self.organisation.pk))
+        self.js_click(By.ID, f"{prefix}-conseiller_numerique_1")
 
-        # Wait for validation errors to appear (DSFR validation)
+    def _fill_trained_aidant_email(self, idx, email):
+        prefix = f"id_form-{idx}"
         self.wait.until(
-            lambda driver: len(
-                [
-                    error
-                    for error in driver.find_elements(By.CLASS_NAME, "errorlist")
-                    if error.text.strip() and "Ce champ est obligatoire." in error.text
-                ]
+            expected_conditions.visibility_of_element_located(
+                (By.ID, f"{prefix}-email")
             )
-            > 0
         )
+        elt = self.selenium.find_element(By.ID, f"{prefix}-email")
+        elt.clear()
+        elt.send_keys(email)
 
-        # Check that we have validation errors
-        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        non_empty_errors = [error for error in errors if error.text.strip()]
-        self.assertGreater(len(non_empty_errors), 0, "Should have validation errors")
-
-        # Check that errors contain the expected message
-        error_texts = [error.text for error in non_empty_errors]
-        self.assertTrue(
-            any("Ce champ est obligatoire." in text for text in error_texts),
-            "Should have required field errors",
-        )
-
-        for error in non_empty_errors:
-            self.assertIn("Ce champ est obligatoire.", error.text)
-
-        # First form is not empty but not filled either
-        self.open_live_url(self.path)
-        self.wait.until(self.dsfr_ready())
-
-        # unrequire fields to be able to submit
-        for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
-            self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
-
-        self.selenium.find_element(By.CSS_SELECTOR, '[id$="email"]').send_keys(
-            "test@test.test"
-        )
-        self.selenium.find_element(By.ID, "partial-submit").click()
-
-        with self.implicitely_wait(0):
+    def _fill_trained_aidant_email_change(
+        self, idx, email_will_change=False, new_email=None
+    ):
+        prefix = f"id_form-{idx}"
+        will_change_idx = 0 if email_will_change else 1
+        self.js_click(By.ID, f"{prefix}-email_will_change_{will_change_idx}")
+        if email_will_change and new_email:
             self.wait.until(
-                expected_conditions.presence_of_element_located(
-                    (By.CLASS_NAME, "errorlist")
+                expected_conditions.visibility_of_element_located(
+                    (By.ID, f"{prefix}-new_email")
                 )
             )
+            new_email_elt = self.selenium.find_element(By.ID, f"{prefix}-new_email")
+            new_email_elt.clear()
+            new_email_elt.send_keys(new_email)
 
-        self.wait.until(
-            lambda driver: len(
-                [
-                    error
-                    for error in driver.find_elements(By.CLASS_NAME, "errorlist")
-                    if error.text.strip() and "Ce champ est obligatoire." in error.text
-                ]
-            )
-            > 0
+    def _submit_trained_form_next(self):
+        btn = self.selenium.find_element(
+            By.CSS_SELECTOR, 'button[type="submit"]:not([name])'
         )
+        self.selenium.execute_script(
+            "arguments[0].scrollIntoView({block: 'center'});", btn
+        )
+        btn.click()
 
-        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        non_empty_errors = [error for error in errors if error.text.strip()]
-        self.assertGreater(len(non_empty_errors), 0, "Should have validation errors")
+    def _confirm_wizard(self, expected_texts=None, unexpected_texts=None):
+        self.wait.until(self.path_matches("espace_responsable_aidant_new_confirmation"))
+        if expected_texts:
+            page_text = self.selenium.find_element(By.TAG_NAME, "body").text
+            for text in expected_texts:
+                self.assertIn(text, page_text)
+        if unexpected_texts:
+            page_text = self.selenium.find_element(By.TAG_NAME, "body").text
+            for text in unexpected_texts:
+                self.assertNotIn(text, page_text)
+        self.selenium.find_element(
+            By.CSS_SELECTOR, 'button[name="wizard_confirm"]'
+        ).click()
+        self.wait.until(self.path_matches("espace_responsable_aidants"))
 
-        for error in non_empty_errors:
-            self.assertIn("Ce champ est obligatoire.", error.text)
-
-        self.open_live_url(self.path)
-        self.wait.until(self.dsfr_ready())
-
+    def _remove_required_attributes(self):
         for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
             self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
 
+    def _wait_for_errors(self):
+        self.wait.until(
+            lambda driver: (
+                len(
+                    [
+                        e
+                        for e in driver.find_elements(By.CLASS_NAME, "errorlist")
+                        if e.text.strip()
+                    ]
+                )
+                > 0
+            )
+        )
+        return [
+            e
+            for e in self.selenium.find_elements(By.CLASS_NAME, "errorlist")
+            if e.text.strip()
+        ]
+
+    # ── NOT_YET_TRAINED scenarios ───────────────────────────────────────────
+
+    NOT_YET_TRAINED_EXPECTED = [
+        "L’éligibilité des aidants sera vérifée par notre équipe",
+        "inscrire les aidants en formation",
+    ]
+    NOT_YET_TRAINED_UNEXPECTED = [
+        "vous pourrez associer un moyen de connexion aux aidants",
+    ]
+
+    ALREADY_TRAINED_EXPECTED = [
+        "La demande d'ajout, pour les aidants suivants, sera vérifiée par notre équipe",
+        "vous pourrez associer un moyen de connexion aux aidants",
+    ]
+    ALREADY_TRAINED_UNEXPECTED = [
+        "L’éligibilité des aidants sera vérifée",
+    ]
+
+    def test_none_trained_single_aidant(self):
+        self._login_and_go_to_step1()
+        self._choose_profile(AddAidantProfileChoice.NOT_YET_TRAINED)
+        self.wait.until(self.path_matches("espace_responsable_aidant_new_untrained"))
+        self.wait.until(self.dsfr_ready())
+
+        self._select_course_type_classic()
+        self._fill_untrained_aidant(
+            0, "jean@example.com", "Jean", "Dupont", "Secrétaire"
+        )
         self.selenium.find_element(By.ID, "form-submit").click()
 
-        # Attendre que les erreurs apparaissent
-        self.wait.until(
-            lambda driver: len(
-                [
-                    error
-                    for error in driver.find_elements(By.CLASS_NAME, "errorlist")
-                    if error.text.strip() and "Ce champ est obligatoire." in error.text
-                ]
-            )
-            > 0
+        self._confirm_wizard(
+            expected_texts=self.NOT_YET_TRAINED_EXPECTED,
+            unexpected_texts=self.NOT_YET_TRAINED_UNEXPECTED,
         )
 
-        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        non_empty_errors = [error for error in errors if error.text.strip()]
+        self.assertEqual(1, HabilitationRequest.objects.count())
+        hab = HabilitationRequest.objects.first()
+        self.assertEqual("jean@example.com", hab.email)
+        self.assertEqual("Jean", hab.first_name)
+        self.assertEqual("Dupont", hab.last_name)
+        self.assertEqual("Secrétaire", hab.profession)
+        self.assertEqual(self.organisation, hab.organisation)
 
-        self.assertGreater(len(non_empty_errors), 0, "Should have validation errors")
+    def test_none_trained_multiple_aidants_with_partial_submit(self):
+        self._login_and_go_to_step1()
+        self._choose_profile(AddAidantProfileChoice.NOT_YET_TRAINED)
+        self.wait.until(self.path_matches("espace_responsable_aidant_new_untrained"))
+        self.wait.until(self.dsfr_ready())
 
-        for error in non_empty_errors:
-            self.assertIn("Ce champ est obligatoire.", error.text)
+        self._select_course_type_classic()
+        self._fill_untrained_aidant(
+            0, "jean@example.com", "Jean", "Dupont", "Secrétaire"
+        )
 
-        self.open_live_url(self.path)
+        partial_btn = self.selenium.find_element(By.ID, "partial-submit")
+        self.selenium.execute_script(
+            "arguments[0].scrollIntoView({block: 'center'});", partial_btn
+        )
+        partial_btn.click()
+        self.wait.until(self.document_loaded())
+
+        accordion_title = self.selenium.find_element(
+            By.CSS_SELECTOR, ".fr-accordion__btn .fr-text--lg.fr-text--bold"
+        )
+        self.assertNormalizedStringEqual("Jean Dupont", accordion_title.text)
+        self.assertFalse(HabilitationRequest.objects.exists())
+
+        self._fill_untrained_aidant(
+            1, "marie@example.com", "Marie", "Martin", "Assistante"
+        )
+        self.selenium.find_element(By.ID, "form-submit").click()
+
+        self._confirm_wizard(
+            expected_texts=self.NOT_YET_TRAINED_EXPECTED,
+            unexpected_texts=self.NOT_YET_TRAINED_UNEXPECTED,
+        )
+
+        self.assertEqual(2, HabilitationRequest.objects.count())
+        emails = set(HabilitationRequest.objects.values_list("email", flat=True))
+        self.assertEqual({"jean@example.com", "marie@example.com"}, emails)
+
+    def test_none_trained_form_validation_errors(self):
+        self._login_and_go_to_step1()
+        self._choose_profile(AddAidantProfileChoice.NOT_YET_TRAINED)
+        self.wait.until(self.path_matches("espace_responsable_aidant_new_untrained"))
+        self.wait.until(self.dsfr_ready())
+
+        self._remove_required_attributes()
+        self.selenium.find_element(By.ID, "form-submit").click()
+        self.wait.until(self.document_loaded())
+
+        errors = self._wait_for_errors()
+        self.assertGreater(len(errors), 0)
+        self.assertTrue(
+            any("Ce champ est obligatoire." in e.text for e in errors),
+            "Should have required field errors",
+        )
+        self.assertFalse(HabilitationRequest.objects.exists())
+
+    def test_none_trained_partial_submit_validation_errors(self):
+        self._login_and_go_to_step1()
+        self._choose_profile(AddAidantProfileChoice.NOT_YET_TRAINED)
+        self.wait.until(self.path_matches("espace_responsable_aidant_new_untrained"))
+        self.wait.until(self.dsfr_ready())
+
+        self._remove_required_attributes()
+
         self.selenium.find_element(By.CSS_SELECTOR, '[id$="email"]').send_keys(
             "test@test.test"
         )
+        self.selenium.find_element(By.ID, "partial-submit").click()
 
-        for el in self.selenium.find_elements(By.CSS_SELECTOR, "[required]"):
-            self.selenium.execute_script("arguments[0].removeAttribute('required')", el)
-
-        self.selenium.find_element(By.ID, "form-submit").click()
-        self.wait.until(self.document_loaded())
-
-        # Attendre que les erreurs apparaissent
-        self.wait.until(
-            lambda driver: len(
-                [
-                    error
-                    for error in driver.find_elements(By.CLASS_NAME, "errorlist")
-                    if error.text.strip() and "Ce champ est obligatoire." in error.text
-                ]
-            )
-            > 0
-        )
-
-        errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
-        non_empty_errors = [error for error in errors if error.text.strip()]
-
-        self.assertGreater(len(non_empty_errors), 0, "Should have validation errors")
-
-        for error in non_empty_errors:
+        errors = self._wait_for_errors()
+        self.assertGreater(len(errors), 0)
+        for error in errors:
             self.assertIn("Ce champ est obligatoire.", error.text)
 
-        self.assertFalse(HabilitationRequest.objects.count())
+        self.assertFalse(HabilitationRequest.objects.exists())
 
-    def test_submitting_request(self):
-        self.open_live_url(self.path)
-        self.login_aidant(self.aidant_responsable)
-        self.wait.until(self.dsfr_ready())
-        req: HabilitationRequest = HabilitationRequestFactory.build(
-            organisation=self.organisation
-        )
-        self.fill_form(req, self._all_visible_fields(), self._custom_getter)
-        self.selenium.find_element(By.ID, "form-submit").click()
-        hab: HabilitationRequest = HabilitationRequest.objects.first()
-        self.assertEqual(
-            {
-                req.get_full_name(),
-                req.email,
-                req.profession,
-                req.conseiller_numerique,
-                req.organisation,
-            },
-            {
-                hab.get_full_name(),
-                hab.email,
-                hab.profession,
-                hab.conseiller_numerique,
-                hab.organisation,
-            },
-        )
-
-    def test_adding_profile_then_submitting_empty(self):
-        self.open_live_url(self.path)
-        self.login_aidant(self.aidant_responsable)
-        self.wait.until(self.dsfr_ready())
-        req: HabilitationRequest = HabilitationRequestFactory.build(
-            organisation=self.organisation
-        )
-        self.fill_form(req, self._all_visible_fields(), self._custom_getter)
-        self.selenium.find_element(By.ID, "partial-submit").click()
-
-        # Check accordion title shows user info
-        accordion_title = self.selenium.find_element(
-            By.CSS_SELECTOR, ".fr-accordion__btn .fr-text--lg.fr-text--bold"
-        )
-        self.assertNormalizedStringEqual(
-            req.get_full_name(),
-            accordion_title.text,
-        )
-
-        # open the accordion
-        self.js_click(By.CSS_SELECTOR, ".fr-accordion__btn")
-
-        # Check form fields contain the expected values
-        email_field = self.selenium.find_element(By.CSS_SELECTOR, 'input[id$="email"]')
-        self.assertEqual(req.email, email_field.get_attribute("value"))
-
-        profession_field = self.selenium.find_element(
-            By.CSS_SELECTOR, 'input[id$="profession"]'
-        )
-        self.assertEqual(req.profession, profession_field.get_attribute("value"))
-        # Asserting no new habilitation was created
-        self.assertFalse(HabilitationRequest.objects.count())
-        # Now submits the form
-        self.selenium.find_element(By.ID, "form-submit").click()
-        hab: HabilitationRequest = HabilitationRequest.objects.first()
-        self.assertEqual(
-            {
-                req.get_full_name(),
-                req.email,
-                req.profession,
-                req.conseiller_numerique,
-                req.organisation,
-            },
-            {
-                hab.get_full_name(),
-                hab.email,
-                hab.profession,
-                hab.conseiller_numerique,
-                hab.organisation,
-            },
-        )
-
-    def test_adding_profile_then_submitting_filled_form(self):
-        self.open_live_url(self.path)
-        self.login_aidant(self.aidant_responsable)
+    def test_none_trained_duplicate_email_error(self):
+        self._login_and_go_to_step1()
+        self._choose_profile(AddAidantProfileChoice.NOT_YET_TRAINED)
+        self.wait.until(self.path_matches("espace_responsable_aidant_new_untrained"))
         self.wait.until(self.dsfr_ready())
 
-        # Wait for email field to be visible before filling
-        self.wait.until(
-            expected_conditions.visibility_of_element_located(
-                (By.ID, "id_multiform-habilitation_requests-0-email")
-            )
+        self._select_course_type_classic()
+        self._fill_untrained_aidant(
+            0, "dup@example.com", "Jean", "Dupont", "Secrétaire"
         )
 
-        req1: HabilitationRequest = HabilitationRequestFactory.build(
-            organisation=self.organisation
-        )
-        self.fill_form(req1, self._all_visible_fields(), self._custom_getter)
-
-        # Scroll and click partial submit
-        partial_submit_btn = self.selenium.find_element(By.ID, "partial-submit")
+        partial_btn = self.selenium.find_element(By.ID, "partial-submit")
         self.selenium.execute_script(
-            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
-            partial_submit_btn,
+            "arguments[0].scrollIntoView({block: 'center'});", partial_btn
         )
-        time.sleep(0.1)
-        partial_submit_btn.click()
-
-        # Check accordion title shows user info
-        accordion_title = self.selenium.find_element(
-            By.CSS_SELECTOR, ".fr-accordion__btn .fr-text--lg.fr-text--bold"
-        )
-        self.assertNormalizedStringEqual(
-            req1.get_full_name(),
-            accordion_title.text,
-        )
-
-        # open the accordion
-        self.js_click(By.CSS_SELECTOR, ".fr-accordion__btn")
-
-        # Check form fields contain the expected values
-        email_field = self.selenium.find_element(By.CSS_SELECTOR, 'input[id$="email"]')
-        self.assertEqual(req1.email, email_field.get_attribute("value"))
-
-        profession_field = self.selenium.find_element(
-            By.CSS_SELECTOR, 'input[id$="profession"]'
-        )
-        self.assertEqual(req1.profession, profession_field.get_attribute("value"))
-        # Asserting not new habilitation was created
-        self.assertFalse(HabilitationRequest.objects.count())
-
-        # Click "Ajouter un autre aidant" to add a second form
-        self.selenium.find_element(By.ID, "partial-submit").click()
+        partial_btn.click()
         self.wait.until(self.document_loaded())
 
-        req2: HabilitationRequest = HabilitationRequestFactory.build(
-            organisation=self.organisation
-        )
-
-        # Wait for second form email field to be visible before filling
         self.wait.until(
             expected_conditions.visibility_of_element_located(
                 (By.ID, "id_multiform-habilitation_requests-1-email")
             )
         )
 
-        self.fill_form(req2, self._all_visible_fields(1), self._custom_getter)
-
-        # Now submits the form
-        self.selenium.find_element(By.ID, "form-submit").click()
-        self.assertEqual(
-            set(
-                HabilitationRequest.objects.values_list(
-                    "first_name",
-                    "last_name",
-                    "email",
-                    "profession",
-                    "conseiller_numerique",
-                    "organisation",
-                ).all()
-            ),
-            {
-                (
-                    req1.first_name,
-                    req1.last_name,
-                    req1.email,
-                    req1.profession,
-                    req1.conseiller_numerique,
-                    req1.organisation.pk,
-                ),
-                (
-                    req2.first_name,
-                    req2.last_name,
-                    req2.email,
-                    req2.profession,
-                    req2.conseiller_numerique,
-                    req2.organisation.pk,
-                ),
-            },
+        self._fill_untrained_aidant(
+            1, "dup@example.com", "Marie", "Martin", "Assistante"
         )
 
-    def test_duplicate_email_error(self):
-        self.open_live_url(self.path)
-        self.login_aidant(self.aidant_responsable)
-        self.wait.until(self.dsfr_ready())
-
-        req1 = HabilitationRequestFactory.build(organisation=self.organisation)
-
-        self.wait.until(
-            expected_conditions.visibility_of_element_located(
-                (By.ID, "id_multiform-habilitation_requests-0-email")
-            )
-        )
-
-        self.fill_form(req1, self._all_visible_fields(0), self._custom_getter)
-
-        partial_submit_btn = self.selenium.find_element(By.ID, "partial-submit")
+        partial_btn = self.selenium.find_element(By.ID, "partial-submit")
         self.selenium.execute_script(
-            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
-            partial_submit_btn,
+            "arguments[0].scrollIntoView({block: 'center'});", partial_btn
         )
-        time.sleep(0.1)
-        partial_submit_btn.click()
+        partial_btn.click()
         self.wait.until(self.document_loaded())
 
-        # Wait for second accordion to appear
-        self.wait.until(
-            expected_conditions.visibility_of_element_located(
-                (By.ID, "id_multiform-habilitation_requests-1-email")
-            )
-        )
-
-        # Add second aidant with same email
-        req2 = HabilitationRequestFactory.build(organisation=self.organisation)
-        req2.email = req1.email  # Same email to trigger error
-        self.fill_form(req2, self._all_visible_fields(1), self._custom_getter)
-
-        # Scroll and click partial submit again
-        partial_submit_btn = self.selenium.find_element(By.ID, "partial-submit")
-        self.selenium.execute_script(
-            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
-            partial_submit_btn,
-        )
-        time.sleep(0.1)
-        partial_submit_btn.click()
-
-        self.wait.until(self.document_loaded())
-
-        # We should have 2 accordions (first + second with error), not 3
         accordions = self.selenium.find_elements(By.CSS_SELECTOR, ".fr-accordion")
         self.assertEqual(
             2,
             len(accordions),
             "Third aidant should not be added due to duplicate email error",
         )
-
-        # Verify no requests were created in database due to validation errors
         self.assertEqual(0, HabilitationRequest.objects.count())
 
-    @property
-    def _habilitation_requests_form(self) -> HabilitationRequestCreationFormSet:
-        return self.empty_form["habilitation_requests"]
+    # ── ALREADY_TRAINED scenarios ────────────────────────────────────────────
 
-    @property
-    def _course_type_form(self):
-        return self.empty_form["course_type"]
+    def test_all_trained_single_aidant(self):
+        self._login_and_go_to_step1()
+        self._choose_profile(AddAidantProfileChoice.ALREADY_TRAINED)
+        self.wait.until(self.path_matches("espace_responsable_aidant_new_trained"))
+        self.wait.until(self.dsfr_ready())
 
-    def _all_visible_fields(self, form_idx=0):
-        form = self._habilitation_requests_form._construct_form(
-            form_idx, **self._habilitation_requests_form.get_form_kwargs(form_idx)
+        self._fill_trained_aidant_email(0, self.trained_aidant.email)
+        self._submit_trained_form_next()
+        self.wait.until(self.document_loaded())
+
+        self._submit_trained_form_next()
+
+        self._confirm_wizard(
+            expected_texts=self.ALREADY_TRAINED_EXPECTED,
+            unexpected_texts=self.ALREADY_TRAINED_UNEXPECTED,
         )
-        course_fields = [
-            f
-            for f in self._course_type_form.visible_fields()
-            if f.name != "email_formateur"
-        ]
-        return [*form.visible_fields(), *course_fields]
 
-    @staticmethod
-    def _custom_getter(data, field, default_getter):
-        return (
-            default_getter(data, "course_type")
-            if field == "type"
-            else default_getter(data, field)
+        self.assertEqual(1, StructureChangeRequest.objects.count())
+        scr = StructureChangeRequest.objects.first()
+        self.assertEqual(self.trained_aidant.email.lower(), scr.email)
+        self.assertEqual(self.organisation, scr.organisation)
+        self.assertFalse(scr.new_email)
+
+    def test_all_trained_with_email_change(self):
+        self._login_and_go_to_step1()
+        self._choose_profile(AddAidantProfileChoice.ALREADY_TRAINED)
+        self.wait.until(self.path_matches("espace_responsable_aidant_new_trained"))
+        self.wait.until(self.dsfr_ready())
+
+        self._fill_trained_aidant_email(0, self.trained_aidant.email)
+        self._submit_trained_form_next()
+        self.wait.until(self.document_loaded())
+
+        self._fill_trained_aidant_email_change(
+            0, email_will_change=True, new_email="new@example.com"
+        )
+        self._submit_trained_form_next()
+
+        self._confirm_wizard(
+            expected_texts=self.ALREADY_TRAINED_EXPECTED,
+            unexpected_texts=self.ALREADY_TRAINED_UNEXPECTED,
+        )
+
+        self.assertEqual(1, StructureChangeRequest.objects.count())
+        scr = StructureChangeRequest.objects.first()
+        self.assertEqual(self.trained_aidant.email.lower(), scr.email)
+        self.assertEqual("new@example.com", scr.new_email)
+
+    def test_all_trained_invalid_email_shows_error(self):
+        self._login_and_go_to_step1()
+        self._choose_profile(AddAidantProfileChoice.ALREADY_TRAINED)
+        self.wait.until(self.path_matches("espace_responsable_aidant_new_trained"))
+        self.wait.until(self.dsfr_ready())
+
+        self._fill_trained_aidant_email(0, "unknown@example.com")
+        self._submit_trained_form_next()
+        self.wait.until(self.document_loaded())
+
+        errors = self._wait_for_errors()
+        self.assertGreater(len(errors), 0)
+        self.assertTrue(
+            any("erronée" in e.text or "habilité" in e.text for e in errors)
+        )
+        self.assertEqual(0, StructureChangeRequest.objects.count())
+
+    def test_all_trained_multiple_aidants(self):
+        trained_aidant2 = AidantFactory(organisation=self.other_org)
+
+        self._login_and_go_to_step1()
+        self._choose_profile(AddAidantProfileChoice.ALREADY_TRAINED)
+        self.wait.until(self.path_matches("espace_responsable_aidant_new_trained"))
+        self.wait.until(self.dsfr_ready())
+
+        self._fill_trained_aidant_email(0, self.trained_aidant.email)
+
+        add_btn = self.selenium.find_element(
+            By.CSS_SELECTOR, 'button[name="partial-add-trained"]'
+        )
+        self.selenium.execute_script(
+            "arguments[0].scrollIntoView({block: 'center'});", add_btn
+        )
+        add_btn.click()
+        self.wait.until(self.document_loaded())
+
+        self._fill_trained_aidant_email(1, trained_aidant2.email)
+        self._submit_trained_form_next()
+        self.wait.until(self.document_loaded())
+
+        self._submit_trained_form_next()
+
+        self._confirm_wizard(
+            expected_texts=self.ALREADY_TRAINED_EXPECTED,
+            unexpected_texts=self.ALREADY_TRAINED_UNEXPECTED,
+        )
+
+        self.assertEqual(2, StructureChangeRequest.objects.count())
+        emails = set(StructureChangeRequest.objects.values_list("email", flat=True))
+        self.assertEqual(
+            {self.trained_aidant.email.lower(), trained_aidant2.email.lower()}, emails
         )

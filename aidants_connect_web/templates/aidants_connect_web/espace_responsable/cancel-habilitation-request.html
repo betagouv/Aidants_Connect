@@ -1,6 +1,6 @@
 {% extends "aidants_connect_web/espace_responsable/layout/main.html" %}
 
-{% load static ac_common %}
+{% load ac_common static %}
 
 {% block title %}Aidants Connect - Annuler la demande d'habilitation{% endblock %}
 
@@ -22,15 +22,15 @@
           {{ request.profession }}<br/>
         </p>
 
-        <a class="button" href="{% url 'espace_responsable_organisation' %}">Retour</a>
+        <a class="fr-btn fr-btn--secondary" href="{% url 'espace_responsable_aidants' %}">Retour</a>
 
         <input
           id="submit-button"
-          class="button primary float-right"
+          class="fr-btn fr-btn--primary"
           type="submit"
           value="Annuler la demande d'habilitation"
         />
       </form>
     </div>
   </section>
-{% endblock %}
+{% endblock content %}
