@@ -243,3 +243,8 @@ summary::marker {
 .fr-input-otp-token {
   max-width: calc(6ch + 2rem);
 }
+
+// Fix DSFR alignment issue between select and input in same row
+.fr-fieldset {
+  align-items: flex-start;
+}
