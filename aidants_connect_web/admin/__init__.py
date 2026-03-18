@@ -20,6 +20,7 @@ from aidants_connect_web.models import (
     MobileAskingUser,
     Organisation,
     ReboardingAidantStatistiques,
+    StructureChangeRequest,
     Usager,
 )
 
@@ -39,6 +40,7 @@ from .statistiques import (
     AidantStatistiquesbyRegionAdmin,
     ReboardingAidantStatistiquesAdmin,
 )
+from .structure_change_request import StructureChangeRequestAdmin
 from .usager import UsagerAdmin
 
 # Display the following tables in the admin
@@ -58,6 +60,7 @@ admin_site.register(ReboardingAidantStatistiques, ReboardingAidantStatistiquesAd
 admin_of_site.register(HabilitationRequest, HabilitationRequestAdmin)
 
 admin_site.register(HabilitationRequest, HabilitationRequestAdmin)
+admin_site.register(StructureChangeRequest, StructureChangeRequestAdmin)
 admin_site.register(Usager, UsagerAdmin)
 admin_site.register(Mandat, MandatAdmin)
 admin_site.register(Journal, JournalAdmin)

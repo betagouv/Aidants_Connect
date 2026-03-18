@@ -226,6 +226,23 @@ class Organisation(models.Model):
             Q(responsable_de=self) | Q(is_active=False)
         ).order_by("last_name")
 
+    def get_pending_structure_change_requests(self):
+        from aidants_connect_web.constants import StructureChangeRequestStatuses
+
+        return self.structure_change_requests.filter(
+            status=StructureChangeRequestStatuses.STATUS_NEW.value,
+        ).order_by("email")
+
+    def get_closed_structure_change_requests(self):
+        from aidants_connect_web.constants import StructureChangeRequestStatuses
+
+        return self.structure_change_requests.filter(
+            status__in=[
+                StructureChangeRequestStatuses.STATUS_REFUSED.value,
+                StructureChangeRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE.value,
+            ],
+        ).order_by("status", "email")
+
     @property
     def display_address(self):
         return self.address if self.address != "No address provided" else "__________"
