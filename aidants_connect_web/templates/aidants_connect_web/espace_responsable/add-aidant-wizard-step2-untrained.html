@@ -1,0 +1,102 @@
+{% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
+{% load ac_common ac_extras dsfr_tags form_extras partials static widget_tweaks %}
+
+{% block title %}Ajouter un aidant à une organisation - Aidants Connect{% endblock %}
+
+{% block content %}
+  <div class="fr-container">
+    {% include "layouts/_js-unavailable-alert.html" %}
+    {% dsfr_django_messages %}
+
+    <h1 class="fr-mb-2w">Ajouter un aidant</h1>
+      <p class="fr-text--lg">
+        Sauf mention contraire, tous les champs sont obligatoires.
+      </p>
+      <div class="fr-grid-row fr-grid-row--gutters">
+        <div class="fr-col-12 fr-col-md-8 fr-col-offset-md-1">
+
+          <div class="fr-stepper fr-mt-6v">
+            <h2 class="fr-stepper__title">
+              Modalité de formation et informations des aidants
+              <span class="fr-stepper__state">Étape {{ wizard_step }} sur {{ wizard_total_steps }}</span>
+            </h2>
+            <div class="fr-stepper__steps" data-fr-current-step="{{ wizard_step }}" data-fr-steps="{{ wizard_total_steps }}"></div>
+          </div>
+          <form
+            id="new-habilitation-request-form"
+            method="post"
+            action="{% url 'espace_referent:aidant_new_untrained' %}"
+          >
+            {% csrf_token %}
+
+            <section class="course-type fr-mt-6v"
+                      data-controller="formation-type"
+                      data-formation-type-p2p-value-value="{{ form.course_type.Type.P2P }}">
+              <h2 class="fr-h5 fr-mt-8v">Modalité de formation</h2>
+                <fieldset
+                  class="fr-fieldset{% if form.course_type.type.errors and not is_partial_submit %} fr-fieldset--error{% endif %}"
+                  id="radio-inline"
+                  aria-labelledby="radio-inline-legend radio-inline-messages"
+                >
+                <legend class="fr-fieldset__legend--regular fr-fieldset__legend" id="radio-inline-legend">
+                  {{ form.course_type.type.label }}
+                </legend>
+                {% for widget in form.course_type.type %}
+                  <div class="fr-radio-group fr-ml-2v" data-action="change->formation-type#typeChanged">
+                    {% if widget.data.value == form.course_type.Type.CLASSIC %}
+                      <strong>{{ widget }}</strong>
+                      <div class="fr-ml-8v fr-mt-2v">
+                        <p class="fr-text--sm">
+                          Elle est dispensée par un organisme habilité et peut être financée selon <a class="fr-link fr-text--sm" href="https://tally.so/r/mO0Xkg">différentes modalités</a>. Il arrive que, dans certains cas, elle doive être financée par la structure.
+                        </p>
+                      </div>
+                    {% elif widget.data.value == form.course_type.Type.P2P %}
+                      <div class="fr-mt-4v"><strong>{{ widget }}</strong></div>
+                      <div class="fr-ml-8v fr-mt-2v">
+                        <p class="fr-text--sm">
+                          Elle est dispensée par un autre aidant de la structure, volontaire, habilité et utilisateur fréquent d'Aidants Connect. Si elle est dispensée en groupe, nous conseillons de réaliser des sessions de 5 aidants maximum.
+                        </p>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+                <div class="fr-ml-2v fr-my-4v" data-formation-type-target="emailFormateurSection" hidden>
+                  <p class="fr-text--md">
+                    Renseignez l'adresse e-mail de l'aidant formateur. Nous conseillons de choisir un aidant qui a déjà effectué au moins 5 mandats avec des usagers.
+                  </p>
+                </div>
+                <div class="fr-fieldset__element fr-mb-0" data-formation-type-target="emailFormateurField" hidden>
+                  {% aidantc_dsfr_form_field_no_asterisk form.course_type.email_formateur %}
+                </div>
+
+                <div class="fr-fieldset__element fr-mb-4v">
+                {% if form.course_type.type.errors and not is_partial_submit %}
+                  <div class="fr-messages-group" id="{{ form.course_type.type.auto_id }}-messages">
+                    {{ form.course_type.type.errors }}
+                  </div>
+                {% endif %}
+
+              </fieldset>
+            </section>
+
+            {% include "aidants_connect_web/espace_responsable/forms/add-aidants-formset.html" with formset=form.habilitation_requests main_form=form %}
+            <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--between fr-my-6w">
+              <li>
+                <a href="{{ wizard_back_url }}" class="fr-btn fr-btn--secondary">Retourner à l'étape précédente</a>
+              </li>
+              <li>
+                <button
+                  id="form-submit"
+                  class="fr-btn"
+                  type="submit"
+                  data-new-habilitation-request-target="submitBtn"
+                >
+                  Passer à l'étape suivante
+                </button>
+              </li>
+            </ul>
+          </form>
+        </div>
+      </div>
+  </div>
+{% endblock content %}

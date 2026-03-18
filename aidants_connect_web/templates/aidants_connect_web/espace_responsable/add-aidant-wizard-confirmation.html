@@ -1,0 +1,83 @@
+{% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
+{% load ac_common ac_extras dsfr_tags static %}
+
+{% block title %}Confirmation - Ajouter un aidant - Aidants Connect{% endblock %}
+
+{% block content %}
+  <div class="fr-container">
+    {% include "layouts/_js-unavailable-alert.html" %}
+    {% dsfr_django_messages %}
+
+    <h1 class="fr-mb-2w">Ajouter un aidant</h1>
+    <p class="fr-text--lg">
+      Sauf mention contraire, tous les champs sont obligatoires.
+    </p>
+
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8 fr-col-offset-md-1">
+        <div class="fr-stepper fr-mt-6v">
+          <h2 class="fr-stepper__title">
+            Confirmation
+            <span class="fr-stepper__state">Étape {{ wizard_step }} sur {{ wizard_total_steps }}</span>
+          </h2>
+          <div class="fr-stepper__steps" data-fr-current-step="{{ wizard_step }}" data-fr-steps="{{ wizard_total_steps }}"></div>
+        </div>
+
+        {% if wizard_profile_choice == AddAidantProfileChoice.ALREADY_TRAINED %}
+          {% if direct_adds %}
+            <p class="fr-text fr-mt-4w">
+              Les aidants suivants vont être ajoutés à l'organisation {{ referent.organisation.name }} :
+              <ul>
+                {% for aidant in direct_adds %}
+                  <li>{{ aidant.email }}</li>
+                {% endfor %}
+              </ul>
+            </p>
+          {% endif %}
+          {% if structure_requests %}
+            <p class="fr-text {% if not direct_adds %}fr-mt-4w{% endif %}">
+              La demande d'ajout, pour les aidants suivants, sera vérifiée par notre équipe :
+              <ul>
+                {% for aidant in structure_requests %}
+                  <li>{{ aidant.email }}</li>
+                {% endfor %}
+              </ul>
+            </p>
+            <p class="fr-text">
+              Une fois la demande validée, vous pourrez associer un moyen de connexion aux aidants depuis l'onglet « Aidants actifs ».
+            </p>
+          {% endif %}
+        {% elif wizard_profile_choice == AddAidantProfileChoice.NOT_YET_TRAINED %}
+          <p class="fr-text fr-mt-4w">
+            L’éligibilité des aidants sera vérifée par notre équipe. Vous pourrez suivre l’avancement de la demande dans l’onglet “Demandes en cours”.
+          </p>
+          <p class="fr-text">
+            {% if course_type.type == HabilitationRequestCourseType.CLASSIC.value|stringformat:"s" %}
+              Une fois la demande validée, vous recevrez un courriel vous invitant à inscrire les aidants en formation. Vous pourrez également effectuer cette action depuis l’onglet  “Demandes en cours”.
+            {% elif course_type.type == HabilitationRequestCourseType.P2P.value|stringformat:"s" %}
+              Une fois la demande validée, l’aidant formateur recevra un courriel avec tous les documents nécessaires à la formation.
+            {% endif %}
+          </p>
+        {% endif %}
+
+        <form method="post" action="{% url 'espace_referent:aidant_new_confirmation' %}" class="fr-mt-4w">
+          {% csrf_token %}
+          <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--between">
+            <li>
+              <a href="{{ wizard_back_url }}" class="fr-btn fr-btn--secondary">Retourner à l'étape précédente</a>
+            </li>
+            <li>
+              <button type="submit" name="wizard_confirm" value="1" class="fr-btn">
+                {% if wizard_profile_choice == AddAidantProfileChoice.ALREADY_TRAINED and direct_adds and not structure_requests %}
+                  Confirmer l'ajout
+                {% else %}
+                  Envoyer la demande
+                {% endif %}
+              </button>
+            </li>
+          </ul>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

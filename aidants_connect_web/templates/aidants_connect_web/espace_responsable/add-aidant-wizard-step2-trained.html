@@ -1,0 +1,105 @@
+{% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
+{% load ac_common ac_extras dsfr_tags form_extras static widget_tweaks %}
+
+{% block title %}Ajouter un aidant - Aidants Connect{% endblock %}
+
+{% block content %}
+  <div class="fr-container">
+    {% include "layouts/_js-unavailable-alert.html" %}
+    {% dsfr_django_messages %}
+
+    <h1 class="fr-mb-2w">Ajouter un aidant</h1>
+    <p class="fr-text--lg">
+      Sauf mention contraire, tous les champs sont obligatoires.
+    </p>
+
+    <div class="fr-row">
+      <div class="fr-col-12 fr-col-md-8 fr-col-offset-md-1">
+        <div class="fr-stepper fr-mt-6v">
+          <h2 class="fr-stepper__title">
+            Informations des aidants
+            <span class="fr-stepper__state">Étape {{ wizard_step }} sur {{ wizard_total_steps }}</span>
+          </h2>
+          <div class="fr-stepper__steps" data-fr-current-step="{{ wizard_step }}" data-fr-steps="{{ wizard_total_steps }}"></div>
+        </div>
+        <form method="post" action="{% url 'espace_referent:aidant_new_trained' %}" class="fr-mt-4w" id="structure-change-formset-form">
+          {% csrf_token %}
+          {{ formset.management_form }}
+
+          {% for form in formset.forms %}
+            <div class="fr-card fr-card--no-arrow fr-mb-4w fr-p-4w structure-change-form"
+                id="trained-form-{{ forloop.counter0 }}"
+                data-controller="new-email-toggle"
+                data-new-email-toggle-form-prefix-value="{{ form.prefix }}"
+                data-form-index="{{ forloop.counter0 }}"
+                data-form-prefix="{{ form.prefix }}">
+              <h3 class="fr-h5">Aidant n°{{ forloop.counter }}</h3>
+              <p class="fr-text--sm">
+                Renseignez l'adresse e-mail que l'aidant utilise actuellement pour se connecter à Aidants Connect.
+              </p>
+              {% if form.email_lookup_case == "referent_of_other_org" or form.email_lookup_case == "other_org" %}
+                {% aidantc_dsfr_form_field_no_asterisk form.email %}
+              {% else %}
+                {% include "aidants_connect_web/espace_responsable/_trained-email-field-with-verify.html" with field=form.email %}
+              {% endif %}
+
+              {% if form.email_lookup_case == "referent_of_other_org" %}
+                <input type="hidden" name="{{ form.prefix }}-email_lookup_done" value="on">
+                <div class="fr-alert fr-alert--success fr-mb-4v">
+                  <p>
+                    Succès : l'aidant est déjà habilité pour l'organisation
+                    {{ form.email_lookup_data.other_org_names }}, dont vous êtes référent.
+                    Vous pouvez l'ajouter à l'organisation {{ form.email_lookup_data.current_org_name }}.
+                  </p>
+                </div>
+              {% elif form.email_lookup_case == "other_org" %}
+                <input type="hidden" name="{{ form.prefix }}-email_lookup_done" value="on">
+                <div class="fr-alert fr-alert--success fr-mb-4v">
+                  <p>L'aidant est habilité Aidants Connect.</p>
+                </div>
+                <div class="fr-alert fr-alert--info fr-mb-4v">
+                  <p>
+                    Information : une fois ajouté à l'organisation {{ form.email_lookup_data.current_org_name }},
+                    l'aidant n'aura plus accès aux mandats de l'autre structure et ne pourra créer des mandats
+                    qu'au nom de la structure {{ form.email_lookup_data.current_org_name }}.
+                    S'il est nécessaire que l'aidant ait toujours accès aux mandats de l'autre structure,
+                    <a href="mailto:support@aidantsconnect.beta.gouv.fr" class="fr-link">contactez le support</a> pour les ajouter.
+                  </p>
+                </div>
+                <div class="fr-mb-4v" data-action="change->new-email-toggle#toggle">
+                  {% aidantc_dsfr_form_field_no_asterisk form.email_will_change|dsfr_inline %}
+                </div>
+                <div class="fr-mb-4v new-email-field" data-new-email-toggle-target="wrapper" hidden>
+                  {% aidantc_dsfr_form_field_no_asterisk form.new_email %}
+                  <div class="fr-alert fr-alert--warning fr-mt-2v fr-alert--sm">
+                    <p>L’aidant devra dorénavant utiliser cette adresse e-mail pour se connecter à son compte Aidants Connect. L’adresse doit être une adresse nominative (de type prenom-nom@exemple.fr).</p>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+
+          {{ formset.non_form_errors }}
+
+          <button type="submit" name="partial-add-trained" value="1" class="fr-btn fr-btn--secondary fr-btn--icon-right fr-icon-user-add-line fr-mt-4w"
+                  formaction="#trained-form-{{ formset.forms|length }}">
+            Ajouter un autre aidant déjà habilité
+          </button>
+
+          <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--between fr-mt-4w">
+            <li>
+              <a href="{% url 'espace_referent:aidant_new_profile' %}" class="fr-btn fr-btn--secondary">Retourner à l'étape précédente</a>
+            </li>
+            <li>
+              <button type="submit" class="fr-btn">Passer à l'étape suivante</button>
+            </li>
+          </ul>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block extrajs %}
+  <script type="module" src="{% static 'js/new-email-toggle.mjs' %}"></script>
+{% endblock extrajs %}

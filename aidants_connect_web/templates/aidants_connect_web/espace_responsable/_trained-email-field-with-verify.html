@@ -1,0 +1,25 @@
+{% load dsfr_tags widget_tweaks %}
+{# Same structure as aidantc-dsfr-input-snippet-no-asterisk: label full width, then input + verify button on one row. #}
+<div class="fr-input-group{% if field.errors %} fr-input-group--error{% endif %}">
+  <label for="{{ field.id_for_label }}" class="fr-label">
+    {{ field.label }}
+    {% if field.help_text %}
+      <span class="fr-hint-text">{{ field.help_text|safe }}</span>
+    {% endif %}
+  </label>
+  <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
+    <div class="fr-col-12">
+      {{ field|dsfr_input_class_attr }}
+    </div>
+    {% if field.errors %}
+    <div id="{{ field.auto_id }}-desc-error">
+      {{ field.errors }}
+    </div>
+    {% endif %}
+    <div class="fr-col-12 fr-col-md-auto fr-mt-2v fr-mt-md-0">
+      <button type="submit" name="verify-trained-email" value="1" class="fr-btn fr-btn--secondary">
+        Vérifier l'e-mail
+      </button>
+    </div>
+  </div>
+</div>

@@ -11,7 +11,6 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
-from django.utils.translation import ngettext
 from django.views.generic import DeleteView, DetailView, FormView, TemplateView, View
 
 import qrcode
@@ -24,8 +23,11 @@ from aidants_connect_common.views import (
 from aidants_connect_habilitation.models import OrganisationRequest
 from aidants_connect_web.constants import (
     OTP_APP_DEVICE_NAME,
+    AddAidantProfileChoice,
+    HabilitationRequestCourseType,
     NotificationType,
     ReferentRequestStatuses,
+    StructureChangeRequestStatuses,
 )
 from aidants_connect_web.decorators import (
     activity_required,
@@ -33,6 +35,7 @@ from aidants_connect_web.decorators import (
     responsable_logged_with_activity_required,
 )
 from aidants_connect_web.forms import (
+    AddAidantProfileChoiceForm,
     AddAppOTPToAidantForm,
     AddOrganisationReferentForm,
     CarteOTPSerialNumberForm,
@@ -42,6 +45,8 @@ from aidants_connect_web.forms import (
     NewHabilitationRequestForm,
     OrganisationRestrictDemarchesForm,
     RemoveCardFromAidantForm,
+    StructureChangeRequestForm,
+    StructureChangeRequestFormSet,
 )
 from aidants_connect_web.models import (
     Aidant,
@@ -51,6 +56,7 @@ from aidants_connect_web.models import (
     Journal,
     Notification,
     Organisation,
+    StructureChangeRequest,
 )
 from aidants_connect_web.presenters import AidantFormationPresenter
 
@@ -287,6 +293,8 @@ class AidantsView(DetailView, FormView):
         ).order_by("status", "last_name")
 
         eligibility_validated_requests = self.get_eligibility_validated_requests()
+        pending_structure_requests = self.object.get_pending_structure_change_requests()
+        closed_structure_requests = self.object.get_closed_structure_change_requests()
 
         return {
             **super().get_context_data(**kwargs),
@@ -300,6 +308,8 @@ class AidantsView(DetailView, FormView):
             "perimetres_form": super().get_form(),
             "eligibility_validated_requests": eligibility_validated_requests,
             "unregistrable_requests": unregistrable_requests,
+            "pending_structure_requests": pending_structure_requests,
+            "closed_structure_requests": closed_structure_requests,
         }
 
     def form_valid(self, form):
@@ -438,7 +448,7 @@ class GenerateAidantFormationAttestation(ReferentCannotManageAidantResponseMixin
                 ),
             )
             return redirect(
-                "espace_responsable_aidant", kwargs={"aidant_id": self.aidant.pk}
+                "espace_referent:aidant_detail", kwargs={"aidant_id": self.aidant.pk}
             )
         self.aidant.generate_attestation()
         return HttpResponse(
@@ -975,91 +985,503 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
         return super().get_context_data(**kwargs)
 
 
-@method_decorator(activity_required, name="get")
-@responsable_logged_required
-class NewHabilitationRequest(FormView):
-    template_name = (
-        "aidants_connect_web/espace_responsable/new-habilitation-request.html"
-    )
-    form_class = NewHabilitationRequestForm
-    success_url = reverse_lazy("espace_referent:aidants")
+SESSION_KEY_ADD_AIDANT_WIZARD = "add_aidant_wizard"
+
+
+class AddAidantWizardMixin:
+    """Shared session-management logic for the add-aidant wizard views."""
 
     def setup(self, request: HttpRequest, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.referent: Aidant = request.user
+        self._wizard = request.session.get(SESSION_KEY_ADD_AIDANT_WIZARD) or {}
+
+    def _wizard_step(self):
+        raise NotImplementedError
+
+    def _back_url(self):
+        return None
+
+    def _profile_choice(self):
+        return self._wizard.get("profile_choice")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.update(
+            wizard_step=self._wizard_step(),
+            wizard_total_steps=3,
+            wizard_profile_choice=self._profile_choice(),
+            referent=self.referent,
+            wizard_back_url=self._back_url(),
+        )
+        return ctx
+
+    def _save_wizard(self, **kwargs):
+        w = dict(self._wizard)
+        w.update(kwargs)
+        self.request.session[SESSION_KEY_ADD_AIDANT_WIZARD] = w
+        self._wizard = w
+
+    def _clear_wizard(self):
+        if SESSION_KEY_ADD_AIDANT_WIZARD in self.request.session:
+            del self.request.session[SESSION_KEY_ADD_AIDANT_WIZARD]
+        self._wizard = {}
+
+    def _reset_wizard(self):
+        self.request.session[SESSION_KEY_ADD_AIDANT_WIZARD] = {}
+        self._wizard = {}
+
+    def _has_valid_profile_choice(self):
+        return self._profile_choice() in AddAidantProfileChoice.values
+
+    def _is_ready_for_confirmation(self):
+        if not self._has_valid_profile_choice():
+            return False
+        if not self._wizard.get("ready_for_confirmation"):
+            return False
+        profile = self._profile_choice()
+        if profile == AddAidantProfileChoice.NOT_YET_TRAINED:
+            return bool(self._wizard.get("classic_data"))
+        if profile == AddAidantProfileChoice.ALREADY_TRAINED:
+            return bool(self._wizard.get("structure_change_data"))
+        return False
+
+    def _no_cache_response(self, response):
+        response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        return response
+
+    def _serialize_classic_data(self, cleaned_data):
+        """Build session-serializable dict from
+        NewHabilitationRequestForm.cleaned_data."""
+        course_type = cleaned_data.get("course_type") or {}
+        hab_list = cleaned_data.get("habilitation_requests") or []
+        return {
+            "course_type": {
+                "type": course_type.get("type"),
+                "email_formateur": course_type.get("email_formateur"),
+            },
+            # Store all forms (including empty slots)
+            # so back navigation restores the right count
+            "habilitation_requests": [
+                {
+                    "email": h.get("email") or "",
+                    "first_name": h.get("first_name", ""),
+                    "last_name": h.get("last_name", ""),
+                    "profession": h.get("profession", ""),
+                    "organisation_id": (
+                        h.get("organisation").pk if h.get("organisation") else None
+                    ),
+                    "conseiller_numerique": h.get("conseiller_numerique", False),
+                }
+                for h in hab_list
+            ],
+        }
+
+    def _create_classic_requests(self, classic_data):
+
+        course_type = classic_data.get("course_type") or {}
+        type_val = course_type.get("type")
+        email_formateur = course_type.get("email_formateur")
+        hab_forms = classic_data.get("habilitation_requests") or []
+        for h in hab_forms:
+            if not h.get("email") or not h.get("organisation_id"):
+                continue
+            HabilitationRequest.objects.create(
+                organisation_id=h["organisation_id"],
+                email=h["email"],
+                first_name=h.get("first_name", ""),
+                last_name=h.get("last_name", ""),
+                profession=h.get("profession", ""),
+                conseiller_numerique=bool(h.get("conseiller_numerique", False)),
+                course_type=(
+                    int(type_val) if type_val else HabilitationRequestCourseType.CLASSIC
+                ),
+                email_formateur=email_formateur or None,
+                origin=HabilitationRequest.ORIGIN_RESPONSABLE,
+            )
+
+    def _new_habilitation_form_kwargs(self):
+        return {
+            "form_kwargs": {
+                "habilitation_requests": {"form_kwargs": {"referent": self.referent}}
+            }
+        }
+
+
+@method_decorator(activity_required, name="get")
+@responsable_logged_required
+class AddAidantProfileChoiceView(AddAidantWizardMixin, FormView):
+    """Step 1: choose not-yet-trained vs already-habilitated aidants to add."""
+
+    template_name = (
+        "aidants_connect_web/espace_responsable/add-aidant-wizard-step1.html"
+    )
+    form_class = AddAidantProfileChoiceForm
+
+    def get_form_kwargs(self):
+        return {
+            **super().get_form_kwargs(),
+            "organisation": self.referent.organisation,
+        }
+
+    def _wizard_step(self):
+        return 1
+
+    def get(self, request, *args, **kwargs):
+        self._reset_wizard()
+        return self._no_cache_response(super().get(request, *args, **kwargs))
+
+    def form_valid(self, form):
+        profile = int(form.cleaned_data["profile"])
+        self._reset_wizard()
+        self._save_wizard(profile_choice=profile)
+        if profile == AddAidantProfileChoice.NOT_YET_TRAINED:
+            return redirect(reverse("espace_referent:aidant_new_untrained"))
+        return redirect(reverse("espace_referent:aidant_new_trained"))
+
+
+@method_decorator(activity_required, name="get")
+@responsable_logged_required
+class AddAidantTrainedView(AddAidantWizardMixin, TemplateView):
+    """Step 2a: enter already-trained aidants (structure change formset)."""
+
+    template_name = (
+        "aidants_connect_web/espace_responsable/add-aidant-wizard-step2-trained.html"
+    )
+
+    def _wizard_step(self):
+        return 2
+
+    def _get_structure_change_formset(self, data=None, initial=None):
+        return StructureChangeRequestFormSet(
+            data=data,
+            queryset=StructureChangeRequest.objects.none(),
+            referent=self.referent,
+            initial=initial,
+        )
+
+    def _build_trained_initial_from_session(self):
+        """Build formset initial list from session structure_change_data
+        for back navigation."""
+        structure_data = self._wizard.get("structure_change_data") or []
+        if not structure_data:
+            return None
+        initial = []
+        for item in structure_data:
+            new_email = (item.get("new_email") or "").strip()
+            initial.append(
+                {
+                    "email": item.get("email") or "",
+                    "new_email": new_email,
+                    "email_will_change": bool(new_email),
+                    "email_lookup_done": True,
+                }
+            )
+        return initial if initial else None
+
+    def _guard_profile_or_redirect(self):
+        if self._profile_choice() != AddAidantProfileChoice.ALREADY_TRAINED:
+            self._clear_wizard()
+            return redirect(reverse("espace_referent:aidant_new_profile"))
+        return None
+
+    def get(self, request, *args, **kwargs):
+        redirect_response = self._guard_profile_or_redirect()
+        if redirect_response:
+            return redirect_response
+        return self._no_cache_response(super().get(request, *args, **kwargs))
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        formset = kwargs.get("formset")
+        if formset is None:
+            initial = self._build_trained_initial_from_session()
+            formset = self._get_structure_change_formset(initial=initial)
+        ctx["formset"] = formset
+        return ctx
+
+    def post(self, request, *args, **kwargs):
+        redirect_response = self._guard_profile_or_redirect()
+        if redirect_response:
+            return redirect_response
+        if request.POST.get("partial-add-trained"):
+            data = request.POST.copy()
+            empty_formset = self._get_structure_change_formset()
+            prefix = empty_formset.prefix
+            total = int(data.get(f"{prefix}-TOTAL_FORMS", 1))
+            data[f"{prefix}-TOTAL_FORMS"] = str(total + 1)
+            formset = self._get_structure_change_formset(data=data)
+            return self.render_to_response(self.get_context_data(formset=formset))
+
+        formset = self._get_structure_change_formset(data=request.POST)
+        if not formset.is_valid():
+            return self.render_to_response(self.get_context_data(formset=formset))
+
+        needs_lookup_display = any(
+            f.cleaned_data
+            and f.cleaned_data.get("email")
+            and not f.cleaned_data.get("email_lookup_done")
+            and f.email_lookup_case
+            in (
+                StructureChangeRequestForm.EMAIL_LOOKUP_REFERENT_OF_OTHER_ORG,
+                StructureChangeRequestForm.EMAIL_LOOKUP_OTHER_ORG,
+            )
+            for f in formset.forms
+        )
+        if needs_lookup_display:
+            return self.render_to_response(self.get_context_data(formset=formset))
+
+        structure_data = []
+        for f in formset.forms:
+            if not f.cleaned_data or not f.cleaned_data.get("email"):
+                continue
+            structure_data.append(
+                {
+                    "email": f.cleaned_data["email"],
+                    "new_email": f.cleaned_data.get("new_email"),
+                    "email_lookup_case": f.email_lookup_case,
+                }
+            )
+        if not structure_data:
+            formset.non_form_errors().append(
+                "Vous devez renseigner au moins un aidant."
+            )
+            return self.render_to_response(self.get_context_data(formset=formset))
+
+        self._save_wizard(structure_change_data=structure_data)
+        self._save_wizard(ready_for_confirmation=True)
+        return redirect(reverse("espace_referent:aidant_new_confirmation"))
+
+
+@method_decorator(activity_required, name="get")
+@responsable_logged_required
+class AddAidantUntrainedView(AddAidantWizardMixin, FormView):
+    """Step 2b: enter untrained aidants (classic habilitation request form)."""
+
+    template_name = (
+        "aidants_connect_web/espace_responsable/add-aidant-wizard-step2-untrained.html"
+    )
+    form_class = NewHabilitationRequestForm
+
+    def _wizard_step(self):
+        return 2
+
+    def _back_url(self):
+        return reverse("espace_referent:aidant_new_profile")
+
+    def get(self, request, *args, **kwargs):
+        if self._profile_choice() != AddAidantProfileChoice.NOT_YET_TRAINED:
+            self._clear_wizard()
+            return redirect(reverse("espace_referent:aidant_new_profile"))
+        return self._no_cache_response(super().get(request, *args, **kwargs))
+
+    def _build_untrained_initial_from_session(self):
+        """Build form initial dict from session classic_data for back navigation."""
+        classic = self._wizard.get("classic_data")
+        if not classic:
+            return None
+        course_type = classic.get("course_type") or {}
+        hab_list = classic.get("habilitation_requests") or []
+        org_ids = set(self.referent.responsable_de.values_list("pk", flat=True))
+        # Default org for empty/invalid slots so we preserve form count
+        default_org = (
+            self.referent.responsable_de.first()
+            if self.referent.responsable_de.exists()
+            else None
+        )
+        hab_initial = []
+        for h in hab_list:
+            org_id = h.get("organisation_id")
+            if org_id is not None:
+                try:
+                    org_id = int(org_id)
+                except (TypeError, ValueError):
+                    org_id = None
+            if org_id is not None and org_id in org_ids:
+                try:
+                    org = Organisation.objects.get(pk=org_id)
+                except (Organisation.DoesNotExist, ValueError):
+                    org = default_org
+            else:
+                org = default_org
+            if org is None:
+                continue
+            conseiller_numerique = h.get("conseiller_numerique", False)
+            if isinstance(conseiller_numerique, str):
+                conseiller_numerique = conseiller_numerique in ("True", "true", "1")
+            else:
+                conseiller_numerique = bool(conseiller_numerique)
+            hab_initial.append(
+                {
+                    "email": h.get("email") or "",
+                    "first_name": h.get("first_name") or "",
+                    "last_name": h.get("last_name") or "",
+                    "profession": h.get("profession") or "",
+                    "organisation": org,
+                    "conseiller_numerique": conseiller_numerique,
+                }
+            )
+        return {
+            "course_type": {
+                "type": course_type.get("type"),
+                "email_formateur": course_type.get("email_formateur") or "",
+            },
+            "habilitation_requests": hab_initial,
+        }
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs.update(
-            {
-                "form_kwargs": {
-                    "habilitation_requests": {
-                        "form_kwargs": {"referent": self.referent}
-                    }
-                }
-            }
-        )
-
-        return kwargs
-
-    def get_form_kwargs_with_data(self, data):
-        """Helper method to get form kwargs with custom data"""
-        kwargs = self.get_form_kwargs()
-        kwargs["data"] = data
+        kwargs.update(self._new_habilitation_form_kwargs())
+        # Only pass initial on GET (unbound form) to pre-fill fields.
+        # On POST, passing initial causes has_changed()=False for unchanged
+        # extra forms, making Django reset cleaned_data to {}.
+        if self.request.method == "GET":
+            initial = self._build_untrained_initial_from_session()
+            if initial is not None:
+                kwargs["initial"] = initial
         return kwargs
 
     def post(self, request, *args, **kwargs):
+        if self._profile_choice() != AddAidantProfileChoice.NOT_YET_TRAINED:
+            self._clear_wizard()
+            return redirect(reverse("espace_referent:aidant_new_profile"))
         if "partial-submit" in request.POST:
             data = request.POST.copy()
             total_forms = int(
                 data.get("multiform-habilitation_requests-TOTAL_FORMS", 0)
             )
-
-            # First validate the current form without adding a new one
-            form = self.get_form_class()(**self.get_form_kwargs_with_data(data))
+            form = NewHabilitationRequestForm(
+                data=data, **self._new_habilitation_form_kwargs()
+            )
             is_valid = form.is_valid()
-
-            # Check specifically for email validation errors
             has_email_errors = False
-            if hasattr(form, "forms") and "habilitation_requests" in form.forms:
-                habilitation_formset = form["habilitation_requests"]
-                for subform in habilitation_formset.forms:
-                    if "email" in subform.errors:
-                        has_email_errors = True
-                        break
-
-            # Only add a new form if validation passes AND there are no email errors
+            if "habilitation_requests" in form.forms:
+                has_email_errors = any(
+                    "email" in f.errors for f in form["habilitation_requests"].forms
+                )
             if is_valid and not has_email_errors:
                 data["multiform-habilitation_requests-TOTAL_FORMS"] = str(
                     total_forms + 1
                 )
-                form = self.get_form_class()(**self.get_form_kwargs_with_data(data))
-                form.is_valid()  # Trigger validation for the new form structure
-
+                form = NewHabilitationRequestForm(
+                    data=data, **self._new_habilitation_form_kwargs()
+                )
+                form.is_valid()
             return self.render_to_response(
                 self.get_context_data(form=form, is_partial_submit=True)
             )
-
         return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
-        result: list[HabilitationRequest] = form.save()["habilitation_requests"]
+        classic_data = self._serialize_classic_data(form.cleaned_data)
+        self._save_wizard(classic_data=classic_data, ready_for_confirmation=True)
+        return redirect(reverse("espace_referent:aidant_new_confirmation"))
+
+
+@method_decorator(activity_required, name="get")
+@responsable_logged_required
+class AddAidantConfirmationView(AddAidantWizardMixin, TemplateView):
+    """Final step: review and confirm, then create objects in DB."""
+
+    template_name = (
+        "aidants_connect_web/espace_responsable/add-aidant-wizard-confirmation.html"
+    )
+    success_url = reverse_lazy("espace_referent:aidants")
+
+    def _wizard_step(self):
+        return 3
+
+    def get(self, request, *args, **kwargs):
+        if not self._is_ready_for_confirmation():
+            self._clear_wizard()
+            return redirect(reverse("espace_referent:aidant_new_profile"))
+        return self._no_cache_response(super().get(request, *args, **kwargs))
+
+    def _back_url(self):
+        profile = self._profile_choice()
+        if profile == AddAidantProfileChoice.NOT_YET_TRAINED:
+            return reverse("espace_referent:aidant_new_untrained")
+        return reverse("espace_referent:aidant_new_trained")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        classic = self._wizard.get("classic_data") or {}
+        ctx["course_type"] = classic.get("course_type") or {}
+        ctx["AddAidantProfileChoice"] = AddAidantProfileChoice
+        ctx["HabilitationRequestCourseType"] = HabilitationRequestCourseType
+
+        structure_data = self._wizard.get("structure_change_data") or []
+        ctx["direct_adds"] = [
+            item
+            for item in structure_data
+            if item.get("email_lookup_case")
+            == StructureChangeRequestForm.EMAIL_LOOKUP_REFERENT_OF_OTHER_ORG
+        ]
+        ctx["structure_requests"] = [
+            item
+            for item in structure_data
+            if item.get("email_lookup_case")
+            == StructureChangeRequestForm.EMAIL_LOOKUP_OTHER_ORG
+        ]
+        return ctx
+
+    def post(self, request, *args, **kwargs):
+        if not self._is_ready_for_confirmation():
+            self._clear_wizard()
+            return redirect(reverse("espace_referent:aidant_new_profile"))
+        if not request.POST.get("wizard_confirm"):
+            return redirect(reverse("espace_referent:aidant_new_confirmation"))
+
+        profile = self._profile_choice()
+        classic = self._wizard.get("classic_data")
+        structure_data = self._wizard.get("structure_change_data") or []
+
+        with transaction.atomic():
+            if profile == AddAidantProfileChoice.NOT_YET_TRAINED:
+                if classic:
+                    self._create_classic_requests(classic)
+
+            if profile == AddAidantProfileChoice.ALREADY_TRAINED:
+                target_org = self.referent.organisation
+
+                for item in structure_data:
+                    aidant = Aidant.objects.filter(
+                        username__iexact=item["email"]
+                    ).first()
+                    if not aidant:
+                        continue
+
+                    lookup_case = item.get("email_lookup_case")
+
+                    if (
+                        lookup_case
+                        == StructureChangeRequestForm.EMAIL_LOOKUP_REFERENT_OF_OTHER_ORG
+                    ):
+                        # Case 1: referent manages the aidant's current org
+                        # → move directly without creating a request.
+                        aidant.organisations.add(target_org)
+                    else:
+                        # Case 2: create a StructureChangeRequest for review.
+                        scr = StructureChangeRequest.objects.create(
+                            aidant=aidant,
+                            email=item["email"],
+                            organisation_id=target_org.pk,
+                            new_email=item.get("new_email"),
+                        )
+                        previous_ids = list(
+                            aidant.organisations.exclude(pk=target_org.pk).values_list(
+                                "pk", flat=True
+                            )
+                        )
+                        scr.previous_organisations.set(previous_ids)
+
+        self._clear_wizard()
+
         django_messages.success(
             self.request,
-            ngettext(
-                (
-                    "La demande d'habilitation pour %(person)s "
-                    "a été enregistrée avec succès."
-                ),
-                (
-                    "Les %(len)s demandes d'habilitation ont été "
-                    "enregistrées avec succès."
-                ),
-                len(result),
-            )
-            % {"person": result[0].get_full_name(), "len": len(result)},
+            "Votre ou vos demande(s) ont été enregistrées avec succès.",
         )
-        return super().form_valid(form)
+        return redirect(self.success_url)
 
 
 @responsable_logged_with_activity_required
@@ -1076,19 +1498,52 @@ class CancelHabilitationRequestView(DetailView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        org_ids = self.aidant.responsable_de.values_list("id", flat=True)
+        referent_organisation_ids = self.aidant.responsable_de.values_list(
+            "id", flat=True
+        )
         return (
             super()
             .get_queryset()
             .filter(
-                organisation__in=org_ids,
+                organisation__in=referent_organisation_ids,
                 status__in=ReferentRequestStatuses.cancellable_by_responsable(),
             )
         )
 
     def post(self, request, *args, **kwargs):
         self.get_object().cancel_by_responsable()
-        return redirect(reverse("espace_referent:organisation"))
+        return redirect(reverse("espace_referent:aidants"))
+
+
+@responsable_logged_with_activity_required
+class CancelStructureChangeRequestView(DetailView):
+    pk_url_kwarg = "request_id"
+    model = StructureChangeRequest
+    context_object_name = "request"
+    template_name = (
+        "aidants_connect_web/espace_responsable/cancel-structure-change-request.html"
+    )
+
+    def dispatch(self, request, *args, **kwargs):
+        self.aidant: Aidant = request.user
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        referent_organisation_ids = self.aidant.responsable_de.values_list(
+            "id", flat=True
+        )
+        return (
+            super()
+            .get_queryset()
+            .filter(
+                organisation__in=referent_organisation_ids,
+                status__in=StructureChangeRequestStatuses.cancellable_by_responsable(),
+            )
+        )
+
+    def post(self, request, *args, **kwargs):
+        self.get_object().cancel_by_responsable()
+        return redirect(reverse("espace_referent:aidants"))
 
 
 @responsable_logged_with_activity_required

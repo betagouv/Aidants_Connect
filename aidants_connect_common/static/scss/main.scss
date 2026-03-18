@@ -248,3 +248,14 @@ summary::marker {
 .fr-fieldset {
   align-items: flex-start;
 }
+
+// Fix DSFR alignment issue between radio and input in same row
+.add-aidant-wizard-profile-fieldset {
+  &>.fr-radio-group {
+    margin-left: 0.5rem;
+
+    .fr-radio-group>.fr-label {
+      margin-top: 1rem;
+    }
+  }
+}

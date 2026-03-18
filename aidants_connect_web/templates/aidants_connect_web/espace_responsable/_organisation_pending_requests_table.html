@@ -1,12 +1,12 @@
   <div class="fr-table fr-table--no-caption d-table fr-table--bordered fr-table--layout-fixed">
     <table>
-      <caption>Table des demandes d'habilitations en cours</caption>
+      <caption>Table des demandes d'habilitation et de changement de structure</caption>
       <thead>
         <tr>
           <th scope="col" class="fr-col-2 fr-text--md">Nom de l'aidant</th>
           <th scope="col" class="fr-col-3 fr-text--md">Statut de la demande</th>
-          <th scope="col" class="fr-col-3 fr-text--md">Inscription en formation</th>
-          <th scope="col" class="fr-col-4 fr-text--md">Actions</th>
+          <th scope="col" class="fr-col-4 fr-text--md">Inscription en formation</th>
+          <th scope="col" class="fr-col-3 fr-text--md">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -45,7 +45,7 @@
               <a href="{% url 'espace_referent:cancel_habilitation' request_id=habilitation_request.id %}"
                   class="fr-btn fr-btn--tertiary"
                   id="cancel-habilitation-request-{{ habilitation_request.id }}">
-                Annuler la demande d'habilitation
+                Annuler la demande
               </a>
             </td>
           </tr>
@@ -70,7 +70,55 @@
                 <a href="{% url 'espace_referent:cancel_habilitation' request_id=habilitation_request.id %}"
                     class="fr-btn fr-btn--tertiary"
                     id="cancel-habilitation-request-{{ habilitation_request.id }}">
-                  Annuler la demande d'habilitation
+                  Annuler la demande
+                </a>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        {% for req in pending_structure_requests %}
+          <tr>
+            <td class="fr-text--md">{{ req.get_full_name }}</td>
+            <td class="fr-text--md"><p class="fr-badge fr-badge--info">{{ req.status_label }}</p></td>
+            <td class="fr-text--md">
+              <p class="fr-text--md fr-mr-1w">
+                N/A - Formation déjà effectuée
+              </p>
+            </td>
+            <td>
+              <a href="{% url 'espace_referent:cancel_structure_change' request_id=req.id %}"
+                  class="fr-btn fr-btn--tertiary"
+                  id="cancel-structure-change-{{ req.id }}">
+                Annuler la demande
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+        {% for req in closed_structure_requests %}
+          <tr>
+            <td class="fr-text--md">{{ req.get_full_name }}</td>
+            <td class="fr-text--md">
+              {% if req.status == "refused" %}
+                <p class="fr-badge fr-badge--error">{{ req.status_label }}</p>
+              {% elif "cancelled" in req.status %}
+                <p class="fr-badge fr-badge--warning">{{ req.status_label }}</p>
+              {% else %}
+                <p class="fr-badge fr-badge--info">{{ req.status_label }}</p>
+              {% endif %}
+            </td>
+            <td class="fr-text--md">
+              <p class="fr-tag fr-tag--blue fr-text--md fr-mr-1w">
+                <span class="fr-icon-checkbox-circle-fill fr-btn--icon-left">
+                  Formation déjà effectuée
+                </span>
+              </p>
+            </td>
+            <td>
+              {% if req.status_cancellable_by_responsable %}
+                <a href="{% url 'espace_referent:cancel_structure_change' request_id=req.id %}"
+                    class="fr-btn fr-btn--tertiary"
+                    id="cancel-structure-change-{{ req.id }}">
+                  Annuler la demande
                 </a>
               {% endif %}
             </td>

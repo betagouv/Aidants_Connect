@@ -38,6 +38,7 @@ from aidants_connect_common.forms import (
 )
 from aidants_connect_common.widgets import DetailedRadioSelect, JSModulePath, NoopWidget
 from aidants_connect_web.constants import (
+    AddAidantProfileChoice,
     HabilitationRequestCourseType,
     RemoteConsentMethodChoices,
 )
@@ -46,6 +47,7 @@ from aidants_connect_web.models import (
     CarteTOTP,
     HabilitationRequest,
     Organisation,
+    StructureChangeRequest,
     Usager,
     UsagerQuerySet,
 )
@@ -614,9 +616,14 @@ class HabilitationRequestCreationForm(
             self.data.get(f"{self.prefix}-last_name", "").strip() if self.data else ""
         )
 
+        # initial is set when the form is bound to display on accordion title
         if not first_name and not last_name and self.instance.pk:
             first_name = self.instance.first_name or ""
             last_name = self.instance.last_name or ""
+
+        if not first_name and not last_name and self.initial:
+            first_name = str(self.initial.get("first_name", "")).strip()
+            last_name = str(self.initial.get("last_name", "")).strip()
 
         if first_name or last_name:
             return f"{first_name.capitalize()} {last_name.capitalize()}".strip()
@@ -692,12 +699,18 @@ class HabilitationRequestCreationFormSet(BaseHabilitationRequestFormSet):
         if self.is_bound:
             return super().total_form_count()
         else:
-            # Pour l'espace responsable, on veut toujours au moins 1 formulaire
-            return max(1, min(self.initial_form_count(), self.max_num))
+            count = self.initial_form_count()
+            if getattr(self, "initial_extra", None):
+                count = max(count, len(self.initial_extra))
+            return max(1, min(count, self.max_num))
 
     def validate_unique(self):
         """Validate that emails are unique within the formset"""
-        referent = self.forms[0].referent
+        if not self.forms:
+            return
+        referent = getattr(self.forms[0], "referent", None)
+        if referent is None:
+            return
         organisation = referent.organisation
 
         existing_emails = set()
@@ -831,6 +844,270 @@ class NewHabilitationRequestForm(BaseModelMultiForm):
             )
 
         return super().save(commit)
+
+
+# --- Add aidant wizard: step 1 (profile choice) and structure change formset ---
+
+
+class AddAidantProfileChoiceForm(DsfrBaseForm):
+    """Step 1: choose not-yet-trained vs already-habilitated aidants to add."""
+
+    profile = forms.TypedChoiceField(
+        label="Quel est le profil du ou des aidants que vous souhaitez ajouter "
+        "à votre organisation ?",
+        choices=AddAidantProfileChoice.choices,
+        widget=RadioSelect,
+        label_suffix=None,
+    )
+
+    def __init__(self, *args, organisation=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if organisation is not None and getattr(organisation, "name", None):
+            self.fields["profile"].label = (
+                "Quel est le profil du ou des aidants que vous souhaitez ajouter "
+                f"à l'organisation {organisation.name} ?"
+            )
+            # DsfrBaseForm.__init__ already accessed visible_fields() and cached
+            # BoundField with the old label; Django copies label into BoundField once.
+            self._bound_fields_cache.pop("profile", None)
+
+
+class StructureChangeRequestForm(forms.ModelForm, DsfrBaseForm):
+    """Single row for adding an already-trained aidant (structure change).
+
+    The email field triggers a lookup that categorises the aidant into one of
+    four cases.  The template and view use ``email_lookup_case`` /
+    ``email_lookup_data`` to show contextual messages and conditionally
+    display the email-change fields.
+    """
+
+    # Possible values for ``email_lookup_case``, set by ``clean_email()``.
+    # REFERENT_OF_OTHER_ORG: aidant belongs to another org where the current
+    #   referent is also a manager → simple success, no email-change needed.
+    # OTHER_ORG: aidant belongs to another org where the current referent is
+    #   NOT a manager → success + warning, email-change fields shown.
+    EMAIL_LOOKUP_REFERENT_OF_OTHER_ORG = "referent_of_other_org"
+    EMAIL_LOOKUP_OTHER_ORG = "other_org"
+
+    # Only shown for OTHER_ORG case after the lookup step.
+    # required=False + empty_value=None so we can distinguish "not yet
+    # displayed" (None) from an explicit "No" (False) selection.
+    email_will_change = forms.TypedChoiceField(
+        label="Dans la nouvelle structure, l'adresse e-mail utilisée pour se "
+        "connecter à Aidants Connect sera-t-elle différente ?",
+        coerce=lambda x: x == "True",
+        choices=[(True, "Oui"), (False, "Non")],
+        widget=RadioSelect,
+        required=False,
+        empty_value=None,
+    )
+    new_email = forms.EmailField(
+        label="Nouvelle adresse e-mail",
+        required=False,
+        help_text="Exemple : prenom-nom@exemple.fr",
+    )
+    # Hidden flag injected by the template after the first successful lookup.
+    # Prevents the form from proceeding to the next wizard step before the
+    # user has seen the contextual messages (success / warning / info).
+    email_lookup_done = forms.BooleanField(
+        required=False,
+        widget=forms.HiddenInput,
+    )
+
+    def __init__(self, referent, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.referent = referent
+        # Set by clean_email() after a successful lookup.
+        # The template reads these to display case-specific alerts.
+        self.email_lookup_case = None
+        # Contextual data for template messages (org names, etc.).
+        self.email_lookup_data = {}
+
+    def clean_email(self):
+        email = (self.cleaned_data.get("email") or "").strip()
+        if not email:
+            return email or None
+
+        email = email.strip().lower()
+        current_org = self.referent.organisation
+        referent_org_ids = set(
+            self.referent.responsable_de.values_list("id", flat=True)
+        )
+
+        # Already a member of the current organisation — nothing to do.
+        if Aidant.objects.filter(
+            email__iexact=email, organisations__id=current_org.pk
+        ).exists():
+            raise ValidationError(
+                "Erreur : il existe déjà un compte aidant pour cette adresse "
+                "e-mail dans votre organisation. Vous n'avez pas besoin de "
+                "déposer une nouvelle demande."
+            )
+
+        # A structure-change request is already pending for this org.
+        if StructureChangeRequest.objects.filter(
+            email__iexact=email,
+            organisation_id=current_org.pk,
+        ).exists():
+            raise ValidationError(
+                "Erreur : une demande de changement de structure est déjà "
+                "en cours pour cette adresse e-mail."
+            )
+
+        aidant = Aidant.objects.filter(username__iexact=email).first()
+
+        # Case 4: unknown email — not an Aidants Connect user.
+        if not aidant:
+            raise ValidationError(
+                "L'adresse e-mail est erronée ou l'aidant n'est pas habilité "
+                "Aidants Connect. Retournez à l'étape précédente pour ajouter "
+                "des aidants qui ne sont pas encore habilités."
+            )
+
+        # Case 3: referent-only account — cannot create mandats.
+        if aidant.referent_non_aidant or not aidant.can_create_mandats:
+            raise ValidationError(
+                "Il s'agit d'un compte référent. L'aidant n'est pas formé "
+                "ni habilité à créer des mandats. Retournez à l'étape "
+                "précédente pour ajouter des aidants qui ne sont pas encore "
+                "habilités."
+            )
+
+        # Aidant exists and is habilité — determine which success case:
+        aidant_org_ids = set(aidant.organisations.values_list("id", flat=True))
+        other_aidant_org_ids = aidant_org_ids - {current_org.pk}
+        common_referent_orgs = other_aidant_org_ids & referent_org_ids
+
+        if common_referent_orgs:
+            # Case 1: the referent also manages one of the aidant's orgs.
+            other_org_names = list(
+                Organisation.objects.filter(id__in=common_referent_orgs).values_list(
+                    "name", flat=True
+                )
+            )
+            self.email_lookup_case = self.EMAIL_LOOKUP_REFERENT_OF_OTHER_ORG
+            self.email_lookup_data = {
+                "other_org_names": ", ".join(other_org_names),
+                "current_org_name": current_org.name,
+            }
+        else:
+            # Case 2: the aidant belongs to an org the referent doesn't manage.
+            self.email_lookup_case = self.EMAIL_LOOKUP_OTHER_ORG
+            self.email_lookup_data = {
+                "current_org_name": current_org.name,
+            }
+
+        return email
+
+    def clean_new_email(self):
+        email_will_change = self.cleaned_data.get("email_will_change")
+        new_email = (self.cleaned_data.get("new_email") or "").strip()
+        if email_will_change and not new_email:
+            raise ValidationError(
+                "Ce champ est obligatoire lorsque l'e-mail sera différent."
+            )
+        return new_email or None
+
+    def clean(self):
+        data = super().clean()
+        email_lookup_done = data.get("email_lookup_done")
+
+        # Only enforce new_email for case 2 (OTHER_ORG) when the user
+        # explicitly chose that the email will change, and only after
+        # the lookup result is displayed (email_lookup_done).
+        # On the first POST email_lookup_done is False, so we skip validation
+        # and let the view re-render the form with contextual messages.
+        if self.email_lookup_case == self.EMAIL_LOOKUP_OTHER_ORG and email_lookup_done:
+            if data.get("email_will_change") and not data.get("new_email"):
+                self.add_error(
+                    "new_email",
+                    ValidationError(
+                        "Ce champ est obligatoire lorsque l'e-mail sera différent."
+                    ),
+                )
+
+        return data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.organisation = self.referent.organisation
+        email = self.cleaned_data.get("email")
+        aidant = Aidant.objects.filter(username__iexact=email).first()
+        if aidant:
+            instance.aidant = aidant
+        if self.cleaned_data.get("email_will_change") and self.cleaned_data.get(
+            "new_email"
+        ):
+            instance.new_email = self.cleaned_data["new_email"]
+        if commit:
+            instance.save()
+            if aidant:
+                previous_ids = list(
+                    aidant.organisations.exclude(
+                        pk=instance.organisation.pk
+                    ).values_list("pk", flat=True)
+                )
+                instance.previous_organisations.set(previous_ids)
+        return instance
+
+    class Meta:
+        model = StructureChangeRequest
+        fields = ("email", "new_email")
+        labels = {
+            "email": ("Adresse e-mail de l'aidant"),
+        }
+        help_texts = {
+            "email": "Exemple : prenom-nom@exemple.fr",
+        }
+
+
+class BaseStructureChangeRequestFormSet(forms.BaseModelFormSet):
+    def __init__(self, *args, referent=None, **kwargs):
+        self.referent = referent
+        super().__init__(*args, **kwargs)
+
+    def total_form_count(self):
+        # Django's BaseModelFormSet stores `initial` as `initial_extra` and
+        # does not pass it to BaseFormSet, so total_form_count ignores it
+        # when the queryset is empty (initial_form_count == 0).  Ensure we
+        # create enough extra forms to display all pre-filled initial rows.
+        count = super().total_form_count()
+        if not self.is_bound and self.initial_extra:
+            count = max(count, len(self.initial_extra))
+        return min(count, self.absolute_max)
+
+    def get_form_kwargs(self, index):
+        kwargs = super().get_form_kwargs(index)
+        kwargs["referent"] = self.referent
+        return kwargs
+
+    def clean(self):
+        super().clean()
+        seen = {}
+        for form in self.forms:
+            email = form.cleaned_data.get("email") if form.cleaned_data else None
+            if not email:
+                continue
+            key = email.strip().lower()
+            if key in seen:
+                form.add_error(
+                    "email",
+                    ValidationError(
+                        "Cette adresse e-mail apparaît plusieurs fois. "
+                        "Chaque aidant doit avoir sa propre adresse."
+                    ),
+                )
+            seen[key] = form
+
+
+StructureChangeRequestFormSet = modelformset_factory(
+    StructureChangeRequest,
+    StructureChangeRequestForm,
+    formset=BaseStructureChangeRequestFormSet,
+    extra=1,
+    max_num=1000,
+    validate_max=True,
+)
 
 
 class ValidateCGUForm(DsfrBaseForm):
