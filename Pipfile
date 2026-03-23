@@ -51,6 +51,7 @@ axe-selenium-python = "~=2.1.6"
 cryptography = "*"
 django = "==4.2.29"
 django-dsfr = "~=3.2.0"
+django-filter = "==24.3"
 
 [dev-packages]
 pipenv = "*"
