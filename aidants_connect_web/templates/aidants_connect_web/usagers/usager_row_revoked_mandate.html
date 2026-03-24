@@ -1,6 +1,6 @@
 {% load ac_extras i18n %}
 
-<tr>
+<tr data-search-target="item" data-search-terms="{{ usager.search_terms|json_attribute }}">
     <td>
         {% if usager.preferred_username %}
           {{ usager.preferred_username }}<br />
