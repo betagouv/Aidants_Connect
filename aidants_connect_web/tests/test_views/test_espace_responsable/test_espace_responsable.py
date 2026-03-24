@@ -634,6 +634,7 @@ class DesignationOfAnotherResponsable(TestCase):
             "last_name": fake.last_name(),
             "profession": fake.job(),
             "email": fake.email(),
+            "phone": "0601020304",
             "organisation": 5000,
         }
 
@@ -641,7 +642,8 @@ class DesignationOfAnotherResponsable(TestCase):
         self.assertEqual(0, CoReferentNonAidantRequest.objects.count())
         self.client.post(self.url, data=data)
         self.assertEqual(1, CoReferentNonAidantRequest.objects.count())
+        expected_data = {**data, "organisation": self.orga.pk, "phone": "+33601020304"}
         self.assertDictEqual(
-            {**data, "organisation": self.orga.pk},
+            expected_data,
             CoReferentNonAidantRequest.objects.values(*data.keys()).first(),
         )

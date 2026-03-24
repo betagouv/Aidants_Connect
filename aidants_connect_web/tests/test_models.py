@@ -2579,6 +2579,7 @@ class CoReferentNonAidantRequestTests(TestCase):
         self.assertEqual(request.last_name, aidant.last_name)
         self.assertEqual(request.profession, aidant.profession)
         self.assertEqual(request.email, aidant.email)
+        self.assertEqual(request.phone, aidant.phone)
         self.assertEqual(request.organisation, aidant.organisation)
         self.assertIn(aidant, request.organisation.responsables.all())
 
