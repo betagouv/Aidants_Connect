@@ -1172,6 +1172,12 @@ class AddAppOTPToAidantForm(PatchedForm):
 
 class CoReferentNonAidantRequestForm(forms.ModelForm, DsfrBaseForm):
     organisation = forms.Field(required=False, widget=NoopWidget)
+    phone = AcPhoneNumberField(
+        label="Numéro de téléphone mobile",
+        label_suffix=" :",
+        initial="",
+        help_text="Format attendu : 10 chiffres",
+    )
 
     def __init__(self, organisation: Organisation, *args, **kwargs):
         self.organisation = organisation
@@ -1186,6 +1192,7 @@ class CoReferentNonAidantRequestForm(forms.ModelForm, DsfrBaseForm):
             "first_name",
             "last_name",
             "profession",
+            "phone",
             "email",
             "organisation",
         )

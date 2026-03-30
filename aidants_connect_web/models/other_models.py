@@ -432,6 +432,7 @@ class CoReferentNonAidantRequest(models.Model):
     last_name = models.CharField("Nom", max_length=150)
     profession = models.CharField("Profession", max_length=150)
     email = models.EmailField("Email professionnel", max_length=150)
+    phone = models.CharField("Téléphone", max_length=20)
     organisation = models.ForeignKey(
         Organisation,
         on_delete=models.CASCADE,
@@ -464,6 +465,7 @@ class CoReferentNonAidantRequest(models.Model):
                 last_name=self.last_name,
                 profession=self.profession,
                 email=self.email,
+                phone=self.phone,
                 organisation=self.organisation,
                 can_create_mandats=False,
                 referent_non_aidant=True,
