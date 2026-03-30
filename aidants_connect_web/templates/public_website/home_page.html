@@ -10,23 +10,6 @@
 
 {% block content %}
   <div class="fr-container">
-    <div class="fr-alert fr-alert--info fr-my-4v">
-      <p>
-        Vous souhaitez en savoir davantage sur le dispositif Aidants Connect et les conditions d'éligibilité ?
-      </p>
-      <p>
-        <a
-        href="https://tally.so/r/Bz4yve"
-        class="fr-link"
-        target="_blank"
-        title="Inscrivez-vous à l'un de nos webinaires d'information (nouvelle fenêtre)"
-        rel="noopener noreferrer"
-        >
-      Inscrivez-vous</a>
-       à l’un de nos webinaires d’information.
-      </p>
-    </div>
-
     {% include "layouts/_messages.html" %}
   </div>
   <div class="fr-container--fluid bullet-container">
@@ -38,7 +21,21 @@
           <p>Vous accompagnez régulièrement et gratuitement des personnes en difficulté avec le numérique dans la réalisation de leurs démarches en ligne ?<br/>
             <strong>Aidants Connect est fait pour vous !</strong>
           </p>
-          <a class="fr-btn fr-mt-4w" href="{% url 'habilitation_faq_habilitation' %}">Déposer une demande d'habilitation</a>
+          <ul class="fr-btns-group fr-btns-group--inline-md fr-mt-4w">
+            <li>
+              <a
+              href="https://tally.so/r/Bz4yve"
+              class="fr-btn fr-btn--secondary"
+              target="_blank"
+              title="Inscrivez-vous à l'un de nos webinaires d'information (nouvelle fenêtre)"
+              rel="noopener noreferrer">
+              S'inscrire à un webinaire
+              </a>
+            </li>
+            <li>
+              <a class="fr-btn" href="{% url 'habilitation_faq_habilitation' %}">Déposer une demande d'habilitation</a>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
