@@ -83,9 +83,17 @@ class FNEAidantSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="fne_aidants-detail", lookup_field="id"
     )
+    is_aidant = serializers.SerializerMethodField(method_name="get_is_aidant")
+    is_manager = serializers.SerializerMethodField(method_name="get_is_manager")
 
     def get_formation_fne(self, obj):
         return bool(obj.id_fne)
+
+    def get_is_aidant(self, obj):
+        return obj.can_create_mandats
+
+    def get_is_manager(self, obj):
+        return obj.responsable_de.all().count() > 0
 
     class Meta:
         model = Aidant
@@ -95,6 +103,8 @@ class FNEAidantSerializer(serializers.HyperlinkedModelSerializer):
             "first_name",
             "last_name",
             "is_active",
+            "is_aidant",
+            "is_manager",
             "created_at",
             "updated_at",
             "formation_fne",
@@ -102,4 +112,5 @@ class FNEAidantSerializer(serializers.HyperlinkedModelSerializer):
             "profession",
             "conseiller_numerique",
             "get_supports_number",
+            "get_supports_number_for_current_month",
         ]

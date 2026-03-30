@@ -1,6 +1,8 @@
 from django.http import Http404, HttpResponse
 from django.views.generic import FormView
 
+from django_filters import FilterSet
+from django_filters import rest_framework as filters
 from rest_framework import permissions, viewsets
 
 from aidants_connect_web.api.serializers import (
@@ -12,6 +14,17 @@ from aidants_connect_web.decorators import responsable_logged_required
 from aidants_connect_web.forms import NewHabilitationRequestForm
 from aidants_connect_web.models import Aidant, Organisation
 from aidants_connect_web.presenters import HabilitationRequestItemPresenter
+
+
+class AidantFilter(FilterSet):
+    class Meta:
+        model = Aidant
+        fields = {
+            "first_name": ["iexact"],
+            "last_name": ["iexact"],
+            "created_at": ["gte", "lte"],
+            "updated_at": ["gte", "lte"],
+        }
 
 
 class OrganisationViewSet(viewsets.ReadOnlyModelViewSet):
@@ -37,6 +50,9 @@ class FNEAidantViewSet(viewsets.ReadOnlyModelViewSet):
         is_staff=False, is_superuser=False, can_create_mandats=True
     ).order_by("pk")
     serializer_class = FNEAidantSerializer
+
+    filter_backends = [filters.DjangoFilterBackend]
+    filterset_class = AidantFilter
 
 
 @responsable_logged_required
