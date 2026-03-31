@@ -28,7 +28,6 @@
       <li><a href="{% url 'statistiques' %}" class="fr-link">Statistiques</a></li>
       <li><a href="{% url 'faq_generale' %}" class="fr-link">Aide</a></li>
       <li><a href="{% url 'sandbox_presentation' %}" class="fr-link">Site bac à sable</a></li>
-      <li><a href="{% url 'guide_utilisation' %}" class="fr-link">Guide d'utilisation</a></li>
     </ul>
 
     {% if user.is_authenticated and user.can_create_mandats %}

@@ -54,10 +54,6 @@ def logout_page(request):
     return redirect(settings.LOGOUT_REDIRECT_URL)
 
 
-def guide_utilisation(request):
-    return render(request, "public_website/guide_utilisation.html")
-
-
 def formation(request):
     return render(request, "public_website/formation.html")
 

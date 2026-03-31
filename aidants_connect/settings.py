@@ -704,7 +704,7 @@ EMAIL_WELCOME_AIDANT_SUBJECT = os.getenv(
 EMAIL_WELCOME_AIDANT_FROM = os.getenv("EMAIL_WELCOME_AIDANT_FROM", SUPPORT_EMAIL)
 EMAIL_WELCOME_AIDANT_GUIDE_URL = os.getenv(
     "EMAIL_WELCOME_AIDANT_GUIDE_URL",
-    "https://aidantsconnect.beta.gouv.fr/guide_utilisation/",
+    "https://docs.numerique.gouv.fr/docs/6d7aa937-9030-4af4-9522-3a725ceda6da/",
 )
 EMAIL_WELCOME_AIDANT_RESSOURCES_URL = os.getenv(
     "EMAIL_WELCOME_AIDANT_RESSOURCES_URL",

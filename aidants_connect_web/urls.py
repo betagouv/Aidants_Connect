@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.urls import include, path, re_path
+from django.views.generic.base import RedirectView
 
 from magicauth import settings as magicauth_settings
 from magicauth.urls import urlpatterns as magicauth_urls
@@ -297,7 +298,14 @@ urlpatterns = [
     ),
     path("mentions-legales/", service.mentions_legales, name="mentions_legales"),
     path("budget/", service.budget, name="budget"),
-    path("guide_utilisation/", service.guide_utilisation, name="guide_utilisation"),
+    path(
+        "guide_utilisation/",
+        RedirectView.as_view(
+            url="https://docs.numerique.gouv.fr/docs/6d7aa937-9030-4af4-9522-3a725ceda6da/",  # noqa: E501
+            permanent=True,
+        ),
+        name="guide_utilisation",
+    ),
     path("formation/", service.formation, name="habilitation_faq_formation"),
     path("habilitation/", service.habilitation, name="habilitation_faq_habilitation"),
     path("ressources/", service.ressources, name="ressources"),
