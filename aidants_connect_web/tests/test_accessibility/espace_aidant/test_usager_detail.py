@@ -1,3 +1,5 @@
+from django.urls import reverse
+
 from playwright.async_api import expect
 
 from aidants_connect_common.tests.test_accessibility.test_playwright import (
@@ -21,7 +23,8 @@ class EndUserDetailsAccessibilityTests(AccessibilityTestCase):
 
     async def _open_url(self):
         await self.login_aidant(self.aidant_thierry, "123456")
-        await self.navigate_to_url(f"/usagers/{self.mandat.usager.id}/")
+        url = reverse("usager_details", args=(self.mandat.usager.id,))
+        await self.page.goto(self.live_server_url + url)
 
     @async_test
     async def test_accessibility(self):

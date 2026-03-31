@@ -1,11 +1,11 @@
 import logging
 
 from django.contrib import messages
-from django.contrib.admin import ModelAdmin, TabularInline
+from django.contrib.admin import ModelAdmin, TabularInline, display
 from django.http import HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import path, reverse
-from django.utils.html import format_html_join
+from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 
 from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
@@ -50,6 +50,18 @@ class StaticDeviceStaffAdmin(VisibleToAdminMetier, StaticDeviceAdmin):
 
 class TOTPDeviceStaffAdmin(VisibleToAdminMetier, TOTPDeviceAdmin):
     search_fields = ("name", "user__username", "user__email")
+
+    @display(description="QR Code")
+    def qrcode_link(self, device):
+        # Override to use current admin site namespace otpadmin, not hardcoded 'admin'
+        try:
+            href = reverse(
+                f"{self.admin_site.name}:otp_totp_totpdevice_config",
+                kwargs={"pk": device.pk},
+            )
+            return format_html('<a href="{}">qrcode</a>', href)
+        except Exception:
+            return ""
 
 
 class CarteTOTPResource(resources.ModelResource):
@@ -289,8 +301,7 @@ class CarteTOTPAdmin(ImportMixin, VisibleToAdminMetier, ModelAdmin):
             return redirect_to_try_again(object_id)
         except Exception as e:
             logger.exception(
-                "An error occured while trying to associate an aidant"
-                "with a new TOTP."
+                "An error occured while trying to associate an aidant with a new TOTP."
             )
             self.message_user(
                 request,

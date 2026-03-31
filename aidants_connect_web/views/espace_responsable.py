@@ -254,6 +254,19 @@ class AidantsView(DetailView, FormView):
             return redirect("espace_aidant_home")
         return self.organisation
 
+    def get_eligibility_validated_requests(self):
+        return (
+            self.object.habilitation_requests.filter(
+                status__in=[
+                    ReferentRequestStatuses.STATUS_PROCESSING.value,
+                    ReferentRequestStatuses.STATUS_PROCESSING_P2P.value,
+                ],
+                created_by_fne=False,
+            )
+            .exclude(id_fne__isnull=False)
+            .order_by("status", "last_name")
+        )
+
     def get_context_data(self, **kwargs):
         aidantq_qs = self.object.aidants_not_responsables.order_by(
             "last_name"
@@ -273,13 +286,7 @@ class AidantsView(DetailView, FormView):
             created_by_fne=False,
         ).order_by("status", "last_name")
 
-        eligibility_validated_requests = self.object.habilitation_requests.filter(
-            status__in=[
-                ReferentRequestStatuses.STATUS_PROCESSING.value,
-                ReferentRequestStatuses.STATUS_PROCESSING_P2P.value,
-            ],
-            created_by_fne=False,
-        ).order_by("status", "last_name")
+        eligibility_validated_requests = self.get_eligibility_validated_requests()
 
         return {
             **super().get_context_data(**kwargs),
@@ -308,64 +315,6 @@ class AidantsView(DetailView, FormView):
                 ),
             )
         return super().form_valid(form)
-
-
-@responsable_logged_with_activity_required
-class DemandesView(DetailView, FormView):
-    template_name = "aidants_connect_web/espace_responsable/demandes.html"
-    context_object_name = "organisation"
-    model = Organisation
-    form_class = OrganisationRestrictDemarchesForm
-    success_url = reverse_lazy("espace_responsable_demandes")
-
-    def dispatch(self, request, *args, **kwargs):
-        self.referent: Aidant = request.user
-        # Needed when following the FormView path
-        self.object = self.get_object()
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_object(self, queryset=None):
-        self.organisation: Organisation = self.referent.organisation
-
-        if not self.organisation:
-            django_messages.error(
-                self.request, "Erreur : vous n'êtes pas rattaché à une organisation."
-            )
-            return redirect("espace_aidant_home")
-        return self.organisation
-
-    def get_context_data(self, **kwargs):
-        organisation_habilitation_requests = self.object.habilitation_requests.filter(
-            status__in=[
-                ReferentRequestStatuses.STATUS_WAITING_LIST_HABILITATION.value,
-                ReferentRequestStatuses.STATUS_NEW.value,
-            ],
-            created_by_fne=False,
-        ).order_by("status", "last_name")
-        organisation_habilitation_validated = self.object.habilitation_requests.filter(
-            status__in=[
-                ReferentRequestStatuses.STATUS_PROCESSING.value,
-                ReferentRequestStatuses.STATUS_PROCESSING_P2P.value,
-            ],
-            created_by_fne=False,
-        ).order_by("status", "last_name")
-        organisation_habilitation_refused = self.object.habilitation_requests.filter(
-            status__in=[
-                ReferentRequestStatuses.STATUS_REFUSED.value,
-                ReferentRequestStatuses.STATUS_CANCELLED.value,
-                ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE.value,
-            ],
-            created_by_fne=False,
-        ).order_by("status", "last_name")
-
-        return {
-            **super().get_context_data(**kwargs),
-            "notification_type": NotificationType,
-            "organisation_habilitation_requests": organisation_habilitation_requests,
-            "organisation_habilitation_validated": organisation_habilitation_validated,
-            "organisation_habilitation_refused": organisation_habilitation_refused,
-            "perimetres_form": super().get_form(),
-        }
 
 
 @responsable_logged_with_activity_required
@@ -991,7 +940,9 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
 @method_decorator(activity_required, name="get")
 @responsable_logged_required
 class NewHabilitationRequest(FormView):
-    template_name = "aidants_connect_web/espace_responsable/new-habilitation-request.html"  # noqa: E501
+    template_name = (
+        "aidants_connect_web/espace_responsable/new-habilitation-request.html"
+    )
     form_class = NewHabilitationRequestForm
     success_url = reverse_lazy("espace_responsable_aidants")
 
@@ -1013,16 +964,59 @@ class NewHabilitationRequest(FormView):
 
         return kwargs
 
+    def get_form_kwargs_with_data(self, data):
+        """Helper method to get form kwargs with custom data"""
+        kwargs = self.get_form_kwargs()
+        kwargs["data"] = data
+        return kwargs
+
+    def post(self, request, *args, **kwargs):
+        if "partial-submit" in request.POST:
+            data = request.POST.copy()
+            total_forms = int(
+                data.get("multiform-habilitation_requests-TOTAL_FORMS", 0)
+            )
+
+            # First validate the current form without adding a new one
+            form = self.get_form_class()(**self.get_form_kwargs_with_data(data))
+            is_valid = form.is_valid()
+
+            # Check specifically for email validation errors
+            has_email_errors = False
+            if hasattr(form, "forms") and "habilitation_requests" in form.forms:
+                habilitation_formset = form["habilitation_requests"]
+                for subform in habilitation_formset.forms:
+                    if "email" in subform.errors:
+                        has_email_errors = True
+                        break
+
+            # Only add a new form if validation passes AND there are no email errors
+            if is_valid and not has_email_errors:
+                data["multiform-habilitation_requests-TOTAL_FORMS"] = str(
+                    total_forms + 1
+                )
+                form = self.get_form_class()(**self.get_form_kwargs_with_data(data))
+                form.is_valid()  # Trigger validation for the new form structure
+
+            return self.render_to_response(
+                self.get_context_data(form=form, is_partial_submit=True)
+            )
+
+        return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
         result: list[HabilitationRequest] = form.save()["habilitation_requests"]
         django_messages.success(
             self.request,
             ngettext(
                 (
-                    "La demande d’habilitation pour %(person)s "
+                    "La demande d'habilitation pour %(person)s "
                     "a été enregistrée avec succès."
                 ),
-                "Les %(len)s demandes d’habilitation ont été enregistrées avec succès.",
+                (
+                    "Les %(len)s demandes d'habilitation ont été "
+                    "enregistrées avec succès."
+                ),
                 len(result),
             )
             % {"person": result[0].get_full_name(), "len": len(result)},
@@ -1035,7 +1029,9 @@ class CancelHabilitationRequestView(DetailView):
     pk_url_kwarg = "request_id"
     model = HabilitationRequest
     context_object_name = "request"
-    template_name = "aidants_connect_web/espace_responsable/cancel-habilitation-request.html"  # noqa: E501
+    template_name = (
+        "aidants_connect_web/espace_responsable/cancel-habilitation-request.html"
+    )
 
     def dispatch(self, request, *args, **kwargs):
         self.aidant: Aidant = request.user
@@ -1069,4 +1065,4 @@ class FormationRegistrationView(CommonFormationRegistrationView):
         )
 
     def get_cancel_url(self) -> str:
-        return reverse("espace_responsable_demandes")
+        return reverse("espace_responsable_aidants")

@@ -167,8 +167,13 @@ jobs:
       - run:
           name: Run accessibility tests
           command: |
+            # Get all test files with accessibility tag and split them across workers
+            TESTFILES=$(circleci tests glob '**/test*.py' | sort | uniq)
+            echo $TESTFILES | tr "$IFS" '\n' > test_filenames.txt
+            TESTFILES=$(circleci tests split --split-by=timings test_filenames.txt | tr '/' '.' | sed 's/.py//g')
+
             . /tmp/venv/bin/activate
 
             python manage.py collectstatic --noinput
 
-            coverage run --parallel-mode manage.py test --tag=accessibility --verbosity=2
+            coverage run --parallel-mode manage.py test --tag=accessibility --verbosity=2 $TESTFILES

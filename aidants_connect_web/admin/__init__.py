@@ -2,15 +2,17 @@ from django_otp.plugins.otp_static.models import StaticDevice
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from rest_framework.authtoken.models import Token
 
-from aidants_connect.admin import admin_site
+from aidants_connect.admin import admin_of_site, admin_site
 from aidants_connect_web.models import (
     Aidant,
+    AidantEmailStats,
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
     AidantStatistiquesbyRegion,
     AidantType,
     CarteTOTP,
     Connection,
+    EmailStatistics,
     FirstConnexionManagerInfo,
     HabilitationRequest,
     Journal,
@@ -18,15 +20,18 @@ from aidants_connect_web.models import (
     MobileAskingUser,
     Organisation,
     ReboardingAidantStatistiques,
+    StructureChangeRequest,
     Usager,
 )
 
 from .aidant import AidantAdmin, FirstConnexionManagerInfoAdmin, MobileAskingUserAdmin
+from .aidant_of import AidantOFAdmin
+from .email_stats import AidantEmailStatsAdmin, EmailStatisticsAdmin
 from .habilitation_request import HabilitationRequestAdmin
 from .journal import JournalAdmin
 from .mandat import MandatAdmin
 from .notification import NotificationAdmin  # noqa: F401
-from .organisation import OrganisationAdmin
+from .organisation import OrganisationAdmin, OrganisationOFAdmin
 from .other_models import ConnectionAdmin, TokenAdmin
 from .otp_device import CarteTOTPAdmin, StaticDeviceStaffAdmin, TOTPDeviceStaffAdmin
 from .statistiques import (
@@ -35,18 +40,27 @@ from .statistiques import (
     AidantStatistiquesbyRegionAdmin,
     ReboardingAidantStatistiquesAdmin,
 )
+from .structure_change_request import StructureChangeRequestAdmin
 from .usager import UsagerAdmin
 
 # Display the following tables in the admin
+admin_site.register(EmailStatistics, EmailStatisticsAdmin)
+admin_site.register(AidantEmailStats, AidantEmailStatsAdmin)
+
 admin_site.register(Organisation, OrganisationAdmin)
+admin_of_site.register(Organisation, OrganisationOFAdmin)
 admin_site.register(Aidant, AidantAdmin)
+admin_of_site.register(Aidant, AidantOFAdmin)
 admin_site.register(AidantType)
 admin_site.register(AidantStatistiques, AidantStatistiquesAdmin)
 admin_site.register(AidantStatistiquesbyDepartment, AidantStatistiquesbyDepartmentAdmin)
 admin_site.register(AidantStatistiquesbyRegion, AidantStatistiquesbyRegionAdmin)
 admin_site.register(ReboardingAidantStatistiques, ReboardingAidantStatistiquesAdmin)
 
+admin_of_site.register(HabilitationRequest, HabilitationRequestAdmin)
+
 admin_site.register(HabilitationRequest, HabilitationRequestAdmin)
+admin_site.register(StructureChangeRequest, StructureChangeRequestAdmin)
 admin_site.register(Usager, UsagerAdmin)
 admin_site.register(Mandat, MandatAdmin)
 admin_site.register(Journal, JournalAdmin)

@@ -1,0 +1,34 @@
+{% extends "admin/base_site.html" %}
+{% load ac_extras admin_extras i18n static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+    {{ media.css }}
+{% endblock extrastyle %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ media.js }}
+{% endblock extrahead %}
+
+{% block content %}
+    <h1>Reporter la formation {{ object }}</h1>
+    <form action="{% qurl 'adminof:aidants_connect_common_report_formation' object_id=object_id %}"
+          method="POST">
+    <fieldset class="module aligned">
+      {{ form.as_p }}
+    </fieldset>
+        <div class="submit-row">
+            <input type="submit" value="Reporter la formation" class="default" name="_save">
+            <p class="deletelink-box">
+                <a href="{% url 'adminof:aidants_connect_common_formation_change' object_id=object_id %}"
+                   class="closelink">Annuler</a>
+            </p>
+        </div>
+        {% csrf_token %}
+    </form>
+
+
+{% endblock content %}

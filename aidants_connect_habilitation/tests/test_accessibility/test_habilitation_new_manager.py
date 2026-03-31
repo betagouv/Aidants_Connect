@@ -1,5 +1,7 @@
 import re
 
+from django.urls import reverse
+
 from playwright.async_api import expect
 
 from aidants_connect_common.tests.test_accessibility.test_playwright import (
@@ -24,12 +26,11 @@ class HabilitationNewManagerAccessibilityTests(AccessibilityTestCase):
         )
 
     async def _open_url(self):
-        await self.page.goto(
-            self.live_server_url
-            + f"/habilitation/demandeur/{self.issuer.issuer_id}"
-            + f"/organisation/{self.organisation.uuid}/referent"
+        url = reverse(
+            "habilitation_new_referent",
+            args=[str(self.issuer.issuer_id), str(self.organisation.uuid)],
         )
-        await self.page.wait_for_load_state("networkidle")
+        await self.page.goto(self.live_server_url + url)
 
     @async_test
     async def test_accessibility(self):

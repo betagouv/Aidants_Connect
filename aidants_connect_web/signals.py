@@ -73,7 +73,13 @@ def send_email_on_new_notification(sender, instance: Notification, created: bool
 
 @receiver(aidant_activated)
 def notify_referent_aidant_activated(sender, aidant: Aidant, **_):
+    str_referents = ""
     for referent in aidant.organisation.responsables.all():
+        if str_referents:
+            str_referents += ", " + referent.get_full_name() + ": " + referent.email
+        else:
+            str_referents += referent.get_full_name() + ": " + referent.email
+
         text_message, html_message = render_email(
             "email/aidant_activated.mjml",
             {
@@ -104,6 +110,7 @@ def notify_referent_aidant_activated(sender, aidant: Aidant, **_):
             "etsijaccompagnais_url": (
                 "https://www.etsijaccompagnais.fr/ressources-des-aidants"
             ),
+            "str_referents": str_referents,
             "faq_url": build_url(reverse("faq_aidant_generale")),
             "home_url": build_url(reverse("home_page")),
             "AC_CONTACT_EMAIL": settings.AC_CONTACT_EMAIL,

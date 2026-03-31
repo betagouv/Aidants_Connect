@@ -155,7 +155,6 @@ INSTALLED_APPS = [
     "widget_tweaks",
     "dsfr",
     "django_blocklist",
-    "django_js_reverse",
     "aidants_connect",
     "aidants_connect_common",
     "aidants_connect_web",
@@ -280,7 +279,6 @@ ACTIVITY_CHECK_DURATION = timedelta(minutes=ACTIVITY_CHECK_THRESHOLD)
 
 AUTH_USER_MODEL = "aidants_connect_web.Aidant"
 
-JS_REVERSE_EXCLUDE_NAMESPACES = ["admin", "djdt", "otpadmin"]
 JS_MINIFY = False
 
 DEMARCHES = {
@@ -362,7 +360,7 @@ DEMARCHES = {
 }
 
 # CGU
-CGU_CURRENT_VERSION = "0.3"
+CGU_CURRENT_VERSION = "0.4"
 
 MANDAT_TEMPLATE_DIR = "aidants_connect_web/mandat_templates"
 MANDAT_TEMPLATE_CURRENT_FILE = "20240618_mandat.html"
@@ -542,6 +540,7 @@ if MATOMO_INSTANCE_URL:
 
 # Admin Page settings
 ADMIN_URL = os.getenv("ADMIN_URL")
+ADMIN_OF_URL = os.getenv("ADMIN_OF_URL", get_random_string(12))
 ADMINS = [(os.getenv("ADMIN_NAME"), os.getenv("ADMIN_EMAIL"))]
 
 # Sessions
@@ -610,9 +609,6 @@ SHELL_PLUS_IMPORTS = [
 ]
 
 # Datapass
-DATAPASS_KEY = os.getenv("DATAPASS_KEY", None)
-DATAPASS_FROM_EMAIL = os.getenv("DATAPASS_FROM_EMAIL", None)
-DATAPASS_TO_EMAIL = os.getenv("DATAPASS_TO_EMAIL", None)
 DATAPASS_CODE_FOR_ID_GENERATOR = "datapassid"
 
 AC_IMPORT_HABILITATION_REQUESTS = getenv_bool("AC_IMPORT_HABILITATION_REQUESTS", False)
@@ -726,7 +722,7 @@ EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES = os.getenv(
 )
 EMAIL_WELCOME_AIDANT_TUTORIEL_INTERACTIF = os.getenv(
     "EMAIL_WELCOME_AIDANT_TUTORIEL_INTERACTIF",
-    "https://www.etsijaccompagnais.fr/tutoriel-aidants-connect",
+    "https://www.figma.com/proto/nLpomUha2sNgBYk1ysMP0C/INTERACTIF---Tutoriel-Aidants-Connect?node-id=2608-155&t=wq8Vd9C4Q7jZMcOl-0&scaling=min-zoom&content-scaling=fixed&page-id=1%3A3&starting-point-node-id=2608%3A155",
 )
 EMAIL_WELCOME_AIDANT_CONTACT_URL = os.getenv(
     "EMAIL_WELCOME_AIDANT_CONTACT_URL", "contact@aidantsconnect.beta.gouv.fr"
@@ -926,6 +922,14 @@ EMAIL_FNE_MANAGER_COMODE_URLWEBINAR = os.getenv(
 )
 
 EMAIL_FNE_MANAGER_COMODE_URLFLOGIN = os.getenv("EMAIL_FNE_MANAGER_COMODE_URLFLOGIN", "")
+
+
+FORMATEURPAPANNONCELOGEMAIL = "formateur_pap_annonce"
+FORMATEURPAPDETAILSLOGEMAIL = "formateur_pap_details"
+VALIDATIONPAPAIDANTLOGEMAIL = "validation_pap_aidant"
+
+
+PK_OF_ORGANISATION = os.getenv("PK_OF_ORGANISATION", "8540")
 
 
 # ######################## SANDBOX SETTING ############################

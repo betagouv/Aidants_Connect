@@ -81,9 +81,23 @@ class ReferentRequestStatuses(TextChoices):
         )
 
 
+class StructureChangeRequestStatuses(TextChoices):
+    STATUS_NEW = ("new", "Nouvelle")
+    STATUS_VALIDATED = ("validated", "Validée")
+    STATUS_REFUSED = ("refused", "Refusée")
+    STATUS_CANCELLED_BY_RESPONSABLE = (
+        "status_cancelled_by_responsable",
+        "Annulée par le ou la référente",
+    )
+
+    @staticmethod
+    def cancellable_by_responsable():
+        return (StructureChangeRequestStatuses.STATUS_NEW,)
+
+
 class HabilitationRequestCourseType(IntegerChoices):
-    CLASSIC = (auto(), "Parcours classique")
-    P2P = (auto(), "Parcours pair-à-pair")
+    CLASSIC = (auto(), "Formation classique")
+    P2P = (auto(), "Formation entre pairs")
 
 
 CODE_EMAIL_FNE_MANAGER_CONNEXION_MODE = "FNECONNEXIONMODE"

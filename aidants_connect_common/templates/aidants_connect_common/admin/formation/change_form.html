@@ -1,0 +1,16 @@
+{% extends "admin/change_form.html" %}
+{% load admin_extras admin_urls i18n %}
+
+{% block object-tools-items %}
+  <li>
+{# <a class="viewsitelink" href="{% url "adminof:aidants_connect_common_export_apprenant_formation" object_id=object_id %}"> #}
+{# <span aria-hidden="true">⏫  </span> Export Apprenant #}
+{# </a> #}
+      <a class="viewsitelink" href="{% url "adminof:aidants_connect_common_report_formation" object_id=object_id %}">
+      <span aria-hidden="true">🙀  </span> Reporter la formation
+    </a>
+
+  </li>
+
+  {{ block.super }}
+{% endblock object-tools-items %}

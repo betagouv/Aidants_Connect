@@ -1,14 +1,16 @@
 import logging
+from os.path import join
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import ModelAdmin, SimpleListFilter
 from django.core.exceptions import ValidationError
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives, get_connection, send_mail
 from django.forms import ChoiceField
 from django.http import HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import path, reverse
+from django.utils.timezone import now
 
 from import_export import resources
 from import_export.admin import ConfirmImportForm, ImportExportMixin, ImportForm
@@ -25,7 +27,13 @@ from aidants_connect_web.constants import (
     ReferentRequestStatuses,
 )
 from aidants_connect_web.forms import MassEmailActionForm
-from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
+from aidants_connect_web.models import (
+    Aidant,
+    AidantEmailStats,
+    EmailStatistics,
+    HabilitationRequest,
+    Organisation,
+)
 
 logger = logging.getLogger()
 
@@ -270,9 +278,21 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         "id_fne",
         "created_at",
     )
-    readonly_fields = ("created_at", "updated_at", "id_fne", "course_type")
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+        "course_type",
+        "email_annonce_formateur_pap_send",
+        "email_detail_formateur_pap_send",
+        "email_hr_validated_pap_send",
+    )
     raw_id_fields = ("organisation",)
-    actions = ("mark_validated", "mark_refused", "mark_processing")
+    actions = (
+        "mark_validated",
+        "mark_refused",
+        "mark_processing",
+        "switch_classic_to_pap",
+    )
     list_filter = (
         "status",
         "origin",
@@ -334,6 +354,17 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
                 )
             },
         ),
+        (
+            "Information formation PAP",
+            {
+                "fields": (
+                    "email_formateur",
+                    "email_annonce_formateur_pap_send",
+                    "email_detail_formateur_pap_send",
+                    "email_hr_validated_pap_send",
+                )
+            },
+        ),
     )
 
     resource_classes = [HabilitationRequestResource]
@@ -382,6 +413,13 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         self.message_user(request, f"{rows_updated} demandes ont été validées.")
 
     mark_validated.short_description = "Créer les comptes aidants sélectionnés"
+
+    def switch_classic_to_pap(self, request, queryset):
+        for habilitation_request in queryset:
+            habilitation_request.switch_classic_to_pap()
+        self.message_user(
+            request, f"{queryset.count()} demandes ont été passées en pap."
+        )
 
     def mark_refused(self, request, queryset):
         rows_updated = queryset.filter(
@@ -441,6 +479,11 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         ):
             self.send_validation_email(habilitation_request)
 
+        for habilitation_request in queryset.filter(
+            status=ReferentRequestStatuses.STATUS_PROCESSING_P2P, created_by_fne=False
+        ):
+            self.send_validation_pap_emails(habilitation_request)
+
         if send_messages:
             self.message_user(
                 request,
@@ -451,6 +494,120 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         "Passer les demandes sélectionnées au statut "
         f"« {ReferentRequestStatuses.STATUS_PROCESSING.label} »"
     )
+
+    def send_validation_pap_emails(self, h_request):
+        referent = h_request.organisation.responsables_is_active.first()
+        formateur = Aidant.objects.filter(
+            email__iexact=h_request.email_formateur
+        ).first()
+        if not formateur:
+            return
+
+        text_message, html_message = render_email(
+            "email/referent_validation_aidant_pap.mjml",
+            {
+                "aidant": h_request,
+                "formateur": formateur,
+            },
+        )
+
+        subject = (
+            "Aidants Connect - La demande d'ajout de l'aidant(e) "
+            f"{h_request.first_name} {h_request.last_name} a été validée !"
+        )
+
+        recipients = [
+            manager.email for manager in h_request.organisation.responsables.all()
+        ]
+
+        with get_connection() as connection:
+            msg = EmailMultiAlternatives(
+                subject=subject,
+                body=text_message,
+                from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
+                to=recipients,
+                connection=connection,
+            )
+            msg.attach_alternative(html_message, "text/html")
+            msg.send()
+
+        for manager in h_request.organisation.responsables.all():
+            email_stats, _ = EmailStatistics.objects.get_or_create(
+                code_email=settings.VALIDATIONPAPAIDANTLOGEMAIL
+            )
+            email_stats.nb_emails_sent += 1
+            email_stats.last_sent_at = now()
+            email_stats.save()
+
+            AidantEmailStats.objects.create(
+                aidant=manager,
+                email_type=email_stats,
+                code_email=settings.VALIDATIONPAPAIDANTLOGEMAIL,
+                sending_date=now(),
+            )
+            # log_email, _ = LogEmailSending.objects.get_or_create(
+            #     code_email=settings.VALIDATIONPAPAIDANTLOGEMAIL, aidant=manager
+            # )
+            # log_email.last_sending_date = now()
+            # log_email.save()
+        logger.info("Formateur validateur email to referents")
+        HabilitationRequest.objects.filter(pk=h_request.pk).update(
+            email_hr_validated_pap_send=True
+        )
+
+        text_message_formateur, html_message_formateur = render_email(
+            "email/formateur_pap_detail.mjml",
+            {
+                "aidant": h_request,
+                "formateur": formateur,
+                "referent": referent,
+            },
+        )
+        dir_path_guide = join(
+            settings.BASE_DIR,
+            "aidants_connect_web",
+            "static",
+            "guides_aidants_connect",
+        )
+
+        with get_connection() as connection:
+            msg = EmailMultiAlternatives(
+                subject="Formation pair à pair Aidants Connect",
+                body=text_message_formateur,
+                from_email=settings.EMAIL_ORGANISATION_REQUEST_FROM,
+                to=[formateur.email],
+                connection=connection,
+            )
+            msg.attach_alternative(html_message_formateur, "text/html")
+
+            msg.attach_file(
+                str(join(dir_path_guide, "AidantsConnect_support_de_formation.pdf")),
+                "application/pdf",
+            )
+            msg.send()
+
+        email_stats, _ = EmailStatistics.objects.get_or_create(
+            code_email=settings.FORMATEURPAPDETAILSLOGEMAIL
+        )
+        email_stats.nb_emails_sent += 1
+        email_stats.last_sent_at = now()
+        email_stats.save()
+
+        AidantEmailStats.objects.create(
+            aidant=formateur,
+            email_type=email_stats,
+            code_email=settings.FORMATEURPAPDETAILSLOGEMAIL,
+            sending_date=now(),
+        )
+
+        # log_email, _ = LogEmailSending.objects.get_or_create(
+        #     code_email=settings.FORMATEURPAPDETAILSLOGEMAIL, aidant=formateur
+        # )
+        # log_email.last_sending_date = now()
+        # log_email.save()
+        HabilitationRequest.objects.filter(pk=h_request.pk).update(
+            email_detail_formateur_pap_send=True
+        )
 
     def send_validation_email(self, aidant):
         text_message, html_message = render_email(

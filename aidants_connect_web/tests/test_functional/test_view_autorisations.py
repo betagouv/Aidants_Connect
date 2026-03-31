@@ -76,6 +76,4 @@ class ViewAutorisationsTests(FunctionalTestCase):
         # Espace Aidant home
         self.selenium.find_element(By.ID, "view-mandats").click()
         # autorisation List
-        self.assertEqual(
-            3, len(self.selenium.find_elements(By.CLASS_NAME, "auth-badge"))
-        )
+        self.assertEqual(3, len(self.selenium.find_elements(By.CLASS_NAME, "fr-tag")))

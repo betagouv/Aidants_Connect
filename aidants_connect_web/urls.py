@@ -8,7 +8,6 @@ from aidants_connect_sandbox.urls import urlpatterns as sandbox_urls
 from aidants_connect_web.api.urls import router as api_router
 from aidants_connect_web.views import (
     FC_as_FS,
-    datapass,
     espace_aidant,
     espace_responsable,
     formations,
@@ -279,11 +278,6 @@ urlpatterns = [
         name="espace_responsable_cancel_habilitation",
     ),
     path(
-        "espace-responsable/demandes/",
-        espace_responsable.DemandesView.as_view(),
-        name="espace_responsable_demandes",
-    ),
-    path(
         "espace-responsable/aidant-a-former/<int:request_id>/inscription-formation/",
         espace_responsable.FormationRegistrationView.as_view(),
         name="espace_responsable_register_formation",
@@ -309,17 +303,6 @@ urlpatterns = [
     path("habilitation/", service.habilitation, name="habilitation_faq_habilitation"),
     path("ressources/", service.ressources, name="ressources"),
     path("accessibilite/", service.AccessibiliteView.as_view(), name="accessibilite"),
-    # # Datapass
-    path(
-        "datapass_receiver/",
-        datapass.organisation_receiver,
-        name="datapass_organisation",
-    ),
-    path(
-        "datapass_habilitation/",
-        datapass.habilitation_receiver,
-        name="datapass_habilitation",
-    ),
     path(
         "notifications/",
         notifications.Notifications.as_view(),

@@ -62,42 +62,6 @@ class RenewMandatTests(TestCase):
         response = self.client.get(reverse("usagers"))
         self.assertNotContains(response, "Renouveler")
 
-    def test_show_renew_button_if_any_renewable_mandats(self):
-        less_than_a_year_expired_mandat = MandatFactory(
-            organisation=self.aidant_thierry.organisation,
-            usager=self.usager,
-            expiration_date=timezone.now() - timedelta(days=5),
-            post__create_authorisations=["argent", "famille", "logement"],
-        )
-        revoked_mandat = RevokedMandatFactory(
-            organisation=self.aidant_thierry.organisation,
-            usager=self.usager,
-            expiration_date=timezone.now() + timedelta(days=5),
-            post__create_authorisations=["argent", "famille", "logement"],
-        )
-        over_a_year_expired_mandat = MandatFactory(
-            organisation=self.aidant_thierry.organisation,
-            usager=self.usager,
-            expiration_date=timezone.now() - timedelta(days=365),
-            post__create_authorisations=["argent", "famille", "logement"],
-        )
-        self.assertFalse(
-            less_than_a_year_expired_mandat.is_active,
-            "Generated mandat should not be active",
-        )
-        self.assertTrue(
-            revoked_mandat.was_explicitly_revoked,
-            "Generated mandat should be explicitly revoked",
-        )
-        self.assertFalse(
-            over_a_year_expired_mandat.is_active,
-            "Generated mandat should not be active",
-        )
-        self.client.force_login(self.aidant_thierry)
-        self.assertEqual(Mandat.objects.count(), 3)
-        response = self.client.get(reverse("usagers"))
-        self.assertContains(response, "Renouveler")
-
     def test_new_mandat_clears_the_session(self):
         MandatFactory(
             organisation=self.aidant_thierry.organisation,

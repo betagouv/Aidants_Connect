@@ -5,11 +5,11 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from import_export import resources
-from import_export.admin import ExportActionModelAdmin, ImportMixin
+from import_export.admin import ExportActionModelAdmin, ExportMixin, ImportMixin
 from import_export.fields import Field
 from import_export.results import RowResult
 
-from aidants_connect.admin import VisibleToAdminMetier
+from aidants_connect.admin import VisibleToAdminMetier, VisibleToOFUserReadOnly
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_web.models import Aidant, HabilitationRequest, Organisation
@@ -433,3 +433,91 @@ class OrganisationAdmin(
     specific_delete_action.short_description = (
         "Supprimer les organisations sélectionnées"
     )
+
+
+class OrganisationOFResource(resources.ModelResource):
+    name = Field(attribute="name", column_name="Nom de la structure")
+    address = Field(attribute="address", column_name="Adresse de la structure")
+    address_complement = Field(
+        attribute="address_complement",
+        column_name="Complément d’adresse de la structure",
+    )
+    zipcode = Field(attribute="zipcode", column_name="Code postal de la structure")
+    city = Field(attribute="city", column_name="Ville de la structure")
+    siret = Field(attribute="siret", column_name="SIRET de l’organisation")
+
+    class Meta:
+        fields = (
+            "name",
+            "siret",
+            "address",
+            "address_complement",
+            "city",
+            "zipcode",
+        )
+        model = Organisation
+
+
+class OrganisationOFAdmin(VisibleToOFUserReadOnly, ExportMixin, ModelAdmin):
+
+    resource_class = OrganisationOFResource
+    list_display = (
+        "name",
+        "address",
+        "siret",
+        "zipcode",
+    )
+
+    fieldsets = (
+        (
+            "Informations générales",
+            {
+                "fields": (
+                    "name",
+                    "type",
+                )
+            },
+        ),
+        (
+            "Information catégorie INSEE",
+            {
+                "fields": (
+                    ("siret", "siren"),
+                    "legal_category",
+                    (
+                        "legal_cat_level_one",
+                        "legal_cat_level_two",
+                        "legal_cat_level_three",
+                    ),
+                )
+            },
+        ),
+        (
+            "Adresse de l'organisation",
+            {
+                "fields": (
+                    "address",
+                    "zipcode",
+                    "city",
+                    "city_insee_code",
+                    "department_insee_code",
+                )
+            },
+        ),
+    )
+    search_fields = ("name", "siret")
+    list_filter = (
+        RegionFilter,
+        DepartmentFilter,
+    )
+
+    def get_queryset(self, request):
+        from aidants_connect_common.models import FormationAttendant
+
+        qs = super().get_queryset(request)
+        user = request.user
+        orgas_users = user.organizations_formations.all()
+        fas = FormationAttendant.objects.filter(formation__organisation__in=orgas_users)
+        orgas_id = list(set(fas.values_list("attendant__organisation", flat=True)))
+
+        return qs.filter(id__in=orgas_id)

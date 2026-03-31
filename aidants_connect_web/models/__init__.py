@@ -7,6 +7,7 @@ from .aidant import (
     FirstConnexionManagerInfo,
     MobileAskingUser,
 )
+from .email_stats import AidantEmailStats, EmailStatistics
 from .journal import Journal
 from .mandat import (
     Autorisation,
@@ -23,6 +24,7 @@ from .other_models import (
     ExportRequest,
     HabilitationRequest,
     LogEmailSending,
+    StructureChangeRequest,
 )
 from .stats import (
     AidantStatistiques,
@@ -35,6 +37,7 @@ from .utils import delete_mandats_and_clean_journal
 
 __all__ = [
     Aidant,
+    AidantEmailStats,
     AidantManager,
     AidantType,
     AidantStatistiques,
@@ -45,8 +48,10 @@ __all__ = [
     CarteTOTP,
     Connection,
     CoReferentNonAidantRequest,
+    EmailStatistics,
     ExportRequest,
     HabilitationRequest,
+    StructureChangeRequest,
     FirstConnexionManagerInfo,
     IdGenerator,
     Journal,
