@@ -327,10 +327,11 @@ class CguTests(TestCase):
 
 @tag("service")
 class GuideUtilisationTests(TestCase):
-    def test_guide_utilisation_url_triggers_the_correct_view(self):
-        found = resolve("/guide_utilisation/")
-        self.assertEqual(found.func, service.guide_utilisation)
-
-    def test_stats_url_triggers_the_correct_template(self):
+    def test_guide_utilisation_url_redirects_to_docs(self):
         response = self.client.get("/guide_utilisation/")
-        self.assertTemplateUsed(response, "public_website/guide_utilisation.html")
+        self.assertRedirects(
+            response,
+            "https://docs.numerique.gouv.fr/docs/6d7aa937-9030-4af4-9522-3a725ceda6da/",
+            status_code=301,
+            fetch_redirect_response=False,
+        )
