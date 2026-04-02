@@ -1,5 +1,5 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
-{% load ac_common dsfr_tags static %}
+{% load ac_common dsfr_tags form_extras static %}
 
 {% block title %}
   Connectez-vous{% if form.errors|length > 0 %} (Erreur dans le formulaire){% endif %} - Aidants Connect
@@ -28,10 +28,11 @@
           <div class="fr-grid-row fr-mb-6v">
             <div class="fr-col-12 fr-col-md-8">
               {% csrf_token %}
+              <p class="fr-text--sm">Tous les champs sont obligatoires.</p>
               {# Wait for the merge of https://github.com/numerique-gouv/django-dsfr/pull/101 #}
               {# {{ form }} #}
               {% for field in form.visible_fields %}
-              	{% dsfr_form_field field %}
+              	{% aidantc_dsfr_form_field_no_asterisk field %}
               {% endfor %}
               <p class="fr-text--sm fr-info-text">L’email doit être nominatif</p>
             </div>

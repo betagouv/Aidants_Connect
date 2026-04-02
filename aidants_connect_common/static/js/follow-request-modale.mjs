@@ -5,7 +5,10 @@ const DIALOG_BTN_TARGET_CSS = '[data-follow-request-modale-target="dialogBtn"]';
 class FollowRequestModale extends BaseController {
     static classes = ["loading"]
     static targets = ["formContent", "submitBtn", "unknownErrorMsgTpl", "formTpl", "dialogBtnTpl"]
-    static values = {submitRequestOngoing: {type: Boolean, default: false}}
+    static values = {
+        submitRequestOngoing: {type: Boolean, default: false},
+        url: String
+    }
 
     initialize() {
         const dialogBtnTarget = document.querySelectorAll(DIALOG_BTN_TARGET_CSS);
@@ -14,7 +17,7 @@ class FollowRequestModale extends BaseController {
             return;
         }
 
-        fetch(Urls.habilitationFollowMyRequest())
+        fetch(this.urlValue)
             .then(async response => {
                 if (response.ok) {
                     this.element.insertAdjacentHTML(
@@ -32,7 +35,7 @@ class FollowRequestModale extends BaseController {
         this.submitRequestOngoingValue = true;
         try {
             const response = await fetch(
-                Urls.habilitationFollowMyRequest(),
+                this.urlValue,
                 {
                     method: "POST",
                     body: new FormData(evt.target),

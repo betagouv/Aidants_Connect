@@ -16,7 +16,6 @@ from aidants_connect_web.forms import (
     AddAppOTPToAidantForm,
     AidantChangeForm,
     AidantCreationForm,
-    DatapassHabilitationForm,
     HabilitationRequestCreationForm,
     MandatForm,
     MassEmailActionForm,
@@ -485,49 +484,6 @@ class RecapMandatFormTests(TestCase):
 
 
 @tag("forms")
-class DatapassAccreditationFormTests(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.organisation = OrganisationFactory(data_pass_id=42)
-
-    def test_raise_error_with_invalid_data_pass_id(self):
-        form = DatapassHabilitationForm(
-            data={
-                "first_name": "Mario",
-                "last_name": "Brosse",
-                "email": "mario.brossse@world.fr",
-                "profession": "plombier",
-                "data_pass_id": 33,
-            }
-        )
-        self.assertFalse(form.is_valid())
-        self.assertEqual(
-            form.errors["data_pass_id"], ["No organisation for data_pass_id"]
-        )
-
-    def test_forms_is_ok(self):
-        form = DatapassHabilitationForm(
-            data={
-                "first_name": "Mario",
-                "last_name": "Brosse",
-                "email": "mario.brossse@world.fr",
-                "profession": "plombier",
-                "data_pass_id": 42,
-            }
-        )
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data["organisation"], self.organisation)
-
-        habilitation = form.save()
-
-        self.assertEqual(habilitation.organisation, self.organisation)
-        self.assertEqual(habilitation.first_name, "Mario")
-        self.assertEqual(habilitation.last_name, "Brosse")
-        self.assertEqual(habilitation.email, "mario.brossse@world.fr")
-        self.assertEqual(habilitation.profession, "plombier")
-
-
-@tag("forms")
 class MassEmailHabilitatonFormTests(TestCase):
     def test_filter_empty_values(self):
         form = MassEmailActionForm(
@@ -610,7 +566,7 @@ class TestAddAppOTPToAidantForm(TestCase):
             [
                 (
                     "Assurez-vous que cette valeur comporte "
-                    "au plus 8 caractères (actuellement 11)."
+                    "au plus 6 caractères (actuellement 11)."
                 )
             ],
             form.errors["otp_token"],
@@ -631,22 +587,6 @@ class TestAddAppOTPToAidantForm(TestCase):
 
     def test_clean_otp_token_non_numeric_error(self):
         form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "abc123"})
-        self.assertFalse(form.is_valid())
-        self.assertIn("otp_token", form.errors)
-        self.assertEqual(
-            form.errors["otp_token"][0],
-            "Erreur : le code OTP doit être composé de chiffres",
-        )
-
-        form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "12-34-56"})
-        self.assertFalse(form.is_valid())
-        self.assertIn("otp_token", form.errors)
-        self.assertEqual(
-            form.errors["otp_token"][0],
-            "Erreur : le code OTP doit être composé de chiffres",
-        )
-
-        form = AddAppOTPToAidantForm(self.otp_device, data={"otp_token": "12 34 56"})
         self.assertFalse(form.is_valid())
         self.assertIn("otp_token", form.errors)
         self.assertEqual(

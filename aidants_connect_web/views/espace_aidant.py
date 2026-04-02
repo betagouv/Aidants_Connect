@@ -120,8 +120,8 @@ class Home(TemplateView):
             "M’entraîner": [
                 {
                     "title": "Tutoriel interactif",
-                    "link": "https://www.etsijaccompagnais.fr/tutoriel-aidants-connect",
-                    "description": "etsijaccompagnais.fr",
+                    "link": settings.EMAIL_WELCOME_AIDANT_TUTORIEL_INTERACTIF,
+                    "description": "",
                     "new_tab": True,
                     "heading_tag": self.tiles_heading_tag,
                 },

@@ -1,0 +1,38 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% load ac_common %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>Bonjour,</mj-text>
+    <mj-text>
+      Vous avez été identifié par {{ REFERENT_FULL_NAME }} pour assurer la
+      formation Aidants Connect auprès d’un ou plusieurs de vos collègues.
+      Merci pour votre implication !
+    </mj-text>
+    <mj-text>
+      <p>Dès que l’éligibilité des aidants aura été validée par notre
+      équipe, nous vous transmettrons
+      le guide ainsi que toutes les informations nécessaires pour mener
+      la formation dans les meilleures conditions.</p>
+    </mj-text>
+
+    <mj-text>
+    ⚠️En cas d’erreur ou si vous ne souhaitez pas assurer
+    cette formation, merci d’en informer {{ REFERENT_FULL_NAME }} à
+    l’adresse suivante : {{ REFERENT_EMAIL }}.
+    </mj-text>
+    <mj-text>
+    <p>À bientôt sur Aidants Connect !</p>
+    <p>L’équipe Aidants Connect
+    </p>
+    </mj-text>
+    <mj-text>
+    <p>Accompagnez vos usagers en toute sécurité
+    </p>
+     <p> Pour toute demande : {% mailto AC_CONTACT_EMAIL %}.</p>
+    </mj-text>
+  </mj-column>
+</mj-section>
+{% endblock email_body %}

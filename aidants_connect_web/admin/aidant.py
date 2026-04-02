@@ -33,6 +33,7 @@ from aidants_connect_web.forms import (
 )
 from aidants_connect_web.models import (
     Aidant,
+    AidantEmailStats,
     AidantManager,
     CarteTOTP,
     HabilitationRequest,
@@ -317,6 +318,15 @@ class AidantMassDeactivateFromMailFormView(FormView):
         return super().form_valid(form)
 
 
+class EmailStatsInlineAdmin(VisibleToAdminMetier, admin.TabularInline):
+    model = AidantEmailStats
+    can_delete = False
+    extra = 0
+    fields = ("aidant", "code_email", "sending_date")
+    readonly_fields = ("code_email", "sending_date")
+    raw_id_fields = ("aidant",)
+
+
 class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     import_export_change_list_template = (
         "aidants_connect_web/admin/aidants/change_list.html"
@@ -360,6 +370,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "deactivation_warning_at",
         "created_at",
         "is_staff",
+        "is_of_user",
+        "is_admin_metier",
         "is_superuser",
         "totp_card_drift",
     )
@@ -377,6 +389,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         AidantNoActionTooLong,
         AidantWithOTPAppFilter,
         "is_staff",
+        "is_of_user",
+        "is_admin_metier",
         "is_superuser",
         "created_by_fne",
     )
@@ -442,6 +456,9 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
             {
                 "fields": (
                     "is_active",
+                    "is_of_user",
+                    "is_of_admin",
+                    "is_admin_metier",
                     "can_create_mandats",
                     "referent_non_aidant",
                     "is_staff",
@@ -470,6 +487,8 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
             },
         ),
     )
+
+    inlines = (EmailStatsInlineAdmin,)
 
     @admin.display(description="Carte TOTP Activée", boolean=True)
     def display_totp_device_status(self, obj):

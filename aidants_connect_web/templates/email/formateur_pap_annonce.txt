@@ -1,0 +1,16 @@
+{% load ac_common %}
+
+
+Bonjour,
+
+Vous avez été identifié par {{ REFERENT_FULL_NAME }} pour assurer la formation Aidants Connect auprès d’un ou plusieurs de vos collègues. Merci pour votre implication !
+
+Dès que l’éligibilité des aidants aura été validée par notre équipe, nous vous transmettrons le guide ainsi que toutes les informations nécessaires pour mener la formation dans les meilleures conditions.
+
+⚠️ En cas d’erreur ou si vous ne souhaitez pas assurer cette formation, merci d’en informer {{ REFERENT_FULL_NAME }} à l’adresse suivante : {{ REFERENT_EMAIL }}.
+
+À bientôt sur Aidants Connect !
+L’équipe Aidants Connect
+
+Accompagnez vos usagers en toute sécurité
+Pour toute demande : {% mailto AC_CONTACT_EMAIL %}

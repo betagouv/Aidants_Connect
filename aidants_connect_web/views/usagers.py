@@ -187,6 +187,91 @@ def _get_mandats_dicts_from_queryset_mandats(mandats: Iterable[Mandat]) -> tuple
                 (mandat, l_autorisations, delta_before_expiration, expired_soon)
             )
 
+    # Restructure data for better template readability
+    for usager in valid_mandats:
+        unique_permissions = set()
+        mandats_info = []
+
+        for mandat, permissions, delta_before_expiration, expired_soon in valid_mandats[
+            usager
+        ]:
+            unique_permissions.update(permissions)
+            mandats_info.append(
+                {
+                    "mandat": mandat,
+                    "creation_date": mandat.creation_date,
+                    "permissions": permissions,
+                    "delta_before_expiration": delta_before_expiration,
+                    "expired_soon": expired_soon,
+                }
+            )
+
+        valid_mandats[usager] = {
+            "mandats_info": mandats_info,
+            "unique_permissions": list(unique_permissions),
+            "first_creation_date": (
+                mandats_info[0]["creation_date"] if mandats_info else None
+            ),
+        }
+
+    for usager in expired_mandats:
+        unique_permissions = set()
+        mandats_info = []
+
+        for (
+            mandat,
+            permissions,
+            delta_before_expiration,
+            expired_soon,
+        ) in expired_mandats[usager]:
+            unique_permissions.update(permissions)
+            mandats_info.append(
+                {
+                    "mandat": mandat,
+                    "creation_date": mandat.creation_date,
+                    "permissions": permissions,
+                    "delta_before_expiration": delta_before_expiration,
+                    "expired_soon": expired_soon,
+                }
+            )
+
+        expired_mandats[usager] = {
+            "mandats_info": mandats_info,
+            "unique_permissions": list(unique_permissions),
+            "first_creation_date": (
+                mandats_info[0]["creation_date"] if mandats_info else None
+            ),
+        }
+
+    for usager in revoked_mandats:
+        unique_permissions = set()
+        mandats_info = []
+
+        for (
+            mandat,
+            permissions,
+            delta_before_expiration,
+            expired_soon,
+        ) in revoked_mandats[usager]:
+            unique_permissions.update(permissions)
+            mandats_info.append(
+                {
+                    "mandat": mandat,
+                    "creation_date": mandat.creation_date,
+                    "permissions": permissions,
+                    "delta_before_expiration": delta_before_expiration,
+                    "expired_soon": expired_soon,
+                }
+            )
+
+        revoked_mandats[usager] = {
+            "mandats_info": mandats_info,
+            "unique_permissions": list(unique_permissions),
+            "first_creation_date": (
+                mandats_info[0]["creation_date"] if mandats_info else None
+            ),
+        }
+
     return valid_mandats, expired_mandats, revoked_mandats
 
 
@@ -421,9 +506,11 @@ def confirm_mandat_cancelation(request, mandat_id):
 
     if mandat.is_active:
         for autorisation in mandat.autorisations.filter(revocation_date=None):
-            remaining_autorisations.append(
-                humanize_demarche_names(autorisation.demarche)
-            ),
+            (
+                remaining_autorisations.append(
+                    humanize_demarche_names(autorisation.demarche)
+                ),
+            )
             if autorisation.demarche in settings.DEMARCHES:
                 revoked_autorisations.append(
                     (
@@ -498,12 +585,14 @@ def mandat_cancelation_success(request, mandat_id: int):
             revocation_date__date=date.today()
         ):
             if autorisation.demarche in settings.DEMARCHES:
-                revoked_autorisations.append(
-                    (
-                        settings.DEMARCHES[autorisation.demarche]["titre"],
-                        settings.DEMARCHES[autorisation.demarche]["description"],
-                    )
-                ),
+                (
+                    revoked_autorisations.append(
+                        (
+                            settings.DEMARCHES[autorisation.demarche]["titre"],
+                            settings.DEMARCHES[autorisation.demarche]["description"],
+                        )
+                    ),
+                )
 
     return render(
         request,

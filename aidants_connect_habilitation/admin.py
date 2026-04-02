@@ -25,7 +25,12 @@ from import_export import resources
 from import_export.admin import ImportExportMixin
 from import_export.fields import Field
 
-from aidants_connect.admin import VisibleToAdminMetier, VisibleToTechAdmin, admin_site
+from aidants_connect.admin import (
+    VisibleToAdminMetier,
+    VisibleToTechAdmin,
+    admin_of_site,
+    admin_site,
+)
 from aidants_connect_common.admin import DepartmentFilter, RegionFilter
 from aidants_connect_common.utils import render_email
 from aidants_connect_habilitation.forms import (
@@ -210,6 +215,7 @@ class OrganisationRequestResource(resources.ModelResource):
 
 
 @admin.register(OrganisationRequest, site=admin_site)
+@admin.register(OrganisationRequest, site=admin_of_site)
 class OrganisationRequestAdmin(
     ImportExportMixin, VisibleToAdminMetier, ReverseModelAdmin
 ):

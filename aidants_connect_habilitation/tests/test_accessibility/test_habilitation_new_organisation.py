@@ -1,3 +1,5 @@
+from django.urls import reverse
+
 from playwright.async_api import expect
 
 from aidants_connect_common.constants import RequestOriginConstants
@@ -21,12 +23,11 @@ class HabilitationNewOrganisationAccessibilityTests(AccessibilityTestCase):
         )
 
     async def _open_url(self):
-        await self.page.goto(
-            self.live_server_url
-            + f"/habilitation/demandeur/{self.issuer.issuer_id}"
-            + f"/organisation/nouvelle/{self.request.siret}/"
+        url = reverse(
+            "habilitation_new_organisation",
+            args=[str(self.issuer.issuer_id), self.request.siret],
         )
-        await self.page.wait_for_load_state("networkidle")
+        await self.page.goto(self.live_server_url + url)
 
     @async_test
     async def test_accessibility(self):

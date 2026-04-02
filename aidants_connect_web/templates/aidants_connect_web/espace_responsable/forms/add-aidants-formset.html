@@ -1,0 +1,27 @@
+{% load ac_common dsfr_tags partials %}
+
+<div class="habilitation-requests">
+  {{ formset.management_form }}
+  <div class="fr-grid-row fr-grid-row--gutters">
+
+    <div class="fr-col-12">
+      <h2 class="fr-h5 fr-mt-4v">Informations des aidants</h2>
+      <p class="fr-text">Renseignez les informations des aidants professionnels qui souhaitent être formés et habilités à accompagner des usagers avec Aidants Connect. La demande doit contenir au moins un aidant pour être valide.</p>
+      <div data-fr-group="false" class="fr-accordions-group fr-mb-4w">
+        {% for form in formset.forms %}
+          {% include "aidants_connect_web/espace_responsable/_accordion_aidant.html" with form=form idx=forloop.counter0 %}
+        {% endfor %}
+      </div>
+
+      {{ formset.non_form_errors }}
+      <button
+        id="partial-submit"
+        name="partial-submit"
+        class="fr-btn fr-btn--secondary fr-btn--icon-right fr-icon-user-add-line"
+        type="submit"
+      >
+        Ajouter un aidant
+      </button>
+    </div>
+  </div>
+</div>

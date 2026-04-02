@@ -16,7 +16,11 @@ import pgtrigger
 import requests
 from pgtrigger import Func
 
-from ..constants import HabilitationRequestCourseType, ReferentRequestStatuses
+from ..constants import (
+    HabilitationRequestCourseType,
+    ReferentRequestStatuses,
+    StructureChangeRequestStatuses,
+)
 from .aidant import Aidant
 from .organisation import Organisation
 
@@ -49,14 +53,10 @@ class HabilitationRequest(models.Model):
 
     first_name = models.CharField("Prénom", max_length=150)
     last_name = models.CharField("Nom", max_length=150)
-    email = models.EmailField(
-        max_length=150,
-    )
+    email = models.EmailField(max_length=150)
 
     created_by_fne = models.BooleanField("Création FNE", default=False)
-    id_fne = models.CharField(
-        "ID FNE", max_length=255, null=True, blank=True, editable=False
-    )
+    id_fne = models.CharField("ID FNE", max_length=255, null=True, blank=True)
 
     organisation = models.ForeignKey(
         Organisation,
@@ -108,6 +108,24 @@ class HabilitationRequest(models.Model):
         default=CourseType.CLASSIC,
     )
 
+    email_formateur = models.EmailField(
+        "Email du formateur",
+        max_length=150,
+        blank=True,
+        null=True,
+        help_text="Email du formateur P2P",
+    )
+    email_annonce_formateur_pap_send = models.BooleanField(
+        "Email PAP annonce formateur envoyé", default=False, editable=False
+    )
+    email_detail_formateur_pap_send = models.BooleanField(
+        "Email PAP détail formateur envoyé", default=False, editable=False
+    )
+
+    email_hr_validated_pap_send = models.BooleanField(
+        "Email validation formation pap envoyé", default=False, editable=False
+    )
+
     def get_full_name(self):
         return self.aidant_full_name
 
@@ -138,6 +156,21 @@ class HabilitationRequest(models.Model):
 
     def __str__(self):
         return f"{self.aidant_full_name} ({self.email})"
+
+    def save(self, *args, **kwargs):
+        from aidants_connect_web import tasks
+
+        super().save(*args, **kwargs)
+        if not self.email_annonce_formateur_pap_send and self.email_formateur:
+            # tasks.email_annonce_formateur_pap.delay(self.id)
+            tasks.send_email_annonce_formateur_pap(self.id, None)
+
+    def switch_classic_to_pap(self, save=True):
+        if self.status == ReferentRequestStatuses.STATUS_PROCESSING:
+            self.status = ReferentRequestStatuses.STATUS_PROCESSING_P2P
+        self.course_type = HabilitationRequestCourseType.P2P
+        if save:
+            self.save()
 
     def validate_and_create_aidant(self):
         if self.status not in (
@@ -298,11 +331,108 @@ class ExportRequest(models.Model):
             super().save(*args, **kwargs)
 
 
+class StructureChangeRequest(models.Model):
+    """
+    Request to move an already-trained aidant to a new structure.
+    The aidant must already exist; if they don't, use HabilitationRequest instead.
+    """
+
+    aidant = models.ForeignKey(
+        Aidant,
+        on_delete=models.CASCADE,
+        related_name="structure_change_requests",
+        verbose_name="Aidant",
+    )
+    email = models.EmailField(max_length=150)
+    new_email = models.EmailField(
+        "Adresse e-mail (nouvelle structure)",
+        max_length=150,
+        blank=True,
+        null=True,
+    )
+    organisation = models.ForeignKey(
+        Organisation,
+        on_delete=models.CASCADE,
+        related_name="structure_change_requests",
+        verbose_name="Nouvelle structure",
+    )
+    previous_organisation = models.ForeignKey(
+        Organisation,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="outgoing_structure_change_requests",
+        verbose_name="Ancienne structure",
+    )
+    status = models.CharField(
+        "État",
+        blank=False,
+        max_length=150,
+        default=StructureChangeRequestStatuses.STATUS_NEW,
+        choices=StructureChangeRequestStatuses.choices,
+    )
+    created_at = models.DateTimeField("Date de création", auto_now_add=True)
+    updated_at = models.DateTimeField("Date de modification", auto_now=True)
+
+    @property
+    def status_label(self):
+        return StructureChangeRequestStatuses(self.status).label
+
+    @property
+    def status_cancellable_by_responsable(self):
+        return (
+            StructureChangeRequestStatuses(self.status)
+            in StructureChangeRequestStatuses.cancellable_by_responsable()
+        )
+
+    def cancel_by_responsable(self):
+        if not self.status_cancellable_by_responsable:
+            return
+        self.status = StructureChangeRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE
+        self.save(update_fields={"status"})
+
+    def get_full_name(self):
+        return self.aidant.get_full_name()
+
+    def __str__(self):
+        return f"{self.get_full_name()} ({self.email})"
+
+    def validate_structure_change(self):
+        if self.status != StructureChangeRequestStatuses.STATUS_NEW:
+            return False
+
+        aidant = self.aidant
+        with transaction.atomic():
+            if self.new_email:
+                new_email = self.new_email.strip().lower()
+                aidant.email = new_email
+                aidant.username = new_email
+                aidant.save()
+
+            aidant.organisations.add(self.organisation)
+            if self.previous_organisation:
+                aidant.organisations.remove(self.previous_organisation)
+            self.status = StructureChangeRequestStatuses.STATUS_VALIDATED
+            self.save()
+
+        return True
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=("email", "organisation"),
+                name="structurechangerequest_unique_email_per_orga",
+            ),
+        )
+        verbose_name = "demande de changement de structure"
+        verbose_name_plural = "demandes de changement de structure"
+
+
 class CoReferentNonAidantRequest(models.Model):
     first_name = models.CharField("Prénom", max_length=150)
     last_name = models.CharField("Nom", max_length=150)
     profession = models.CharField("Profession", max_length=150)
     email = models.EmailField("Email professionnel", max_length=150)
+    phone = models.CharField("Téléphone", max_length=20)
     organisation = models.ForeignKey(
         Organisation,
         on_delete=models.CASCADE,
@@ -335,6 +465,7 @@ class CoReferentNonAidantRequest(models.Model):
                 last_name=self.last_name,
                 profession=self.profession,
                 email=self.email,
+                phone=self.phone,
                 organisation=self.organisation,
                 can_create_mandats=False,
                 referent_non_aidant=True,

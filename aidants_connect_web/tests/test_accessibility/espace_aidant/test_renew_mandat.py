@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.urls import reverse
 from django.utils import timezone
 
 from playwright.async_api import expect
@@ -31,7 +32,8 @@ class RenewMandatAccessibilityTests(AccessibilityTestCase):
 
     async def _open_url(self):
         await self.login_aidant(self.aidant, self.token)
-        await self.navigate_to_url(f"/renew_mandat/{self.usager.pk}")
+        url = reverse("renew_mandat", args=(self.usager.pk,))
+        await self.page.goto(self.live_server_url + url)
 
     @async_test
     async def test_accessibility(self):

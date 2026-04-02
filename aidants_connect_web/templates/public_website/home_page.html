@@ -4,28 +4,12 @@
 
 {% block extracss %}
   <link href="{% static 'css/home.css' %}" rel="stylesheet">
-  <link href="{% static 'css/basicLightbox.min.css' %}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block title %}Accueil - Aidants Connect{% endblock %}
 
 {% block content %}
   <div class="fr-container">
-    <div class="fr-alert fr-alert--info fr-my-4v">
-      <p>
-        Vous souhaitez en savoir davantage sur le dispositif Aidants Connect et les conditions d'éligibilité ?
-      </p>
-      <p>
-        <a
-        href="https://tally.so/r/Bz4yve"
-        class="fr-link"
-        target="_blank"
-        >
-      Inscrivez-vous</a>
-       à l’un de nos webinaires d’information.
-      </p>
-    </div>
-
     {% include "layouts/_messages.html" %}
   </div>
   <div class="fr-container--fluid bullet-container">
@@ -37,7 +21,21 @@
           <p>Vous accompagnez régulièrement et gratuitement des personnes en difficulté avec le numérique dans la réalisation de leurs démarches en ligne ?<br/>
             <strong>Aidants Connect est fait pour vous !</strong>
           </p>
-          <a class="fr-btn fr-mt-4w" href="{% url 'habilitation_faq_habilitation' %}">Déposer une demande d'habilitation</a>
+          <ul class="fr-btns-group fr-btns-group--inline-md fr-mt-4w">
+            <li>
+              <a
+              href="https://tally.so/r/Bz4yve"
+              class="fr-btn fr-btn--secondary"
+              target="_blank"
+              title="Inscrivez-vous à l'un de nos webinaires d'information (nouvelle fenêtre)"
+              rel="noopener noreferrer">
+              S'inscrire à un webinaire
+              </a>
+            </li>
+            <li>
+              <a class="fr-btn" href="{% url 'habilitation_faq_habilitation' %}">Déposer une demande d'habilitation</a>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -242,7 +240,7 @@
               <h2 class="fr-h5">Abonnez-vous à notre lettre d’information</h2>
               <p class="fr-text--sm">Inscrivez-vous à notre infolettre pour vous tenir au courant des nouveautés du projet :</p>
             </div>
-<iframe width="540" height="310" src="{{ BREVO_IFRAME_URL }}" title="infolettre"></iframe>
+<iframe width="540" height="310" src="{{ BREVO_IFRAME_URL }}" title="Formulaire d’inscription à la lettre d’information Aidants Connect"></iframe>
           </div>
         </div>
       </div>
@@ -251,13 +249,6 @@
 {% endblock content %}
 
 {% block extrajs %}
-  <script defer src="{% static 'js/basicLightbox.min.js' %}"></script>
-  <script
-    defer
-    id="lightbox-video-script"
-    src="{% static 'js/lightbox-video.js' %}"
-    data-video-url="{% static 'videos/AidantsConnect.mp4' %}"
-  ></script>
   <script defer type="text/javascript" src="{{ SARBACANE_SCRIPT_URL }}"></script>
 {# <script defer type="text/javascript" src="{% static 'js/newsletter-form.js' %}"></script> #}
   <script defer type="text/javascript" src="{% static 'js/youtube-cookie.js' %}"></script>

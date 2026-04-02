@@ -1,0 +1,31 @@
+{% load dsfr_tags form_extras %}
+
+{% if errors %}
+  <section class="fr-my-4v fr-input-group fr-input-group--error">
+    {{ errors }}
+  </section>
+{% endif %}
+{% for field in form.hidden_fields %}
+  {{ field }}
+{% endfor %}
+
+<section class="fr-accordion custom-accordion-border fr-my-4v" data-controller="aidant-request-form">
+  <h3 class="fr-accordion__title">
+    {% if not form.email.value or form.errors %}
+      <button type="button" class="fr-accordion__btn fr-py-4v" aria-expanded="true" aria-controls="accordion-{{ form.prefix }}">
+        <span class="fr-text--lg fr-text--bold">Informations de l'aidant</span>
+      </button>
+    {% else %}
+      <button id="empty-form" type="button" class="fr-accordion__btn fr-py-4v" aria-expanded="false" aria-controls="accordion-{{ form.prefix }}">
+        <div>
+          <div class="fr-text--lg fr-text--bold">{{ form.clean_fullname }}</div>
+          <div class="fr-text--xs fr-text-mention--grey custom-accordion-help-text">Ouvrir pour modifier les données</div>
+        </div>
+      </button>
+    {% endif %}
+  </h3>
+
+  <div id="accordion-{{ form.prefix }}" class="fr-collapse{% if not form.email.value or form.errors %} fr-collapse--expanded{% endif %}">
+    {% include "aidants_connect_web/espace_responsable/forms/aidant.html" with form=form idx=idx %}
+  </div>
+</section>

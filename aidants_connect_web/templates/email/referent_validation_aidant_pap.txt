@@ -1,0 +1,15 @@
+{% load ac_common %}
+
+Bonjour,
+
+ 🎉 L’éligibilité de {{ aidant.first_name }} {{ aidant.last_name }} vient d’être validée.
+
+🎓 La formation pair à pair, assurée par {{ formateur.first_name }} {{ formateur.last_name }}, peut désormais être organisée. Si plusieurs aidants doivent être formés, nous recommandons de limiter chaque session à **5 personnes maximum** pour garantir une formation de qualité.
+
+📘 Le guide de formation est transmis à {{ formateur.first_name }} {{ formateur.last_name }}
+
+À bientôt sur Aidants Connect !
+L’équipe Aidants Connect
+
+Accompagnez vos usagers en toute sécurité
+Pour toute demande : {% mailto AC_CONTACT_EMAIL %}

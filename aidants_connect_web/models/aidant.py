@@ -107,7 +107,7 @@ class AidantType(models.Model):
 
 
 class Aidant(AbstractUser):
-    profession = models.TextField(blank=False)
+    profession = models.TextField(blank=True)
     phone = models.TextField("Téléphone", blank=True)
 
     aidant_type = models.ForeignKey(
@@ -170,6 +170,15 @@ class Aidant(AbstractUser):
         "ID FNE", max_length=255, null=True, blank=True, editable=False
     )
 
+    is_of_user = models.BooleanField(
+        "Est un utilisateur Organisme de Formation", default=False
+    )
+
+    is_of_admin = models.BooleanField(
+        "Est un administrateur Organisme de Formation", default=False
+    )
+
+    is_admin_metier = models.BooleanField("Est un administrateur métier", default=False)
     objects = AidantManager()
 
     REQUIRED_FIELDS = AbstractUser.REQUIRED_FIELDS + ["organisation"]
@@ -183,7 +192,19 @@ class Aidant(AbstractUser):
                     | Q(referent_non_aidant=True, can_create_mandats=False)
                 ),
                 name="referent_non_aidant_and_can_create_mandats_incompatible",
-            )
+            ),
+            # models.CheckConstraint(
+            #     check=(
+            #          Q(is_of_user=False, can_create_mandats=True)
+            #     ),
+            #     name="is_of_user_and_can_create_mandats_incompatible",
+            # ),
+            # models.CheckConstraint(
+            #     check=(
+            #         Q(is_of_user=False, referent_non_aidant=True)
+            #     ),
+            #     name="is_of_user_and_is_referent_incompatible",
+            # )
         ]
 
     def __str__(self):
@@ -294,6 +315,23 @@ class Aidant(AbstractUser):
                     JournalActionKeywords.USE_AUTORISATION,
                     JournalActionKeywords.INIT_RENEW_MANDAT,
                 ]
+            )
+            .distinct()
+            .count()
+        )
+
+    def get_supports_number_for_current_month(self):
+        return (
+            self.journal_entries.filter(
+                creation_date__month=timezone.now().month,
+                creation_date__year=timezone.now().year,
+                action__in=[
+                    JournalActionKeywords.FRANCECONNECT_USAGER,
+                    JournalActionKeywords.CREATE_ATTESTATION,
+                    JournalActionKeywords.CREATE_AUTORISATION,
+                    JournalActionKeywords.USE_AUTORISATION,
+                    JournalActionKeywords.INIT_RENEW_MANDAT,
+                ],
             )
             .distinct()
             .count()

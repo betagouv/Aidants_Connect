@@ -285,6 +285,7 @@ class NotificationFactory(DjangoModelFactory):
 
 class CoReferentNonAidantRequestFactory(DjangoModelFactory):
     email = Faker("email")
+    phone = "0601020304"
     organisation = SubFactory(OrganisationFactory)
 
     class Meta:

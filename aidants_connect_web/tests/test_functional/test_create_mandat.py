@@ -93,22 +93,9 @@ class CreateNewMandatTests(FunctionalTestCase):
         )
 
     def test_create_new_mandat(self):
-        self.open_live_url("/usagers/")
+        self.open_live_url("/creation_mandat/")
 
         self.login_aidant(self.aidant)
-
-        self.assertEqual(
-            "Liste des mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
-        )
-
-        tables = self.selenium.find_elements(By.TAG_NAME, "table")
-        self.assertEqual(3, len(tables))
-        for table in tables:
-            self.assertIn("Vous n'avez pas de mandats", table.text)
-
-        # Create new mandat
-        self.selenium.find_element(By.ID, "add_usager").click()
-        self.wait.until(self.path_matches("new_mandat"))
 
         demarches_section = self.selenium.find_element(
             By.CSS_SELECTOR, ".demarches-section"
@@ -161,22 +148,9 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.open_live_url("/usagers/")
 
     def test_create_new_remote_mandat_with_legacy_consent(self):
-        self.open_live_url("/usagers/")
+        self.open_live_url("/creation_mandat/")
 
         self.login_aidant(self.aidant)
-
-        self.assertEqual(
-            "Liste des mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
-        )
-
-        tables = self.selenium.find_elements(By.TAG_NAME, "table")
-        self.assertEqual(3, len(tables))
-        for table in tables:
-            self.assertIn("Vous n'avez pas de mandats", table.text)
-
-        # Create new mandat
-        self.selenium.find_element(By.ID, "add_usager").click()
-        self.wait.until(self.path_matches("new_mandat"))
 
         demarches_section = self.selenium.find_element(
             By.CSS_SELECTOR, ".demarches-section"
@@ -266,22 +240,9 @@ class CreateNewMandatTests(FunctionalTestCase):
     def test_create_new_remote_mandat_with_sms_consent(self, uuid4_mock: Mock):
         uuid4_mock.return_value = UUID
 
-        self.open_live_url("/usagers/")
+        self.open_live_url("/creation_mandat/")
 
         self.login_aidant(self.aidant)
-
-        self.assertEqual(
-            "Liste des mandats", self.selenium.find_element(By.TAG_NAME, "h1").text
-        )
-
-        tables = self.selenium.find_elements(By.TAG_NAME, "table")
-        self.assertEqual(3, len(tables))
-        for table in tables:
-            self.assertIn("Vous n'avez pas de mandats", table.text)
-
-        # Create new mandat
-        self.selenium.find_element(By.ID, "add_usager").click()
-        self.wait.until(self.path_matches("new_mandat"))
 
         demarches_section = self.selenium.find_element(
             By.CSS_SELECTOR, ".demarches-section"
@@ -418,12 +379,9 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.assertEqual(2, mandat_qs[0].autorisations.count())
 
     def test_bdf_warn_notification(self):
-        self.open_live_url("/usagers/")
+        self.open_live_url("/creation_mandat/")
 
         self.login_aidant(self.aidant)
-        # Create new mandat
-        self.selenium.find_element(By.ID, "add_usager").click()
-        self.wait.until(self.path_matches("new_mandat"))
 
         demarches_section = self.selenium.find_element(
             By.CSS_SELECTOR, ".demarches-section"
@@ -450,12 +408,9 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.aidant.organisation.allowed_demarches = ["papiers", "famille", "social"]
         self.aidant.organisation.save()
 
-        self.open_live_url("/usagers/")
+        self.open_live_url("/creation_mandat/")
 
         self.login_aidant(self.aidant)
-
-        self.selenium.find_element(By.ID, "add_usager").click()
-        self.wait.until(self.path_matches("new_mandat"))
 
         # Create new mandat
         demarches = self.selenium.find_elements(By.CSS_SELECTOR, '[id^="id_demarche_"]')

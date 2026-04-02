@@ -134,7 +134,7 @@ class ViewAutorisationsTests(FunctionalTestCase):
         self.assertEqual(
             self.selenium.find_element(By.CSS_SELECTOR, "#content h1").text.strip(),
             "⚠ Certains mandats n'ont pas pu être "
-            "transférés vers la nouvelle organiation",
+            "transférés vers la nouvelle organisation",
         )
 
         mandates = [

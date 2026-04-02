@@ -15,7 +15,11 @@ from rest_framework.authtoken.admin import TokenAdmin
 
 from aidants_connect.admin import VisibleToAdminMetier, admin_site
 from aidants_connect_web.constants import ReferentRequestStatuses
-from aidants_connect_web.models import CoReferentNonAidantRequest, ExportRequest
+from aidants_connect_web.models import (
+    CoReferentNonAidantRequest,
+    ExportRequest,
+    LogEmailSending,
+)
 
 from ..tasks import email_co_rerefent_creation
 
@@ -40,6 +44,14 @@ class ConnectionAdmin(ModelAdmin):
         "consent_request_id",
         "organisation__name",
     )
+
+
+@register(LogEmailSending, site=admin_site)
+class LogEmailSendingAdmin(VisibleToAdminMetier, ModelAdmin):
+    list_display = ("created_at", "code_email", "aidant")
+    readonly_fields = ("aidant",)
+    search_fields = ("aidant__email",)
+    list_filter = ("code_email",)
 
 
 @register(ExportRequest, site=admin_site)
