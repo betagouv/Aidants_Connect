@@ -89,6 +89,7 @@ jobs:
           command: |
             . /tmp/venv/bin/activate
             pre-commit run --from-ref=main --to-ref=HEAD
+            python manage.py makemigrations --check --dry-run --noinput
   test:
     executor: testbed
     parallelism: 8

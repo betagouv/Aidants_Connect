@@ -54,7 +54,7 @@ class UsagersTest(FunctionalTestCase):
         self.open_live_url("/usagers/")
         self.login_aidant(self.aidant)
 
-        self.wait.until(self.document_loaded())
+        self.wait.until(self.dsfr_ready())
 
         user_with_valid_mandate = self.selenium.find_elements(
             By.CSS_SELECTOR, "table.with-valid-mandate tbody tr"
