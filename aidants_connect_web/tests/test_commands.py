@@ -243,7 +243,7 @@ class CreateSuperUserTests(TestCase):
 class NewHabilitationRequestsTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.bizdev = AidantFactory(is_staff=True)
+        cls.bizdev = AidantFactory(is_staff=True, is_superuser=True)
 
     def three_manual_habilitation_requests_in_three_organisations(self):
         for _ in range(3):
