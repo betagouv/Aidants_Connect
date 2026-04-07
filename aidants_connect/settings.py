@@ -715,7 +715,7 @@ EMAIL_WELCOME_AIDANT_FAQ_URL = os.getenv(
 )
 EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES = os.getenv(
     "EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES",
-    "https://www.etsijaccompagnais.fr/ressources-des-aidants",
+    "https://lesbases.anct.gouv.fr/ressources/fiches-de-mediation-franceconnect-et-aidants-connect",
 )
 EMAIL_WELCOME_AIDANT_TUTORIEL_INTERACTIF = os.getenv(
     "EMAIL_WELCOME_AIDANT_TUTORIEL_INTERACTIF",
