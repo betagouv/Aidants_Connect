@@ -27,6 +27,18 @@ class AidantFilter(FilterSet):
         }
 
 
+class OrganisationFilter(FilterSet):
+    class Meta:
+        model = Organisation
+        fields = {
+            "siren": ["exact"],
+            "siret": ["exact"],
+            "name": ["iexact"],
+            "created_at": ["gte", "lte"],
+            "updated_at": ["gte", "lte"],
+        }
+
+
 class OrganisationViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = "uuid"
     lookup_url_kwarg = "uuid"
@@ -40,6 +52,9 @@ class FNEOrganisationViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Organisation.objects.all().order_by("pk")
     serializer_class = FNEOrganisationSerializer
+
+    filter_backends = [filters.DjangoFilterBackend]
+    filterset_class = OrganisationFilter
 
 
 class FNEAidantViewSet(viewsets.ReadOnlyModelViewSet):
