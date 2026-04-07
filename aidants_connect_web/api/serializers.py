@@ -54,6 +54,12 @@ class FNEOrganisationSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="fne_organisations-detail", lookup_field="uuid"
     )
+    created_at = serializers.ModelField(
+        model_field=_organisation_meta.get_field("created_at")
+    )
+    updated_at = serializers.ModelField(
+        model_field=_organisation_meta.get_field("updated_at")
+    )
 
     class Meta:
         model = Organisation
@@ -85,6 +91,13 @@ class FNEAidantSerializer(serializers.HyperlinkedModelSerializer):
     )
     is_aidant = serializers.SerializerMethodField(method_name="get_is_aidant")
     is_manager = serializers.SerializerMethodField(method_name="get_is_manager")
+
+    created_at = serializers.ModelField(
+        model_field=_organisation_meta.get_field("created_at")
+    )
+    updated_at = serializers.ModelField(
+        model_field=_organisation_meta.get_field("updated_at")
+    )
 
     def get_formation_fne(self, obj):
         return bool(obj.id_fne)
