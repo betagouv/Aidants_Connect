@@ -142,9 +142,9 @@ def notify_new_habilitation_requests(*, logger=None):
 
     logger.info("Checking new habilitation requests...")
     recipient_list = list(
-        Aidant.objects.filter(is_staff=True, is_active=True).values_list(
-            "email", flat=True
-        )
+        Aidant.objects.filter(is_staff=True, is_active=True)
+        .filter(Q(is_superuser=True) | Q(is_admin_metier=True))
+        .values_list("email", flat=True)
     )
     created_from = timezone.now() + timedelta(days=-7)
 
