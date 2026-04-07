@@ -1,8 +1,14 @@
 .fr-container {
   .attestation-content {
     .navbar {
-      .header-logo img:last-of-type {
-        margin-bottom: 4rem;
+      .header-logo {
+        img:last-of-type {
+          margin-bottom: 4rem;
+        }
+
+        img {
+          margin-right: 2rem;
+        }
       }
     }
 
@@ -21,6 +27,30 @@
 
     .img-qrcode {
       height: 10em;
+      float: right;
+    }
+
+    .mandat-signatures {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    .mandat-signature-field {
+      flex: 1 1 12rem;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .mandat-signature-label {
+      margin-bottom: 0.35rem;
+    }
+
+    .mandat-signature-box {
+      min-height: 4.5rem;
+      border: 1px solid grey;
     }
   }
 
@@ -33,8 +63,9 @@
   }
 
   .attestation-content h1 {
+    clear: none;
     font-size: 1.5rem;
-    margin: 0 3rem 2rem;
+    margin: 0 3rem 1.5rem;
     line-height: 1.75rem;
   }
 
@@ -60,8 +91,10 @@
 
 @media print {
   @page {
-    size: auto; /* auto is the initial value */
-    margin: 0; /* this affects the margin in the printer settings */
+    size: auto;
+    /* auto is the initial value */
+    margin: 0;
+    /* this affects the margin in the printer settings */
   }
 
   :root {
@@ -73,7 +106,10 @@
     margin: 2rem;
   }
 
-  #main, [class*="fr-col"], .fr-container, li {
+  #main,
+  [class*="fr-col"],
+  .fr-container,
+  li {
     margin: 0;
     padding: 0;
     width: auto;
@@ -82,5 +118,23 @@
   .attestation-content {
     border: 1px solid black;
     padding: 1rem;
+  }
+
+  .fr-container .attestation-content h1 {
+    margin: -5rem 3rem 1.5rem;
+  }
+
+  .mandat-signatures {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .mandat-signature-field {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .mandat-signature-box {
+    min-height: 5rem;
   }
 }
