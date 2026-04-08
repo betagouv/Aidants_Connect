@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.utils.timezone import now
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -215,14 +216,17 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
             )
         )
 
+    def referent_aidant_live_url(self, aidant: Aidant) -> str:
+        return self.live_server_url + reverse(
+            "espace_referent:aidant_detail", kwargs={"aidant_id": aidant.id}
+        )
+
     @async_test
     async def test_otp_card_shows_active_badge(self):
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(
-            self.live_server_url + f"/espace-responsable/aidant/{self.aidant_sarah.id}/"
-        )
+        await self.page.goto(self.referent_aidant_live_url(self.aidant_sarah))
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.aidant_sarah.id},
         )
 
@@ -240,12 +244,9 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
     @async_test
     async def test_mobile_app_shows_active_badge(self):
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.responsable_tom.id}/"
-        )
+        await self.page.goto(self.referent_aidant_live_url(self.responsable_tom))
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.responsable_tom.id},
         )
 
@@ -265,12 +266,9 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
     @async_test
     async def test_helper_manager_cannot_deactivate_himself(self):
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.responsable_tom.id}/"
-        )
+        await self.page.goto(self.referent_aidant_live_url(self.responsable_tom))
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.responsable_tom.id},
         )
 
@@ -282,12 +280,9 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
     @async_test
     async def test_helper_manager_can_deactivate_another_helper_manager(self):
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.responsable_marie.id}/"
-        )
+        await self.page.goto(self.referent_aidant_live_url(self.responsable_marie))
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.responsable_marie.id},
         )
 
@@ -300,12 +295,9 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
     async def test_formation_fne_inscrit(self):
         """Test l'affichage pour un aidant inscrit à une formation FNE"""
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.aidant_fne_inscrit.id}/"
-        )
+        await self.page.goto(self.referent_aidant_live_url(self.aidant_fne_inscrit))
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.aidant_fne_inscrit.id},
         )
 
@@ -318,12 +310,9 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
     async def test_formation_fne_done(self):
         """Test l'affichage pour un aidant formé à une formation FNE"""
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.aidant_fne_done.id}/"
-        )
+        await self.page.goto(self.referent_aidant_live_url(self.aidant_fne_done))
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.aidant_fne_done.id},
         )
 
@@ -344,11 +333,10 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         """Test l'affichage pour un aidant formé à une formation FNE"""
         await self.login_aidant(self.responsable_tom, self.otp_token)
         await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.aidant_fne_done_no_attendant.id}/"
+            self.referent_aidant_live_url(self.aidant_fne_done_no_attendant)
         )
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.aidant_fne_done_no_attendant.id},
         )
 
@@ -367,12 +355,9 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
     async def test_formation_p2p_inscrit_display(self):
         """Test l'affichage pour un aidant inscrit à une formation P2P"""
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.aidant_p2p_inscrit.id}/"
-        )
+        await self.page.goto(self.referent_aidant_live_url(self.aidant_p2p_inscrit))
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.aidant_p2p_inscrit.id},
         )
 
@@ -385,12 +370,9 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
     async def test_formation_p2p_done(self):
         """Test l'affichage pour un aidant formé à une formation pair à pair"""
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.aidant_p2p_done.id}/"
-        )
+        await self.page.goto(self.referent_aidant_live_url(self.aidant_p2p_done))
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.aidant_p2p_done.id},
         )
 
@@ -402,11 +384,10 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         """Test l'affichage pour un aidant formé à une formation pair à pair"""
         await self.login_aidant(self.responsable_tom, self.otp_token)
         await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.aidant_p2p_done_no_attendant.id}/"
+            self.referent_aidant_live_url(self.aidant_p2p_done_no_attendant)
         )
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.aidant_p2p_done_no_attendant.id},
         )
 
@@ -417,12 +398,9 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
     async def test_formation_classic_inscrit_display(self):
         """Test l'affichage pour un aidant inscrit à une formation clasique"""
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.aidant_classic_inscrit.id}/"
-        )
+        await self.page.goto(self.referent_aidant_live_url(self.aidant_classic_inscrit))
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.aidant_classic_inscrit.id},
         )
 
@@ -446,12 +424,9 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
     async def test_formation_classic_done(self):
         """Test l'affichage pour un aidant formé à une formation classique"""
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.aidant_classic_done.id}/"
-        )
+        await self.page.goto(self.referent_aidant_live_url(self.aidant_classic_done))
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.aidant_classic_done.id},
         )
 
@@ -479,11 +454,10 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         """Test l'affichage pour un aidant formé à une formation classique"""
         await self.login_aidant(self.responsable_tom, self.otp_token)
         await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.aidant_classic_done_no_attendant.id}/"
+            self.referent_aidant_live_url(self.aidant_classic_done_no_attendant)
         )
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.aidant_classic_done_no_attendant.id},
         )
 
@@ -505,11 +479,9 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         """Test la fonctionnalité deasctivate et reactivation d'un aidant"""
 
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(
-            self.live_server_url + f"/espace-responsable/aidant/{self.aidant_tim.id}/"
-        )
+        await self.page.goto(self.referent_aidant_live_url(self.aidant_tim))
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.aidant_tim.id},
         )
 
@@ -518,7 +490,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await deactivate_link.click()
 
         await self.wait_for_path_match(
-            "espace_responsable_remove_aidant_from_organisation",
+            "espace_referent:remove_aidant_from_organisation",
             kwargs={
                 "aidant_id": self.aidant_tim.id,
                 "organisation_id": self.aidant_tim.organisation.id,
@@ -529,7 +501,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await confirm_button.click()
 
         await self.wait_for_path_match(
-            "espace_responsable_aidants",
+            "espace_referent:aidants",
         )
 
         # Cliquer sur l'onglet "Aidants désactivés"
@@ -546,7 +518,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await aidant_link.click()
 
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.aidant_tim.id},
         )
 
@@ -555,7 +527,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
 
         # Vérifier qu'on arrive sur la page de confirmation de réactivation
         await self.wait_for_path_match(
-            "espace_responsable_reactivate_aidant_from_organisation",
+            "espace_referent:reactivate_aidant_from_organisation",
             kwargs={
                 "aidant_id": self.aidant_tim.id,
                 "organisation_id": self.aidant_tim.organisation.id,
@@ -566,7 +538,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await confirm_reactivate_button.click()
 
         await self.wait_for_path_match(
-            "espace_responsable_aidants",
+            "espace_referent:aidants",
         )
 
         # Cliquer sur l'onglet "Aidants désactivés" pour vérifier qu'il n'y est plus
@@ -583,12 +555,9 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         """Test la fonctionnalité deasctivate et reactivation d'un aidant"""
 
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(
-            self.live_server_url
-            + f"/espace-responsable/aidant/{self.responsable_marie.id}/"
-        )
+        await self.page.goto(self.referent_aidant_live_url(self.responsable_marie))
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.responsable_marie.id},
         )
 
@@ -597,7 +566,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await deactivate_link.click()
 
         await self.wait_for_path_match(
-            "espace_responsable_remove_aidant_from_organisation",
+            "espace_referent:remove_aidant_from_organisation",
             kwargs={
                 "aidant_id": self.responsable_marie.id,
                 "organisation_id": self.responsable_marie.organisation.id,
@@ -609,7 +578,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await confirm_button.click()
 
         await self.wait_for_path_match(
-            "espace_responsable_referents",
+            "espace_referent:referents",
         )
 
         # Cliquer sur l'onglet "Référents désactivés"
@@ -628,7 +597,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await aidant_link.click()
 
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.responsable_marie.id},
         )
 
@@ -637,7 +606,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
 
         # Vérifier qu'on arrive sur la page de confirmation de réactivation
         await self.wait_for_path_match(
-            "espace_responsable_reactivate_aidant_from_organisation",
+            "espace_referent:reactivate_aidant_from_organisation",
             kwargs={
                 "aidant_id": self.responsable_marie.id,
                 "organisation_id": self.responsable_marie.organisation.id,
@@ -648,7 +617,7 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
         await confirm_reactivate_button.click()
 
         await self.wait_for_path_match(
-            "espace_responsable_referents",
+            "espace_referent:referents",
         )
 
         # Cliquer sur l'onglet "Référents désactivés" pour vérifier qu'elle n'y est plus

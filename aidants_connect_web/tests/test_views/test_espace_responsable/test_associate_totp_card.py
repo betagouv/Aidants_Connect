@@ -49,11 +49,11 @@ class AssociateCarteTOTPTests(TestCase):
         cls.carte = CarteTOTPFactory(seed="zzzz")
         cls.org_id = cls.responsable_tom.organisation.id
         cls.association_url = reverse(
-            "espace_responsable_associate_totp",
+            "espace_referent:associate_totp",
             kwargs={"aidant_id": cls.aidant_tim.pk},
         )
         cls.validation_url = reverse(
-            "espace_responsable_validate_totp",
+            "espace_referent:validate_totp",
             kwargs={"aidant_id": cls.aidant_tim.pk},
         )
 
@@ -75,7 +75,7 @@ class AssociateCarteTOTPTests(TestCase):
         expected_card = self.aidant_sarah.carte_totp.pk
         response = self.client.post(
             reverse(
-                "espace_responsable_associate_totp",
+                "espace_referent:associate_totp",
                 kwargs={"aidant_id": self.aidant_sarah.pk},
             ),
             data={"serial_number": self.carte.serial_number},
@@ -83,7 +83,8 @@ class AssociateCarteTOTPTests(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "espace_responsable_aidant", kwargs={"aidant_id": self.aidant_sarah.id}
+                "espace_referent:aidant_detail",
+                kwargs={"aidant_id": self.aidant_sarah.id},
             ),
         )
         self.aidant_sarah.refresh_from_db()
@@ -100,7 +101,7 @@ class AssociateCarteTOTPTests(TestCase):
 
         response = self.client.post(
             reverse(
-                "espace_responsable_associate_totp",
+                "espace_referent:associate_totp",
                 kwargs={"aidant_id": self.deactivated_aidant.pk},
             ),
             data={"serial_number": self.carte.serial_number},
@@ -108,7 +109,7 @@ class AssociateCarteTOTPTests(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "espace_responsable_aidant",
+                "espace_referent:aidant_detail",
                 kwargs={"aidant_id": self.deactivated_aidant.id},
             ),
         )
@@ -165,7 +166,7 @@ class AssociateCarteTOTPTests(TestCase):
         signal_send_mock.assert_called_with(None, otp_device=card.totp_device)
 
         # Check organisation page warns about activation
-        response = self.client.get(reverse("espace_responsable_aidants"))
+        response = self.client.get(reverse("espace_referent:aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "A valider",

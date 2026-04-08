@@ -35,8 +35,8 @@ class HabilitationRequestsTests(TestCase):
         cls.responsable_tom.responsable_de.add(cls.org_b)
         cls.responsable_tom.can_create_mandats = False
         # URL
-        cls.add_aidant_url = reverse("espace_responsable_aidant_new")
-        cls.organisation_url = reverse("espace_responsable_organisation")
+        cls.add_aidant_url = reverse("espace_referent:aidant_new")
+        cls.organisation_url = reverse("espace_referent:organisation")
         cls.view_class = espace_responsable.NewHabilitationRequest
         cls.prefix = "multiform-habilitation_requests"
 
@@ -65,7 +65,7 @@ class HabilitationRequestsTests(TestCase):
     def test_habilitation_request_is_displayed_if_needed(self):
         HabilitationRequestFactory(organisation=self.org_a)
         self.client.force_login(self.responsable_tom)
-        response = self.client.get(reverse("espace_responsable_aidants"))
+        response = self.client.get(reverse("espace_referent:aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "Demandes en cours",
@@ -83,7 +83,7 @@ class HabilitationRequestsTests(TestCase):
             course_type=HabilitationRequestCourseType.P2P,
         )
         self.client.force_login(self.responsable_tom)
-        response = self.client.get(reverse("espace_responsable_aidants"))
+        response = self.client.get(reverse("espace_referent:aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn("Validée", response_content)
         self.assertIn("Formation pair à pair", response_content)
@@ -118,11 +118,11 @@ class HabilitationRequestsTests(TestCase):
             )
             self.assertRedirects(
                 response,
-                reverse("espace_responsable_aidants"),
+                reverse("espace_referent:aidants"),
                 fetch_redirect_response=False,
             )
             self.assertEqual(idx + 1, len(HabilitationRequest.objects.all()))
-            response = self.client.get(reverse("espace_responsable_aidants"))
+            response = self.client.get(reverse("espace_referent:aidants"))
             response_content = response.content.decode("utf-8")
             self.assertIn(
                 (
@@ -323,10 +323,10 @@ class HabilitationRequestsTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("espace_responsable_aidants"),
+            reverse("espace_referent:aidants"),
             fetch_redirect_response=False,
         )
-        response = self.client.get(reverse("espace_responsable_aidants"))
+        response = self.client.get(reverse("espace_referent:aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "La demande d'habilitation pour Bob Dubois a été enregistrée avec succès.",
@@ -358,10 +358,10 @@ class HabilitationRequestsTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("espace_responsable_aidants"),
+            reverse("espace_referent:aidants"),
             fetch_redirect_response=False,
         )
-        response = self.client.get(reverse("espace_responsable_aidants"))
+        response = self.client.get(reverse("espace_referent:aidants"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "La demande d'habilitation pour Bob Dubois a été enregistrée avec succès.",
@@ -424,7 +424,7 @@ class TestFormationRegistrationView(TestCase):
     def test_triggers_correct_view(self):
         found = resolve(
             reverse(
-                "espace_responsable_register_formation",
+                "espace_referent:register_formation",
                 kwargs={"request_id": self.habilitation_processing.pk},
             )
         )
@@ -434,7 +434,7 @@ class TestFormationRegistrationView(TestCase):
         self.client.force_login(self.referent)
         response = self.client.get(
             reverse(
-                "espace_responsable_register_formation",
+                "espace_referent:register_formation",
                 kwargs={"request_id": self.habilitation_processing.pk},
             )
         )
@@ -444,7 +444,7 @@ class TestFormationRegistrationView(TestCase):
         self.client.force_login(self.unrelated_referent)
         response = resolve(
             reverse(
-                "espace_responsable_register_formation",
+                "espace_referent:register_formation",
                 kwargs={"request_id": self.habilitation_processing.pk},
             )
         )
@@ -454,7 +454,7 @@ class TestFormationRegistrationView(TestCase):
         self.client.force_login(self.referent)
         response = self.client.get(
             reverse(
-                "espace_responsable_register_formation",
+                "espace_referent:register_formation",
                 kwargs={"request_id": self.habilitation_waiting.pk},
             )
         )
@@ -465,7 +465,7 @@ class TestFormationRegistrationView(TestCase):
         # Formation too close or already full should not be listed on the page
         response = self.client.get(
             reverse(
-                "espace_responsable_register_formation",
+                "espace_referent:register_formation",
                 kwargs={"request_id": self.habilitation_processing.pk},
             )
         )
@@ -479,7 +479,7 @@ class TestFormationRegistrationView(TestCase):
         self.assertEqual(0, self.formation_ok.attendants.count())
         response = self.client.post(
             reverse(
-                "espace_responsable_register_formation",
+                "espace_referent:register_formation",
                 kwargs={"request_id": self.habilitation_processing.pk},
             ),
             data={"formations": [self.formation_full.pk]},
@@ -491,7 +491,7 @@ class TestFormationRegistrationView(TestCase):
 
         response = self.client.post(
             reverse(
-                "espace_responsable_register_formation",
+                "espace_referent:register_formation",
                 kwargs={"request_id": self.habilitation_processing.pk},
             ),
             data={"formations": [self.formation_too_close.pk]},
@@ -503,7 +503,7 @@ class TestFormationRegistrationView(TestCase):
 
         self.client.post(
             reverse(
-                "espace_responsable_register_formation",
+                "espace_referent:register_formation",
                 kwargs={"request_id": self.habilitation_processing.pk},
             ),
             data={"formations": [self.formation_ok.pk]},
@@ -525,7 +525,7 @@ class TestFormationRegistrationView(TestCase):
         )
         self.client.post(
             reverse(
-                "espace_responsable_register_formation",
+                "espace_referent:register_formation",
                 kwargs={"request_id": self.hr_registered_to_2_formations.pk},
             ),
             data={"formations": [self.formation_ok.pk, self.formation_with_aidant1.pk]},

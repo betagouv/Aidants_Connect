@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.test import tag
+from django.urls import reverse
 from django.utils import timezone
 
 from selenium.webdriver.common.by import By
@@ -76,7 +77,7 @@ class UseAutorisationTests(FunctionalTestCase):
 
     def test_use_autorisation_with_preloging(self):
         # prelogin
-        self.open_live_url("/espace-aidant/")
+        self.open_live_url(reverse("espace_aidant:home"))
         self.login_aidant(self.aidant_1)
 
         url = f"/authorize/?{FC_URL_PARAMETERS}"

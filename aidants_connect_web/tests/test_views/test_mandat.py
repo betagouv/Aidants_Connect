@@ -231,32 +231,32 @@ class NewMandatTests(TestCase):
         )
 
     def test_new_mandat_url_triggers_new_mandat_view(self):
-        found = resolve("/creation_mandat/")
+        found = resolve(reverse("espace_aidant:new_mandat"))
         self.assertEqual(found.func.view_class, mandat.NewMandat)
 
     def test_new_mandat_url_triggers_new_mandat_template(self):
         self.client.force_login(self.aidant_thierry)
-        response = self.client.get("/creation_mandat/")
+        response = self.client.get(reverse("espace_aidant:new_mandat"))
         self.assertTemplateUsed(
             response, "aidants_connect_web/new_mandat/new_mandat.html"
         )
 
     def test_no_warning_displayed_for_single_structure_aidant(self):
         self.client.force_login(self.aidant_thierry)
-        response = self.client.get("/creation_mandat/")
+        response = self.client.get(reverse("espace_aidant:new_mandat"))
         self.assertNotContains(
             response, "Vous allez créer un mandat au nom de cette structure"
         )
 
     def test_warning_displayed_for_multi_structure_aidant(self):
         self.client.force_login(self.aidant_nour)
-        response = self.client.get("/creation_mandat/")
+        response = self.client.get(reverse("espace_aidant:new_mandat"))
         self.assertContains(response, "Vous allez créer un mandat au nom de")
 
     def test_badly_formatted_form_triggers_original_template(self):
         self.client.force_login(self.aidant_thierry)
         data = {"demarche": ["papiers", "logement"], "duree": "RAMDAM"}
-        response = self.client.post("/creation_mandat/", data=data)
+        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
         self.assertTemplateUsed(
             response, "aidants_connect_web/new_mandat/new_mandat.html"
         )
@@ -264,7 +264,7 @@ class NewMandatTests(TestCase):
     def test_well_formatted_form_triggers_redirect_to_FC(self):
         self.client.force_login(self.aidant_thierry)
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
-        response = self.client.post("/creation_mandat/", data=data)
+        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
         self.assertRedirects(response, "/fc_authorizev2/", target_status_code=302)
 
         # When mandate is remote and consent method is absent,
@@ -274,7 +274,7 @@ class NewMandatTests(TestCase):
             "duree": "SHORT",
             "is_remote": True,
         }
-        response = self.client.post("/creation_mandat/", data=data)
+        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
         self.assertEqual(response.status_code, 200)
 
         # When mandate is remote and consent method is legacy,
@@ -285,7 +285,7 @@ class NewMandatTests(TestCase):
             "is_remote": True,
             "remote_constent_method": RemoteConsentMethodChoices.LEGACY.name,
         }
-        response = self.client.post("/creation_mandat/", data=data)
+        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
         self.assertRedirects(response, "/fc_authorizev2/", target_status_code=302)
 
         # When mandate is remote and consent method is SMS and phone number is absent,
@@ -296,18 +296,18 @@ class NewMandatTests(TestCase):
             "is_remote": True,
             "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
         }
-        response = self.client.post("/creation_mandat/", data=data)
+        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
         self.assertEqual(response.status_code, 200)
 
         data["user_phone"] = self.phone_number
         data["user_remote_contact_verified"] = True
-        response = self.client.post("/creation_mandat/", data=data)
+        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
         self.assertRedirects(
-            response, "/creation_mandat/a_distance/demande_consentement/"
+            response, reverse("espace_aidant:new_mandat_remote_second_step")
         )
 
         data = {"demarche": ["papiers", "logement"], "duree": "LONG"}
-        response = self.client.post("/creation_mandat/", data=data)
+        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
         self.assertRedirects(response, "/fc_authorizev2/", target_status_code=302)
         data = {
             "demarche": ["papiers", "logement"],
@@ -317,16 +317,16 @@ class NewMandatTests(TestCase):
             "user_phone": self.phone_number,
             "user_remote_contact_verified": True,
         }
-        response = self.client.post("/creation_mandat/", data=data)
+        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
         self.assertRedirects(
             response,
-            "/creation_mandat/a_distance/demande_consentement/",
+            reverse("espace_aidant:new_mandat_remote_second_step"),
         )
 
     def test_disallowed_demarche_triggers_error(self):
         self.client.force_login(self.aidante_safia)
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
-        response = self.client.post("/creation_mandat/", data=data)
+        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
         self.assertTemplateUsed(
             response, "aidants_connect_web/new_mandat/new_mandat.html"
         )
@@ -370,7 +370,7 @@ class NewMandatRecapTests(TestCase):
         )
 
     def test_recap_url_triggers_the_recap_view(self):
-        found = resolve("/creation_mandat/recapitulatif/")
+        found = resolve(reverse("espace_aidant:new_mandat_recap"))
         self.assertEqual(found.func.view_class, mandat.NewMandatRecap)
 
     def test_recap_url_triggers_the_recap_template(self):
@@ -384,7 +384,7 @@ class NewMandatRecapTests(TestCase):
         session["connection"] = mandat_builder.id
         session.save()
 
-        response = self.client.get("/creation_mandat/recapitulatif/")
+        response = self.client.get(reverse("espace_aidant:new_mandat_recap"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(
             response, "aidants_connect_web/new_mandat/new_mandat_recap.html"
@@ -404,7 +404,7 @@ class NewMandatRecapTests(TestCase):
         session.save()
 
         response = self.client.post(
-            reverse("new_mandat_recap"),
+            reverse("espace_aidant:new_mandat_recap"),
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
 
@@ -412,7 +412,8 @@ class NewMandatRecapTests(TestCase):
 
         self.assertEqual(Usager.objects.all().count(), 1)
         self.assertRedirects(
-            response, reverse("new_attestation_final", args=(created_mandat.pk,))
+            response,
+            reverse("espace_aidant:new_attestation_final", args=(created_mandat.pk,)),
         )
 
         last_journal_entries = Journal.objects.all().order_by("-creation_date")
@@ -435,7 +436,7 @@ class NewMandatRecapTests(TestCase):
         session.save()
 
         response = self.client.post(
-            "/creation_mandat/recapitulatif/",
+            reverse("espace_aidant:new_mandat_recap"),
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
 
@@ -454,7 +455,7 @@ class NewMandatRecapTests(TestCase):
 
         # trigger the mandat creation
         self.client.post(
-            "/creation_mandat/recapitulatif/",
+            reverse("espace_aidant:new_mandat_recap"),
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
 
@@ -474,7 +475,7 @@ class NewMandatRecapTests(TestCase):
 
         # trigger the mandat creation
         self.client.post(
-            "/creation_mandat/recapitulatif/",
+            reverse("espace_aidant:new_mandat_recap"),
             data={"personal_data": True, "brief": True, "otp_token": "223456"},
         )
 
@@ -514,7 +515,7 @@ class NewMandatRecapTests(TestCase):
 
         # trigger the mandat creation
         self.client.post(
-            "/creation_mandat/recapitulatif/",
+            reverse("espace_aidant:new_mandat_recap"),
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
 
@@ -536,7 +537,7 @@ class NewMandatRecapTests(TestCase):
 
             # trigger the mandat creation
             self.client.post(
-                "/creation_mandat/recapitulatif/",
+                reverse("espace_aidant:new_mandat_recap"),
                 data={"personal_data": True, "brief": True, "otp_token": "223456"},
             )
 
@@ -590,7 +591,7 @@ class NewMandatRecapTests(TestCase):
 
         # trigger the mandat creation
         self.client.post(
-            "/creation_mandat/recapitulatif/",
+            reverse("espace_aidant:new_mandat_recap"),
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
 
@@ -600,7 +601,7 @@ class NewMandatRecapTests(TestCase):
 
         # revoke
         self.client.post(
-            "/creation_mandat/recapitulatif/",
+            reverse("espace_aidant:new_mandat_recap"),
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
 
@@ -622,7 +623,7 @@ class NewMandatRecapTests(TestCase):
 
         # trigger the mandat creation
         self.client.post(
-            "/creation_mandat/recapitulatif/",
+            reverse("espace_aidant:new_mandat_recap"),
             data={"personal_data": True, "brief": True, "otp_token": "223456"},
         )
 
@@ -664,7 +665,7 @@ class NewMandatRecapTests(TestCase):
 
         # trigger the autorisation creation
         self.client.post(
-            "/creation_mandat/recapitulatif/",
+            reverse("espace_aidant:new_mandat_recap"),
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
         self.client.logout()
@@ -682,7 +683,7 @@ class NewMandatRecapTests(TestCase):
 
         # trigger the autorisation creation
         self.client.post(
-            "/creation_mandat/recapitulatif/",
+            reverse("espace_aidant:new_mandat_recap"),
             data={"personal_data": True, "brief": True, "otp_token": "323456"},
         )
 
@@ -719,7 +720,7 @@ class NewMandatRecapTests(TestCase):
         session.save()
         # trigger the autorisation creation
         self.client.post(
-            "/creation_mandat/recapitulatif/",
+            reverse("espace_aidant:new_mandat_recap"),
             data={"personal_data": True, "brief": True, "otp_token": "123456"},
         )
         self.client.logout()
@@ -737,7 +738,7 @@ class NewMandatRecapTests(TestCase):
 
         # trigger the autorisation creation
         self.client.post(
-            "/creation_mandat/recapitulatif/",
+            reverse("espace_aidant:new_mandat_recap"),
             data={"personal_data": True, "brief": True, "otp_token": "423456"},
         )
 
@@ -798,15 +799,15 @@ class GenerateAttestationTests(TestCase):
         )
 
     def test_autorisation_qrcode_url_triggers_the_correct_view(self):
-        found = resolve("/creation_mandat/qrcode/")
+        found = resolve(reverse("espace_aidant:new_attestation_qrcode"))
         self.assertEqual(found.func.view_class, mandat.AttestationQRCode)
 
     def test_new_mandat_waiting_room_url_triggers_the_correct_view(self):
-        found = resolve(reverse("new_mandat_waiting_room"))
+        found = resolve(reverse("espace_aidant:new_mandat_waiting_room"))
         self.assertEqual(found.func.view_class, mandat.WaitingRoom)
 
     def test_new_mandat_waiting_room_json_url_triggers_the_correct_view(self):
-        found = resolve(reverse("new_mandat_waiting_room_json"))
+        found = resolve(reverse("espace_aidant:new_mandat_waiting_room_json"))
         self.assertEqual(found.func.view_class, mandat.WaitingRoomJson)
 
     def test_autorisation_qrcode_ok_with_and_without_mandat_id(self):
@@ -818,10 +819,12 @@ class GenerateAttestationTests(TestCase):
 
         self.client.force_login(self.aidant_thierry)
 
-        response = self.client.get(reverse("new_attestation_qrcode", args=(mandat.pk,)))
+        response = self.client.get(
+            reverse("espace_aidant:new_attestation_qrcode", args=(mandat.pk,))
+        )
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.get(reverse("new_attestation_qrcode"))
+        response = self.client.get(reverse("espace_aidant:new_attestation_qrcode"))
         self.assertEqual(response.status_code, 200)
 
     def test_autorisation_qrcode_ok_with_mandat_id(self):
@@ -833,7 +836,9 @@ class GenerateAttestationTests(TestCase):
 
         self.client.force_login(self.aidant_thierry)
 
-        response = self.client.get(reverse("new_attestation_qrcode", args=(mandat.pk,)))
+        response = self.client.get(
+            reverse("espace_aidant:new_attestation_qrcode", args=(mandat.pk,))
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_response_is_the_print_page(self):
@@ -843,7 +848,7 @@ class GenerateAttestationTests(TestCase):
         session["connection"] = 1
         session.save()
 
-        response = self.client.get("/creation_mandat/visualisation/projet/")
+        response = self.client.get(reverse("espace_aidant:new_attestation_projet"))
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "aidants_connect_web/attestation.html")
@@ -856,7 +861,7 @@ class GenerateAttestationTests(TestCase):
         session["connection"] = 1
         session.save()
 
-        response = self.client.get("/creation_mandat/visualisation/projet/")
+        response = self.client.get(reverse("espace_aidant:new_attestation_projet"))
         response_content = response.content.decode("utf-8")
 
         self.assertIn("mandataire", response_content)
@@ -881,13 +886,13 @@ class TranslationTests(TestCase):
         )
 
     def test_get_triggers_the_correct_view(self):
-        found = resolve(reverse("mandate_translation"))
+        found = resolve(reverse("espace_aidant:mandate_translation"))
         self.assertEqual(found.func.view_class, mandat.Translation)
 
     def test_get_renders_the_correct_template(self):
         self.client.force_login(self.aidant_thierry)
 
-        response = self.client.get(reverse("mandate_translation"))
+        response = self.client.get(reverse("espace_aidant:mandate_translation"))
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(
@@ -898,7 +903,8 @@ class TranslationTests(TestCase):
         self.client.force_login(self.aidant_thierry)
 
         response = self.client.post(
-            reverse("mandate_translation"), data={"lang_code": "aaaaaaaaaaaaa"}
+            reverse("espace_aidant:mandate_translation"),
+            data={"lang_code": "aaaaaaaaaaaaa"},
         )
 
         self.assertEqual(404, response.status_code)
@@ -907,7 +913,7 @@ class TranslationTests(TestCase):
         self.client.force_login(self.aidant_thierry)
 
         response = self.client.post(
-            reverse("mandate_translation"),
+            reverse("espace_aidant:mandate_translation"),
             data={"lang_code": self.pachto_language.lang},
         )
 
@@ -919,7 +925,7 @@ class TranslationTests(TestCase):
         )
 
         response = self.client.post(
-            reverse("mandate_translation"),
+            reverse("espace_aidant:mandate_translation"),
             data={"lang_code": self.breton_language.lang},
         )
 
@@ -945,7 +951,10 @@ class AttestationVisualisationTests(TestCase):
 
     def test_get_triggers_the_correct_view(self):
         found = resolve(
-            reverse("mandat_visualisation", kwargs={"mandat_id": self.mandat.pk})
+            reverse(
+                "espace_aidant:mandat_visualisation",
+                kwargs={"mandat_id": self.mandat.pk},
+            )
         )
         self.assertEqual(found.func.view_class, mandat.Attestation)
 
@@ -953,7 +962,9 @@ class AttestationVisualisationTests(TestCase):
         self.client.force_login(self.aidant_1)
 
         response = self.client.get(
-            reverse("mandat_visualisation", kwargs={"mandat_id": 10_000_000})
+            reverse(
+                "espace_aidant:mandat_visualisation", kwargs={"mandat_id": 10_000_000}
+            )
         )
 
         messages = list(django_messages.get_messages(response.wsgi_request))
@@ -967,7 +978,8 @@ class AttestationVisualisationTests(TestCase):
 
         response = self.client.get(
             reverse(
-                "mandat_visualisation", kwargs={"mandat_id": self.mandat_aidant_2.pk}
+                "espace_aidant:mandat_visualisation",
+                kwargs={"mandat_id": self.mandat_aidant_2.pk},
             )
         )
 
@@ -984,7 +996,10 @@ class AttestationVisualisationTests(TestCase):
         self.client.force_login(self.aidant_1)
 
         response = self.client.get(
-            reverse("mandat_visualisation", kwargs={"mandat_id": self.mandat.pk})
+            reverse(
+                "espace_aidant:mandat_visualisation",
+                kwargs={"mandat_id": self.mandat.pk},
+            )
         )
 
         self.assertFalse(
@@ -1001,7 +1016,8 @@ class AttestationVisualisationTests(TestCase):
 
         response = self.client.get(
             reverse(
-                "mandat_visualisation", kwargs={"mandat_id": self.mandat_no_template.pk}
+                "espace_aidant:mandat_visualisation",
+                kwargs={"mandat_id": self.mandat_no_template.pk},
             )
         )
 
@@ -1015,7 +1031,10 @@ class AttestationVisualisationTests(TestCase):
         self.client.force_login(self.aidant_1)
 
         response = self.client.get(
-            reverse("mandat_visualisation", kwargs={"mandat_id": self.mandat.pk})
+            reverse(
+                "espace_aidant:mandat_visualisation",
+                kwargs={"mandat_id": self.mandat.pk},
+            )
         )
 
         self.assertEqual(response.status_code, 200)
@@ -1057,7 +1076,7 @@ class AttestationProjectTests(TestCase):
         cls.aidant_1: Aidant = AidantFactory()
 
     def test_get_triggers_the_correct_view(self):
-        found = resolve(reverse("new_attestation_projet"))
+        found = resolve(reverse("espace_aidant:new_attestation_projet"))
         self.assertEqual(found.func.view_class, mandat.AttestationProject)
 
     def test_logout_on_no_connection(self):
@@ -1069,7 +1088,7 @@ class AttestationProjectTests(TestCase):
 
         self.assertTrue(self.aidant_1.is_authenticated)
 
-        response = self.client.get(reverse("new_attestation_projet"))
+        response = self.client.get(reverse("espace_aidant:new_attestation_projet"))
 
         self.assertFalse(response.wsgi_request.user.is_authenticated)
         self.assertEqual(response.status_code, 403)
@@ -1082,7 +1101,7 @@ class AttestationProjectTests(TestCase):
         session["connection"] = self.connection.pk
         session.save()
 
-        response = self.client.get(reverse("new_attestation_projet"))
+        response = self.client.get(reverse("espace_aidant:new_attestation_projet"))
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "aidants_connect_web/attestation.html")
@@ -1117,7 +1136,7 @@ class AttestationProjectTests(TestCase):
         session["connection"] = self.connection.pk
         session.save()
 
-        response = self.client.get(reverse("new_attestation_projet"))
+        response = self.client.get(reverse("espace_aidant:new_attestation_projet"))
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(
@@ -1137,7 +1156,9 @@ class AttestationFinalTests(TestCase):
         )
 
     def test_get_triggers_the_correct_view(self):
-        found = resolve(reverse("new_attestation_final", args=(self.mandat.pk,)))
+        found = resolve(
+            reverse("espace_aidant:new_attestation_final", args=(self.mandat.pk,))
+        )
         self.assertEqual(found.func.view_class, mandat.Attestation)
 
     def test_404_on_mandat_not_found(self):
@@ -1145,7 +1166,9 @@ class AttestationFinalTests(TestCase):
         self.assertTrue(self.aidant_1.is_authenticated)
 
         response = self.client.get(
-            reverse("new_attestation_final", args=(self.mandat.pk + 10_000,))
+            reverse(
+                "espace_aidant:new_attestation_final", args=(self.mandat.pk + 10_000,)
+            )
         )
 
         messages = list(django_messages.get_messages(response.wsgi_request))
@@ -1158,7 +1181,7 @@ class AttestationFinalTests(TestCase):
         self.client.force_login(self.aidant_1)
 
         response = self.client.get(
-            reverse("new_attestation_final", args=(self.mandat.pk,))
+            reverse("espace_aidant:new_attestation_final", args=(self.mandat.pk,))
         )
 
         self.assertEqual(response.status_code, 200)
@@ -1210,9 +1233,11 @@ class RemoteSecondStepMissingFirstStepTests(TestCase):
         session["connection"] = connection.pk
         session.save()
 
-        response = self.client.post(reverse("new_mandat_remote_second_step"))
+        response = self.client.post(
+            reverse("espace_aidant:new_mandat_remote_second_step")
+        )
 
-        self.assertRedirects(response, reverse("new_mandat"))
+        self.assertRedirects(response, reverse("espace_aidant:new_mandat"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertIn("récapitulatif de mandat n'a pas été envoyé", messages[0].message)

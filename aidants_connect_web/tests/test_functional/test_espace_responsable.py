@@ -72,16 +72,16 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         )
 
     def test_aidants_actions(self):
-        self.open_live_url(reverse("espace_responsable_organisation"))
+        self.open_live_url(reverse("espace_referent:organisation"))
 
         # Login
         self.login_aidant(self.aidant_responsable)
-        self.wait.until(self.path_matches("espace_responsable_organisation"))
+        self.wait.until(self.path_matches("espace_referent:organisation"))
 
         # Can't add or validate card for inactive aidant with card; can remove card
         self.open_live_url(
             reverse(
-                "espace_responsable_choose_totp",
+                "espace_referent:choose_totp",
                 kwargs={"aidant_id": self.aidant_inactive_with_card.id},
             )
         )
@@ -99,7 +99,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         # Add button is displayed disabled in this case
         self.open_live_url(
             reverse(
-                "espace_responsable_choose_totp",
+                "espace_referent:choose_totp",
                 kwargs={"aidant_id": self.aidant_inactive_without_card.id},
             )
         )
@@ -120,7 +120,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         # # Can't add or verify
         self.open_live_url(
             reverse(
-                "espace_responsable_choose_totp",
+                "espace_referent:choose_totp",
                 kwargs={"aidant_id": self.aidant_inactive_with_card_confirmed.id},
             )
         )
@@ -142,7 +142,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         # Can add card for active aidants without card, can't remove or validate
         self.open_live_url(
             reverse(
-                "espace_responsable_choose_totp",
+                "espace_referent:choose_totp",
                 kwargs={"aidant_id": self.aidant_active_without_card.id},
             )
         )
@@ -160,7 +160,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         # Can verify and remove card for aidants with unconfirmed card, can't add
         self.open_live_url(
             reverse(
-                "espace_responsable_choose_totp",
+                "espace_referent:choose_totp",
                 kwargs={"aidant_id": self.aidant_active_with_card.id},
             )
         )
@@ -178,7 +178,7 @@ class RemoveAidantFromOrganisationTests(FunctionalTestCase):
         # Can unlink card for aidants with confirmed card, can't add or validate
         self.open_live_url(
             reverse(
-                "espace_responsable_choose_totp",
+                "espace_referent:choose_totp",
                 kwargs={"aidant_id": self.aidant_active_with_card_confirmed.id},
             )
         )
@@ -208,7 +208,7 @@ class RestrictDemarchesTests(FunctionalTestCase):
         )
 
     def test_restrict_demarches(self):
-        root_path = reverse("espace_responsable_organisation")
+        root_path = reverse("espace_referent:organisation")
         selected = ["papiers", "logement"]
 
         self.open_live_url(root_path)
@@ -216,28 +216,28 @@ class RestrictDemarchesTests(FunctionalTestCase):
         self.assertEqual([], self.organisation.allowed_demarches)
         # Login
         self.login_aidant(self.aidant_responsable)
-        self.wait.until(self.path_matches("espace_responsable_organisation"))
+        self.wait.until(self.path_matches("espace_referent:organisation"))
         for demarche in selected:
             self.selenium.find_element(
                 By.CSS_SELECTOR, f'[for="id_demarches_{demarche}"]'
             ).click()
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-        self.wait.until(self.path_matches("espace_responsable_organisation"))
+        self.wait.until(self.path_matches("espace_referent:organisation"))
 
         self.organisation.refresh_from_db()
         self.assertEqual(selected, self.organisation.allowed_demarches)
 
     def test_select_no_demarche_raises_error(self):
-        self.open_live_url(reverse("espace_responsable_organisation"))
+        self.open_live_url(reverse("espace_referent:organisation"))
 
         self.assertEqual([], self.organisation.allowed_demarches)
         # Login
         self.login_aidant(self.aidant_responsable)
-        self.wait.until(self.path_matches("espace_responsable_organisation"))
+        self.wait.until(self.path_matches("espace_referent:organisation"))
 
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-        self.wait.until(self.path_matches("espace_responsable_organisation"))
+        self.wait.until(self.path_matches("espace_referent:organisation"))
         self.assertEqual(
             "Vous devez sélectionner au moins une démarche.",
             self.selenium.find_element(By.CSS_SELECTOR, ".notification.error").text,
@@ -254,7 +254,7 @@ class NewHabilitationRequestTests(FunctionalTestCase):
             post__is_organisation_manager=True,
         )
 
-        self.path = reverse("espace_responsable_aidant_new")
+        self.path = reverse("espace_referent:aidant_new")
         self.empty_form = NewHabilitationRequestForm(
             form_kwargs={
                 "habilitation_requests": {

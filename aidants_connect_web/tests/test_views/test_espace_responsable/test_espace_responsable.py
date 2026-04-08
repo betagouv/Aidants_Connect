@@ -27,16 +27,16 @@ class EspaceResponsableOrganisationPage(TestCase):
 
     def test_espace_responsable_organisation_url_triggers_the_right_view(self):
         self.client.force_login(self.responsable_tom)
-        found = resolve("/espace-responsable/organisation/")
+        found = resolve(reverse("espace_referent:organisation"))
         self.assertEqual(found.func.view_class, espace_responsable.OrganisationView)
 
     def test_espace_responsable_organisation_url_triggers_the_right_template(self):
         self.client.force_login(self.responsable_tom)
-        response = self.client.get("/espace-responsable/organisation/")
+        response = self.client.get(reverse("espace_referent:organisation"))
         self.assertEqual(
             response.status_code,
             200,
-            "trying to get /espace-responsable/organisation/",
+            f"trying to get {reverse('espace_referent:organisation')}",
         )
         self.assertTemplateUsed(
             response, "aidants_connect_web/espace_responsable/organisation.html"
@@ -51,7 +51,7 @@ class EspaceResponsableOrganisationPage(TestCase):
         aidant_b.organisations.set(
             (aidant_b.organisation, self.responsable_tom.organisation)
         )
-        response = self.client.get(reverse("espace_responsable_aidants"))
+        response = self.client.get(reverse("espace_referent:aidants"))
         self.assertContains(response, aidant_a.first_name)
         self.assertContains(response, aidant_b.first_name)
 
@@ -59,12 +59,12 @@ class EspaceResponsableOrganisationPage(TestCase):
         self.client.force_login(self.responsable_tom)
         organisation = OrganisationFactory(city=None)
         self.responsable_tom.responsable_de.add(organisation)
-        response = self.client.get("/espace-responsable/organisation/")
+        response = self.client.get(reverse("espace_referent:organisation"))
         self.assertNotContains(response, "None")
 
     def test_hide_block_if_no_data_pass_id(self):
         self.client.force_login(self.responsable_tom)
-        response = self.client.get("/espace-responsable/organisation/")
+        response = self.client.get(reverse("espace_referent:organisation"))
         self.assertNotContains(response, "Numéro d’habilitation")
 
     def test_I_can_restrict_demarches(self):
@@ -75,10 +75,10 @@ class EspaceResponsableOrganisationPage(TestCase):
         )
         self.client.force_login(self.responsable_tom)
         response = self.client.post(
-            reverse("espace_responsable_organisation"),
+            reverse("espace_referent:organisation"),
             data={"demarches": ["papiers", "logement"]},
         )
-        self.assertRedirects(response, reverse("espace_responsable_organisation"))
+        self.assertRedirects(response, reverse("espace_referent:organisation"))
         self.responsable_tom.organisation.refresh_from_db()
         self.assertEqual(
             2,
@@ -93,7 +93,7 @@ class EspaceResponsableOrganisationPage(TestCase):
         )
         self.client.force_login(self.responsable_tom)
         response = self.client.post(
-            reverse("espace_responsable_organisation"),
+            reverse("espace_referent:organisation"),
             data={"demarches": []},
         )
         self.assertEqual(response.status_code, 200)
@@ -110,7 +110,7 @@ class EspaceResponsableOrganisationPage(TestCase):
         self.responsable_rachida.organisations.add(self.responsable_tom.organisation)
 
         response = self.client.post(
-            reverse("espace_responsable_organisation"),
+            reverse("espace_referent:organisation"),
             data={"demarches": []},
         )
         self.assertNotEqual(response.status_code, 200)
@@ -127,7 +127,9 @@ class EspaceResponsableAidantPage(TestCase):
         cls.responsable_tom = AidantFactory()
         cls.responsable_tom.responsable_de.add(cls.responsable_tom.organisation)
         cls.aidant_tim = AidantFactory(organisation=cls.responsable_tom.organisation)
-        cls.aidant_tim_url = f"/espace-responsable/aidant/{cls.aidant_tim.id}/"
+        cls.aidant_tim_url = reverse(
+            "espace_referent:aidant_detail", kwargs={"aidant_id": cls.aidant_tim.id}
+        )
         cls.autre_organisation = OrganisationFactory()
         cls.autre_aidant = AidantFactory()
 
@@ -210,9 +212,12 @@ class EspaceResponsableAidantPage(TestCase):
     def test_responsable_cannot_see_an_aidant_they_are_not_responsible_for(self):
         self.client.force_login(self.responsable_tom)
         response = self.client.get(
-            f"/espace-responsable/aidant/{self.autre_aidant.id}/"
+            reverse(
+                "espace_referent:aidant_detail",
+                kwargs={"aidant_id": self.autre_aidant.id},
+            )
         )
-        self.assertRedirects(response, reverse("espace_responsable_organisation"))
+        self.assertRedirects(response, reverse("espace_referent:organisation"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
             "Erreur : ce profil aidant nʼexiste pas ou nʼest pas membre "
@@ -242,7 +247,12 @@ class EspaceResponsableAidantPage(TestCase):
         aidant_desactive.refresh_from_db()
 
         self.client.force_login(self.responsable_tom)
-        response = self.client.get(f"/espace-responsable/aidant/{aidant_desactive.id}/")
+        response = self.client.get(
+            reverse(
+                "espace_referent:aidant_detail",
+                kwargs={"aidant_id": aidant_desactive.id},
+            )
+        )
 
         # The referent can access the profile
         self.assertEqual(response.status_code, 200)
@@ -292,7 +302,9 @@ class EspaceResponsableAidantPage(TestCase):
         korben.responsable_de.add(organisation_2)
 
         self.client.force_login(korben)
-        response_1 = self.client.get(f"/espace-responsable/aidant/{leloo.id}/")
+        response_1 = self.client.get(
+            reverse("espace_referent:aidant_detail", kwargs={"aidant_id": leloo.id})
+        )
 
         referent_count = response_1.content.decode().count('id="badge-referent"')
         referent_aidant_count = response_1.content.decode().count(
@@ -311,7 +323,9 @@ class EspaceResponsableAidantPage(TestCase):
 
         # now korben can also see organisation_3
         korben.responsable_de.add(organisation_3)
-        response_2 = self.client.get(f"/espace-responsable/aidant/{leloo.id}/")
+        response_2 = self.client.get(
+            reverse("espace_referent:aidant_detail", kwargs={"aidant_id": leloo.id})
+        )
         referent_count = response_2.content.decode().count('id="badge-referent"')
         referent_aidant_count = response_2.content.decode().count(
             'id="badge-referent-aidant"'
@@ -324,7 +338,9 @@ class EspaceResponsableAidantPage(TestCase):
         self.assertEqual(referent_aidant_count, 2)
         self.assertEqual(referent_count, 0)
 
-        response_3 = self.client.get(f"/espace-responsable/aidant/{korben.id}/")
+        response_3 = self.client.get(
+            reverse("espace_referent:aidant_detail", kwargs={"aidant_id": korben.id})
+        )
         referent_count = response_3.content.decode().count('id="badge-referent"')
         referent_aidant_count = response_3.content.decode().count(
             'id="badge-referent-aidant"'
@@ -354,10 +370,13 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
         cls.responsable_of_1 = responsable
 
     def get_aidant_url(self, aidant):
-        return f"/espace-responsable/aidant/{aidant.id}/"
+        return reverse("espace_referent:aidant_detail", kwargs={"aidant_id": aidant.id})
 
     def get_form_url(self, aidant):
-        return f"/espace-responsable/aidant/{aidant.id}/changer-organisations/"
+        return reverse(
+            "espace_referent:aidant_change_organisations",
+            kwargs={"aidant_id": aidant.id},
+        )
 
     def test_responsable_of_one_structure_cannot_see_the_form(self):
         responsable = self.responsable_of_1
@@ -389,7 +408,7 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
             self.get_form_url(aidant),
             {"organisations": [org.id for org in responsable.responsable_de.all()]},
         )
-        self.assertRedirects(response, reverse("espace_responsable_organisation"))
+        self.assertRedirects(response, reverse("espace_referent:organisation"))
         aidant.refresh_from_db()
         self.assertEqual(len(aidant.organisations.all()), 2)
         self.assertTrue(
@@ -412,7 +431,7 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
             self.get_form_url(aidant),
             {"organisations": [other_org.id]},
         )
-        self.assertRedirects(response, reverse("espace_responsable_organisation"))
+        self.assertRedirects(response, reverse("espace_referent:organisation"))
 
         aidant.refresh_from_db()
         self.assertEqual(
@@ -460,7 +479,7 @@ class EspaceResponsableChangeAidantOrganisationsTest(TestCase):
             self.get_form_url(aidant),
             {"organisations": [responsable.organisation.id]},
         )
-        self.assertRedirects(response, reverse("espace_responsable_organisation"))
+        self.assertRedirects(response, reverse("espace_referent:organisation"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
             "Erreur : ce profil aidant nʼexiste pas ou nʼest pas membre "
@@ -508,8 +527,8 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
         cls.aidant_guy = AidantFactory(username="guy@mauve.fr")
 
         cls.urls_responsables = (
-            "/espace-aidant/",
-            "/espace-responsable/organisation/",
+            reverse("espace_aidant:home"),
+            reverse("espace_referent:organisation"),
         )
 
     def test_display_messages_to_reponsable_if_no_totp_device_exists(self):
@@ -547,7 +566,7 @@ class InsistOnTOTPDeviceActivationTests(TestCase):
 
     def test_hide_messages_from_aidants_even_without_totp_device(self):
         self.client.force_login(self.aidant_guy)
-        response = self.client.get("/espace-aidant/")
+        response = self.client.get(reverse("espace_aidant:home"))
         response_content = response.content.decode("utf-8")
         self.assertNotIn(
             "associer une application d’authentification",
@@ -572,10 +591,10 @@ class DesignationOfAnotherResponsable(TestCase):
         )
 
         cls.url = reverse(
-            "espace_responsable_organisation_responsables",
+            "espace_referent:organisation_responsables",
             kwargs={"organisation_id": cls.orga.pk},
         )
-        cls.orga_url = reverse("espace_responsable_organisation")
+        cls.orga_url = reverse("espace_referent:organisation")
 
         cls.aidante_maxine = AidantFactory(organisation=cls.orga)
         cls.aidante_ariane = AidantFactory()
@@ -598,7 +617,7 @@ class DesignationOfAnotherResponsable(TestCase):
         self.client.force_login(self.respo)
         response = self.client.get(
             reverse(
-                "espace_responsable_organisation_responsables",
+                "espace_referent:organisation_responsables",
                 kwargs={"organisation_id": self.orga2.pk},
             )
         )
@@ -608,7 +627,7 @@ class DesignationOfAnotherResponsable(TestCase):
         self.client.force_login(self.respo_without_aidants)
         response = self.client.get(
             reverse(
-                "espace_responsable_organisation_responsables",
+                "espace_referent:organisation_responsables",
                 kwargs={"organisation_id": self.respo_without_aidants.organisation.pk},
             )
         )
@@ -616,7 +635,7 @@ class DesignationOfAnotherResponsable(TestCase):
 
     def test_link_is_visible_if_there_is_an_aidant_to_become_responsable(self):
         self.client.force_login(self.respo)
-        response = self.client.get(reverse("espace_responsable_referents"))
+        response = self.client.get(reverse("espace_referent:referents"))
         self.assertContains(response, "Ajouter un ou une référente")
 
     def test_current_aidant_can_become_responsable(self):

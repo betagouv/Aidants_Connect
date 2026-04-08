@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import transaction
 from django.test import TestCase, tag
+from django.urls import reverse
 from django.utils import timezone
 
 from freezegun import freeze_time
@@ -20,7 +21,7 @@ class ActivityRequiredTests(TestCase):
 
     def test_activity_required_decorated_page_loads_if_action_just_happened(self):
         self.client.force_login(self.aidant_thierry)
-        response = self.client.get("/creation_mandat/")
+        response = self.client.get(reverse("espace_aidant:new_mandat"))
         self.assertEqual(response.status_code, 200)
 
     def test_activity_required_decorated_page_redirects_if_action_didnt_just_happened(
@@ -29,9 +30,12 @@ class ActivityRequiredTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         with freeze_time(timezone.now() + settings.ACTIVITY_CHECK_DURATION):
             self.assertEqual(self.aidant_thierry.is_authenticated, True)
-            response = self.client.get("/creation_mandat/")
+            response = self.client.get(reverse("espace_aidant:new_mandat"))
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.url, "/activity_check/?next=/creation_mandat/")
+            self.assertEqual(
+                response.url,
+                f"/activity_check/?next={reverse('espace_aidant:new_mandat')}",
+            )
 
 
 @tag("decorators")
@@ -47,12 +51,12 @@ class AidantRequiredTests(TestCase):
 
     def test_aidant_user_can_access_decorated_page(self):
         self.client.force_login(self.aidant_thierry)
-        response = self.client.get("/creation_mandat/")
+        response = self.client.get(reverse("espace_aidant:new_mandat"))
         self.assertEqual(response.status_code, 200)
 
     def test_non_aidant_user_cannot_access_decorated_page(self):
         self.client.force_login(self.responsable_georges)
-        response = self.client.get("/creation_mandat/")
+        response = self.client.get(reverse("espace_aidant:new_mandat"))
         self.assertEqual(response.status_code, 302)
 
 
@@ -70,13 +74,13 @@ class RespoStructureRequiredTests(TestCase):
 
     def test_responsable_can_access_decorated_page(self):
         self.client.force_login(self.responsable_georges)
-        response = self.client.get("/espace-responsable/organisation/")
+        response = self.client.get(reverse("espace_referent:organisation"))
         self.assertEqual(response.status_code, 200)
 
     def test_non_responsable_user_cannot_access_decorated_page(self):
         with self.subTest("Aidant is not referent"):
             self.client.force_login(self.aidant_thierry)
-            response = self.client.get("/espace-responsable/organisation/")
+            response = self.client.get(reverse("espace_referent:organisation"))
             self.assertEqual(response.status_code, 302)
 
         with self.subTest("Aidant is referent of a different organisation"):
@@ -84,5 +88,5 @@ class RespoStructureRequiredTests(TestCase):
                 self.aidant_thierry.responsable_de.add(OrganisationFactory())
 
             self.client.force_login(self.aidant_thierry)
-            response = self.client.get("/espace-responsable/organisation/")
+            response = self.client.get(reverse("espace_referent:organisation"))
             self.assertEqual(response.status_code, 302)

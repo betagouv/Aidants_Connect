@@ -1,3 +1,5 @@
+from django.urls import reverse
+
 from playwright.async_api import expect
 
 from aidants_connect_common.tests.test_accessibility.test_playwright import (
@@ -104,8 +106,8 @@ class EspaceResponsableDemandesFunctionalTests(FunctionalTestCase):
         """Test l'affichage des demandes dont l'égilibitée est validée"""
 
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(self.live_server_url + "/espace-responsable/aidants/")
-        await self.wait_for_path_match("espace_responsable_aidants")
+        await self.page.goto(self.live_server_url + reverse("espace_referent:aidants"))
+        await self.wait_for_path_match("espace_referent:aidants")
 
         await expect(self.page.get_by_text("Demandes en cours")).to_be_visible()
         await self.page.get_by_role("tab", name="Demandes en cours").click()
@@ -139,8 +141,8 @@ class EspaceResponsableDemandesFunctionalTests(FunctionalTestCase):
         """Test l'affichage des demandes d'habilitation en cours"""
 
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(self.live_server_url + "/espace-responsable/aidants/")
-        await self.wait_for_path_match("espace_responsable_aidants")
+        await self.page.goto(self.live_server_url + reverse("espace_referent:aidants"))
+        await self.wait_for_path_match("espace_referent:aidants")
 
         await expect(self.page.get_by_text("Demandes en cours")).to_be_visible()
         await self.page.get_by_role("tab", name="Demandes en cours").click()
@@ -161,8 +163,8 @@ class EspaceResponsableDemandesFunctionalTests(FunctionalTestCase):
         """Test l'affichage des demandes d'habilitation refusées"""
 
         await self.login_aidant(self.responsable_tom, self.otp_token)
-        await self.page.goto(self.live_server_url + "/espace-responsable/aidants/")
-        await self.wait_for_path_match("espace_responsable_aidants")
+        await self.page.goto(self.live_server_url + reverse("espace_referent:aidants"))
+        await self.wait_for_path_match("espace_referent:aidants")
 
         await expect(self.page.get_by_text("Demandes en cours")).to_be_visible()
         await self.page.get_by_role("tab", name="Demandes en cours").click()
