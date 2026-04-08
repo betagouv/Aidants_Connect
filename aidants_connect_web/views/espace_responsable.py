@@ -66,7 +66,7 @@ class ReferentCannotManageAidantResponseMixin:
             "Si ce profil existe et que vous faites partie de ses référents, "
             "veuillez changer dʼorganisation pour le gérer.",
         )
-        return redirect("espace_responsable_organisation")
+        return redirect("espace_referent:organisation")
 
 
 @responsable_logged_required
@@ -77,7 +77,7 @@ class OrganisationView(DetailView, FormView):
     context_object_name = "organisation"
     model = Organisation
     form_class = OrganisationRestrictDemarchesForm
-    success_url = reverse_lazy("espace_responsable_organisation")
+    success_url = reverse_lazy("espace_referent:organisation")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -123,7 +123,7 @@ class HomeView(DetailView, FormView):
     context_object_name = "organisation"
     model = Organisation
     form_class = OrganisationRestrictDemarchesForm
-    success_url = reverse_lazy("espace_responsable_organisation")
+    success_url = reverse_lazy("espace_referent:organisation")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -154,7 +154,7 @@ class ReferentsView(DetailView, FormView):
     context_object_name = "organisation"
     model = Organisation
     form_class = OrganisationRestrictDemarchesForm
-    success_url = reverse_lazy("espace_responsable_referents")
+    success_url = reverse_lazy("espace_referent:referents")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -169,7 +169,7 @@ class ReferentsView(DetailView, FormView):
             django_messages.error(
                 self.request, "Erreur : vous n'êtes pas rattaché à une organisation."
             )
-            return redirect("espace_aidant_home")
+            return redirect("espace_aidant:home")
         return self.organisation
 
     def get_context_data(self, **kwargs):
@@ -222,7 +222,7 @@ class AidantsView(DetailView, FormView):
     template_name = "aidants_connect_web/espace_responsable/aidants.html"
     context_object_name = "organisation"
     model = Organisation
-    success_url = reverse_lazy("espace_responsable_aidants")
+    success_url = reverse_lazy("espace_referent:aidants")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -251,7 +251,7 @@ class AidantsView(DetailView, FormView):
             django_messages.error(
                 self.request, "Erreur : vous n'êtes pas rattaché à une organisation."
             )
-            return redirect("espace_aidant_home")
+            return redirect("espace_aidant:home")
         return self.organisation
 
     def get_eligibility_validated_requests(self):
@@ -320,7 +320,7 @@ class AidantsView(DetailView, FormView):
 @responsable_logged_with_activity_required
 class OrganisationResponsables(FormView):
     template_name = "aidants_connect_web/espace_responsable/responsables.html"
-    success_url = reverse_lazy("espace_responsable_referents")
+    success_url = reverse_lazy("espace_referent:referents")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -456,7 +456,7 @@ class GenerateAidantFormationAttestation(ReferentCannotManageAidantResponseMixin
 class RemoveCardFromAidant(ReferentCannotManageAidantResponseMixin, FormView):
     template_name = "aidants_connect_web/espace_responsable/aidant_remove_card.html"
     form_class = RemoveCardFromAidantForm
-    success_url = reverse_lazy("espace_responsable_aidants")
+    success_url = reverse_lazy("espace_referent:aidants")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -504,7 +504,7 @@ class RemoveCardFromAidant(ReferentCannotManageAidantResponseMixin, FormView):
 class AddAppOTPToAidant(ReferentCannotManageAidantResponseMixin, FormView):
     template_name = "aidants_connect_web/espace_responsable/app_otp_confirm.html"
     form_class = AddAppOTPToAidantForm
-    success_url = reverse_lazy("espace_responsable_organisation")
+    success_url = reverse_lazy("espace_referent:organisation")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -606,7 +606,7 @@ class AddAppOTPToAidant(ReferentCannotManageAidantResponseMixin, FormView):
 @responsable_logged_with_activity_required
 class RemoveAppOTPFromAidant(ReferentCannotManageAidantResponseMixin, DeleteView):
     template_name = "aidants_connect_web/espace_responsable/app_otp_remove.html"
-    success_url = reverse_lazy("espace_responsable_organisation")
+    success_url = reverse_lazy("espace_referent:organisation")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -616,7 +616,7 @@ class RemoveAppOTPFromAidant(ReferentCannotManageAidantResponseMixin, DeleteView
         self.aidant: Aidant = Aidant.objects.get(pk=kwargs["aidant_id"])
 
         if not self.aidant.has_otp_app:
-            return HttpResponseRedirect(reverse("espace_responsable_organisation"))
+            return HttpResponseRedirect(reverse("espace_referent:organisation"))
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -675,9 +675,9 @@ class RemoveAidantFromOrganisationView(
 
         # Vérifier si l'aidant est référent de cette organisation
         if self.aidant in self.organisation.responsables.all():
-            return redirect("espace_responsable_referents")
+            return redirect("espace_referent:referents")
         else:
-            return redirect("espace_responsable_aidants")
+            return redirect("espace_referent:aidants")
 
     def get_context_data(self, **kwargs):
         kwargs.update({"aidant": self.aidant, "organisation": self.organisation})
@@ -720,9 +720,9 @@ class ReactivateAidantFromOrganisationView(
 
         # Vérifier si l'aidant est référent de cette organisation
         if self.aidant in self.organisation.responsables.all():
-            return redirect("espace_responsable_referents")
+            return redirect("espace_referent:referents")
         else:
-            return redirect("espace_responsable_aidants")
+            return redirect("espace_referent:aidants")
 
     def get_context_data(self, **kwargs):
         kwargs.update({"aidant": self.aidant, "organisation": self.organisation})
@@ -732,7 +732,7 @@ class ReactivateAidantFromOrganisationView(
 @responsable_logged_with_activity_required
 class ChangeAidantOrganisations(ReferentCannotManageAidantResponseMixin, FormView):
     form_class = ChangeAidantOrganisationsForm
-    success_url = reverse_lazy("espace_responsable_organisation")
+    success_url = reverse_lazy("espace_referent:organisation")
 
     def dispatch(self, request, *args, **kwargs):
         self.referent: Aidant = request.user
@@ -747,7 +747,7 @@ class ChangeAidantOrganisations(ReferentCannotManageAidantResponseMixin, FormVie
 
     def form_invalid(self, form):
         django_messages.error(self.request, str(form.errors["organisations"]))
-        return redirect("espace_responsable_aidant", aidant_id=self.aidant.id)
+        return redirect("espace_referent:aidant_detail", aidant_id=self.aidant.id)
 
     def form_valid(self, form):
         responsable_organisations = self.referent.responsable_de.all()
@@ -842,7 +842,7 @@ class AssociateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView
                 ),
             )
 
-            return redirect("espace_responsable_aidant", aidant_id=self.aidant.id)
+            return redirect("espace_referent:aidant_detail", aidant_id=self.aidant.id)
 
         if not self.aidant.is_active:
             django_messages.error(
@@ -854,13 +854,13 @@ class AssociateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView
                 ),
             )
 
-            return redirect("espace_responsable_aidant", aidant_id=self.aidant.id)
+            return redirect("espace_referent:aidant_detail", aidant_id=self.aidant.id)
 
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse(
-            "espace_responsable_validate_totp", kwargs={"aidant_id": self.aidant.id}
+            "espace_referent:validate_totp", kwargs={"aidant_id": self.aidant.id}
         )
 
     def form_valid(self, form):
@@ -911,7 +911,7 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
                 ),
             )
 
-            return redirect("espace_responsable_aidant", aidant_id=self.aidant.id)
+            return redirect("espace_referent:aidant_detail", aidant_id=self.aidant.id)
 
         if not self.aidant.is_active:
             django_messages.error(
@@ -923,13 +923,13 @@ class ValidateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView)
                 ),
             )
 
-            return redirect("espace_responsable_aidant", aidant_id=self.aidant.id)
+            return redirect("espace_referent:aidant_detail", aidant_id=self.aidant.id)
 
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse(
-            "espace_responsable_aidant", kwargs={"aidant_id": self.aidant.id}
+            "espace_referent:aidant_detail", kwargs={"aidant_id": self.aidant.id}
         )
 
     def form_valid(self, form):
@@ -982,7 +982,7 @@ class NewHabilitationRequest(FormView):
         "aidants_connect_web/espace_responsable/new-habilitation-request.html"
     )
     form_class = NewHabilitationRequestForm
-    success_url = reverse_lazy("espace_responsable_aidants")
+    success_url = reverse_lazy("espace_referent:aidants")
 
     def setup(self, request: HttpRequest, *args, **kwargs):
         super().setup(request, *args, **kwargs)
@@ -1088,12 +1088,12 @@ class CancelHabilitationRequestView(DetailView):
 
     def post(self, request, *args, **kwargs):
         self.get_object().cancel_by_responsable()
-        return redirect(reverse("espace_responsable_organisation"))
+        return redirect(reverse("espace_referent:organisation"))
 
 
 @responsable_logged_with_activity_required
 class FormationRegistrationView(CommonFormationRegistrationView):
-    success_url = reverse_lazy("espace_responsable_aidants")
+    success_url = reverse_lazy("espace_referent:aidants")
 
     def get_habilitation_request(self) -> HabilitationRequest:
         return get_object_or_404(
@@ -1103,4 +1103,4 @@ class FormationRegistrationView(CommonFormationRegistrationView):
         )
 
     def get_cancel_url(self) -> str:
-        return reverse("espace_responsable_aidants")
+        return reverse("espace_referent:aidants")

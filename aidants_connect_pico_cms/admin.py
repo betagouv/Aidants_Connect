@@ -171,7 +171,7 @@ class MandateTranslationAdminForm(models.ModelForm):
             "body": TranslationMarkdownTextarea(
                 attrs={
                     "data-markdown-editor-render-endpoint-value": reverse_lazy(
-                        "mandate_translation"
+                        "espace_aidant:mandate_translation"
                     ),
                 }
             ),

@@ -238,7 +238,7 @@ def notify_no_totp_workers():
                 "users": [],
                 "notify_self": False,
                 "espace_responsable_url": (
-                    f"{settings.HOST}{reverse('espace_responsable_organisation')}"
+                    f"{settings.HOST}{reverse('espace_referent:organisation')}"
                 ),
             }
 
@@ -881,7 +881,7 @@ def notifiy_organisation_having_formation_unregistered_habilitation_requests():
         text_message_with_connexion, html_message_with_connexion = render_email(
             "email/having_formation_unregistered_habilitation_requests.mjml",
             {
-                "espace_referent_url": build_url(reverse("espace_responsable")),
+                "espace_referent_url": build_url(reverse("espace_referent:home")),
                 "url_formulaire": url_formulaire,
             },
         )
