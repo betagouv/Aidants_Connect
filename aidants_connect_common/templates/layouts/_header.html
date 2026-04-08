@@ -30,34 +30,43 @@
             <div class="fr-header__tools-links">
               <ul class="fr-btns-group">
                 {% if user_is_authenticated %}
-                  {% if user_is_responsable_structure %}
+                  {% if user_is_responsable_structure and request.resolver_match.namespace != 'espace_referent' %}
                   <li>
                     <a
                       class="fr-btn fr-icon-arrow-right-line"
-                      href="{% url 'espace_responsable' %}"
-                      {% if view_name|startswith:'espace_responsable' %}aria-current="true"{% endif %}
+                      href="{% url 'espace_referent:home' %}"
                     >
                       Espace référent
                     </a>
                   </li>
                   {% endif %}
-                  {% if user_can_create_mandats %}
+                  {% if user_can_create_mandats and request.resolver_match.namespace != 'espace_aidant' %}
                   <li>
                     <a
                       class="fr-btn fr-icon-arrow-right-line"
-                      href="{% url 'espace_aidant_home' %}"
-                      {% if view_name|startswith:'espace_aidant' %}aria-current="true"{% endif %}
+                      href="{% url 'espace_aidant:home' %}"
                     >
                       Espace aidant
+                    </a>
+                  </li>
+                  {% endif %}
+                  {% if request.resolver_match.namespace == 'espace_aidant' %}
+                  <li>
+                    <a
+                      class="fr-btn fr-icon-question-line"
+                      href="{% url 'faq_aidant_generale' %}"
+                      {% if view_name == 'faq_aidant_generale' %}aria-current="true"{% endif %}
+                    >
+                      Aide
                     </a>
                   </li>
                   {% endif %}
                 {% endif %}
                 <li>
                   {% if user_is_authenticated %}
-                    <a class="fr-btn fr-icon-lock-line" href="{% url 'logout' %}">Se déconnecter</a>
+                    <a class="fr-btn fr-icon-logout-box-r-line" href="{% url 'logout' %}">Se déconnecter</a>
                   {% else %}
-                    <a class="fr-btn fr-icon-lock-line" href="{% url 'login' %}">Se connecter</a>
+                    <a class="fr-btn fr-fi-user-fill" href="{% url 'login' %}">Se connecter</a>
                   {% endif %}
                 </li>
               </ul>
@@ -82,8 +91,8 @@
                   <a
                     class="fr-nav__link"
                     target="_self"
-                    href="{% url 'espace_aidant_home' %}"
-                      {% if view_name|startswith:'espace_aidant' %}aria-current="true"{% endif %}
+                    href="{% url 'espace_aidant:home' %}"
+                      {% if view_name == 'espace_aidant:home' %}aria-current="true"{% endif %}
                   >
                     Accueil
                   </a>
@@ -92,8 +101,8 @@
                   <a
                     class="fr-nav__link"
                     target="_self"
-                    href="{% url 'usagers' %}"
-                    {% if view_name|startswith:'usager' %}aria-current="true"{% endif %}
+                    href="{% url 'espace_aidant:usagers' %}"
+                    {% if view_name|startswith:'espace_aidant:usager' %}aria-current="true"{% endif %}
                   >
                     Mandats
                   </a>
@@ -103,58 +112,13 @@
                     <a
                       class="fr-nav__link"
                       target="_self"
-                      href="{% url 'new_mandat' %}"
-                      {% if view_name|startswith:'new_mandat' %}aria-current="true"{% endif %}
+                      href="{% url 'espace_aidant:new_mandat' %}"
+                      {% if view_name|startswith:'espace_aidant:new_mandat' %}aria-current="true"{% endif %}
                     >
                       Créer un mandat
                     </a>
                   </li>
                 {% endif %}
-                <li class="fr-nav__item">
-                  <a
-                    class="fr-nav__link"
-                    target="_self"
-                    href="{% url 'sandbox_presentation' %}"
-                    {% if view_name|startswith:'sandbox_presentation' %}aria-current="true"{% endif %}
-                  >
-                    Site bac à sable
-                  </a>
-                </li>
-                <li class="fr-nav__item">
-                  <a
-                    class="fr-nav__link"
-                    target="_self"
-                    href="{% url 'ressources' %}"
-                    {% if view_name == 'ressources' %}aria-current="true"{% endif %}
-                  >
-                    Ressources
-                  </a>
-                </li>
-                <li class="fr-nav__item">
-                  <a
-                    class="fr-nav__link"
-                    target="_self"
-                    href="{% url 'temoignages' %}"
-                    {% if view_name|startswith:'temoignages' %}aria-current="true"{% endif %}
-                  >
-                    Témoignages
-                  </a>
-                </li>
-                <li class="fr-nav__item">
-                  <a
-                    class="fr-nav__link"
-                    target="_self"
-                    href="{% url 'faq_aidant_generale' %}"
-                    {% if view_name|startswith:'fad' %}aria-current="true"{% endif %}
-                  >
-                    Aide
-                  </a>
-                </li>
-                <li class="fr-nav__item">
-                  <a class="fr-nav__link" target="_self" href="{% mailto_href "contact@aidantsconnect.beta.gouv.fr" %}">
-                    Contacter lʼéquipe
-                  </a>
-                </li>
               {% endif %}
             {% endblock nav_menu %}
             {% with user_organisations=request.user.organisations.all %}
@@ -172,7 +136,7 @@
                           {% if organisation.pk == request.user.organisation.pk %}
                             <a class="fr-nav__link" aria-current="page" href="#">{{ organisation.name }}</a>
                           {% else %}
-                            <form method="post" action="{% url 'espace_aidant_switch_main_organisation' %}">
+                            <form method="post" action="{% url 'espace_aidant:switch_main_organisation' %}">
                               {% csrf_token %}
                               <input name="organisation" value="{{ organisation.pk }}" type="hidden">
                               <input name="next_url" value="{{ request.get_full_path|urlencode:'' }}" type="hidden">
