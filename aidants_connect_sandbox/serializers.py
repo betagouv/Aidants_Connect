@@ -67,6 +67,7 @@ class AutomaticCreationSerializer(serializers.Serializer):
                     zipcode=self.validated_data["organisation__zipcode"],
                 )[0]
 
+        created_aidant = False
         if not Aidant.objects.filter(
             username__iexact=self.validated_data["email"].lower()
         ).exists():
