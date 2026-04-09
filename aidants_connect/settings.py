@@ -926,3 +926,13 @@ VALIDATIONPAPAIDANTLOGEMAIL = "validation_pap_aidant"
 
 
 PK_OF_ORGANISATION = os.getenv("PK_OF_ORGANISATION", "8540")
+
+ATTESTATION_X_NAME = int(os.getenv("ATTESTATION_X_NAME", 107))
+ATTESTATION_Y_NAME = int(os.getenv("ATTESTATION_Y_NAME", 248))
+ATTESTATION_X_DATE = int(os.getenv("ATTESTATION_X_DATE", 491))
+ATTESTATION_Y_DATE = int(os.getenv("ATTESTATION_Y_DATE", 411))
+
+ATTESTATION_TEMPLATE_NAME = os.getenv(
+    "ATTESTATION_TEMPLATE_NAME",
+    "attestation/CertificatHabilitationAidantsConnectVide.pdf",
+)

@@ -7,13 +7,19 @@ from typing import Collection, Optional
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.core.files import File
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.functional import cached_property
+from django.utils.text import slugify
 from django.utils.timezone import now
 
 from dateutil.relativedelta import relativedelta
+from pypdf import PdfReader, PdfWriter
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
 
 from aidants_connect_common.constants import JournalActionKeywords
 
@@ -181,6 +187,10 @@ class Aidant(AbstractUser):
     is_admin_metier = models.BooleanField("Est un administrateur métier", default=False)
     objects = AidantManager()
 
+    attestation = models.FileField(
+        "Attestation AidantConnect", upload_to="attestation", null=True, blank=True
+    )
+
     REQUIRED_FIELDS = AbstractUser.REQUIRED_FIELDS + ["organisation"]
 
     class Meta:
@@ -214,6 +224,64 @@ class Aidant(AbstractUser):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.organisations.add(*{*self.responsable_de.all(), self.organisation})
+
+    def generate_attestation(self):
+
+        if self.attestation and self.attestation.storage.exists(self.attestation.name):
+            return
+
+        month_list = [
+            "janvier",
+            "février",
+            "mars",
+            "avril",
+            "mai",
+            "juin",
+            "juillet",
+            "août",
+            "septembre",
+            "octobre",
+            "novembre",
+            "décembre",
+        ]
+        formation_month = month_list[self.created_at.month - 1]
+        str_formation_date = (
+            f"{self.created_at.day} {formation_month} {self.created_at.year}"
+        )
+        str_name = f"{self.first_name.lower().title()} {self.last_name.upper()}".strip()
+        str_file_name = slugify(str_name)
+        pdfmetrics.registerFont(
+            TTFont("mariannethin", "attestation/Marianne-ThinItalic.ttf")
+        )
+        pdfmetrics.registerFont(TTFont("spectralblod", "attestation/Spectral-Bold.ttf"))
+        overlay_name = f"attestation/{str_file_name}_{self.id}.pdf"
+        output_name = (
+            f"attestation/CertificatHabilitationAidantsConnect_{str_file_name}.pdf"
+        )
+        c = canvas.Canvas(overlay_name)
+        c.setFont("spectralblod", 40)
+        x_name = settings.ATTESTATION_X_NAME
+        y_name = settings.ATTESTATION_Y_NAME
+        c.drawString(x_name, y_name, str_name)
+        c.setFont("mariannethin", 10)
+        x_date = settings.ATTESTATION_X_DATE
+        y_date = settings.ATTESTATION_Y_DATE
+        c.drawString(x_date, y_date, str_formation_date)
+        c.save()
+        reader = PdfReader(settings.ATTESTATION_TEMPLATE_NAME)
+        overlay = PdfReader(overlay_name)
+        writer = PdfWriter()
+        for i, page in enumerate(reader.pages):
+            if i < len(overlay.pages):
+                page.merge_page(overlay.pages[i])
+            writer.add_page(page)
+        with open(output_name, "wb") as f:
+            writer.write(f)
+
+        with open(output_name, "rb") as f:
+            self.attestation.save(
+                f"CertificatHabilitationAidantsConnect_{str_file_name}.pdf", File(f)
+            )
 
     def deactivate(self):
         self.is_active = False

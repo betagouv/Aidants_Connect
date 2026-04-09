@@ -335,7 +335,11 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
     # The forms to add and change `Aidant` instances
     form = AidantChangeForm
     add_form = AidantCreationForm
-    actions = ["mass_deactivate", "add_habilitationrequest_to_manager"]
+    actions = [
+        "mass_deactivate",
+        "add_habilitationrequest_to_manager",
+        "generate_attestation",
+    ]
     raw_id_fields = ("responsable_de", "organisation", "organisations")
     readonly_fields = (
         "validated_cgu_version",
@@ -374,6 +378,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "is_admin_metier",
         "is_superuser",
         "totp_card_drift",
+        "attestation",
     )
 
     list_filter = (
@@ -425,6 +430,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                     "created_by_fne",
                     "id_fne",
                     "password",
+                    "attestation",
                 )
             },
         ),
@@ -547,6 +553,14 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
             form.instance.organisations.add(
                 *{*form.instance.responsable_de.all(), organisation}
             )
+
+    def generate_attestation(self, request: HttpRequest, queryset: QuerySet):
+        nb = queryset.count()
+        for aidant in queryset:
+            aidant.generate_attestation()
+        self.message_user(request, f"{nb} Attestation(s) générée(s)")
+
+    generate_attestation.short_description = "Générer l'attestation"
 
     def mass_deactivate(self, request: HttpRequest, queryset: QuerySet):
         queryset.update(is_active=False)

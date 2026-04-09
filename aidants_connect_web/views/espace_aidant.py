@@ -5,13 +5,13 @@ from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.db import transaction
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template.defaultfilters import filesizeformat
 from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import FormView, TemplateView
+from django.views.generic import FormView, TemplateView, View
 from django.views.generic.edit import BaseFormView
 
 from aidants_connect_common.templatetags.ac_common import mailto_href
@@ -19,6 +19,20 @@ from aidants_connect_web.forms import SwitchMainAidantOrganisationForm, Validate
 from aidants_connect_web.models import Aidant, Journal, Notification
 
 logger = getLogger()
+
+
+@method_decorator(login_required, name="dispatch")
+class GenerateFormationAttestation(View):
+    def get(self, request, *args, **kwargs):
+        aidant = request.user
+        aidant.generate_attestation()
+        return HttpResponse(
+            aidant.attestation.read(),
+            content_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{aidant.attestation.name}"'  # noqa: E501
+            },
+        )
 
 
 @method_decorator(login_required, name="dispatch")

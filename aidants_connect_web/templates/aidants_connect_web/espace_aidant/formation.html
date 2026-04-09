@@ -1,5 +1,26 @@
 {% load ac_common static %}
+
+
 <div class="fr-grid-row fr-grid-row--gutters">
+{% if aidant.can_create_mandats %}
+  <div class="fr-col-md-4 fr-col-12">
+    <div class="fr-card fr-enlarge-link fr-card--download fr-card--horizontal fr-card--horizontal-tier">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+            <h3 class="fr-card__title">
+              <a class="fr-text--lg" href="{% url 'generate_formation_attestation' %}">Attestation de formation</a>
+            </h3>
+            <p class="fr-card__desc">Téléchargez votre attestion Aidants Connect</p>
+
+        </div>
+      </div>
+      <div class="fr-card__header fr-background-contrast--blue-france fr-grid-row fr-grid-row--middle fr-px-3w">
+        <img class="fr-responsive-img" src="{% static 'images/attestation.svg' %}" alt="" />
+      </div>
+    </div>
+  </div>
+{% endif %}
+
   <div class="fr-col-md-4 fr-col-12">
     <div class="fr-card fr-enlarge-link fr-card--horizontal fr-card--horizontal-tier">
       <div class="fr-card__body">
