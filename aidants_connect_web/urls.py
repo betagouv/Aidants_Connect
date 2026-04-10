@@ -73,6 +73,11 @@ urlpatterns = [
         espace_aidant.SwitchMainOrganisation.as_view(),
         name="espace_aidant_switch_main_organisation",
     ),
+    path(
+        "espace-aidant/generate_formation_attestation",
+        espace_aidant.GenerateFormationAttestation.as_view(),
+        name="generate_formation_attestation",
+    ),
     # usagers
     path("usagers/", usagers.usagers_index, name="usagers"),
     path(
