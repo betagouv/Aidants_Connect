@@ -52,6 +52,7 @@ class FormationFactory(DjangoModelFactory):
     max_attendants = LazyFunction(lambda: random.randint(10, 100))
     status = FuzzyChoice(Formation.Status.values)
     organisation = SubFactory(FormationOrganizationFactory)
+    publish_or_not = True
 
     @factory.lazy_attribute
     def end_datetime(self, *args, **kwargs):
