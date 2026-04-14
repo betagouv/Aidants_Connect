@@ -200,6 +200,7 @@ class FormationQuerySet(models.QuerySet):
             attendants_count__lt=models.F("max_attendants"),
             state=Formation.State.ACTIVE,
             intra=False,
+            publish_or_not=True,
         ) & (
             models.Q(
                 attendants_count__gt=att_count, start_datetime__gte=now() + short_td
