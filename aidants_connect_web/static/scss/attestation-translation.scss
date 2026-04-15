@@ -1,4 +1,3 @@
-
 /* Copy from attestation.css */
 .container {
   line-height: 1.4em;
@@ -11,12 +10,13 @@
 }
 
 
-p + p, ul + p {
+p+p,
+ul+p {
   margin-top: .7em;
 }
 
 
-.demarches + p {
+.demarches+p {
   margin-top: .1em;
 }
 
@@ -24,32 +24,53 @@ p + p, ul + p {
   min-width: 15em;
   display: inline-block;
 }
+
 select {
   height: 40px;
 }
 
 @media print {
   @page {
-    size: auto; /* auto is the initial value */
-    margin: 1em; /* this affects the margin in the printer settings */
+    size: auto;
+    /* auto is the initial value */
+    margin: 1em;
+    /* this affects the margin in the printer settings */
   }
+
   .fr-container {
     border: 0;
     padding: 0;
     margin: 1em;
     width: auto;
   }
+
   .demarches {
     font-size: .95em;
   }
+
   .container {
     font-size: .75em;
+  }
+
+  .mandat-signatures {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .mandat-signature-field {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .mandat-signature-box {
+    min-height: 5rem;
   }
 
 }
 
 
-.navbar__home, .container > h1.text-center {
+.navbar__home,
+.container>h1.text-center {
   /* Hide the header and title on old templates */
   display: none;
 }
@@ -81,4 +102,27 @@ header.mandate-translation-row .mandate-translation-column:last-child {
 .print-button-container .shadowed {
   max-width: 23rem;
   float: right;
+}
+
+.mandat-signatures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.mandat-signature-field {
+  flex: 1 1 12rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mandat-signature-label {
+  margin-bottom: 0.35rem;
+}
+
+.mandat-signature-box {
+  min-height: 4.5rem;
+  border: 1px solid grey;
 }
