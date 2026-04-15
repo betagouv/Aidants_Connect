@@ -4,9 +4,9 @@
   <h1 class="text-center">
     Mandat pour réaliser des démarches en ligne<br>avec le service « Aidants Connect »
   </h1>
-  <p>Je m’appelle : <strong>{{ usager.get_full_name }}</strong> (je suis le mandant).</p>
+  <p>Je m’appelle <strong>{{ usager.get_full_name }}</strong> et je suis le mandant.</p>
   <p>
-    J’autorise <strong>{{ aidant.organisation }}</strong> (c’est le mandataire) à réaliser pour mon compte les démarches
+    J’autorise <strong>{{ aidant.organisation }}</strong>, en tant que mandataire, à réaliser pour mon compte les démarches
     administratives suivantes :
   </p>
   <ul class="demarches">
@@ -24,7 +24,7 @@
     Je peux annuler mon autorisation à tout moment.
   </p>
   <p>
-    Je déclare ne pas faire l'objet d'une mesure de protection juridique (tutelle ou curatelle).
+    Je déclare ne pas faire l'objet d'une mesure de protection juridique (sauvegarde de justice, tutelle ou curatelle).
   </p>
   <p>
     Pour que <strong>{{ aidant.organisation }}</strong> puisse agir pour mon compte :
@@ -37,9 +37,13 @@
     <li>
       J’autorise les aidants habilités par <strong>{{ aidant.organisation }}</strong> à utiliser mes données
       personnelles dans le cadre de ce mandat.
-      Je sais que j’ai des droits sur les informations me concernant : accès, rectification, suppression.
+      Je sais que j’ai des droits sur les informations me concernant : accès, information, rectification, limitation, suppression.
     </li>
   </ul>
+  <p>
+    Quand un aidant habilité par <strong>{{ aidant.organisation }}</strong> réalise pour mon compte une des démarches listées ci-dessus,
+    il s’engage à la faire dans les conditions et pour la durée décrite dans ce document, sous peine d’engager sa responsabilité civile et pénale.
+  </p>
   <p>
     Les aidants habilités par <strong>{{ aidant.organisation }}</strong> doivent :
   </p>
@@ -56,20 +60,15 @@
     </li>
     <li>mettre à jour et supprimer l’ensemble de mes informations personnelles lorsqu’elles ne sont plus utiles ;</li>
     <li>s’interdire de rendre publiques mes informations personnelles ;</li>
-    <li>prendre toutes les précautions pour assurer la sécurité de mes informations personnelles.</li>
+    <li>prendre toutes les précautions pour assurer la sécurité et la confidentialité de mes informations personnelles.</li>
   </ul>
-  <p>
-    À partir du moment où un aidant habilité par <strong>{{ aidant.organisation }}</strong>
-    réalise pour mon compte une des démarches listées dans ce document,
-    il accepte de le faire dans les conditions décrites dans ce document.
-  </p>
   <p>
     Mon autorisation est donnée et acceptée <strong>{{ duree }}</strong>. Elle se termine avant si :
   </p>
   <ul>
     <li>les démarches décrites ci-dessus sont réalisées ;</li>
     <li>je décide de l’annuler ;</li>
-    <li>l’aidant habilité par <strong>{{ aidant.organisation }}</strong> décide de l’annuler ;</li>
+    <li>un aidant habilité par <strong>{{ aidant.organisation }}</strong> décide de l’annuler ;</li>
     <li>
       je donne mon autorisation à une autre personne qu’un aidant habilité par
       <strong>{{ aidant.organisation }}</strong>. Dans ce cas, je dois en informer le plus vite possible
@@ -77,21 +76,16 @@
     </li>
   </ul>
   <p>
-    L'aidant habilité par <strong>{{ aidant.organisation }}</strong> doit accomplir pour mon compte les démarches listées
-    dans ce document tant que le mandat est valable. Il pourra être responsable s’il ne respecte pas les
-    conditions décrites dans ce document (article 1991 du Code civil).
-  </p>
-  <p>
     Fait à <strong>{{ aidant.organisation.display_address }}, {{ aidant.organisation.zipcode }} {{ aidant.organisation.display_city }}</strong>,
     le <strong>{{ date }}</strong>
   </p>
   <div class="mandat-signatures" role="group" aria-label="Signatures">
     <div class="mandat-signature-field">
-      <p class="mandat-signature-label">Signature du professionnel</p>
+      <p class="mandat-signature-label">Prénom, Nom, et signature du mandataire (l’aidant)</p>
       <div class="mandat-signature-box" aria-hidden="true"></div>
     </div>
     <div class="mandat-signature-field">
-      <p class="mandat-signature-label">Signature de l’usager</p>
+      <p class="mandat-signature-label">Prénom, Nom, et signature du mandant (l’usager)</p>
       <div class="mandat-signature-box" aria-hidden="true"></div>
     </div>
   </div>
