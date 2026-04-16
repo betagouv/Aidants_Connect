@@ -1245,12 +1245,12 @@
         },
         "pypdf": {
             "hashes": [
-                "sha256:662cf29bcb419a36a1365232449624ab40b7c2d0cfc28e54f42eeecd1fd7e844",
-                "sha256:7f850faf2b0d4ab936582c05da32c52214c2b089d61a316627b5bfb5b0dab46c"
+                "sha256:7d09ce108eff6bf67465d461b6ef352dcb8d84f7a91befc02f904455c6eea11d",
+                "sha256:aa53be9826655b51c96741e5d7983ca224d898ac0a77896e64636810517624aa"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==6.9.2"
+            "version": "==6.10.2"
         },
         "pypng": {
             "hashes": [
