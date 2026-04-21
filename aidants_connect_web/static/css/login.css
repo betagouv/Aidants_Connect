@@ -39,3 +39,8 @@
     min-height: 1054px;
   }
 }
+
+.login-left-icon {
+  max-width: 75%;
+  height: auto;
+}
