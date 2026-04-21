@@ -9,6 +9,8 @@
   Connectez-vous{% if form.errors|length > 0 %} (Erreur dans le formulaire){% endif %} - Aidants Connect
 {% endblock title %}
 
+{% block body_class %}fr-body--login{% endblock %}
+
 {% block content %}
   <div class="fr-container--fluid">
     <div class="fr-grid-row">
