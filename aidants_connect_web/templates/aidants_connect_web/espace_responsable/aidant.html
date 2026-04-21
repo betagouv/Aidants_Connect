@@ -11,7 +11,16 @@
       <h1>{{ aidant.get_full_name }}</h1>
 
       <div>
-        <div class="fr-btns-group fr-btns-group--inline fr-btns-group--md">
+        <div class="fr-btns-group fr-btns-group--inline fr-btns-group--md fr-btns-group--icon-left">
+        {% if aidant.can_create_mandats %}
+          <a
+            href="{% url 'espace_responsable_aidant_formation_attestation' aidant_id=aidant.id %}"
+            class="fr-btn fr-btn--secondary fr-icon-download-line fr-btn--icon-left"
+            id="download-formation-attestation-{{ aidant.id }}"
+          >
+            Télécharger l'attestation de formation
+          </a>
+        {% endif %}
         {% if aidant.is_active and not is_aidant_referent_of_current_org %}
           <form method="post" action="{% url 'espace_responsable_aidants' %}">
             {% csrf_token %}
