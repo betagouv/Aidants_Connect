@@ -10,14 +10,65 @@
 {% endblock title %}
 
 {% block content %}
-  <div class="fr-container main-content-fluid fr-background-alt--blue-france">
-    <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--center">
-      <div class="fr-col-12 fr-col-md-6 main-content-item">
+  <div class="fr-container--fluid">
+    <div class="fr-grid-row">
+      <div class="fr-col-12 fr-col-md-6 fr-background-alt--blue-france fr-p-4w fr-p-md-8w">
+        <div class="fr-container--fluid">
+          <div class="fr-grid-row fr-grid-row--gutters">
+            <div class="fr-col-12 fr-background-default--grey fr-p-4w fr-p-md-6w">
+              <div class="fr-container--fluid">
+                <div class="fr-grid-row fr-grid-row--center">
+                  <div class="fr-col-12">
+                    <h2 class="fr-h3 fr-m-0 fr-p-0">Vous êtes un particulier ?</h2>
+                  </div>
+                  <div class="fr-col-12 fr-mt-4w">
+                    <p>
+                      Aidants Connect n'est pas un outil à disposition des particuliers ou des proches aidants.
+                    </p>
+                  </div>
+                  <div class="fr-col-3 fr-col-md-12 fr-col-lg-3 fr-mt-4w fr-text--center">
+                    <img src="{% static 'images/icons/aide.svg' %}" alt="" class="fr-icon">
+                  </div>
+                  <div class="fr-col-9 fr-col-md-12 fr-col-lg-9 fr-mt-4w">
+                    <p class="fr-text--sm">
+                      Vous rencontrez un problème lors de votre
+                      connexion France Connect ou pour vous accéder
+                      à vos espaces personnels de services publics
+                      (CAF, impôts, ANTS...) ?
+                      <a href="https://franceconnect.gouv.fr/faq"
+                        class="fr-link"
+                        title="FAQ France Connect - nouvelle fenêtre"
+                        target="_blank"
+                        rel="noopener noreferrer">Consultez la page d’aide dédiée</a>.
+                    </p>
+                  </div>
+                  <div class="fr-col-3 fr-col-md-12 fr-col-lg-3 fr-mt-4w fr-text--center">
+                    <img src="{% static 'images/icons/carto.svg' %}" alt="" class="fr-icon">
+                  </div>
+                  <div class="fr-col-9 fr-col-md-12 fr-col-lg-9 fr-mt-4w">
+                    <p class="fr-text--sm">
+                      Vous rencontrez des difficultés avec le
+                      numérique et vous souhaiteriez avoir un
+                      accompagnement dédié pour réaliser vos
+                      démarches ou gagner en autonomie ?
+                      <a href="https://cartographie.societenumerique.gouv.fr/?mtm_campaign=aidantconnect"
+                         class="fr-link"
+                         title="Cartographie des aidants - nouvelle fenêtre"
+                         target="_blank"
+                         rel="noopener noreferrer">Trouvez un lieu près de chez vous</a>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-
-        <div class="fr-container fr-background-default--grey fr-px-md-0 fr-py-10v fr-py-md-14v">
+      <div class="fr-col-12 fr-col-md-6">
+        <div class="fr-container--fluid fr-background-default--grey fr-p-4w fr-py-md-8w fr-px-md-10w fr-px-lg-12w">
           <div class="fr-grid-row fr-grid-row-gutters fr-grid-row--center">
-            <div class="fr-col-12 fr-col-md-9 fr-col-lg-8">
+            <div class="fr-col-12">
               <form id="login-1760" method="post">
                 {% csrf_token %}
                 <fieldset
@@ -25,17 +76,12 @@
                   id="login-1760-fieldset"
                   aria-labelledby="login-1760-fieldset-legend"
                 >
-                <legend class="flex width-100" id="login-1760-fieldset-legend">
-                    <div class="flex width-100">
-                      <h1 class="fr-h3 fr-m-0 fr-p-0">Connectez-vous</h1>
-                      <div class="spacer"></div>
-                    </div>
+                  <legend id="login-1760-fieldset-legend">
+                    <h1 class="fr-h3 fr-m-0 fr-p-0">Vous êtes habilité Aidants Connect ? Connectez-vous !</h1>
                   </legend>
-
                   <div class="fr-fieldset__element fr-my-6v">
                     <p class="fr-text--sm">Sauf mention contraire, tous les champs sont obligatoires.</p>
                   </div>
-
                   <div class="fr-fieldset__element fr-my-6v">
                     <fieldset class="fr-fieldset fr-my-0" id="credentials">
                       <div class="fr-fieldset__element">
@@ -54,40 +100,31 @@
                     </ul>
                   </div>
                   <div class="fr-fieldset__element fr-my-0">
-                        <p class="fr-m-0 fr-text--sm fr-mb-6w">
-                          <a href="{% url 'faq_public_generale' %}" class="fr-link"> Je n’arrive pas à me connecter → </a>
-                        </p>
+                    <p class="fr-m-0 fr-text--sm fr-mb-6w">
+                      <a href="{% url 'faq_public_generale' %}" class="fr-link"> Je n’arrive pas à me connecter → </a>
+                    </p>
                     <hr>
-                    </div>
-
+                  </div>
                   <div class="fr-messages-group" id="login-1760-fieldset-messages" aria-live="assertive">
                   </div>
                 </fieldset>
-
               </form>
-
-                <div class="flex width-100">
-                    <h2 class="fr-h4 fr-m-0 fr-p-0 fr-mt-3w">Première connexion référent</h2>
-                    <div class="spacer"></div>
-                </div>
-
-                  <div class="fr-fieldset__element fr-my-6v">
-                    <p class="fr-text--sm">
-                      Si vous êtes référent Aidants Connect et qu’il s’agit de votre première connexion, un code dédié doit vous être envoyé par SMS.
-                    </p>
-                  </div>
-
-                                  <div>
-                      <a class="fr-btn fr-btn--secondary"  href="{% url 'manager_first_login' %}">
-                        Obtenir un code de première connexion
-                      </a>
-                    </div>
-
-
+              <h2 class="fr-h4 fr-m-0 fr-p-0 fr-mt-3w">Vous êtes référent Aidants Connect ?</h2>
+              <p class="fr-text--sm fr-mt-2w">
+                Si vous êtes référent Aidants Connect et qu’il s’agit de votre première connexion, un code dédié doit vous être envoyé par SMS.
+              </p>
+              <div>
+                <ul class="fr-btns-group">
+                  <li>
+                    <a class="fr-btn fr-btn--secondary"  href="{% url 'manager_first_login' %}">
+                      Obtenir un code de première connexion
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
-
     </div>
   </div>
 {% endblock content %}
