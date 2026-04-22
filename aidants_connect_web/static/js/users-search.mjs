@@ -1,4 +1,4 @@
-import {BaseController, aidantsConnectApplicationReady} from "AidantsConnectApplication"
+import { BaseController, aidantsConnectApplicationReady } from "AidantsConnectApplication"
 
 const SEARCH_EVENT_NAME = "search:search"
 
@@ -9,7 +9,7 @@ const collator = new Intl.Collator(navigator.language, {
 })
 
 // Inspired by https://github.com/idmadj/locale-includes/blob/master/src/index.js
-function localeIncludes (haystack, needle) {
+function localeIncludes(haystack, needle) {
     const haystackLength = haystack.length;
     const needleLength = needle.length;
     const lengthDiff = haystackLength - needleLength;
@@ -28,49 +28,69 @@ class SearchController extends BaseController {
         "searchBar",
         "item",
         "searchInput",
+        "tabCount",
     ];
 
     static values = {
         searchToken: String
     }
 
-    initialize () {
+    initialize() {
         this.itemTargets.forEach(item => {
             item.setAttribute("data-controller", "search-item");
             item.setAttribute("data-search-item-target", "item");
         });
     }
 
-    connect () {
+    connect() {
         this.searchBarTargets.forEach(this.showElement);
         this.searchTokenValue = this.searchInputTarget.value;
     }
 
-    search (evt) {
+    search(evt) {
         this.searchTokenValue = evt.target.value.trim();
     }
 
-    searchTokenValueChanged (value) {
-        const event = new CustomEvent(SEARCH_EVENT_NAME, {detail: {term: value.trim()}});
+    searchTokenValueChanged(value) {
+        const term = value.trim();
+        const event = new CustomEvent(SEARCH_EVENT_NAME, { detail: { term } });
         this.element.dispatchEvent(event);
+        this.updateTabCounts(term);
+    }
+
+    updateTabCounts(term) {
+        this.tabCountTargets.forEach(countElt => {
+            if (term.length === 0) {
+                countElt.textContent = "";
+                return;
+            }
+            const panel = document.getElementById(countElt.dataset.panelId);
+            if (!panel) {
+                return;
+            }
+            const visibleCount = panel.querySelectorAll(
+                '[data-search-target="item"]:not([hidden])'
+            ).length;
+            countElt.textContent = `\u00A0(${visibleCount})`;
+        });
     }
 }
 
 class SearchItemController extends BaseController {
     static targets = ["item"]
 
-    initialize () {
+    initialize() {
         this.searchTerms = JSON.parse(this.itemTarget.dataset.searchTerms);
     }
 
-    connect () {
+    connect() {
         this.boundFilter = this.filter.bind(this);
         document.querySelector("[data-controller='search']").addEventListener(
             SEARCH_EVENT_NAME, this.boundFilter
         );
     }
 
-    filter (event) {
+    filter(event) {
         const searchTerm = event.detail.term;
 
         if (searchTerm.length === 0) {
@@ -86,7 +106,7 @@ class SearchItemController extends BaseController {
         this.mutateVisibility(hasMatchingTerms, this.itemTarget);
     }
 
-    disconnect () {
+    disconnect() {
         document.querySelector("[data-controller='search']").removeEventListener(
             SEARCH_EVENT_NAME, this.boundFilter
         );
