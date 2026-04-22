@@ -374,6 +374,11 @@ MAGICAUTH_EMAIL_HTML_TEMPLATE = "login/email_template.mjml"
 MAGICAUTH_EMAIL_TEXT_TEMPLATE = "login/email_template.txt"
 MAGICAUTH_WAIT_VIEW_TEMPLATE = "login/wait.html"
 MAGICAUTH_ENABLE_2FA = True
+# Use the same generic error message as for invalid OTP / inactive account to
+# avoid user enumeration and keep a single consistent wording.
+MAGICAUTH_EMAIL_UNKNOWN_MESSAGE = (
+    "Les informations saisies ne permettent pas de vous identifier."
+)
 
 # https://github.com/betagouv/django-magicauth/blob/8a8143388bb15fad2823528201e22a31817da243/magicauth/settings.py  # NOQA
 MAGICAUTH_TOKEN_DURATION_SECONDS = int(

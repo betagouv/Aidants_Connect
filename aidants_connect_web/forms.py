@@ -171,6 +171,11 @@ class AidantChangeForm(forms.ModelForm):
         return cleaned_data
 
 
+LOGIN_GENERIC_ERROR_MESSAGE = (
+    "Les informations saisies ne permettent pas de vous identifier."
+)
+
+
 class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
     email = forms.EmailField(
         label="Adresse e-mail", help_text="Format attendu : prenom-nom@exemple.fr"
@@ -179,11 +184,7 @@ class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
     def clean_email(self):
         user_email = super().clean_email()
         if not Aidant.objects.filter(email__iexact=user_email, is_active=True).exists():
-            raise ValidationError(
-                "Les informations saisies ne "
-                "permettent pas de vous identifier. Si vous pensez"
-                " que c’est une erreur, prenez contact avec Aidants Connect."
-            )
+            raise ValidationError(LOGIN_GENERIC_ERROR_MESSAGE)
         return user_email
 
 
@@ -259,6 +260,15 @@ class DsfrOtpForm(OTPForm, DsfrBaseForm):
 
     def __init__(self, user, *args, **kwargs):
         super().__init__(user, *args, **kwargs)
+
+    def clean_otp_token(self):
+        # Replace magicauth's OTP-specific error messages with the same
+        # generic message used for an unknown email, so that the user cannot
+        # tell whether the email or the OTP is at fault.
+        try:
+            return super().clean_otp_token()
+        except ValidationError as err:
+            raise ValidationError(LOGIN_GENERIC_ERROR_MESSAGE) from err
 
 
 def get_choices_for_remote_method():

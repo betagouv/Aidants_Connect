@@ -42,9 +42,37 @@ class LoginTests(TestCase):
         self.assertEqual(response.status_code, 200)
         # Check explicit message is displayed
         self.assertContains(
-            response, "permettent pas de vous identifier. Si vous pensez"
+            response, "Les informations saisies ne permettent pas de vous identifier."
         )
         # Check no email was sent
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_unknown_email_shows_generic_error_and_no_otp_error(self):
+        response = self.client.post(
+            reverse("login"),
+            {"email": "unknown@example.com", "otp_token": "123456"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response, "Les informations saisies ne permettent pas de vous identifier."
+        )
+        # Specific magicauth messages must not leak
+        self.assertNotContains(response, "Aucun utilisateur trouvé")
+        self.assertNotContains(response, "est pas valide")
+        self.assertNotContains(response, "n'a pas trouvé d&#x27;appareil")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_invalid_otp_shows_same_generic_error(self):
+        response = self.client.post(
+            reverse("login"),
+            {"email": self.aidant_with_totp_card.email, "otp_token": "000000"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response, "Les informations saisies ne permettent pas de vous identifier."
+        )
+        # The OTP-specific error message must not be displayed
+        self.assertNotContains(response, "est pas valide")
         self.assertEqual(len(mail.outbox), 0)
 
     def test_magicauth_login_redirects(self):
