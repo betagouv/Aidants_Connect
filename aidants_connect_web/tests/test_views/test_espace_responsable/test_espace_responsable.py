@@ -36,7 +36,7 @@ class EspaceResponsableOrganisationPage(TestCase):
         self.assertEqual(
             response.status_code,
             200,
-            "trying to get " "/espace-responsable/organisation/",
+            "trying to get /espace-responsable/organisation/",
         )
         self.assertTemplateUsed(
             response, "aidants_connect_web/espace_responsable/organisation.html"
