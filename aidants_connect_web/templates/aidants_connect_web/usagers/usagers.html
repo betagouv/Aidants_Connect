@@ -10,9 +10,7 @@
 {% endblock extracss %}
 
 {% block content %}
-
-
-<div class="fr-container" data-controller="search">
+  <div class="fr-container" data-controller="search">
     <div class="fr-grid-row flex-between fr-mb-6w">
       <h1 class="fr-mb-2w">Mes mandats</h1>
       <div>
@@ -31,18 +29,18 @@
       </div>
     {% endif %}
 
-{% include "aidants_connect_web/users_search_bar.html" %}
+    {% include "aidants_connect_web/users_search_bar.html" %}
 
     <div class="fr-tabs">
       <ul class="fr-tabs__list" role="tablist" aria-label="Mes mandats">
         <li role="presentation">
-            <button type="button" id="tab-1" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="tab-1-panel">Mandats actifs</button>
+            <button type="button" id="tab-1" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="tab-1-panel">Mandats actifs<span data-search-target="tabCount" data-panel-id="tab-1-panel"></span></button>
         </li>
         <li role="presentation">
-            <button type="button" id="tab-2" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="tab-2-panel">Mandats expirés</button>
+            <button type="button" id="tab-2" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="tab-2-panel">Mandats expirés<span data-search-target="tabCount" data-panel-id="tab-2-panel"></span></button>
         </li>
         <li role="presentation">
-            <button type="button" id="tab-3" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="tab-3-panel">Mandats révoqués</button>
+            <button type="button" id="tab-3" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="tab-3-panel">Mandats révoqués<span data-search-target="tabCount" data-panel-id="tab-3-panel"></span></button>
         </li>
       </ul>
       <div id="tab-1-panel" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tab-1" tabindex="0">
@@ -145,10 +143,7 @@
           </div>
         </div>
       </div>
-  </div>
-
-
-
+    </div>
   </div>
 {% endblock content %}
 
