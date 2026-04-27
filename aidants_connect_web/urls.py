@@ -228,6 +228,11 @@ urlpatterns = [
         name="espace_responsable_aidant",
     ),
     path(
+        "espace-responsable/aidant/<int:aidant_id>/attestation-formation/",
+        espace_responsable.GenerateAidantFormationAttestation.as_view(),
+        name="espace_responsable_aidant_formation_attestation",
+    ),
+    path(
         "espace-responsable/aidant/ajouter/",
         espace_responsable.NewHabilitationRequest.as_view(),
         name="espace_responsable_aidant_new",

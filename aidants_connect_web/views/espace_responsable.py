@@ -7,12 +7,12 @@ from itertools import chain
 from django.contrib import messages as django_messages
 from django.db import transaction
 from django.forms import model_to_dict
-from django.http import HttpRequest, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.translation import ngettext
-from django.views.generic import DeleteView, DetailView, FormView, TemplateView
+from django.views.generic import DeleteView, DetailView, FormView, TemplateView, View
 
 import qrcode
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -412,6 +412,44 @@ class AidantView(ReferentCannotManageAidantResponseMixin, TemplateView):
             }
         )
         return super().get_context_data(**kwargs)
+
+
+@responsable_logged_with_activity_required
+class GenerateAidantFormationAttestation(ReferentCannotManageAidantResponseMixin, View):
+    """
+    Lets a structure referent download the formation
+    attestation PDF for a managed aidant.
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        self.referent: Aidant = request.user
+        if not self.referent.can_manage_aidant(kwargs["aidant_id"]):
+            return self.referent_cannot_manage_aidant_response()
+        self.aidant: Aidant = Aidant.objects.get(pk=kwargs["aidant_id"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        if not self.aidant.can_create_mandats:
+            django_messages.error(
+                request,
+                (
+                    "Cet aidant ne peut pas recevoir dʼattestation "
+                    "de formation Aidants Connect.",
+                ),
+            )
+            return redirect(
+                "espace_responsable_aidant", kwargs={"aidant_id": self.aidant.pk}
+            )
+        self.aidant.generate_attestation()
+        return HttpResponse(
+            self.aidant.attestation.read(),
+            content_type="application/pdf",
+            headers={
+                "Content-Disposition": (
+                    f'attachment; filename="{self.aidant.attestation.name}"'
+                )
+            },
+        )
 
 
 @responsable_logged_with_activity_required

@@ -36,7 +36,7 @@ class EspaceResponsableOrganisationPage(TestCase):
         self.assertEqual(
             response.status_code,
             200,
-            "trying to get " "/espace-responsable/organisation/",
+            "trying to get /espace-responsable/organisation/",
         )
         self.assertTemplateUsed(
             response, "aidants_connect_web/espace_responsable/organisation.html"
@@ -180,6 +180,32 @@ class EspaceResponsableAidantPage(TestCase):
         self.assertTemplateUsed(
             response, "aidants_connect_web/espace_responsable/aidant.html"
         )
+
+    def test_referent_can_download_managed_aidant_formation_attestation(self):
+        self.client.force_login(self.responsable_tom)
+        url = reverse(
+            "espace_responsable_aidant_formation_attestation",
+            kwargs={"aidant_id": self.aidant_tim.id},
+        )
+        found = resolve(url)
+        self.assertEqual(
+            found.func.view_class,
+            espace_responsable.GenerateAidantFormationAttestation,
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+
+    def test_responsable_cannot_download_formation_attestation_for_unmanaged_aidant(
+        self,
+    ):
+        self.client.force_login(self.responsable_tom)
+        url = reverse(
+            "espace_responsable_aidant_formation_attestation",
+            kwargs={"aidant_id": self.autre_aidant.id},
+        )
+        response = self.client.get(url)
+        self.assertRedirects(response, reverse("espace_responsable_organisation"))
 
     def test_responsable_cannot_see_an_aidant_they_are_not_responsible_for(self):
         self.client.force_login(self.responsable_tom)
