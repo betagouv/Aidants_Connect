@@ -34,7 +34,7 @@ class CancelHabilitationRequestTests(TestCase):
     def test_triggers_correct_view(self):
         found = resolve(
             reverse(
-                "espace_responsable_cancel_habilitation",
+                "espace_referent:cancel_habilitation",
                 kwargs={"request_id": self.org1_processing.pk},
             )
         )
@@ -46,7 +46,7 @@ class CancelHabilitationRequestTests(TestCase):
         self.client.force_login(self.responsable)
         response = self.client.get(
             reverse(
-                "espace_responsable_cancel_habilitation",
+                "espace_referent:cancel_habilitation",
                 kwargs={"request_id": self.org1_processing.pk},
             )
         )
@@ -59,7 +59,7 @@ class CancelHabilitationRequestTests(TestCase):
         self.client.force_login(self.responsable)
         response = self.client.get(
             reverse(
-                "espace_responsable_cancel_habilitation",
+                "espace_referent:cancel_habilitation",
                 kwargs={"request_id": self.org2_processing.pk},
             )
         )
@@ -67,7 +67,7 @@ class CancelHabilitationRequestTests(TestCase):
 
         response = self.client.post(
             reverse(
-                "espace_responsable_cancel_habilitation",
+                "espace_referent:cancel_habilitation",
                 kwargs={"request_id": self.org2_processing.pk},
             )
         )
@@ -77,7 +77,7 @@ class CancelHabilitationRequestTests(TestCase):
         self.client.force_login(self.responsable)
         response = self.client.get(
             reverse(
-                "espace_responsable_cancel_habilitation",
+                "espace_referent:cancel_habilitation",
                 kwargs={"request_id": self.org2_cancelled.pk},
             )
         )
@@ -85,7 +85,7 @@ class CancelHabilitationRequestTests(TestCase):
 
         response = self.client.post(
             reverse(
-                "espace_responsable_cancel_habilitation",
+                "espace_referent:cancel_habilitation",
                 kwargs={"request_id": self.org2_cancelled.pk},
             )
         )
@@ -95,13 +95,13 @@ class CancelHabilitationRequestTests(TestCase):
         self.client.force_login(self.responsable)
         response = self.client.post(
             reverse(
-                "espace_responsable_cancel_habilitation",
+                "espace_referent:cancel_habilitation",
                 kwargs={"request_id": self.org1_waitling_list.pk},
             )
         )
         self.assertRedirects(
             response,
-            reverse("espace_responsable_organisation"),
+            reverse("espace_referent:organisation"),
             fetch_redirect_response=False,
         )
         self.org1_waitling_list.refresh_from_db()

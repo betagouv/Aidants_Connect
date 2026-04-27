@@ -69,13 +69,15 @@ class NewMandatRecapAccessibilityTests(AccessibilityTestCase):
         )
 
         # Naviguer vers la page de récapitulatif
-        url = reverse("new_mandat_recap")
+        url = reverse("espace_aidant:new_mandat_recap")
         await self.page.goto(self.live_server_url + url)
 
     @async_test
     async def test_accessibility(self):
         await self.lazy_loading(self._open_url)
-        await self.check_accessibility(page_name="new_mandat_recap", strict=True)
+        await self.check_accessibility(
+            page_name="espace_aidant:new_mandat_recap", strict=True
+        )
 
     @async_test
     async def test_title_is_correct(self):

@@ -79,8 +79,8 @@ class MandatCreationJsFormView(FormView):
 
 
 class RemoteMandateMixin:
-    waiting_room_path = "new_mandat_waiting_room"
-    mandat_form_path = "new_mandat"
+    waiting_room_path = "espace_aidant:new_mandat_waiting_room"
+    mandat_form_path = "espace_aidant:new_mandat"
 
     """Processes remote consent
 
@@ -223,7 +223,7 @@ class RemoteMandateMixin:
                     ),
                 ),
             )
-            return redirect("espace_aidant_home")
+            return redirect("espace_aidant:home")
 
         Journal.log_user_mandate_recap_sms_sent(
             aidant=aidant,
@@ -284,7 +284,7 @@ class RemoteMandateMixin:
                     ),
                 ),
             )
-            return redirect("espace_aidant_home")
+            return redirect("espace_aidant:home")
 
         Journal.log_user_consent_request_sms_sent(
             aidant=connection.aidant,
@@ -344,7 +344,10 @@ class RenderAttestationAbstract(TemplateView):
             "final": self.final,
             "modified": self.modified,
             "qr_code_src": (
-                reverse("new_attestation_qrcode", kwargs={"mandat_id": mandat.pk})
+                reverse(
+                    "espace_aidant:new_attestation_qrcode",
+                    kwargs={"mandat_id": mandat.pk},
+                )
                 if (mandat := getattr(self, "mandat", None))
                 else None
             ),
@@ -416,7 +419,7 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
             reverse("fc_authorizev2")
             if self.connection.remote_constent_method
             not in RemoteConsentMethodChoices.blocked_methods()
-            else reverse("new_mandat_remote_second_step")
+            else reverse("espace_aidant:new_mandat_remote_second_step")
         )
 
     def form_valid(self, form: MandatForm):
@@ -452,7 +455,7 @@ class RemoteConsentSecondStepView(
     RemoteMandateMixin, RequireConnectionView, TemplateView
 ):
     template_name = "aidants_connect_web/sms/remote_consent_second_step.html"
-    success_url = reverse_lazy("new_mandat_waiting_room")
+    success_url = reverse_lazy("espace_aidant:new_mandat_waiting_room")
 
     def post(self, request, *args, **kwargs):
         if isinstance(
@@ -611,12 +614,14 @@ class NewMandatRecap(RemoteMandateMixin, RequireConnectionMixin, FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse("new_attestation_final", kwargs={"mandat_id": self.mandat.pk})
+        return reverse(
+            "espace_aidant:new_attestation_final", kwargs={"mandat_id": self.mandat.pk}
+        )
 
     def redirect_on_error(self):
         log.exception("Error happened in Recap")
         django_messages.error(self.request, "Une erreur inconnue s'est produite")
-        return redirect("espace_aidant_home")
+        return redirect("espace_aidant:home")
 
 
 @aidant_logged_with_activity_required
@@ -728,7 +733,7 @@ class Attestation(RenderAttestationAbstract):
             django_messages.error(
                 request, "Erreur : ce mandat est introuvable ou inaccessible."
             )
-            return redirect("espace_aidant_home")
+            return redirect("espace_aidant:home")
         self.template = self.mandat.get_mandate_template_path()
         self.modified = not self.template
 
@@ -772,7 +777,7 @@ class AttestationQRCode(View):
 @aidant_logged_with_activity_required
 class WaitingRoom(RequireConnectionView, TemplateView):
     template_name = "aidants_connect_web/sms/remote_consent_waiting_room.html"
-    poll_route_name = "new_mandat_waiting_room_json"
+    poll_route_name = "espace_aidant:new_mandat_waiting_room_json"
     next_route_name = "fc_authorize"
 
     def get_context_data(self, **kwargs):

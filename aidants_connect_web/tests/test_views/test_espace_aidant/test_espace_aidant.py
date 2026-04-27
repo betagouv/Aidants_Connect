@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.test import TestCase, tag
@@ -26,16 +28,19 @@ class EspaceAidantHomePageTests(TestCase):
         cls.aidant = AidantFactory()
 
     def test_anonymous_user_cannot_access_espace_aidant_view(self):
-        response = self.client.get(reverse("espace_aidant_home"))
-        self.assertRedirects(response, "/accounts/login/?next=/espace-aidant/")
+        response = self.client.get(reverse("espace_aidant:home"))
+        self.assertRedirects(
+            response,
+            f"{reverse('login')}?{urlencode({'next': reverse('espace_aidant:home')})}",
+        )
 
     def test_espace_aidant_home_url_triggers_the_right_view(self):
-        found = resolve(reverse("espace_aidant_home"))
+        found = resolve(reverse("espace_aidant:home"))
         self.assertEqual(found.func.view_class, espace_aidant.Home)
 
     def test_espace_aidant_home_url_triggers_the_right_template(self):
         self.client.force_login(self.aidant)
-        response = self.client.get(reverse("espace_aidant_home"))
+        response = self.client.get(reverse("espace_aidant:home"))
         self.assertTemplateUsed(response, "aidants_connect_web/espace_aidant/home.html")
 
 
@@ -52,7 +57,7 @@ class BannerNotificationTests(TestCase):
     def test_ask_to_activate_totp_device(self):
         self.assertFalse(self.aidant_without_totp.has_a_totp_device)
         self.client.force_login(self.aidant_without_totp)
-        response = self.client.get("/espace-aidant/")
+        response = self.client.get(reverse("espace_aidant:home"))
         response_content = response.content.decode("utf-8")
         self.assertIn("/type-carte", response_content)
 
@@ -73,19 +78,19 @@ class ValidateCGU(TestCase):
         )
 
     def test_triggers_correct_view(self):
-        found = resolve(reverse("espace_aidant_cgu"))
+        found = resolve(reverse("espace_aidant:cgu"))
         self.assertEqual(found.func.view_class, espace_aidant.ValidateCGU)
 
     def test_renders_correct_template(self):
         self.client.force_login(self.aidant_riri)
-        response = self.client.get(reverse("espace_aidant_cgu"))
+        response = self.client.get(reverse("espace_aidant:cgu"))
         self.assertTemplateUsed(
             response, "aidants_connect_web/espace_aidant/validate_cgu.html"
         )
 
     def test_must_accept_cgus(self):
         self.client.force_login(self.aidant_riri)
-        response = self.client.post(reverse("espace_aidant_cgu"), {"agree": False})
+        response = self.client.post(reverse("espace_aidant:cgu"), {"agree": False})
         self.assertEqual(200, response.status_code)
         self.assertEqual(
             "Ce champ est obligatoire.",
@@ -95,13 +100,13 @@ class ValidateCGU(TestCase):
     def test_accepts_cgus(self):
         self.client.force_login(self.aidant_riri)
         self.assertIsNone(self.aidant_riri.validated_cgu_version)
-        response = self.client.post(reverse("espace_aidant_cgu"), {"agree": True})
+        response = self.client.post(reverse("espace_aidant:cgu"), {"agree": True})
         self.assertIsNone(self.aidant_riri.validated_cgu_version)
-        self.assertRedirects(response, reverse("espace_aidant_home"))
+        self.assertRedirects(response, reverse("espace_aidant:home"))
 
     def test_ask_to_validate_cgu_if_no_cgu_validated(self):
         self.client.force_login(self.aidant_riri)
-        response = self.client.get("/espace-aidant/")
+        response = self.client.get(reverse("espace_aidant:home"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "valider les conditions générales d’utilisation",
@@ -111,7 +116,7 @@ class ValidateCGU(TestCase):
 
     def test_ask_to_validate_cgu_if_obsolete_cgu_validated(self):
         self.client.force_login(self.aidant_fifi)
-        response = self.client.get("/espace-aidant/")
+        response = self.client.get(reverse("espace_aidant:home"))
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "valider les conditions générales d’utilisation",
@@ -121,7 +126,7 @@ class ValidateCGU(TestCase):
 
     def test_dont_ask_to_validate_cgu_if_no_need(self):
         self.client.force_login(self.aidant_loulou)
-        response = self.client.get("/espace-aidant/")
+        response = self.client.get(reverse("espace_aidant:home"))
         response_content = response.content.decode("utf-8")
         self.assertNotIn(
             "valider les conditions générales d’utilisation",
@@ -134,7 +139,7 @@ class ValidateCGU(TestCase):
 class SwitchOrganisationTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.home_url = "/espace-aidant/"
+        cls.home_url = reverse("espace_aidant:home")
         cls.aidant = AidantFactory()
 
         cls.first_org = OrganisationFactory(name="First")
@@ -146,13 +151,13 @@ class SwitchOrganisationTests(TestCase):
         )
 
     def test_switch_url_triggers_the_right_view(self):
-        found = resolve(reverse("espace_aidant_switch_main_organisation"))
+        found = resolve(reverse("espace_aidant:switch_main_organisation"))
         self.assertEqual(found.func.view_class, espace_aidant.SwitchMainOrganisation)
 
     def test_switch_url_triggers_http_method_not_allowed(self):
         self.client.force_login(self.aidant)
-        response = self.client.get(reverse("espace_aidant_switch_main_organisation"))
-        self.assertRedirects(response, reverse("espace_aidant_home"))
+        response = self.client.get(reverse("espace_aidant:switch_main_organisation"))
+        self.assertRedirects(response, reverse("espace_aidant:home"))
 
     def test_aidant_can_switch_to_an_org_they_belong_to(self):
         orgas = self.aidant_with_orgs.organisations.all()
@@ -164,7 +169,7 @@ class SwitchOrganisationTests(TestCase):
             0,
         )
         response = self.client.post(
-            reverse("espace_aidant_switch_main_organisation"),
+            reverse("espace_aidant:switch_main_organisation"),
             {"organisation": orgas[1].id},
         )
         self.assertRedirects(response, self.home_url, fetch_redirect_response=False)
@@ -187,7 +192,7 @@ class SwitchOrganisationTests(TestCase):
             1,
         )
         response = self.client.post(
-            reverse("espace_aidant_switch_main_organisation"),
+            reverse("espace_aidant:switch_main_organisation"),
             {"organisation": orgas[0].id},
         )
         self.assertRedirects(response, self.home_url, fetch_redirect_response=False)
@@ -205,15 +210,15 @@ class SwitchOrganisationTests(TestCase):
         initial_org_id = self.aidant_with_orgs.organisation.id
         self.client.force_login(self.aidant_with_orgs)
         response = self.client.post(
-            reverse("espace_aidant_switch_main_organisation"),
+            reverse("espace_aidant:switch_main_organisation"),
             {"organisation": 9876543},
         )
         self.assertRedirects(
             response,
-            reverse("espace_aidant_home"),
+            reverse("espace_aidant:home"),
             fetch_redirect_response=False,
         )
-        response = self.client.get(reverse("espace_aidant_switch_main_organisation"))
+        response = self.client.get(reverse("espace_aidant:switch_main_organisation"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
             "Erreur : il est impossible de sélectionner cette organisation.",
@@ -229,12 +234,12 @@ class SwitchOrganisationTests(TestCase):
         unrelated_org = OrganisationFactory(name="Totally unrelated people")
         self.client.force_login(self.aidant_with_orgs)
         response = self.client.post(
-            reverse("espace_aidant_switch_main_organisation"),
+            reverse("espace_aidant:switch_main_organisation"),
             {"organisation": unrelated_org.id},
         )
         self.assertRedirects(
             response,
-            reverse("espace_aidant_home"),
+            reverse("espace_aidant:home"),
             fetch_redirect_response=False,
         )
         messages = list(django_messages.get_messages(response.wsgi_request))
@@ -255,12 +260,12 @@ class UsagersIndexPageTests(TestCase):
         cls.aidant = AidantFactory()
 
     def test_usagers_index_url_triggers_the_usagers_index_view(self):
-        found = resolve("/usagers/")
+        found = resolve(reverse("espace_aidant:usagers"))
         self.assertEqual(found.func, usagers.usagers_index)
 
     def test_usagers_index_url_triggers_the_usagers_index_template(self):
         self.client.force_login(self.aidant)
-        response = self.client.get("/usagers/")
+        response = self.client.get(reverse("espace_aidant:usagers"))
         self.assertTemplateUsed(response, "aidants_connect_web/usagers/usagers.html")
 
 
@@ -278,28 +283,47 @@ class UsagersDetailsPageTests(TestCase):
         AutorisationFactory(mandat=cls.mandat)
 
     def test_usager_details_url_triggers_the_usager_details_view(self):
-        found = resolve(f"/usagers/{self.usager.id}/")
+        found = resolve(
+            reverse(
+                "espace_aidant:usager_details", kwargs={"usager_id": self.usager.id}
+            )
+        )
         self.assertIs(found.func.view_class, usagers.UsagerView)
 
     def test_usager_detail_isnt_visible_for_anonymous_user(self):
-        response = self.client.get(f"/usagers/{self.usager.id}/")
-        str_redirect = f"{reverse('login')}?next=/usagers/{self.usager.id}/"
+        usager_url = reverse(
+            "espace_aidant:usager_details", kwargs={"usager_id": self.usager.id}
+        )
+        response = self.client.get(usager_url)
+        str_redirect = f"{reverse('login')}?{urlencode({'next': usager_url})}"
         self.assertRedirects(response, str_redirect)
 
     def test_usager_details_isnt_visible_for_another_aidant(self):
         self.client.force_login(self.other_aidant)
-        response = self.client.get(f"/usagers/{self.usager.id}/")
+        response = self.client.get(
+            reverse(
+                "espace_aidant:usager_details", kwargs={"usager_id": self.usager.id}
+            )
+        )
         self.assertTemplateNotUsed(response, "aidants_connect_web/usager-details.html")
-        self.assertRedirects(response, reverse("espace_aidant_home"))
+        self.assertRedirects(response, reverse("espace_aidant:home"))
 
     def test_usager_details_url_triggers_the_usager_details_template(self):
         self.client.force_login(self.aidant)
-        response = self.client.get(f"/usagers/{self.usager.id}/")
+        response = self.client.get(
+            reverse(
+                "espace_aidant:usager_details", kwargs={"usager_id": self.usager.id}
+            )
+        )
         self.assertTemplateUsed(response, "aidants_connect_web/usager-details.html")
 
     def test_usager_details_template_dynamic_title(self):
         self.client.force_login(self.aidant)
-        response = self.client.get(f"/usagers/{self.usager.id}/")
+        response = self.client.get(
+            reverse(
+                "espace_aidant:usager_details", kwargs={"usager_id": self.usager.id}
+            )
+        )
         response_content = response.content.decode("utf-8")
         self.assertIn(
             "<title>Homer Simpson - Aidants Connect</title>", response_content
@@ -307,11 +331,15 @@ class UsagersDetailsPageTests(TestCase):
 
     def test_usager_details_renew_mandat(self):
         self.client.force_login(self.aidant)
-        response = self.client.get(f"/usagers/{self.usager.id}/")
+        response = self.client.get(
+            reverse(
+                "espace_aidant:usager_details", kwargs={"usager_id": self.usager.id}
+            )
+        )
         response_content = response.content.decode("utf-8")
         self.assertIn("Renouveler", response_content)
         self.assertIn(
-            reverse("renew_mandat", kwargs={"usager_id": self.usager.id}),
+            reverse("espace_aidant:renew_mandat", kwargs={"usager_id": self.usager.id}),
             response_content,
         )
 

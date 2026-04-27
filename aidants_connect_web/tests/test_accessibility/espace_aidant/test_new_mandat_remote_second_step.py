@@ -70,14 +70,14 @@ class NewMandatRemoteSecondStepAccessibilityTests(AccessibilityTestCase):
         )
 
         # Navigate directly to remote second step
-        url = reverse("new_mandat_remote_second_step")
+        url = reverse("espace_aidant:new_mandat_remote_second_step")
         await self.page.goto(self.live_server_url + url)
 
     @async_test
     async def test_accessibility(self):
         await self.lazy_loading(self._open_url)
         await self.check_accessibility(
-            page_name="new_mandat_remote_second_step", strict=True
+            page_name="espace_aidant:new_mandat_remote_second_step", strict=True
         )
 
     @async_test

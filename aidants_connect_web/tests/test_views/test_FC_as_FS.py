@@ -61,7 +61,7 @@ class FCAuthorize(TestCase):
         self.client.force_login(self.aidant)
 
         response = self.client.get(reverse("fc_authorize"))
-        self.assertRedirects(response, reverse("new_mandat_waiting_room"))
+        self.assertRedirects(response, reverse("espace_aidant:new_mandat_waiting_room"))
 
         Journal.log_user_consents_sms(
             aidant=self.remote_connection.aidant,
@@ -142,10 +142,10 @@ class FCCallback(TestCase):
 
         self.assertRedirects(
             response,
-            f"{reverse('new_mandat')}{query_params}",
+            f"{reverse('espace_aidant:new_mandat')}{query_params}",
             fetch_redirect_response=False,
         )
-        response = self.client.get(reverse("new_mandat"))
+        response = self.client.get(reverse("espace_aidant:new_mandat"))
         self.assertContains(response, "Nous avons rencontré une erreur")
 
     @freeze_time(date_expired)
@@ -233,7 +233,7 @@ class FCCallback(TestCase):
                 "id_token_hint": id_token,
                 "state": "test_state",
                 "post_logout_redirect_uri": (
-                    f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('logout_callback')}"
+                    f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('espace_aidant:logout_callback')}"  # noqa: E501
                 ),
             }
         )
@@ -311,7 +311,7 @@ class FCCallback(TestCase):
                 "id_token_hint": encoded_token,
                 "state": "test_state",
                 "post_logout_redirect_uri": (
-                    f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('logout_callback')}"
+                    f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('espace_aidant:logout_callback')}"  # noqa: E501
                 ),
             }
         )

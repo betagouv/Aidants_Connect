@@ -19,7 +19,7 @@
           class="fr-col-12"
           {% if notification.must_ack %}
           data-controller="notification"
-          data-notification-url-value="{% url 'notification_mark' notification_id=notification.pk %}"
+          data-notification-url-value="{% url 'espace_aidant:notification_mark' notification_id=notification.pk %}"
           {% endif %}
         >
           <div class="fr-alert{% if notification.type == notification_type.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION %} fr-alert--info{% else %} fr-alert--info{% endif %}">
@@ -41,7 +41,7 @@
     <div class="fr-grid-row fr-grid-row--middle flex-between fr-mb-4w">
       <h1 class="fr-h2">Gestion des aidants</h1>
       <div>
-        <a href="{% url "espace_responsable_aidant_new" %}" class="fr-btn fr-btn--icon-left fr-icon-user-add-fill">
+        <a href="{% url "espace_referent:aidant_new" %}" class="fr-btn fr-btn--icon-left fr-icon-user-add-fill">
           Ajouter un aidant
         </a>
       </div>

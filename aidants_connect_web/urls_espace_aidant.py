@@ -1,0 +1,148 @@
+from django.urls import path, re_path
+
+from aidants_connect_web.views import (
+    espace_aidant,
+    mandat,
+    notifications,
+    renew_mandat,
+    usagers,
+)
+
+app_name = "espace_aidant"
+
+urlpatterns = [
+    path("", espace_aidant.Home.as_view(), name="home"),
+    path(
+        "valider-cgu",
+        espace_aidant.ValidateCGU.as_view(),
+        name="cgu",
+    ),
+    path(
+        "organisations/switch_main",
+        espace_aidant.SwitchMainOrganisation.as_view(),
+        name="switch_main_organisation",
+    ),
+    path(
+        "generate_formation_attestation",
+        espace_aidant.GenerateFormationAttestation.as_view(),
+        name="generate_formation_attestation",
+    ),
+    path("usagers/", usagers.usagers_index, name="usagers"),
+    path(
+        "usagers/<int:usager_id>/",
+        usagers.UsagerView.as_view(),
+        name="usager_details",
+    ),
+    path(
+        "usagers/<int:usager_id>/autorisations/<int:autorisation_id>/cancel_confirm",
+        usagers.confirm_autorisation_cancelation,
+        name="confirm_autorisation_cancelation",
+    ),
+    path(
+        "usagers/<int:usager_id>/autorisations/<int:autorisation_id>/cancel_success",
+        usagers.autorisation_cancelation_success,
+        name="autorisation_cancelation_success",
+    ),
+    path(
+        "usagers/<int:usager_id>/autorisations/<int:autorisation_id>/cancel_attestation",  # noqa: E501
+        usagers.autorisation_cancelation_attestation,
+        name="autorisation_cancelation_attestation",
+    ),
+    path(
+        "mandats/<int:mandat_id>/cancel_confirm",
+        usagers.confirm_mandat_cancelation,
+        name="confirm_mandat_cancelation",
+    ),
+    path(
+        "mandats/<int:mandat_id>/cancel_success",
+        usagers.mandat_cancelation_success,
+        name="mandat_cancelation_success",
+    ),
+    path(
+        "mandats/<int:mandat_id>/attestation_de_revocation",
+        usagers.mandat_cancellation_attestation,
+        name="mandat_cancellation_attestation",
+    ),
+    path(
+        "mandats/<int:mandat_id>/visualisation",
+        mandat.Attestation.as_view(),
+        name="mandat_visualisation",
+    ),
+    path(
+        "renew_mandat/<int:usager_id>",
+        renew_mandat.RenewMandat.as_view(),
+        name="renew_mandat",
+    ),
+    path(
+        "renew_mandat/a_distance/demande_consentement/",
+        renew_mandat.RemoteConsentSecondStepView.as_view(),
+        name="renew_remote_second_step",
+    ),
+    path(
+        "renew_mandat/attente_consentement/",
+        renew_mandat.WaitingRoom.as_view(),
+        name="renew_mandat_waiting_room",
+    ),
+    path(
+        "renew_mandat/attente_consentement.json/",
+        mandat.WaitingRoomJson.as_view(),
+        name="renew_mandat_waiting_room_json",
+    ),
+    path("creation_mandat/", mandat.NewMandat.as_view(), name="new_mandat"),
+    path(
+        "creation_mandat/recapitulatif/",
+        mandat.NewMandatRecap.as_view(),
+        name="new_mandat_recap",
+    ),
+    path(
+        "creation_mandat/a_distance/demande_consentement/",
+        mandat.RemoteConsentSecondStepView.as_view(),
+        name="new_mandat_remote_second_step",
+    ),
+    path(
+        "creation_mandat/a_distance/attente_consentement/",
+        mandat.WaitingRoom.as_view(),
+        name="new_mandat_waiting_room",
+    ),
+    path(
+        "creation_mandat/a_distance/attente_consentement.json/",
+        mandat.WaitingRoomJson.as_view(),
+        name="new_mandat_waiting_room_json",
+    ),
+    path("logout-callback/", mandat.NewMandatRecap.as_view(), name="logout_callback"),
+    path(
+        "creation_mandat/visualisation/projet/",
+        mandat.AttestationProject.as_view(),
+        name="new_attestation_projet",
+    ),
+    path(
+        "creation_mandat/visualisation/final/<int:mandat_id>",
+        mandat.Attestation.as_view(),
+        name="new_attestation_final",
+    ),
+    re_path(
+        r"^creation_mandat/qrcode/(?P<mandat_id>[0-9]+)?/?$",
+        mandat.AttestationQRCode.as_view(),
+        name="new_attestation_qrcode",
+    ),
+    path(
+        "creation_mandat/traduction/",
+        mandat.Translation.as_view(),
+        name="mandate_translation",
+    ),
+    path(
+        "notifications/",
+        notifications.Notifications.as_view(),
+        name="notification_list",
+    ),
+    path(
+        "notifications/<int:notification_id>/",
+        notifications.NotificationDetail.as_view(),
+        name="notification_detail",
+    ),
+    path(
+        "notifications/<int:notification_id>/marquer/",
+        notifications.MarkNotification.as_view(),
+        name="notification_mark",
+    ),
+]

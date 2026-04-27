@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 from django.test import TestCase, tag
 from django.test.client import Client
-from django.urls import resolve
+from django.urls import resolve, reverse
 from django.utils import timezone
 
 from aidants_connect import settings
@@ -74,9 +74,12 @@ class AutorisationCancellationConfirmPageTests(TestCase):
         }
 
     def url_for_autorisation_cancellation_confimation(self, data):
-        return (
-            f"/usagers/{data['usager']}"
-            f"/autorisations/{data['autorisation']}/cancel_confirm"
+        return reverse(
+            "espace_aidant:confirm_autorisation_cancelation",
+            kwargs={
+                "usager_id": data["usager"],
+                "autorisation_id": data["autorisation"],
+            },
         )
 
     def test_url_triggers_the_correct_view(self):
@@ -104,9 +107,12 @@ class AutorisationCancellationConfirmPageTests(TestCase):
             self.url_for_autorisation_cancellation_confimation(self.good_combo),
             data={"csrfmiddlewaretoken": "coucou"},
         )
-        url = (
-            f"/usagers/{self.our_usager.id}/autorisations/"
-            f"{self.valid_autorisation.id}/cancel_success"
+        url = reverse(
+            "espace_aidant:autorisation_cancelation_success",
+            kwargs={
+                "usager_id": self.our_usager.id,
+                "autorisation_id": self.valid_autorisation.id,
+            },
         )
         self.assertRedirects(
             response_correct_confirm_form, url, fetch_redirect_response=False
@@ -129,7 +135,7 @@ class AutorisationCancellationConfirmPageTests(TestCase):
         response = self.client.get(
             self.url_for_autorisation_cancellation_confimation(data)
         )
-        url = "/espace-aidant/"
+        url = reverse("espace_aidant:home")
         self.assertRedirects(response, url, fetch_redirect_response=False)
 
     def test_non_existing_autorisation_triggers_redirect(self):
@@ -204,14 +210,22 @@ class MandatCancellationConfirmPageTests(TestCase):
         )
 
     def test_url_triggers_the_correct_view(self):
-        found = resolve(f"/mandats/{self.valid_mandat.id}/cancel_confirm")
+        found = resolve(
+            reverse(
+                "espace_aidant:confirm_mandat_cancelation",
+                kwargs={"mandat_id": self.valid_mandat.id},
+            )
+        )
         self.assertEqual(found.func, usagers.confirm_mandat_cancelation)
 
     def test_get_triggers_the_correct_template(self):
         self.client.force_login(self.our_aidant)
 
         response_to_get_request = self.client.get(
-            f"/mandats/{self.valid_mandat.id}/cancel_confirm"
+            reverse(
+                "espace_aidant:confirm_mandat_cancelation",
+                kwargs={"mandat_id": self.valid_mandat.id},
+            )
         )
 
         self.assertTemplateUsed(
@@ -225,13 +239,19 @@ class MandatCancellationConfirmPageTests(TestCase):
 
         self.client.force_login(self.our_aidant)
         response_correct_confirm_form = self.client.post(
-            f"/mandats/{self.valid_mandat.id}/cancel_confirm",
+            reverse(
+                "espace_aidant:confirm_mandat_cancelation",
+                kwargs={"mandat_id": self.valid_mandat.id},
+            ),
             data={"csrfmiddlewaretoken": "coucou"},
         )
 
         self.assertRedirects(
             response_correct_confirm_form,
-            f"/mandats/{self.valid_mandat.id}/cancel_success",
+            reverse(
+                "espace_aidant:mandat_cancelation_success",
+                kwargs={"mandat_id": self.valid_mandat.id},
+            ),
             fetch_redirect_response=False,
         )
         self.assertFalse(self.valid_mandat.is_active)
@@ -239,7 +259,10 @@ class MandatCancellationConfirmPageTests(TestCase):
     def test_incomplete_post_triggers_error(self):
         self.client.force_login(self.our_aidant)
         response_incorrect_confirm_form = self.client.post(
-            f"/mandats/{self.valid_mandat.id}/cancel_confirm",
+            reverse(
+                "espace_aidant:confirm_mandat_cancelation",
+                kwargs={"mandat_id": self.valid_mandat.id},
+            ),
             data={},
         )
         self.assertTemplateUsed(
@@ -255,8 +278,13 @@ class MandatCancellationConfirmPageTests(TestCase):
     def test_know_error_cases(self):
         def error_case_tester(mandat_id):
             self.client.force_login(self.our_aidant)
-            response = self.client.get(f"/mandats/{mandat_id}/cancel_confirm")
-            url = "/espace-aidant/"
+            response = self.client.get(
+                reverse(
+                    "espace_aidant:confirm_mandat_cancelation",
+                    kwargs={"mandat_id": mandat_id},
+                )
+            )
+            url = reverse("espace_aidant:home")
             self.assertRedirects(response, url, fetch_redirect_response=False)
 
         expired_mandat = MandatFactory(
@@ -325,7 +353,10 @@ class MandatCancellationAttestationTests(TestCase):
 
     def test_url_triggers_the_correct_view(self):
         found = resolve(
-            f"/mandats/{self.cancelled_mandat.id}/attestation_de_revocation"
+            reverse(
+                "espace_aidant:mandat_cancellation_attestation",
+                kwargs={"mandat_id": self.cancelled_mandat.id},
+            )
         )
         self.assertEqual(found.func, usagers.mandat_cancellation_attestation)
 
@@ -333,7 +364,10 @@ class MandatCancellationAttestationTests(TestCase):
         self.client.force_login(self.our_aidant)
 
         response_to_get_request = self.client.get(
-            f"/mandats/{self.cancelled_mandat.id}/attestation_de_revocation"
+            reverse(
+                "espace_aidant:mandat_cancellation_attestation",
+                kwargs={"mandat_id": self.cancelled_mandat.id},
+            )
         )
 
         self.assertTemplateUsed(
@@ -346,7 +380,10 @@ class MandatCancellationAttestationTests(TestCase):
         self.client.force_login(self.our_aidant)
 
         response = self.client.get(
-            f"/mandats/{self.cancelled_mandat.id}/attestation_de_revocation"
+            reverse(
+                "espace_aidant:mandat_cancellation_attestation",
+                kwargs={"mandat_id": self.cancelled_mandat.id},
+            )
         )
 
         self.assertIn(
@@ -360,11 +397,14 @@ class MandatCancellationAttestationTests(TestCase):
         self.client.force_login(self.our_aidant)
 
         response = self.client.get(
-            f"/mandats/{self.valid_mandat.id}/attestation_de_revocation"
+            reverse(
+                "espace_aidant:mandat_cancellation_attestation",
+                kwargs={"mandat_id": self.valid_mandat.id},
+            )
         )
 
         self.assertRedirects(
             response,
-            "/espace-aidant/",
+            reverse("espace_aidant:home"),
             fetch_redirect_response=False,
         )

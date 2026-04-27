@@ -179,7 +179,9 @@ class Mandat(models.Model):
         return Mandat.objects.seperatly_revoked().filter(pk=self.pk).exists()
 
     def get_absolute_url(self):
-        path = reverse("mandat_visualisation", kwargs={"mandat_id": self.pk})
+        path = reverse(
+            "espace_aidant:mandat_visualisation", kwargs={"mandat_id": self.pk}
+        )
         url = regex_sub(r"/+", "/", f"{settings.HOST}{path}")
         return f"https://{url}"
 

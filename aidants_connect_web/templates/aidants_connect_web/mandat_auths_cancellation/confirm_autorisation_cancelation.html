@@ -32,7 +32,7 @@
         {% csrf_token %}
         <div class="flex flex-between">
 
-          <a href="{% url 'espace_responsable_organisation' %}" class="fr-btn fr-btn--secondary">Annuler</a>
+          <a href="{% url 'espace_referent:organisation' %}" class="fr-btn fr-btn--secondary">Annuler</a>
           <button class="warning fr-btn float-right" type="submit">Révoquer l'autorisation</button>
         </div>
         </form>

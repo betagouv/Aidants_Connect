@@ -34,7 +34,7 @@
 
           </td>
           <td>
-            <a class="fr-btn fr-btn--secondary fr-icon-arrow-right-line fr-btn--icon-left" href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
+            <a class="fr-btn fr-btn--secondary fr-icon-arrow-right-line fr-btn--icon-left" href="{% url 'espace_referent:aidant_detail' aidant_id=aidant.id %}">
               Détail et gestion {% if is_referent %} du référent {% else %} de l'aidant {% endif %}
             </a>
           </td>

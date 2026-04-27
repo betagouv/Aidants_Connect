@@ -24,8 +24,9 @@ class DissociateCarteTOTPTests(TestCase):
             first_name="Tim",
             last_name="Onier",
         )
-        cls.dissociation_url = (
-            f"/espace-responsable/aidant/{cls.aidant_tim.id}/supprimer-carte/"
+        cls.dissociation_url = reverse(
+            "espace_referent:aidant_remove_card",
+            kwargs={"aidant_id": cls.aidant_tim.id},
         )
 
     def create_carte_for_tim(self):
@@ -45,7 +46,7 @@ class DissociateCarteTOTPTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("espace_responsable_aidants"),
+            reverse("espace_referent:aidants"),
             fetch_redirect_response=False,
         )
         response = self.client.get(response.url, follow=True)

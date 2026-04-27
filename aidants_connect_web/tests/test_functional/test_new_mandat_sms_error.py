@@ -43,9 +43,9 @@ class NewMandatSmsErrorTests(FunctionalTestCase):
     async def trigger_sms_error(self):
         """Helper method to trigger SMS error and navigate to error page"""
         await self.login_aidant(self.aidant, self.otp_token)
-        await self.navigate_to_url("/usagers/")
+        await self.navigate_to_url(reverse("espace_aidant:usagers"))
         await self.page.click("#add_usager")
-        await self.wait_for_path_match("new_mandat")
+        await self.wait_for_path_match("espace_aidant:new_mandat")
 
         # fill-in new_mandate form
         await self.page.click("#id_demarche_argent ~ label")
@@ -69,7 +69,7 @@ class NewMandatSmsErrorTests(FunctionalTestCase):
         # Click submit - this will trigger the SMS error and
         # redirect to espace_aidant_home
         await self.page.click(".fr-connect")
-        await self.wait_for_path_match("espace_aidant_home")
+        await self.wait_for_path_match("espace_aidant:home")
         await self.page.wait_for_load_state("networkidle")
 
     @async_test

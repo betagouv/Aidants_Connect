@@ -19,13 +19,15 @@ class NewMandatAccessibilityTests(AccessibilityTestCase):
     async def _open_url(self):
         """Helper method to navigate to new_mandat page"""
         await self.login_aidant(self.aidant, self.otp_token)
-        url = reverse("new_mandat")
+        url = reverse("espace_aidant:new_mandat")
         await self.page.goto(self.live_server_url + url)
 
     @async_test
     async def test_accessibility(self):
         await self.lazy_loading(self._open_url)
-        await self.check_accessibility(page_name="new_mandat", strict=True)
+        await self.check_accessibility(
+            page_name="espace_aidant:new_mandat", strict=True
+        )
 
     @async_test
     async def test_title_is_correct(self):
