@@ -284,14 +284,17 @@ class NewHabilitationRequestTests(FunctionalTestCase):
 
         # Wait for validation errors to appear (DSFR validation)
         self.wait.until(
-            lambda driver: len(
-                [
-                    error
-                    for error in driver.find_elements(By.CLASS_NAME, "errorlist")
-                    if error.text.strip() and "Ce champ est obligatoire." in error.text
-                ]
+            lambda driver: (
+                len(
+                    [
+                        error
+                        for error in driver.find_elements(By.CLASS_NAME, "errorlist")
+                        if error.text.strip()
+                        and "Ce champ est obligatoire." in error.text
+                    ]
+                )
+                > 0
             )
-            > 0
         )
 
         # Check that we have validation errors
@@ -330,14 +333,17 @@ class NewHabilitationRequestTests(FunctionalTestCase):
             )
 
         self.wait.until(
-            lambda driver: len(
-                [
-                    error
-                    for error in driver.find_elements(By.CLASS_NAME, "errorlist")
-                    if error.text.strip() and "Ce champ est obligatoire." in error.text
-                ]
+            lambda driver: (
+                len(
+                    [
+                        error
+                        for error in driver.find_elements(By.CLASS_NAME, "errorlist")
+                        if error.text.strip()
+                        and "Ce champ est obligatoire." in error.text
+                    ]
+                )
+                > 0
             )
-            > 0
         )
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
@@ -357,14 +363,17 @@ class NewHabilitationRequestTests(FunctionalTestCase):
 
         # Attendre que les erreurs apparaissent
         self.wait.until(
-            lambda driver: len(
-                [
-                    error
-                    for error in driver.find_elements(By.CLASS_NAME, "errorlist")
-                    if error.text.strip() and "Ce champ est obligatoire." in error.text
-                ]
+            lambda driver: (
+                len(
+                    [
+                        error
+                        for error in driver.find_elements(By.CLASS_NAME, "errorlist")
+                        if error.text.strip()
+                        and "Ce champ est obligatoire." in error.text
+                    ]
+                )
+                > 0
             )
-            > 0
         )
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
@@ -388,14 +397,17 @@ class NewHabilitationRequestTests(FunctionalTestCase):
 
         # Attendre que les erreurs apparaissent
         self.wait.until(
-            lambda driver: len(
-                [
-                    error
-                    for error in driver.find_elements(By.CLASS_NAME, "errorlist")
-                    if error.text.strip() and "Ce champ est obligatoire." in error.text
-                ]
+            lambda driver: (
+                len(
+                    [
+                        error
+                        for error in driver.find_elements(By.CLASS_NAME, "errorlist")
+                        if error.text.strip()
+                        and "Ce champ est obligatoire." in error.text
+                    ]
+                )
+                > 0
             )
-            > 0
         )
 
         errors = self.selenium.find_elements(By.CLASS_NAME, "errorlist")
@@ -439,6 +451,14 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self.open_live_url(self.path)
         self.login_aidant(self.aidant_responsable)
         self.wait.until(self.dsfr_ready())
+
+        # Wait for first email input to be visible and interactable before filling.
+        self.wait.until(
+            expected_conditions.visibility_of_element_located(
+                (By.ID, "id_multiform-habilitation_requests-0-email")
+            )
+        )
+
         req: HabilitationRequest = HabilitationRequestFactory.build(
             organisation=self.organisation
         )
