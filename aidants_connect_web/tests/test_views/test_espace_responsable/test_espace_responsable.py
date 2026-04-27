@@ -186,7 +186,7 @@ class EspaceResponsableAidantPage(TestCase):
     def test_referent_can_download_managed_aidant_formation_attestation(self):
         self.client.force_login(self.responsable_tom)
         url = reverse(
-            "espace_responsable_aidant_formation_attestation",
+            "espace_referent:aidant_formation_attestation",
             kwargs={"aidant_id": self.aidant_tim.id},
         )
         found = resolve(url)
@@ -203,11 +203,11 @@ class EspaceResponsableAidantPage(TestCase):
     ):
         self.client.force_login(self.responsable_tom)
         url = reverse(
-            "espace_responsable_aidant_formation_attestation",
+            "espace_referent:aidant_formation_attestation",
             kwargs={"aidant_id": self.autre_aidant.id},
         )
         response = self.client.get(url)
-        self.assertRedirects(response, reverse("espace_responsable_organisation"))
+        self.assertRedirects(response, reverse("espace_referent:organisation"))
 
     def test_responsable_cannot_see_an_aidant_they_are_not_responsible_for(self):
         self.client.force_login(self.responsable_tom)
