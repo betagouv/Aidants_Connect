@@ -66,7 +66,7 @@
         </div>
       </div>
     </div>
-    <div class="fr-header__menu fr-modal" id="modal-499" aria-labelledby="button-500">
+    <div class="fr-header__menu fr-modal" id="modal-499" role="dialog" aria-labelledby="button-500">
       <div class="fr-container">
         <button class="fr-btn--close fr-btn" aria-controls="modal-499" title="Fermer">
           Fermer
@@ -159,7 +159,7 @@
             {% endblock nav_menu %}
             {% with user_organisations=request.user.organisations.all %}
               {% if user_is_authenticated and user_organisations|length > 1 %}
-                <div class="spacer"></div>
+                <li class="spacer" role="none" aria-hidden="true"></li>
                 <li class="fr-nav__item fr-nav__item--align-right">
                   <button class="fr-nav__btn" aria-expanded="false" aria-controls="menu-776">
                     {{ request.user.organisation }}
