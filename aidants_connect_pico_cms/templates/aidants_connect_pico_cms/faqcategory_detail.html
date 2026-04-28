@@ -56,19 +56,19 @@
 
         {% for question in questions %}
           {% ifchanged question.subcategory %}
+            {% if not forloop.first %}</div>{% endif %}
             {% if question.subcategory %}
               <h3 class="fr-h4">{{ question.subcategory.name }}</h3>
               {% if question.subcategory.body %}
                 <section class="fr-mb-8v">{{ question.subcategory.to_html }}</section>
               {% endif %}
             {% endif %}
+            <div class="fr-accordions-group">
           {% endifchanged %}
-
-          {% ifchanged question.subcategory %}<div class="fr-accordions-group">{% endifchanged %}
             {% withdict key="accordion-{{ question.pk }}" title=question.question content=question.to_html as data_dict %}
               {% dsfr_accordion data_dict %}
             {% endwithdict %}
-          {% ifchanged question.subcategory %}</div>{% endifchanged %}
+          {% if forloop.last %}</div>{% endif %}
         {% endfor %}
       </div>
       {# /Questions #}
