@@ -62,7 +62,9 @@
   white-space: nowrap !important;
 }
 
-#tarteaucitronRoot *, #tarteaucitronRoot ::after, #tarteaucitronRoot ::before {
+#tarteaucitronRoot *,
+#tarteaucitronRoot ::after,
+#tarteaucitronRoot ::before {
   box-sizing: inherit
 }
 
@@ -153,7 +155,8 @@ button#tarteaucitronPrivacyUrl {
   left: 2.5em
 }
 
-#tarteaucitronRoot ol, #tarteaucitronRoot ul {
+#tarteaucitronRoot ol,
+#tarteaucitronRoot ul {
   list-style: none;
   padding: 0;
   margin: 0
@@ -199,7 +202,7 @@ button#tarteaucitronPrivacyUrl {
   z-index: 4000
 }
 
-#tarteaucitronIcon #tarteaucitronManager > img {
+#tarteaucitronIcon #tarteaucitronManager>img {
   display: none
 }
 
@@ -281,11 +284,11 @@ body #tarteaucitronRoot div#tarteaucitronAlertBig {
   }
 }
 
-#tarteaucitronDisclaimerAlert > p {
+#tarteaucitronDisclaimerAlert>p {
   margin-bottom: 1rem
 }
 
-#tarteaucitronDisclaimerAlert > p:last-child {
+#tarteaucitronDisclaimerAlert>p:last-child {
   margin-bottom: 0
 }
 
@@ -331,7 +334,9 @@ body #tarteaucitronRoot div#tarteaucitronAlertBig {
   margin: auto
 }
 
-#tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronCloseAlert, #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPersonalize, #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronCTAButton {
+#tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronCloseAlert,
+#tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPersonalize,
+#tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronCTAButton {
   font-size: inherit;
   cursor: pointer;
   background: var(--bf500);
@@ -355,19 +360,23 @@ body #tarteaucitronRoot div#tarteaucitronAlertBig {
   order: 4
 }
 
-#tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPersonalize, #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPersonalize2 {
+#tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPersonalize,
+#tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPersonalize2 {
   order: 3;
   margin-right: 0
 }
 
 @media screen and (min-width: 36em) {
-  #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronCloseAlert, #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPersonalize, #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronCTAButton {
+
+  #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronCloseAlert,
+  #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPersonalize,
+  #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronCTAButton {
     width: auto;
     margin: 0 .5rem !important;
     display: flex !important
   }
 
-  #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronCTAButton:not(.tarteaucitronAllow,.tarteaucitronDeny) {
+  #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronCTAButton:not(.tarteaucitronAllow, .tarteaucitronDeny) {
     margin: 0 0 0 auto !important
   }
 
@@ -379,7 +388,8 @@ body #tarteaucitronRoot div#tarteaucitronAlertBig {
     order: 4
   }
 
-  #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPersonalize, #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPersonalize2 {
+  #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPersonalize,
+  #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPersonalize2 {
     order: 5;
     margin-right: 0 !important
   }
@@ -449,7 +459,7 @@ body #tarteaucitronRoot div#tarteaucitronAlertBig {
   margin-left: .5rem
 }
 
-.tarteaucitronSelfLink > img {
+.tarteaucitronSelfLink>img {
   display: none
 }
 
@@ -457,11 +467,11 @@ body #tarteaucitronRoot div#tarteaucitronAlertBig {
   content: "Site officiel de Tarte au citron"
 }
 
-#tarteaucitronServices ul > li::before {
+#tarteaucitronServices ul>li::before {
   content: none
 }
 
-#tarteaucitronServices ul > li > ul {
+#tarteaucitronServices ul>li>ul {
   padding-left: 0
 }
 
@@ -549,9 +559,9 @@ body #tarteaucitronRoot div#tarteaucitronAlertBig {
 
 @media screen and (min-width: 48em) {
   .tarteaucitronAsk {
-    justify-content: flex-end;
+    justify-content: flex-start;
     align-items: center;
-    margin-top: 0 !important
+    margin-top: 10px !important
   }
 
   .tarteaucitronLine:not(.tarteaucitronMainLine) .tarteaucitronAsk {
@@ -581,7 +591,8 @@ body #tarteaucitronRoot div#tarteaucitronAlertBig {
   background: var(--g300)
 }
 
-#tarteaucitronRoot .tarteaucitronAllow:not(.tarteaucitronCTAButton), #tarteaucitronRoot .tarteaucitronDeny:not(.tarteaucitronCTAButton) {
+#tarteaucitronRoot .tarteaucitronAllow:not(.tarteaucitronCTAButton),
+#tarteaucitronRoot .tarteaucitronDeny:not(.tarteaucitronCTAButton) {
   background: var(--tplain);
   color: var(--g800);
   display: inline-flex;
@@ -590,28 +601,34 @@ body #tarteaucitronRoot div#tarteaucitronAlertBig {
   padding: 0
 }
 
-#tarteaucitronRoot .tarteaucitronAllow:disabled:not(.tarteaucitronCTAButton), #tarteaucitronRoot .tarteaucitronDeny:disabled:not(.tarteaucitronCTAButton) {
+#tarteaucitronRoot .tarteaucitronAllow:disabled:not(.tarteaucitronCTAButton),
+#tarteaucitronRoot .tarteaucitronDeny:disabled:not(.tarteaucitronCTAButton) {
   color: var(--g600-g400)
 }
 
-#tarteaucitronRoot .tarteaucitronAllow:disabled:not(.tarteaucitronCTAButton)::before, #tarteaucitronRoot .tarteaucitronDeny:disabled:not(.tarteaucitronCTAButton)::before {
+#tarteaucitronRoot .tarteaucitronAllow:disabled:not(.tarteaucitronCTAButton)::before,
+#tarteaucitronRoot .tarteaucitronDeny:disabled:not(.tarteaucitronCTAButton)::before {
   background-color: var(--g200);
   border: 1px solid var(--g400)
 }
 
-#tarteaucitronRoot .tarteaucitronAllow:disabled:not(.tarteaucitronCTAButton)::after, #tarteaucitronRoot .tarteaucitronDeny:disabled:not(.tarteaucitronCTAButton)::after {
+#tarteaucitronRoot .tarteaucitronAllow:disabled:not(.tarteaucitronCTAButton)::after,
+#tarteaucitronRoot .tarteaucitronDeny:disabled:not(.tarteaucitronCTAButton)::after {
   content: none
 }
 
-#tarteaucitronRoot .tarteaucitronAllow.tarteaucitronIsSelected::after, #tarteaucitronRoot .tarteaucitronDeny.tarteaucitronIsSelected::after {
+#tarteaucitronRoot .tarteaucitronAllow.tarteaucitronIsSelected::after,
+#tarteaucitronRoot .tarteaucitronDeny.tarteaucitronIsSelected::after {
   opacity: 1
 }
 
-#tarteaucitronRoot .tarteaucitronAllow.tarteaucitronIsSelected::before, #tarteaucitronRoot .tarteaucitronDeny.tarteaucitronIsSelected::before {
+#tarteaucitronRoot .tarteaucitronAllow.tarteaucitronIsSelected::before,
+#tarteaucitronRoot .tarteaucitronDeny.tarteaucitronIsSelected::before {
   border: 1px solid var(--bf500)
 }
 
-#tarteaucitronRoot .tarteaucitronAllow:not(.tarteaucitronCTAButton)::before, #tarteaucitronRoot .tarteaucitronDeny:not(.tarteaucitronCTAButton)::before {
+#tarteaucitronRoot .tarteaucitronAllow:not(.tarteaucitronCTAButton)::before,
+#tarteaucitronRoot .tarteaucitronDeny:not(.tarteaucitronCTAButton)::before {
   content: "";
   display: block;
   flex-shrink: 0;
@@ -622,7 +639,8 @@ body #tarteaucitronRoot div#tarteaucitronAlertBig {
   margin-right: .5rem
 }
 
-#tarteaucitronRoot .tarteaucitronAllow:not(.tarteaucitronCTAButton)::after, #tarteaucitronRoot .tarteaucitronDeny:not(.tarteaucitronCTAButton)::after {
+#tarteaucitronRoot .tarteaucitronAllow:not(.tarteaucitronCTAButton)::after,
+#tarteaucitronRoot .tarteaucitronDeny:not(.tarteaucitronCTAButton)::after {
   content: "";
   display: block;
   background: var(--bf500);
@@ -660,16 +678,17 @@ body #tarteaucitronRoot div#tarteaucitronAlertBig {
   }
 }
 
-.tarteaucitronBorder > ul > li {
+.tarteaucitronBorder>ul>li {
   padding: 1.5rem 0;
   box-shadow: inset 0 1px 0 0 var(--g300)
 }
 
-.tarteaucitronBorder > ul > li:first-child {
+.tarteaucitronBorder>ul>li:first-child {
   box-shadow: none
 }
 
-#tarteaucitronRoot .tarteaucitronTitle > .catToggleBtn, #tarteaucitronRoot .tarteaucitronTitle > button {
+#tarteaucitronRoot .tarteaucitronTitle>.catToggleBtn,
+#tarteaucitronRoot .tarteaucitronTitle>button {
   background: 0;
   color: var(--g800);
   font-size: 1.25rem;
@@ -678,7 +697,8 @@ body #tarteaucitronRoot div#tarteaucitronAlertBig {
   text-align: left
 }
 
-#tarteaucitron #tarteaucitronInfo, #tarteaucitron #tarteaucitronServices .tarteaucitronDetails {
+#tarteaucitron #tarteaucitronInfo,
+#tarteaucitron #tarteaucitronServices .tarteaucitronDetails {
   color: var(--w);
   background: var(--g700);
   display: none;
@@ -704,7 +724,7 @@ body #tarteaucitronRoot div#tarteaucitronAlertBig {
   max-width: 24rem
 }
 
-.tarteaucitronH3 + span {
+.tarteaucitronH3+span {
   display: block
 }
 
@@ -721,35 +741,39 @@ ul[style="display: block;"] .tarteaucitronLine {
 }
 
 @media screen and (min-width: 48em) {
-  .tarteaucitronHidden > ul:last-child:not([style="display: block;"]) .tarteaucitronLine:not(:last-child), .tarteaucitronHidden > ul[style="display: block;"] .tarteaucitronLine:not(:last-child) {
+
+  .tarteaucitronHidden>ul:last-child:not([style="display: block;"]) .tarteaucitronLine:not(:last-child),
+  .tarteaucitronHidden>ul[style="display: block;"] .tarteaucitronLine:not(:last-child) {
     margin-bottom: 0
   }
 }
 
-.tarteaucitronHidden > ul:last-child:not([style="display: block;"]) .tarteaucitronLine .tarteaucitronH3, .tarteaucitronHidden > ul[style="display: block;"] .tarteaucitronLine .tarteaucitronH3 {
+.tarteaucitronHidden>ul:last-child:not([style="display: block;"]) .tarteaucitronLine .tarteaucitronH3,
+.tarteaucitronHidden>ul[style="display: block;"] .tarteaucitronLine .tarteaucitronH3 {
   margin-bottom: .5rem;
   font-size: 1rem
 }
 
-.tarteaucitronHidden > ul:last-child:not([style="display: block;"]) .tarteaucitronLine:first-child {
+.tarteaucitronHidden>ul:last-child:not([style="display: block;"]) .tarteaucitronLine:first-child {
   margin-top: 1.5rem
 }
 
 @media screen and (min-width: 48em) {
-  .tarteaucitronHidden > ul[style="display: block;"] .tarteaucitronLine {
+  .tarteaucitronHidden>ul[style="display: block;"] .tarteaucitronLine {
     display: flex
   }
 }
 
 @media screen and (min-width: 48em) {
-  .tarteaucitronHidden > ul[style="display: block;"] .tarteaucitronAsk {
+  .tarteaucitronHidden>ul[style="display: block;"] .tarteaucitronAsk {
     margin-top: 0;
     margin-right: 0;
     margin-left: auto
   }
 }
 
-.tarteaucitronHidden > ul[style="display: block;"] .tarteaucitronLine:not(.tarteaucitronMainLine) .tarteaucitronAsk, .tarteaucitronHidden > ul[style="display: none;"] .tarteaucitronLine:not(.tarteaucitronMainLine) .tarteaucitronAsk {
+.tarteaucitronHidden>ul[style="display: block;"] .tarteaucitronLine:not(.tarteaucitronMainLine) .tarteaucitronAsk,
+.tarteaucitronHidden>ul[style="display: none;"] .tarteaucitronLine:not(.tarteaucitronMainLine) .tarteaucitronAsk {
   position: relative;
   top: auto;
   right: auto;
@@ -787,7 +811,8 @@ ul[style="display: block;"] .tarteaucitronLine {
   z-index: 2147483646
 }
 
-.tarteaucitronAlertSmallBottom, .tarteaucitronAlertSmallTop {
+.tarteaucitronAlertSmallBottom,
+.tarteaucitronAlertSmallTop {
   bottom: 0
 }
 
@@ -801,7 +826,8 @@ ul[style="display: block;"] .tarteaucitronLine {
   z-index: 2147483646
 }
 
-#tarteaucitronAlertSmall #tarteaucitronCookiesNumber, #tarteaucitronAlertSmall #tarteaucitronManager {
+#tarteaucitronAlertSmall #tarteaucitronCookiesNumber,
+#tarteaucitronAlertSmall #tarteaucitronManager {
   position: relative;
   font-size: inherit;
   cursor: pointer;
@@ -827,7 +853,9 @@ ul[style="display: block;"] .tarteaucitronLine {
   left: 1.5rem
 }
 
-#tarteaucitronAlertSmall #tarteaucitronManager #tarteaucitronDot #tarteaucitronDotGreen, #tarteaucitronAlertSmall #tarteaucitronManager #tarteaucitronDot #tarteaucitronDotRed, #tarteaucitronAlertSmall #tarteaucitronManager #tarteaucitronDot #tarteaucitronDotYellow {
+#tarteaucitronAlertSmall #tarteaucitronManager #tarteaucitronDot #tarteaucitronDotGreen,
+#tarteaucitronAlertSmall #tarteaucitronManager #tarteaucitronDot #tarteaucitronDotRed,
+#tarteaucitronAlertSmall #tarteaucitronManager #tarteaucitronDot #tarteaucitronDotYellow {
   display: block;
   float: left;
   height: 100%;
@@ -1007,7 +1035,8 @@ ul[style="display: block;"] .tarteaucitronLine {
   height: 100%
 }
 
-.tac_activate .tarteaucitronAllow:not(.tarteaucitronCTAButton)::after, .tac_activate .tarteaucitronAllow:not(.tarteaucitronCTAButton)::before {
+.tac_activate .tarteaucitronAllow:not(.tarteaucitronCTAButton)::after,
+.tac_activate .tarteaucitronAllow:not(.tarteaucitronCTAButton)::before {
   content: none
 }
 
