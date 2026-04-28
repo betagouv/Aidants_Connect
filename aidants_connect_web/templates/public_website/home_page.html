@@ -195,7 +195,6 @@
         </div>
       </div>
     </div>
-
   </div>
 
   {% if testimonies|length > 0 %}
@@ -209,11 +208,11 @@
                 <div class="fr-card__content fr-pb-6w">
                   <div class="fr-icon-quote-fill fr-text-title--blue-france fr-icon--lg fr-mb-0"></div>
                   <h3 class="fr-card__title fr-mt-3v">
-                    <a href="{{ testimony.get_absolute_url }}" class="fr-text-title--grey">« {{ testimony.quote }} »</a>
+                    <a href="{{ testimony.get_absolute_url }}" class="fr-text-title--grey" title="Lire le témoignage de {{ testimony.name }} ({{ testimony.job }}) - {{ testimony.quote }}">« {{ testimony.quote }} »</a>
                   </h3>
                   <div class="fr-card__end">
                     <div class="fr-card__desc">
-                      <p class="fr-text--sm fr-mb-3v">{{ testimony.job }} </p>
+                      <p class="fr-text--sm fr-mb-3v">{{ testimony.name }} ({{ testimony.job }})</p>
                       <p class="fr-link">Lire ce témoignage</p>
                     </div>
                   </div>
@@ -240,7 +239,7 @@
               <h2 class="fr-h5">Abonnez-vous à notre lettre d’information</h2>
               <p class="fr-text--sm">Inscrivez-vous à notre infolettre pour vous tenir au courant des nouveautés du projet :</p>
             </div>
-<iframe width="540" height="310" src="{{ BREVO_IFRAME_URL }}" title="Formulaire d’inscription à la lettre d’information Aidants Connect"></iframe>
+            <iframe width="540" height="310" src="{{ BREVO_IFRAME_URL }}" title="Formulaire d’inscription à la lettre d’information Aidants Connect" nonce="{{ request.csp_nonce }}"></iframe>
           </div>
         </div>
       </div>
