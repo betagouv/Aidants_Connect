@@ -86,7 +86,7 @@ class Usager(models.Model):
 
     @property
     def renew_mandate_url(self):
-        return reverse("renew_mandat", kwargs={"usager_id": self.id})
+        return reverse("espace_aidant:renew_mandat", kwargs={"usager_id": self.id})
 
     def __str__(self):
         return f"{self.given_name} {self.family_name}"

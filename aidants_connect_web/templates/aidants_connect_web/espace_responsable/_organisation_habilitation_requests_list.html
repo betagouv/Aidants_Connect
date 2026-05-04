@@ -28,7 +28,7 @@
               {% elif habilitation_request.course_type == 1 %}
                 <a
                     id="register-habilitation-request-{{ habilitation_request.id }}"
-                    href="{% url 'espace_responsable_register_formation' request_id=habilitation_request.id %}"
+                    href="{% url 'espace_referent:register_formation' request_id=habilitation_request.id %}"
                     class="fr-mr-2w fr-btn fr-btn--secondary fr-text--md"
                   >
                   Inscrire à une session
@@ -42,7 +42,7 @@
               {% endif %}
             </td>
             <td>
-              <a href="{% url 'espace_responsable_cancel_habilitation' request_id=habilitation_request.id %}"
+              <a href="{% url 'espace_referent:cancel_habilitation' request_id=habilitation_request.id %}"
                   class="fr-btn fr-btn--tertiary"
                   id="cancel-habilitation-request-{{ habilitation_request.id }}">
                 Annuler la demande d'habilitation
@@ -67,7 +67,7 @@
             <td class="fr-text--md"></td>
             <td>
               {% if habilitation_request.status_cancellable_by_responsable %}
-                <a href="{% url 'espace_responsable_cancel_habilitation' request_id=habilitation_request.id %}"
+                <a href="{% url 'espace_referent:cancel_habilitation' request_id=habilitation_request.id %}"
                     class="fr-btn fr-btn--tertiary"
                     id="cancel-habilitation-request-{{ habilitation_request.id }}">
                   Annuler la demande d'habilitation

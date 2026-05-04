@@ -21,7 +21,12 @@ class CancelAutorisationTests(FunctionalTestCase):
         )
 
     def test_cancel_autorisation_of_active_mandat(self):
-        self.open_live_url(f"/usagers/{self.mandat.usager.id}/")
+        self.open_live_url(
+            reverse(
+                "espace_aidant:usager_details",
+                kwargs={"usager_id": self.mandat.usager.id},
+            )
+        )
 
         self.login_aidant(self.aidant_thierry)
 
@@ -52,12 +57,15 @@ class CancelAutorisationTests(FunctionalTestCase):
 
         # Display attestation
         path = reverse(
-            "mandat_cancellation_attestation", kwargs={"mandat_id": self.mandat.id}
+            "espace_aidant:mandat_cancellation_attestation",
+            kwargs={"mandat_id": self.mandat.id},
         )
         self.selenium.find_element(By.XPATH, f'.//a[@href="{path}"]').click()
 
         self.wait.until(lambda driver: len(driver.window_handles) == 2)
-        self.check_accessibility("mandat_cancellation_attestation", strict=False)
+        self.check_accessibility(
+            "espace_aidant:mandat_cancellation_attestation", strict=False
+        )
 
         self.selenium.switch_to.window(self.selenium.window_handles[1])
 
@@ -73,7 +81,10 @@ class CancelAutorisationTests(FunctionalTestCase):
         # See again all mandats of usager page
 
         self.open_live_url(
-            reverse("usager_details", kwargs={"usager_id": self.mandat.usager.id})
+            reverse(
+                "espace_aidant:usager_details",
+                kwargs={"usager_id": self.mandat.usager.id},
+            )
         )
 
         inactive_mandats = self.selenium.find_elements(By.ID, "mandats-revoques")

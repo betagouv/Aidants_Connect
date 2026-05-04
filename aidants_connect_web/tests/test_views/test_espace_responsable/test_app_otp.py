@@ -49,7 +49,7 @@ class AddAppOTPToAidantTests(TestCase):
     def test_triggers_the_right_view(self):
         found = resolve(
             reverse(
-                "espace_responsable_aidant_add_app_otp",
+                "espace_referent:aidant_add_app_otp",
                 kwargs={"aidant_id": self.aidant_tim.pk},
             )
         )
@@ -59,7 +59,7 @@ class AddAppOTPToAidantTests(TestCase):
         self.client.force_login(self.responsable_tom)
         response = self.client.get(
             reverse(
-                "espace_responsable_aidant_add_app_otp",
+                "espace_referent:aidant_add_app_otp",
                 kwargs={"aidant_id": self.aidant_tim.pk},
             )
         )
@@ -71,7 +71,7 @@ class AddAppOTPToAidantTests(TestCase):
         self.client.force_login(self.responsable_tom)
         response = self.client.post(
             reverse(
-                "espace_responsable_aidant_add_app_otp",
+                "espace_referent:aidant_add_app_otp",
                 kwargs={"aidant_id": self.aidant_ahmed.pk},
             )
         )
@@ -94,7 +94,7 @@ class AddAppOTPToAidantTests(TestCase):
 
         response = self.client.post(
             reverse(
-                "espace_responsable_aidant_add_app_otp",
+                "espace_referent:aidant_add_app_otp",
                 kwargs={"aidant_id": self.aidant_sarah.pk},
             ),
             data={"otp_token": ""},  # Token shouldn't be verified
@@ -102,7 +102,7 @@ class AddAppOTPToAidantTests(TestCase):
 
         self.assertRedirects(
             response,
-            reverse("espace_responsable_organisation"),
+            reverse("espace_referent:organisation"),
             fetch_redirect_response=False,
         )
         self.assertEqual(
@@ -120,7 +120,7 @@ class AddAppOTPToAidantTests(TestCase):
 
         self.client.get(
             reverse(
-                "espace_responsable_aidant_add_app_otp",
+                "espace_referent:aidant_add_app_otp",
                 kwargs={"aidant_id": self.aidant_tim.pk},
             )
         )
@@ -129,7 +129,7 @@ class AddAppOTPToAidantTests(TestCase):
         mock_verify.return_value = False
         response = self.client.post(
             reverse(
-                "espace_responsable_aidant_add_app_otp",
+                "espace_referent:aidant_add_app_otp",
                 kwargs={"aidant_id": self.aidant_tim.pk},
             ),
             data={"otp_token": "654321"},
@@ -144,7 +144,7 @@ class AddAppOTPToAidantTests(TestCase):
         mock_verify.return_value = True
         response = self.client.post(
             reverse(
-                "espace_responsable_aidant_add_app_otp",
+                "espace_referent:aidant_add_app_otp",
                 kwargs={"aidant_id": self.aidant_tim.pk},
             ),
             data={"otp_token": "123456"},
@@ -152,7 +152,7 @@ class AddAppOTPToAidantTests(TestCase):
 
         self.assertRedirects(
             response,
-            reverse("espace_responsable_organisation"),
+            reverse("espace_referent:organisation"),
             fetch_redirect_response=False,
         )
         self.assertEqual(1, self.aidant_tim.totpdevice_set.count())
@@ -209,7 +209,7 @@ class RemoveAppOTPToAidantTests(TestCase):
     def test_triggers_the_right_view(self):
         found = resolve(
             reverse(
-                "espace_responsable_aidant_remove_app_otp",
+                "espace_referent:aidant_remove_app_otp",
                 kwargs={"aidant_id": self.aidant_sarah.pk},
             )
         )
@@ -221,7 +221,7 @@ class RemoveAppOTPToAidantTests(TestCase):
         self.client.force_login(self.responsable_tom)
         response = self.client.get(
             reverse(
-                "espace_responsable_aidant_remove_app_otp",
+                "espace_referent:aidant_remove_app_otp",
                 kwargs={"aidant_id": self.aidant_sarah.pk},
             )
         )
@@ -241,14 +241,14 @@ class RemoveAppOTPToAidantTests(TestCase):
 
         self.client.get(
             reverse(
-                "espace_responsable_aidant_add_app_otp",
+                "espace_referent:aidant_add_app_otp",
                 kwargs={"aidant_id": self.aidant_tim.pk},
             )
         )
 
         self.client.post(
             reverse(
-                "espace_responsable_aidant_add_app_otp",
+                "espace_referent:aidant_add_app_otp",
                 kwargs={"aidant_id": self.aidant_tim.pk},
             )
         )
@@ -273,7 +273,7 @@ class RemoveAppOTPToAidantTests(TestCase):
 
         response = self.client.post(
             reverse(
-                "espace_responsable_aidant_remove_app_otp",
+                "espace_referent:aidant_remove_app_otp",
                 kwargs={"aidant_id": self.aidant_ahmed.pk},
             )
         )
@@ -295,14 +295,14 @@ class RemoveAppOTPToAidantTests(TestCase):
 
         response = self.client.post(
             reverse(
-                "espace_responsable_aidant_remove_app_otp",
+                "espace_referent:aidant_remove_app_otp",
                 kwargs={"aidant_id": self.aidant_tim.pk},
             )
         )
 
         self.assertRedirects(
             response,
-            reverse("espace_responsable_organisation"),
+            reverse("espace_referent:organisation"),
             fetch_redirect_response=False,
         )
         self.assertEqual(0, self.aidant_tim.totpdevice_set.count())
@@ -314,14 +314,14 @@ class RemoveAppOTPToAidantTests(TestCase):
 
         response = self.client.post(
             reverse(
-                "espace_responsable_aidant_remove_app_otp",
+                "espace_referent:aidant_remove_app_otp",
                 kwargs={"aidant_id": self.aidant_sarah.pk},
             )
         )
 
         self.assertRedirects(
             response,
-            reverse("espace_responsable_organisation"),
+            reverse("espace_referent:organisation"),
             fetch_redirect_response=False,
         )
         self.assertEqual(0, self.aidant_sarah.totpdevice_set.count())
@@ -333,13 +333,13 @@ class RemoveAppOTPToAidantTests(TestCase):
 
         response = self.client.post(
             reverse(
-                "espace_responsable_aidant_add_app_otp",
+                "espace_referent:aidant_add_app_otp",
                 kwargs={"aidant_id": self.deactivated_aidant.pk},
             ),
         )
         self.assertRedirects(
             response,
-            reverse("espace_responsable_organisation"),
+            reverse("espace_referent:organisation"),
             fetch_redirect_response=False,
         )
         self.deactivated_aidant.refresh_from_db()

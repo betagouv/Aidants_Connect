@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.urls import reverse
 from django.utils import timezone
 
 from selenium.webdriver.common.by import By
@@ -51,7 +52,7 @@ class UsagersTest(FunctionalTestCase):
         )
 
     def test_tabs_navigation(self):
-        self.open_live_url("/usagers/")
+        self.open_live_url(reverse("espace_aidant:usagers"))
         self.login_aidant(self.aidant)
 
         self.wait.until(self.dsfr_ready())
@@ -130,7 +131,7 @@ class UsagersTest(FunctionalTestCase):
             ],
         )
 
-        self.open_live_url("/usagers/")
+        self.open_live_url(reverse("espace_aidant:usagers"))
         self.login_aidant(self.aidant)
 
         self.wait.until(self.document_loaded())
@@ -223,7 +224,7 @@ class UsagersTest(FunctionalTestCase):
             post__create_authorisations=["logement", "transport"],
         )
 
-        self.open_live_url("/usagers/")
+        self.open_live_url(reverse("espace_aidant:usagers"))
         self.login_aidant(self.aidant)
 
         self.wait.until(self.document_loaded())
@@ -283,7 +284,7 @@ class UsagersTest(FunctionalTestCase):
             post__create_authorisations=["argent", "logement"],
         )
 
-        self.open_live_url("/usagers/")
+        self.open_live_url(reverse("espace_aidant:usagers"))
         self.login_aidant(self.aidant)
 
         active_panel = self.selenium.find_element(By.ID, "tab-1-panel")

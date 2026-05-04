@@ -21,18 +21,18 @@ class DisplayTranslationTests(FunctionalTestCase):
         )
 
     def test_display_translation_for_espace_aidant_home(self):
-        self.open_live_url(reverse("espace_aidant_home"))
+        self.open_live_url(reverse("espace_aidant:home"))
         self.login_aidant(self.aidant)
 
         # Sélecteur plus robuste basé sur l'URL de destination
-        mandate_translation_url = reverse("mandate_translation")
+        mandate_translation_url = reverse("espace_aidant:mandate_translation")
         self.selenium.find_element(
             By.CSS_SELECTOR, f"a[href='{mandate_translation_url}']"
         ).click()
         time.sleep(2)
 
-        self.wait.until(self.path_matches("mandate_translation"))
-        self.check_accessibility("mandate_translation", strict=True)
+        self.wait.until(self.path_matches("espace_aidant:mandate_translation"))
+        self.check_accessibility("espace_aidant:mandate_translation", strict=True)
 
         self.wait.until(
             expected_conditions.text_to_be_present_in_element(

@@ -1,3 +1,5 @@
+from django.urls import reverse
+
 from playwright.async_api import expect
 
 from aidants_connect_common.tests.test_accessibility.test_playwright import (
@@ -46,17 +48,21 @@ class EspaceResponsableFicheAidantAccessibilityTests(AccessibilityTestCase):
     async def _open_url(self):
         await self.login_aidant(self.responsable_tom, self.otp_token)
         await self.page.goto(
-            self.live_server_url + f"/espace-responsable/aidant/{self.aidant_sarah.id}/"
+            self.live_server_url
+            + reverse(
+                "espace_referent:aidant_detail",
+                kwargs={"aidant_id": self.aidant_sarah.id},
+            )
         )
         await self.wait_for_path_match(
-            "espace_responsable_aidant",
+            "espace_referent:aidant_detail",
             kwargs={"aidant_id": self.aidant_sarah.id},
         )
 
     @async_test
     async def test_accessibility(self):
         await self.lazy_loading(self._open_url)
-        await self.check_accessibility("espace_responsable_aidant", strict=True)
+        await self.check_accessibility("espace_referent:aidant_detail", strict=True)
 
     @async_test
     async def test_title_is_correct(self):

@@ -219,6 +219,6 @@ class ManagerFirstLoginWithCodeView(FormView):
         )
 
     def get_success_url(self, **kwargs):
-        # url = reverse_lazy("espace_responsable_aidant_add_app_otp", args=(self.manager_info.pk,))  # noqa
-        url = reverse_lazy("espace_responsable")
+        # url = reverse_lazy("espace_referent:aidant_add_app_otp", args=(self.manager_info.pk,))  # noqa
+        url = reverse_lazy("espace_referent:home")
         return url

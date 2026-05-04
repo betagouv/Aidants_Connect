@@ -1,0 +1,103 @@
+from django.urls import path
+
+from aidants_connect_web.views import espace_responsable
+
+app_name = "espace_referent"
+
+urlpatterns = [
+    path(
+        "",
+        espace_responsable.HomeView.as_view(),
+        name="home",
+    ),
+    path(
+        "organisation/",
+        espace_responsable.OrganisationView.as_view(),
+        name="organisation",
+    ),
+    path(
+        "aidants/",
+        espace_responsable.AidantsView.as_view(),
+        name="aidants",
+    ),
+    path(
+        "referents/",
+        espace_responsable.ReferentsView.as_view(),
+        name="referents",
+    ),
+    path(
+        "organisation/<int:organisation_id>/responsables/",
+        espace_responsable.OrganisationResponsables.as_view(),
+        name="organisation_responsables",
+    ),
+    path(
+        "aidant/<int:aidant_id>/",
+        espace_responsable.AidantView.as_view(),
+        name="aidant_detail",
+    ),
+    path(
+        "aidant/<int:aidant_id>/attestation-formation/",
+        espace_responsable.GenerateAidantFormationAttestation.as_view(),
+        name="aidant_formation_attestation",
+    ),
+    path(
+        "aidant/ajouter/",
+        espace_responsable.NewHabilitationRequest.as_view(),
+        name="aidant_new",
+    ),
+    path(
+        "aidant/<int:aidant_id>/supprimer-carte/",
+        espace_responsable.RemoveCardFromAidant.as_view(),
+        name="aidant_remove_card",
+    ),
+    path(
+        "aidant/<int:aidant_id>/ajouter-otp-app/",
+        espace_responsable.AddAppOTPToAidant.as_view(),
+        name="aidant_add_app_otp",
+    ),
+    path(
+        "aidant/<int:aidant_id>/supprimer-otp-app/",
+        espace_responsable.RemoveAppOTPFromAidant.as_view(),
+        name="aidant_remove_app_otp",
+    ),
+    path(
+        "aidant/<int:aidant_id>/changer-organisations/",
+        espace_responsable.ChangeAidantOrganisations.as_view(),
+        name="aidant_change_organisations",
+    ),
+    path(
+        "aidant/<int:aidant_id>/supprimer-organisation/<int:organisation_id>/",  # noqa: E501
+        espace_responsable.RemoveAidantFromOrganisationView.as_view(),
+        name="remove_aidant_from_organisation",
+    ),
+    path(
+        "aidant/<int:aidant_id>/reactivate-aidant/<int:organisation_id>/",  # noqa: E501
+        espace_responsable.ReactivateAidantFromOrganisationView.as_view(),
+        name="reactivate_aidant_from_organisation",
+    ),
+    path(
+        "aidant/<int:aidant_id>/type-carte",
+        espace_responsable.ChooseTOTPDevice.as_view(),
+        name="choose_totp",
+    ),
+    path(
+        "aidant/<int:aidant_id>/lier-carte",
+        espace_responsable.AssociateAidantCarteTOTP.as_view(),
+        name="associate_totp",
+    ),
+    path(
+        "aidant/<int:aidant_id>/valider-carte",
+        espace_responsable.ValidateAidantCarteTOTP.as_view(),
+        name="validate_totp",
+    ),
+    path(
+        "aidant-a-former/<int:request_id>/annuler-demande",
+        espace_responsable.CancelHabilitationRequestView.as_view(),
+        name="cancel_habilitation",
+    ),
+    path(
+        "aidant-a-former/<int:request_id>/inscription-formation/",
+        espace_responsable.FormationRegistrationView.as_view(),
+        name="register_formation",
+    ),
+]

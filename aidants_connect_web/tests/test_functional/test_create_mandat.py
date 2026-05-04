@@ -93,7 +93,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         )
 
     def test_create_new_mandat(self):
-        self.open_live_url("/creation_mandat/")
+        self.open_live_url(reverse("espace_aidant:new_mandat"))
 
         self.login_aidant(self.aidant)
 
@@ -114,8 +114,8 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.selenium.find_element(By.CSS_SELECTOR, "#id_duree_short ~ label").click()
 
         self._inject_session_cookie()
-        self.open_live_url("/creation_mandat/recapitulatif/")
-        self.wait.until(self.path_matches("new_mandat_recap"))
+        self.open_live_url(reverse("espace_aidant:new_mandat_recap"))
+        self.wait.until(self.path_matches("espace_aidant:new_mandat_recap"))
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -145,10 +145,10 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.assertEqual(1, mandat_qs.count())
         self.assertEqual(2, mandat_qs[0].autorisations.count())
 
-        self.open_live_url("/usagers/")
+        self.open_live_url(reverse("espace_aidant:usagers"))
 
     def test_create_new_remote_mandat_with_legacy_consent(self):
-        self.open_live_url("/creation_mandat/")
+        self.open_live_url(reverse("espace_aidant:new_mandat"))
 
         self.login_aidant(self.aidant)
 
@@ -198,8 +198,8 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.selenium.find_element(By.XPATH, f"//*[contains(text(), '{text}')]").click()
 
         self._inject_session_cookie(is_remote=True)
-        self.open_live_url("/creation_mandat/recapitulatif/")
-        self.wait.until(self.path_matches("new_mandat_recap"))
+        self.open_live_url(reverse("espace_aidant:new_mandat_recap"))
+        self.wait.until(self.path_matches("espace_aidant:new_mandat_recap"))
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -240,7 +240,7 @@ class CreateNewMandatTests(FunctionalTestCase):
     def test_create_new_remote_mandat_with_sms_consent(self, uuid4_mock: Mock):
         uuid4_mock.return_value = UUID
 
-        self.open_live_url("/creation_mandat/")
+        self.open_live_url(reverse("espace_aidant:new_mandat"))
 
         self.login_aidant(self.aidant)
 
@@ -299,11 +299,13 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # # Send recap mandate and go to second step
         self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect").click()
-        self.wait.until(self.path_matches("new_mandat_remote_second_step"))
+        self.wait.until(
+            self.path_matches("espace_aidant:new_mandat_remote_second_step")
+        )
 
         # # Send user consent request
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-        self.wait.until(self.path_matches("new_mandat_waiting_room"))
+        self.wait.until(self.path_matches("espace_aidant:new_mandat_waiting_room"))
 
         # # Test the message is correctly logged
         consent_request_log: Journal = Journal.objects.find_sms_consent_requests(
@@ -317,12 +319,12 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         # # Test that page blocks until user has consented
         self.selenium.refresh()
-        self.wait.until(self.path_matches("new_mandat_waiting_room"))
+        self.wait.until(self.path_matches("espace_aidant:new_mandat_waiting_room"))
 
         # Try to force creation of mandate; should be redirected to waiting room
-        self.open_live_url(reverse("new_mandat_recap"))
+        self.open_live_url(reverse("espace_aidant:new_mandat_recap"))
 
-        self.wait.until(self.path_matches("new_mandat_waiting_room"))
+        self.wait.until(self.path_matches("espace_aidant:new_mandat_waiting_room"))
 
         # Simulate user content
         self._user_consents("0 800 840 800")
@@ -348,8 +350,8 @@ class CreateNewMandatTests(FunctionalTestCase):
         self._inject_session_cookie(
             is_remote=True, remote_constent_method=RemoteConsentMethodChoices.SMS.name
         )
-        self.open_live_url("/creation_mandat/recapitulatif/")
-        self.wait.until(self.path_matches("new_mandat_recap"))
+        self.open_live_url(reverse("espace_aidant:new_mandat_recap"))
+        self.wait.until(self.path_matches("espace_aidant:new_mandat_recap"))
 
         # Recap all the information for the Mandat
         recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
@@ -379,7 +381,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.assertEqual(2, mandat_qs[0].autorisations.count())
 
     def test_bdf_warn_notification(self):
-        self.open_live_url("/creation_mandat/")
+        self.open_live_url(reverse("espace_aidant:new_mandat"))
 
         self.login_aidant(self.aidant)
 
@@ -408,7 +410,7 @@ class CreateNewMandatTests(FunctionalTestCase):
         self.aidant.organisation.allowed_demarches = ["papiers", "famille", "social"]
         self.aidant.organisation.save()
 
-        self.open_live_url("/creation_mandat/")
+        self.open_live_url(reverse("espace_aidant:new_mandat"))
 
         self.login_aidant(self.aidant)
 

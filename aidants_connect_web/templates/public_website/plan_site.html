@@ -35,9 +35,9 @@
       <li>
         Espace aidant :
         <ul class="fr-ml-2w">
-          <li><a href="{% url 'espace_aidant_home' %}" class="fr-link">Accueil</a></li>
-          <li><a href="{% url 'usagers' %}" class="fr-link">Mandats</a></li>
-          <li><a href="{% url 'new_mandat' %}" class="fr-link">Créer un mandat</a></li>
+          <li><a href="{% url 'espace_aidant:home' %}" class="fr-link">Accueil</a></li>
+          <li><a href="{% url 'espace_aidant:usagers' %}" class="fr-link">Mandats</a></li>
+          <li><a href="{% url 'espace_aidant:new_mandat' %}" class="fr-link">Créer un mandat</a></li>
         </ul>
       </li>
     </ul>
@@ -48,10 +48,10 @@
       <li>
         Espace référent :
         <ul class="fr-ml-2w">
-          <li><a href="{% url 'espace_responsable' %}" class="fr-link">Accueil</a></li>
-          <li><a href="{% url 'espace_responsable_aidants' %}" class="fr-link">Aidants</a></li>
-          <li><a href="{% url 'espace_responsable_referents' %}" class="fr-link">Référents</a></li>
-          <li><a href="{% url 'espace_responsable_organisation' %}" class="fr-link">Mon organisation</a></li>
+          <li><a href="{% url 'espace_referent:home' %}" class="fr-link">Accueil</a></li>
+          <li><a href="{% url 'espace_referent:aidants' %}" class="fr-link">Aidants</a></li>
+          <li><a href="{% url 'espace_referent:referents' %}" class="fr-link">Référents</a></li>
+          <li><a href="{% url 'espace_referent:organisation' %}" class="fr-link">Mon organisation</a></li>
         </ul>
       </li>
     </ul>
