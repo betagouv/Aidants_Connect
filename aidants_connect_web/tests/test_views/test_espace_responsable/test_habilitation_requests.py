@@ -803,6 +803,29 @@ class AlreadyTrainedStructureChangeRequestTests(TestCase):
         self.assertEqual(self.trained_aidant.email.lower(), scr.email)
         self.assertEqual("new-address@example.com", scr.new_email)
 
+    def test_all_trained_new_email_already_used_rejected(self):
+        taken_address = "taken-for-new-email@example.com"
+        other = AidantFactory(
+            organisation=OrganisationFactory(),
+            username=taken_address,
+            email=taken_address,
+        )
+        self.client.force_login(self.responsable)
+        self._start_already_trained_wizard()
+        entries = [
+            {
+                "email": self.trained_aidant.email,
+                "email_will_change": True,
+                "new_email": other.email,
+            }
+        ]
+        post_data = self._build_trained_post_data(entries)
+        self.client.post(self.add_aidant_trained_url, data=post_data)
+        post_data = self._build_trained_post_data(entries, with_lookup_done=True)
+        response = self.client.post(self.add_aidant_trained_url, data=post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, StructureChangeRequest.objects.count())
+
     def test_all_trained_multiple_aidants(self):
         self.client.force_login(self.responsable)
         response = self._wizard_already_trained_flow(

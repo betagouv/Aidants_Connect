@@ -1006,7 +1006,9 @@ class StructureChangeRequestForm(forms.ModelForm, DsfrBaseForm):
             raise ValidationError(
                 "Ce champ est obligatoire lorsque l'e-mail sera différent."
             )
-        return new_email or None
+        if not new_email:
+            return None
+        return new_email.lower()
 
     def clean(self):
         data = super().clean()
@@ -1025,6 +1027,41 @@ class StructureChangeRequestForm(forms.ModelForm, DsfrBaseForm):
                         "Ce champ est obligatoire lorsque l'e-mail sera différent."
                     ),
                 )
+
+        # Cross-field checks need ``email`` from ``clean_email()``; those run in
+        # field-declaration order, so ``clean_new_email`` may run before ``email``
+        # is available — validate here instead.
+        lookup_email = data.get("email")
+        new_email = data.get("new_email")
+        if data.get("email_will_change") and new_email and lookup_email:
+            current_email = lookup_email.strip().lower()
+            if new_email == current_email:
+                self.add_error(
+                    "new_email",
+                    ValidationError(
+                        "La nouvelle adresse e-mail doit être différente de l'adresse "
+                        "actuellement utilisée pour ce compte."
+                    ),
+                )
+            elif not self.errors.get("new_email"):
+                aidant = Aidant.objects.filter(username__iexact=current_email).first()
+                if aidant:
+                    taken = (
+                        Aidant.objects.exclude(pk=aidant.pk)
+                        .filter(email__iexact=new_email)
+                        .exists()
+                        or Aidant.objects.exclude(pk=aidant.pk)
+                        .filter(username__iexact=new_email)
+                        .exists()
+                    )
+                    if taken:
+                        self.add_error(
+                            "new_email",
+                            ValidationError(
+                                "Erreur : cet e-mail est déjà utilisé pour un autre "
+                                "compte aidant."
+                            ),
+                        )
 
         return data
 
