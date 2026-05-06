@@ -1000,12 +1000,7 @@ class StructureChangeRequestForm(forms.ModelForm, DsfrBaseForm):
         return email
 
     def clean_new_email(self):
-        email_will_change = self.cleaned_data.get("email_will_change")
         new_email = (self.cleaned_data.get("new_email") or "").strip()
-        if email_will_change and not new_email:
-            raise ValidationError(
-                "Ce champ est obligatoire lorsque l'e-mail sera différent."
-            )
         if not new_email:
             return None
         return new_email.lower()
@@ -1024,7 +1019,7 @@ class StructureChangeRequestForm(forms.ModelForm, DsfrBaseForm):
                 self.add_error(
                     "new_email",
                     ValidationError(
-                        "Ce champ est obligatoire lorsque l'e-mail sera différent."
+                        "Ce champ est obligatoire lorsque l'e-mail est différent."
                     ),
                 )
 
