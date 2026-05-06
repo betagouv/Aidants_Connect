@@ -84,6 +84,11 @@ h4,
   color: var(--text-active-red-marianne);
 }
 
+ul.list-unstyled {
+  list-style: none;
+  padding-left: 0;
+}
+
 p:last-child {
   margin-bottom: 0;
 }
