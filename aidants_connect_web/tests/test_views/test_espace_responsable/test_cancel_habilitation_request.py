@@ -101,7 +101,7 @@ class CancelHabilitationRequestTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("espace_referent:organisation"),
+            reverse("espace_referent:aidants"),
             fetch_redirect_response=False,
         )
         self.org1_waitling_list.refresh_from_db()

@@ -9,7 +9,9 @@
       <p class="fr-text">Renseignez les informations des aidants professionnels qui souhaitent être formés et habilités à accompagner des usagers avec Aidants Connect. La demande doit contenir au moins un aidant pour être valide.</p>
       <div data-fr-group="false" class="fr-accordions-group fr-mb-4w">
         {% for form in formset.forms %}
-          {% include "aidants_connect_web/espace_responsable/_accordion_aidant.html" with form=form idx=forloop.counter0 %}
+          <div id="aidant-form-{{ forloop.counter0 }}">
+            {% include "aidants_connect_web/espace_responsable/_accordion_aidant.html" with form=form idx=forloop.counter0 %}
+          </div>
         {% endfor %}
       </div>
 
@@ -19,6 +21,7 @@
         name="partial-submit"
         class="fr-btn fr-btn--secondary fr-btn--icon-right fr-icon-user-add-line"
         type="submit"
+        formaction="#aidant-form-{{ formset.forms|length }}"
       >
         Ajouter un aidant
       </button>

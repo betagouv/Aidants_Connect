@@ -41,9 +41,24 @@ urlpatterns = [
         name="aidant_formation_attestation",
     ),
     path(
-        "aidant/ajouter/",
-        espace_responsable.NewHabilitationRequest.as_view(),
-        name="aidant_new",
+        "aidant/ajouter/profil/",
+        espace_responsable.AddAidantProfileChoiceView.as_view(),
+        name="aidant_new_profile",
+    ),
+    path(
+        "aidant/ajouter/aidants-formes/",
+        espace_responsable.AddAidantTrainedView.as_view(),
+        name="aidant_new_trained",
+    ),
+    path(
+        "aidant/ajouter/aidants-non-formes/",
+        espace_responsable.AddAidantUntrainedView.as_view(),
+        name="aidant_new_untrained",
+    ),
+    path(
+        "aidant/ajouter/confirmation/",
+        espace_responsable.AddAidantConfirmationView.as_view(),
+        name="aidant_new_confirmation",
     ),
     path(
         "aidant/<int:aidant_id>/supprimer-carte/",
@@ -94,6 +109,11 @@ urlpatterns = [
         "aidant-a-former/<int:request_id>/annuler-demande",
         espace_responsable.CancelHabilitationRequestView.as_view(),
         name="cancel_habilitation",
+    ),
+    path(
+        "demande-changement-structure/<int:request_id>/annuler",
+        espace_responsable.CancelStructureChangeRequestView.as_view(),
+        name="cancel_structure_change",
     ),
     path(
         "aidant-a-former/<int:request_id>/inscription-formation/",
