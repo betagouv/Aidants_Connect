@@ -826,6 +826,34 @@ class AlreadyTrainedStructureChangeRequestTests(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(0, StructureChangeRequest.objects.count())
 
+    def test_all_trained_email_change_without_new_email_displays_error(self):
+        self.client.force_login(self.responsable)
+        self._start_already_trained_wizard()
+        entries = [
+            {
+                "email": self.trained_aidant.email,
+                "email_will_change": True,
+                "new_email": "",
+            }
+        ]
+
+        # First POST performs lookup and shows contextual message.
+        post_data = self._build_trained_post_data(entries)
+        self.client.post(self.add_aidant_trained_url, data=post_data)
+
+        # Second POST enforces required new_email once lookup is done.
+        post_data = self._build_trained_post_data(entries, with_lookup_done=True)
+        response = self.client.post(self.add_aidant_trained_url, data=post_data)
+
+        self.assertEqual(200, response.status_code)
+        form = response.context["formset"].forms[0]
+        self.assertFormError(
+            form,
+            "new_email",
+            "Ce champ est obligatoire lorsque l'e-mail est différent.",
+        )
+        self.assertEqual(0, StructureChangeRequest.objects.count())
+
     def test_all_trained_multiple_aidants(self):
         self.client.force_login(self.responsable)
         response = self._wizard_already_trained_flow(
