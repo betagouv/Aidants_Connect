@@ -139,6 +139,10 @@ class StatistiquesView(TemplateView):
         ).count()
 
         data, data_total = self.get_demarches_stats()
+        demarches_transcription = [
+            {"title": title, "value": value}
+            for title, value in zip(data["titles"], data["values"])
+        ]
 
         return super().get_context_data(
             **kwargs,
@@ -148,6 +152,7 @@ class StatistiquesView(TemplateView):
                 "Mandats créés": mandat_count,
             },
             data=data,
+            demarches_transcription=demarches_transcription,
             deployment_section=(
                 {
                     "Aidants habilités": aidants_count,
