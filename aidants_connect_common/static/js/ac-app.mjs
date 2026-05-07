@@ -1,9 +1,9 @@
-import {Application, Controller} from "Stimulus"
+import { Application, Controller } from "Stimulus"
 
 
 class BaseController extends Controller {
     /** @returns {MainModal} */
-    get modalController () {
+    get modalController() {
         if (this._modalController === undefined) {
             this._modalController = this.application.getControllerForElementAndIdentifier(
                 document.querySelector('[data-controller="main-modal"]'), "main-modal"
@@ -12,24 +12,24 @@ class BaseController extends Controller {
         return this._modalController
     }
 
-    noop () { /* Does nothing */ }
+    noop() { /* Does nothing */ }
 
-    showElement (elt) {
+    showElement(elt) {
         elt.removeAttribute("hidden");
         elt.removeAttribute("aria-hidden");
     }
 
-    hideElement (elt) {
+    hideElement(elt) {
         elt.setAttribute("hidden", "hidden");
         elt.setAttribute("aria-hidden", "true");
     }
 
-    mutateVisibility (visibility, elt) {
+    mutateVisibility(visibility, elt) {
         if (visibility) this.showElement(elt);
         else this.hideElement(elt);
     }
 
-    mutateRequirement (required, elt) {
+    mutateRequirement(required, elt) {
         if (required) elt.setAttribute("required", "required");
         else elt.removeAttribute("required");
     }
@@ -61,21 +61,22 @@ class BaseController extends Controller {
  */
 class MainModal extends BaseController {
     static ONCLICK_EVENT = "onClick"
+    static DEFAULT_TITLE = "Fenêtre modale"
     static STATES = Object.freeze({
         HIDDEN: 0,
         VISIBLE: 1
     })
     static targets = ["dialog", "title", "content", "footer", "loaderTpl", "errorTpl", "footerButton"]
     static values = {
-        title: {type: String, default: ""},
-        footer: {type: Object, default: undefined},
-        state: {type: Number, default: MainModal.STATES.HIDDEN}
+        title: { type: String, default: "" },
+        footer: { type: Object, default: undefined },
+        state: { type: Number, default: MainModal.STATES.HIDDEN }
     }
 
     get ONCLICK_EVENT() {
         return this.constructor.ONCLICK_EVENT
     }
-    get STATES () {
+    get STATES() {
         return this.constructor.STATES
     }
 
@@ -85,22 +86,23 @@ class MainModal extends BaseController {
      * @param {String} content Modal body. Must be valid HTML
      * @param {ButtonGroupDefinition} [buttons]
      */
-    show ({title = "", content, buttons = undefined}) {
-        this.titleValue = title
+    show({ title = "", content, buttons = undefined }) {
+        const normalizedTitle = title.trim().length > 0 ? title.trim() : this.constructor.DEFAULT_TITLE
+        this.titleValue = normalizedTitle
         this.contentTarget.innerHTML = content
         this.__setFooter(buttons)
         this.stateValue = this.STATES.VISIBLE
     }
 
     showLoader() {
-        this.show({content: this.loaderTplTarget.innerHTML})
+        this.show({ content: this.loaderTplTarget.innerHTML })
     }
 
     showError() {
-        this.show({content: this.errorTplTarget.innerHTML})
+        this.show({ content: this.errorTplTarget.innerHTML })
     }
 
-    hide () {
+    hide() {
         this.stateValue = MainModal.STATES.HIDDEN
     }
 
@@ -108,7 +110,7 @@ class MainModal extends BaseController {
      * @private
      * @param {Number} value New value
      */
-    stateValueChanged (value) {
+    stateValueChanged(value) {
         if (value === this.STATES.VISIBLE) {
             this.showElement(this.element)
             dsfr(this.dialogTarget).modal.disclose()
@@ -125,7 +127,7 @@ class MainModal extends BaseController {
      * @private
      * @param {String} value New modal title
      */
-    titleValueChanged (value) {
+    titleValueChanged(value) {
         if (value.length === 0) {
             this.titleTarget.textContent = ""
             this.hideElement(this.titleTarget)
@@ -137,12 +139,12 @@ class MainModal extends BaseController {
     }
 
     /** @private */
-    onClick ({target, params}) {
-        this.dispatch(this.ONCLICK_EVENT, {detail: params})
+    onClick({ target, params }) {
+        this.dispatch(this.ONCLICK_EVENT, { detail: params })
     }
 
     /** @private */
-    onConceal () {
+    onConceal() {
         this.stateValue = this.STATES.HIDDEN
     }
 
@@ -150,10 +152,10 @@ class MainModal extends BaseController {
      * @private
      * @param {ButtonDefinition} button
      */
-    __createButton (button) {
+    __createButton(button) {
         button.classes = button.classes ? ` ${button.classes}` : ""
         const params = Object
-            .entries(Object.assign({}, button.callbackParams, {action: button.id}))
+            .entries(Object.assign({}, button.callbackParams, { action: button.id }))
             .map(([k, v]) => `data-${this.identifier}-${k}-param="${v}"`)
             .join("\n")
 
@@ -170,7 +172,7 @@ class MainModal extends BaseController {
      * @private
      * @param {ButtonGroupDefinition} [value] New footer buttons
      */
-    __setFooter (value) {
+    __setFooter(value) {
         if (value === undefined) {
             this.footerTarget.textContent = ""
             return this.hideElement(this.footerTarget)
@@ -191,4 +193,4 @@ const aidantsConnectApplicationReady = Promise.all([AidantsConnectApplication.st
     document.documentElement.dataset.appReady = "true"
     return AidantsConnectApplication
 })
-export {AidantsConnectApplication, aidantsConnectApplicationReady, BaseController, MainModal}
+export { AidantsConnectApplication, aidantsConnectApplicationReady, BaseController, MainModal }
