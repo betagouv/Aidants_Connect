@@ -41,7 +41,7 @@
   </div>
   <div class="fr-container--fluid fr-background-action-high--blue-france fr-text-inverted--grey fr-py-12w">
     <div class="fr-container">
-      <ul class="fr-grid-row fr-grid-row--gutters list-unstyled">
+      <ul class="fr-grid-row fr-grid-row--gutters fr-raw-list">
         <li class="fr-col-md-4 fr-col-12">
           <div class="fr-icon-lock-fill fr-icon--lg fr-mb-3w"></div>
           <h2 class="fr-h3 fr-text-inverted--grey">Sécurisez vos accompagnements</h2>
@@ -98,7 +98,7 @@
       Quand utiliser Aidants Connect ?
     </h2>
     <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
-      <ul class="fr-col-md-6 fr-col-sm-8 fr-col-12 list-unstyled">
+      <ul class="fr-col-md-6 fr-col-sm-8 fr-col-12 fr-raw-list">
        <li class="flex fr-mb-3w fr-pr-md-15w">
         <div class="icon-26">
           <img src="{% static 'images/icons/arrow-right-circle.svg' %}" alt="">
@@ -198,7 +198,7 @@
   {% if testimonies|length > 0 %}
     <div class="fr-container fr-mt-8w">
       <h2 class="fr-h3 fr-text--center">Ils utilisent Aidants Connect</h2>
-      <ul class="fr-grid-row fr-grid-row--gutters fr-mb-6w list-unstyled">
+      <ul class="fr-grid-row fr-grid-row--gutters fr-mb-6w fr-raw-list">
         {% for testimony in testimonies %}
           <li class="fr-col-md-4 fr-col-sm-6 fr-col-12">
             <div class="fr-card fr-enlarge-link">
