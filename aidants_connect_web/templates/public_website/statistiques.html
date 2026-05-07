@@ -20,7 +20,7 @@
       <h2 class="fr-title-icon-left fr-icon-statistics-use">Utilisation</h2>
 
       <div class="stats-container">
-        <ul class="fr-grid-row fr-grid-row--gutters list-unstyled">
+        <ul class="fr-grid-row fr-grid-row--gutters fr-raw-list">
         {% for label, count in usage_section.items %}
           <li class="stat-col fr-col-12 fr-col-md-4 fr-m-0">
             <span class="stat-number">{{ count }}</span>
@@ -82,7 +82,7 @@
       <div class="fr-grid-row fr-grid-row--gutters">
         {% for section in deployment_section %}
           <div class="fr-col-12 fr-col-md-6">
-            <ul class="stats-container fr-grid-row list-unstyled">
+            <ul class="stats-container fr-grid-row fr-raw-list">
               {% for label, count in section.items %}
                 <li class="stat-col fr-col-12 fr-col-sm-6">
                   <span class="stat-number">{{ count }}</span>
