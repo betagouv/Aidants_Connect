@@ -1,27 +1,26 @@
 {% load ac_common static %}
 
-
-<div class="fr-grid-row fr-grid-row--gutters">
+<ul class="fr-grid-row fr-grid-row--gutters fr-raw-list">
 {% if aidant.can_create_mandats %}
-  <div class="fr-col-md-4 fr-col-12">
+  <li class="fr-col-md-4 fr-col-12">
     <div class="fr-card fr-enlarge-link fr-card--download fr-card--horizontal fr-card--horizontal-tier">
       <div class="fr-card__body">
         <div class="fr-card__content">
             <h3 class="fr-card__title">
               <a class="fr-text--lg" href="{% url 'espace_aidant:generate_formation_attestation' %}">Attestation de formation</a>
             </h3>
-            <p class="fr-card__desc">Téléchargez votre attestion Aidants Connect</p>
+            <p class="fr-card__desc">Téléchargez votre attestation Aidants Connect</p>
 
         </div>
       </div>
       <div class="fr-card__header fr-background-contrast--blue-france fr-grid-row fr-grid-row--middle fr-px-3w">
-        <img class="fr-responsive-img" src="{% static 'images/attestation.svg' %}" alt="" />
+        <img class="fr-responsive-img" src="{% static 'images/attestation.svg' %}" alt="" aria-hidden="true" />
       </div>
     </div>
-  </div>
+  </li>
 {% endif %}
 
-  <div class="fr-col-md-4 fr-col-12">
+  <li class="fr-col-md-4 fr-col-12">
     <div class="fr-card fr-enlarge-link fr-card--horizontal fr-card--horizontal-tier">
       <div class="fr-card__body">
         <div class="fr-card__content">
@@ -39,11 +38,11 @@
         </div>
       </div>
       <div class="fr-card__header fr-background-contrast--blue-france fr-grid-row fr-grid-row--middle fr-px-3w">
-        <img class="fr-responsive-img" src="{% static 'images/self_training.svg' %}" alt="" />
+        <img class="fr-responsive-img" src="{% static 'images/self_training.svg' %}" alt="" aria-hidden="true" />
       </div>
     </div>
-  </div>
-  <div class="fr-col-md-4 fr-col-12">
+  </li>
+  <li class="fr-col-md-4 fr-col-12">
     <div class="fr-card fr-enlarge-link fr-card--horizontal fr-card--horizontal-tier">
       <div class="fr-card__body">
         <div class="fr-card__content">
@@ -54,23 +53,8 @@
         </div>
       </div>
       <div class="fr-card__header fr-background-contrast--blue-france fr-grid-row fr-grid-row--middle fr-px-3w">
-        <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/institutions/justice.svg' %}" alt="" />
+        <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/institutions/justice.svg' %}" alt="" aria-hidden="true" />
       </div>
     </div>
-  </div>
-  <div class="fr-col-md-4 fr-col-12" hidden>
-    <div class="fr-card fr-enlarge-link fr-card--horizontal fr-card--horizontal-tier">
-      <div class="fr-card__body">
-        <div class="fr-card__content">
-          <h3 class="fr-card__title">
-            <a class="fr-text--lg" href="#">Auto-formation</a>
-          </h3>
-          <p class="fr-card__desc">Description texte SM regular Lorem ipsum dolor sit amet, consectetur adipiscing elit,</p>
-        </div>
-      </div>
-      <div class="fr-card__header fr-background-contrast--blue-france fr-grid-row fr-grid-row--middle fr-px-3w">
-        <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/leisure/book.svg' %}" alt="" />
-      </div>
-    </div>
-  </div>
-</div>
+  </li>
+</ul>

@@ -19,14 +19,16 @@
 
       {% include "aidants_connect_web/espace_aidant/home.html#messages" with aidant=referent %}
 
-      <div class="fr-grid-row fr-grid-row--gutters">
-        <div class=" fr-col-md-3 fr-col-12">
+      <section aria-labelledby="actions-rapides-referent-title">
+        <h2 id="actions-rapides-referent-title" class="fr-sr-only">Actions rapides</h2>
+          <ul class="fr-grid-row fr-grid-row--gutters fr-raw-list">
+            <li class="fr-col-md-3 fr-col-12">
           <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
             <div class="fr-tile__body">
               <div class="fr-tile__content">
-                <h3 class="fr-tile__title">
+                <p class="fr-tile__title">
                   <a href="{% url 'espace_referent:aidants' %}">Gérer les comptes des aidants</a>
-                </h3>
+                </p>
               </div>
             </div>
             <div class="fr-tile__header">
@@ -39,14 +41,14 @@
               </div>
             </div>
           </div>
-        </div>
-        <div class=" fr-col-md-3 fr-col-12">
+            </li>
+            <li class="fr-col-md-3 fr-col-12">
           <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
             <div class="fr-tile__body">
               <div class="fr-tile__content">
-                <h3 class="fr-tile__title">
+                <p class="fr-tile__title">
                   <a href="{% url 'espace_referent:aidant_new_profile' %}">Habiliter de nouveaux aidants</a>
-                </h3>
+                </p>
               </div>
             </div>
             <div class="fr-tile__header">
@@ -59,14 +61,14 @@
               </div>
             </div>
           </div>
-        </div>
-        <div class=" fr-col-md-3 fr-col-12">
+            </li>
+            <li class="fr-col-md-3 fr-col-12">
           <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
             <div class="fr-tile__body">
               <div class="fr-tile__content">
-                <h3 class="fr-tile__title">
+                <p class="fr-tile__title">
                   <a href="{% url 'espace_referent:referents' %}">Désigner un co-référent</a>
-                </h3>
+                </p>
               </div>
             </div>
             <div class="fr-tile__header">
@@ -79,14 +81,14 @@
               </div>
             </div>
           </div>
-        </div>
-        <div class=" fr-col-md-3 fr-col-12">
+            </li>
+            <li class="fr-col-md-3 fr-col-12">
           <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
             <div class="fr-tile__body">
               <div class="fr-tile__content">
-                <h3 class="fr-tile__title">
+                <p class="fr-tile__title">
                   <a href="{% url 'espace_referent:organisation' %}">Configurer les thématiques</a>
-                </h3>
+                </p>
               </div>
             </div>
             <div class="fr-tile__header">
@@ -99,14 +101,14 @@
               </div>
             </div>
           </div>
-        </div>
-        <div class="fr-col-md-3 fr-col-12" hidden>
+            </li>
+            <li class="fr-col-md-3 fr-col-12" hidden>
           <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
             <div class="fr-tile__body">
               <div class="fr-tile__content">
-                <h3 class="fr-tile__title">
+                <p class="fr-tile__title">
                   <a href="#">Gérer les cartes </a>
-                </h3>
+                </p>
               </div>
             </div>
             <div class="fr-tile__header">
@@ -119,14 +121,14 @@
               </div>
             </div>
           </div>
-        </div>
-        <div class=" fr-col-md-3 fr-col-12">
+            </li>
+            <li class="fr-col-md-3 fr-col-12">
           <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
             <div class="fr-tile__body">
               <div class="fr-tile__content">
-                <h3 class="fr-tile__title">
+                <p class="fr-tile__title">
                   {% mailto AC_CONTACT_EMAIL link_text="Contacter l'équipe" %}
-                </h3>
+                </p>
               </div>
             </div>
             <div class="fr-tile__header">
@@ -139,8 +141,9 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
+            </li>
+          </ul>
+      </section>
     </div>
   </div>
   <div class="fr-container">
@@ -157,39 +160,35 @@
       </div>
       <div class="fr-col-12 fr-col-md-8">
         <div class="fr-bordered fr-bordered-blue fr-p-4w fr-height-100">
-          <div class="fr-grid-row">
-            <div class="fr-col-12 fr-mb-2w">
-              <h3 class="fr-h5 fr-mb-1w">
-                <span class="fr-icon-line-chart-line fr-mr-1w" aria-hidden="true"></span>
-                Statistiques
-              </h3>
+          <h3 class="fr-h5 fr-mb-3w">
+            <span class="fr-icon-line-chart-line fr-mr-1w" aria-hidden="true"></span>
+            Statistiques
+          </h3>
+          <dl class="fr-grid-row">
+            <div class="fr-col-12 fr-col-md-6 fr-mb-2w">
+              <dt class="fr-h6 fr-mb-1w">Mandats créés</dt>
+              <dd class="h2 margin-top-1rem fr-m-0">{{ organisation.num_mandats }}</dd>
             </div>
             <div class="fr-col-12 fr-col-md-6 fr-mb-2w">
-              <h4 class="fr-h6 fr-mb-1w">Mandats créés</h4>
-              <p class="h2 margin-top-1rem">{{ organisation.num_mandats }}</p>
+              <dt class="fr-h6 fr-mb-1w">Aidants actifs</dt>
+              <dd class="h2 margin-top-1rem fr-m-0">{{ organisation.num_active_aidants }}</dd>
             </div>
             <div class="fr-col-12 fr-col-md-6 fr-mb-2w">
-              <h4 class="fr-h6 fr-mb-1w">Aidants actifs</h4>
-              <p class="h2 margin-top-1rem">{{ organisation.num_active_aidants }}</p>
-            </div>
-          </div>
-          <div class="fr-grid-row">
-            <div class="fr-col-12 fr-col-md-6 fr-mb-2w">
-              <h4 class="fr-h6 fr-mb-1w">Mandats actifs</h4>
-              <p class="h2 margin-top-1rem">{{ organisation.num_active_mandats }}</p>
+              <dt class="fr-h6 fr-mb-1w">Mandats actifs</dt>
+              <dd class="h2 margin-top-1rem fr-m-0">{{ organisation.num_active_mandats }}</dd>
             </div>
             <div class="fr-col-12 fr-col-md-6 fr-mb-2w">
-              <h4 class="fr-h6 fr-mb-1w">Usagers accompagnés</h4>
-              <p class="h2 margin-top-1rem">{{ organisation.num_usagers }}</p>
+              <dt class="fr-h6 fr-mb-1w">Usagers accompagnés</dt>
+              <dd class="h2 margin-top-1rem fr-m-0">{{ organisation.num_usagers }}</dd>
             </div>
-          </div>
+          </dl>
         </div>
       </div>
     </div>
 
     <h2 class="fr-title-icon-left fr-icon-book-2-fill fr-mb-4v fr-mt-12v">Formation</h2>
 
-    {% include "aidants_connect_web/espace_aidant/formation.html" %}
+    {% include "aidants_connect_web/espace_aidant/formation.html" with aidant=referent %}
   </div>
 {% endblock content %}
 

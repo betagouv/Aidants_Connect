@@ -1,49 +1,55 @@
-<div class="fr-grid-row fr-grid-row--gutters fr-my-4w">
-  <div class="fr-col-12 fr-col-md-4">
-    <div class="fr-card fr-card--sm fr-enlarge-link">
-      <div class="fr-card__body">
-        <div class="fr-card__content">
-          <h3 class="fr-card__title">
-            <a class="" href="{% url 'espace_aidant:mandate_translation' %}">Exemple d'un mandat Aidants Connect</a>
-          </h3>
-          <p class="fr-card__desc">Version française et traductions</p>
+{% comment %}
+  Card titles: h3 under an h2 section (default), h4 under an h3 section
+  (pass resources_block_heading_level=4 from espace aidant home).
+{% endcomment %}
+{% with level=resources_block_heading_level|default:3 %}
+  <div class="fr-grid-row fr-grid-row--gutters fr-my-4w">
+    <div class="fr-col-12 fr-col-md-4">
+      <div class="fr-card fr-card--sm fr-enlarge-link">
+        <div class="fr-card__body">
+          <div class="fr-card__content">
+            <h{{ level }} class="fr-card__title">
+              <a class="" href="{% url 'espace_aidant:mandate_translation' %}">Exemple d'un mandat Aidants Connect</a>
+            </h{{ level }}>
+            <p class="fr-card__desc">Version française et traductions</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fr-col-12 fr-col-md-4">
+      <div class="fr-card fr-card--sm fr-enlarge-link">
+        <div class="fr-card__body">
+          <div class="fr-card__content">
+            <h{{ level }} class="fr-card__title">
+              <a
+                href="https://lesbases.anct.gouv.fr/ressources/fiches-de-mediation-franceconnect-et-aidants-connect"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Fiches pratiques pour les usagers
+              </a>
+            </h{{ level }}>
+            <p class="fr-card__desc">Version française</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fr-col-12 fr-col-md-4">
+      <div class="fr-card fr-card--sm fr-enlarge-link">
+        <div class="fr-card__body">
+          <div class="fr-card__content">
+            <h{{ level }} class="fr-card__title">
+              <a
+                href="https://lesbases.anct.gouv.fr/ressources/fiches-de-mediation-franceconnect-et-aidants-connect-traduites"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Version traduite des fiches pratiques
+              </a>
+            </h{{ level }}>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="fr-col-12 fr-col-md-4">
-    <div class="fr-card fr-card--sm fr-enlarge-link">
-      <div class="fr-card__body">
-        <div class="fr-card__content">
-          <h3 class="fr-card__title">
-            <a
-              href="https://lesbases.anct.gouv.fr/ressources/fiches-de-mediation-franceconnect-et-aidants-connect"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Fiches pratiques pour les usagers
-            </a>
-          </h3>
-          <p class="fr-card__desc">Version française</p>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="fr-col-12 fr-col-md-4">
-    <div class="fr-card fr-card--sm fr-enlarge-link">
-      <div class="fr-card__body">
-        <div class="fr-card__content">
-          <h3 class="fr-card__title">
-            <a
-              href="https://lesbases.anct.gouv.fr/ressources/fiches-de-mediation-franceconnect-et-aidants-connect-traduites"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Version traduite des fiches pratiques
-            </a>
-          </h3>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+{% endwith %}

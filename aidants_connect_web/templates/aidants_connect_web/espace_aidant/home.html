@@ -13,7 +13,7 @@
       {% endif %}
     >
       <div class="fr-alert{% if notification.type == notification.NotificationType.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION.value %} fr-alert--info{% else %} fr-alert--info{% endif %}">
-        <h3 class="fr-alert__title">{{ notification.type_label }}</h3>
+        <p class="fr-alert__title">{{ notification.type_label }}</p>
         <p>{{ notification.to_html }}</p>
         {% if notification.must_ack %}
           <button
@@ -42,13 +42,16 @@
 
       {% partial messages %}
 
-      <div class="fr-grid-row fr-grid-row--gutters fr-mt-12v">
-        {% for tile in main_tiles %}
-          <div class="fr-col-12 fr-col-md-3">
-            {% dsfr_tile tile %}
-          </div>
-        {% endfor %}
-      </div>
+      <section aria-labelledby="actions-rapides-aidant-title" class="fr-mt-12v">
+        <h2 id="actions-rapides-aidant-title" class="fr-sr-only">Actions rapides</h2>
+        <ul class="fr-grid-row fr-grid-row--gutters fr-raw-list">
+          {% for tile in main_tiles %}
+            <li class="fr-col-12 fr-col-md-3">
+              {% dsfr_tile tile %}
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
     </div>
   </section>
 
@@ -62,17 +65,17 @@
     {% for title, tiles in resources_tiles.items %}
       <h3>{{ title }}</h3>
 
-      <div class="fr-grid-row fr-grid-row--gutters">
+      <ul class="fr-grid-row fr-grid-row--gutters fr-raw-list">
         {% for tile in tiles %}
-          <div class="fr-col-12 fr-col-md-3">
+          <li class="fr-col-12 fr-col-md-3">
             {% dsfr_card tile %}
-          </div>
+          </li>
         {% endfor %}
-      </div>
+      </ul>
     {% endfor %}
 
     <h3>Mandat et fiches pratiques</h3>
-    {% include "aidants_connect_web/common/resources-block.html" %}
+    {% include "aidants_connect_web/common/resources-block.html" with resources_block_heading_level=4 %}
   </section>
 {% endblock content %}
 

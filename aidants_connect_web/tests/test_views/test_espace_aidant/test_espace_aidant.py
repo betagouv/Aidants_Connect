@@ -43,6 +43,20 @@ class EspaceAidantHomePageTests(TestCase):
         response = self.client.get(reverse("espace_aidant:home"))
         self.assertTemplateUsed(response, "aidants_connect_web/espace_aidant/home.html")
 
+    def test_formation_attestation_tile_is_visible_for_aidant_with_mandat_rights(self):
+        aidant_with_rights = AidantFactory(can_create_mandats=True)
+        self.client.force_login(aidant_with_rights)
+        response = self.client.get(reverse("espace_aidant:home"))
+        self.assertContains(response, "Attestation de formation")
+
+    def test_formation_attestation_tile_is_hidden_for_aidant_without_mandat_rights(
+        self,
+    ):
+        aidant_without_rights = AidantFactory(can_create_mandats=False)
+        self.client.force_login(aidant_without_rights)
+        response = self.client.get(reverse("espace_aidant:home"))
+        self.assertNotContains(response, "Attestation de formation")
+
 
 @tag("aidants")
 class BannerNotificationTests(TestCase):

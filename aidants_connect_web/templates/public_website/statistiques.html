@@ -16,50 +16,84 @@
       les statistiques concernant le projet, mises à jour en temps réel.
     </p>
 
-    <h2 class="fr-title-icon-left fr-icon-statistics-use">Utilisation</h2>
+    <section>
+      <h2 class="fr-title-icon-left fr-icon-statistics-use">Utilisation</h2>
 
-    <section class="stats-container grid">
-      {% for label, count in usage_section.items %}
-        <p class="stat-col fr-col fr-col-4 fr-m-0">
-          <span class="stat-number">{{ count }}</span>
-          {{ label }}
-        </p>
-      {% endfor %}
+      <div class="stats-container">
+        <ul class="fr-grid-row fr-grid-row--gutters fr-raw-list">
+        {% for label, count in usage_section.items %}
+          <li class="stat-col fr-col-12 fr-col-md-4 fr-m-0">
+            <span class="stat-number">{{ count }}</span>
+            {{ label }}
+          </li>
+        {% endfor %}
+        </ul>
+      </div>
     </section>
 
-    <h2 class="fr-title-icon-left fr-icon-statistics-type-demarche">Par type de démarche</h2>
-
-    <section class="stats-container">
-      <canvas id="mandats-chart" aria-label="Les périmètres des mandats" role="img">
-        <table>
-          <tr>
-            <th scope="col">Type de mandat</th>
-            <th scope="col">Nombre de démarches</th>
-          </tr>
-          {% for demarche in data %}
-            <tr>
-              <th scope="row">{{ demarche.title }}</th>
-              <td>{{ demarche.value }}</td>
-            </tr>
-          {% endfor %}
-        </table>
-      </canvas>
+    <section>
+      <h2 class="fr-title-icon-left fr-icon-statistics-type-demarche">Par type de démarche</h2>
+      <div class="stats-container">
+        <canvas id="mandats-chart" aria-label="Répartition du nombre de démarches par type" role="img"></canvas>
+      </div>
+      <div class="fr-transcription fr-mb-4w" id="mandats-chart-transcription">
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-chart-transcription">Transcription</button>
+        <div class="fr-collapse" id="fr-transcription-collapse-mandats-chart-transcription">
+          <div class="fr-transcription__footer">
+            <div class="fr-transcription__actions-group">
+              <button aria-controls="fr-transcription-modal-mandats-chart-transcription" data-fr-opened="false" type="button" class="fr-btn--fullscreen fr-btn">Agrandir</button>
+            </div>
+          </div>
+          <dialog id="fr-transcription-modal-mandats-chart-transcription" class="fr-modal" aria-labelledby="fr-transcription-modal-title-mandats-chart-transcription">
+            <div class="fr-container fr-container--fluid fr-container-md">
+              <div class="fr-grid-row fr-grid-row--center">
+                <div class="fr-col-12 fr-col-md-10 fr-col-lg-8">
+                  <div class="fr-modal__body">
+                    <div class="fr-modal__header">
+                      <button aria-controls="fr-transcription-modal-mandats-chart-transcription" title="Fermer" type="button" id="button-19" class="fr-btn--close fr-btn">Fermer</button>
+                    </div>
+                    <div class="fr-modal__content">
+                      <h1 id="fr-transcription-modal-title-mandats-chart-transcription" class="fr-modal__title">Transcription du graphique par type de démarche</h1>
+                      <table>
+                        <caption>Répartition du nombre de démarches par type</caption>
+                        <tr>
+                          <th scope="col">Type de démarche</th>
+                          <th scope="col">Nombre de démarches</th>
+                        </tr>
+                        {% for demarche in demarches_transcription %}
+                          <tr>
+                            <th scope="row">{{ demarche.title }}</th>
+                            <td>{{ demarche.value }}</td>
+                          </tr>
+                        {% endfor %}
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </dialog>
+        </div>
+      </div>
     </section>
 
-    <h2 class="fr-title-icon-left fr-icon-statistics-use">Déploiement</h2>
-
-    <div class="grid grid--gap">
-      {% for section in deployment_section %}
-        <section class="stats-container fr-col fr-col-6 grid">
-          {% for label, count in section.items %}
-            <p class="stat-col fr-col fr-col-6 fr-m-0">
-              <span class="stat-number">{{ count }}</span>
-              {{ label }}
-            </p>
-          {% endfor %}
-        </section>
-      {% endfor %}
-    </div>
+    <section>
+      <h2 class="fr-title-icon-left fr-icon-statistics-use">Déploiement</h2>
+      <div class="fr-grid-row fr-grid-row--gutters">
+        {% for section in deployment_section %}
+          <div class="fr-col-12 fr-col-md-6">
+            <ul class="stats-container fr-grid-row fr-raw-list">
+              {% for label, count in section.items %}
+                <li class="stat-col fr-col-12 fr-col-sm-6">
+                  <span class="stat-number">{{ count }}</span>
+                  {{ label }}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
   </div>
 {% endblock content %}
 
