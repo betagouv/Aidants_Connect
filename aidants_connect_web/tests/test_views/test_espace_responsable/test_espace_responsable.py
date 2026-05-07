@@ -67,6 +67,20 @@ class EspaceResponsableOrganisationPage(TestCase):
         response = self.client.get(reverse("espace_referent:organisation"))
         self.assertNotContains(response, "Numéro d’habilitation")
 
+    def test_show_formation_attestation_tile_when_referent_can_create_mandats(self):
+        self.responsable_tom.can_create_mandats = True
+        self.responsable_tom.save(update_fields=("can_create_mandats",))
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertContains(response, "Attestation de formation")
+
+    def test_hide_formation_attestation_tile_when_referent_cannot_create_mandats(self):
+        self.responsable_tom.can_create_mandats = False
+        self.responsable_tom.save(update_fields=("can_create_mandats",))
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertNotContains(response, "Attestation de formation")
+
     def test_I_can_restrict_demarches(self):
         # All demarches are allowed
         self.assertEqual(
