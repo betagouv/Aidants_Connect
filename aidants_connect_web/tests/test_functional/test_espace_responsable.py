@@ -368,12 +368,13 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         "inscrire les aidants en formation",
     ]
     NOT_YET_TRAINED_UNEXPECTED = [
-        "vous pourrez associer un moyen de connexion aux aidants",
+        "Une fois la demande validée, les aidants seront liés à votre organisation.",
+        "Aidants actifs",
     ]
 
     ALREADY_TRAINED_EXPECTED = [
         "La demande d'ajout, pour les aidants suivants, sera vérifiée par notre équipe",
-        "vous pourrez associer un moyen de connexion aux aidants",
+        "Une fois la demande validée, les aidants seront liés à votre organisation.",
     ]
     ALREADY_TRAINED_UNEXPECTED = [
         "L’éligibilité des aidants sera vérifée",
