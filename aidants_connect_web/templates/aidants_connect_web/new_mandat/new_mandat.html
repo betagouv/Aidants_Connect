@@ -87,60 +87,12 @@
         <fieldset class="is-remote-section fr-fieldset">
           <section class="fr-checkbox-group">
             {% dsfr_form_field form.is_remote %}
+            <input
+              type="hidden"
+              name="{{ form.remote_constent_method.html_name }}"
+              value="{{ legacy_method_value }}"
+            >
             <div class="fr-text-default--grey fr-text--xs fr-ml-4w">Vous devrez imprimer le mandat et le faire signer à la personne accompagnée aussi vite que possible. Ce mandat vous protège légalement.</div>
-          </section>
-          <section
-            class="mandate-remote-method-section"
-            hidden
-            aria-hidden="true"
-            data-mandate-form-controller-target="remoteConsentSection"
-          >
-            {% if form.remote_constent_method.errors %}
-              <div class="notification error" role="alert">
-                {{ form.remote_constent_method.errors }}
-              </div>
-            {% endif %}
-
-            <legend class="fr-h6 fr-mb-1w">
-              {{ form.remote_constent_method.label }}
-            </legend>
-            {% for subfield in form.remote_constent_method %}
-              <div
-                class="fr-mb-2w fr-radio-group"
-                data-controller="remote-method-controller"
-                data-remote-method-controller-consent-method-value="{{ subfield.data.value }}"
-              >
-                <input{% html_attrs subfield.data.attrs %}
-                  type="radio"
-                  name="{{ subfield.data.name }}"
-                  value="{{ subfield.data.value }}"
-                  data-mandate-form-controller-target="requiredInput"
-                  data-action="mandate-form-controller#remoteMethodTriggered"
-                >
-
-                <label for="{{ subfield.id_for_label }}" {% class_attr subfield.data.label_classes %}>
-                  <div class="{{ subfield.data.input_wrapper_base_class }}-label-text-and-description">
-                    <span class="fr-icon-{{ subfield.data.logo }} fr-mr-1w"></span>
-                    <span class="{{ subfield.data.input_wrapper_base_class }}-text">{{ subfield.choice_label }} : </span>
-                    <span class="{{ subfield.data.input_wrapper_base_class }}-description fr-text--sm">
-                      {{ subfield.data.description }}
-                    </span>
-                  </div>
-                </label>
-                {% if subfield.data.value == "SMS" %}
-                  <div
-                    class="related-fields"
-                    hidden
-                    aria-hidden="true"
-                    data-remote-method-controller-target="requiredInputs"
-                  >
-                    {% dsfr_form_field form.user_phone %}
-
-                    {% dsfr_form_field form.user_remote_contact_verified %}
-                  </div>
-                {% endif %}
-              </div>
-            {% endfor %}
           </section>
         </fieldset>
 
