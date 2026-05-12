@@ -74,7 +74,7 @@ class MandatCreationJsFormView(FormView):
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
-            "sms_method_value": RemoteConsentMethodChoices.SMS.name,
+            "legacy_method_value": RemoteConsentMethodChoices.LEGACY.name,
         }
 
 
