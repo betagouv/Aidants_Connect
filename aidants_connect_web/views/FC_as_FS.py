@@ -183,7 +183,7 @@ def fc_callback(request):
     logout_state = f"state={state}"
 
     fc_callback_uri_logout = (
-        f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('espace_aidant:logout_callback')}"
+        f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('logout_callback')}"
     )
     logout_redirect = f"post_logout_redirect_uri={fc_callback_uri_logout}"
     logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"
@@ -309,7 +309,7 @@ def fc_callback_v2(request):
     logout_state = f"state={state}"
 
     fc_callback_uri_logout = (
-        f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('espace_aidant:logout_callback')}"
+        f"{settings.FC_AS_FS_CALLBACK_URL}{reverse('logout_callback')}"
     )
     logout_redirect = f"post_logout_redirect_uri={fc_callback_uri_logout}"
     logout_url = f"{logout_base}?{logout_id_token}&{logout_state}&{logout_redirect}"

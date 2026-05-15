@@ -66,10 +66,10 @@ LEGACY_ROOT_AIDANT_URLPATTERNS = [
         r"^notifications(?P<remainder>/.*)?$",
         LegacyRootAidantRedirectView.as_view(segment="notifications"),
     ),
-    re_path(
-        r"^logout-callback(?P<remainder>/.*)?$",
-        LegacyRootAidantRedirectView.as_view(segment="logout-callback"),
-    ),
+    # re_path(
+    #     r"^logout-callback(?P<remainder>/.*)?$",
+    #     LegacyRootAidantRedirectView.as_view(segment="logout-callback"),
+    # ),
 ]
 
 # --- /espace-responsable/ → /espace-referent/ (mirror urls_espace_referent) --
