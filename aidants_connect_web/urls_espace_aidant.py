@@ -109,7 +109,7 @@ urlpatterns = [
         mandat.WaitingRoomJson.as_view(),
         name="new_mandat_waiting_room_json",
     ),
-    path("logout-callback/", mandat.NewMandatRecap.as_view(), name="logout_callback"),
+    # path("logout-callback/", mandat.NewMandatRecap.as_view(), name="logout_callback"),
     path(
         "creation_mandat/visualisation/projet/",
         mandat.AttestationProject.as_view(),
