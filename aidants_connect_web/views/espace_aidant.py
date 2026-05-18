@@ -3,11 +3,9 @@ from logging import getLogger
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.staticfiles.storage import staticfiles_storage
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
-from django.template.defaultfilters import filesizeformat
 from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -102,36 +100,14 @@ class Home(TemplateView):
         ]
 
     def get_resources_tiles(self):
-        def tile_attr_from_file(filepath: str) -> dict:
-            size = filesizeformat(staticfiles_storage.size(filepath))
-            return {
-                "description": f"PDF - {size}",
-                "link": static(filepath),
-                "heading_tag": self.tiles_heading_tag,
-            }
-
         tiles = {
-            "Bien démarrer": [
+            "Bien démarrer et m’entraîner": [
                 {
-                    "title": "S’authentifier sur la plateforme Aidants Connect",
-                    **tile_attr_from_file(
-                        "guides_aidants_connect/AC_Guide_Sauthentifier.pdf"
-                    ),
+                    "title": "Guide d'utilisation Aidants Connect",
+                    "link": "https://docs.numerique.gouv.fr/docs/6d7aa937-9030-4af4-9522-3a725ceda6da/",  # noqa: E501
+                    "new_tab": True,
+                    "heading_tag": self.tiles_heading_tag,
                 },
-                {
-                    "title": "Créer un mandat avec un usager",
-                    **tile_attr_from_file(
-                        "guides_aidants_connect/AC_Guide_CreerUnMandat.pdf"
-                    ),
-                },
-                {
-                    "title": "Réaliser la démarche avec un usager",
-                    **tile_attr_from_file(
-                        "guides_aidants_connect/AC_Guide_RealiserLaDemarche.pdf"
-                    ),
-                },
-            ],
-            "M’entraîner": [
                 {
                     "title": "Tutoriel interactif",
                     "link": settings.EMAIL_WELCOME_AIDANT_TUTORIEL_INTERACTIF,
