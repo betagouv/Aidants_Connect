@@ -227,22 +227,6 @@
       {% endif %}
     </div>
   {% endif %}
-
-  <div class="fr-follow">
-    <div class="fr-container">
-      <div class="fr-grid-row">
-        <div class="fr-col-12">
-          <div class="fr-follow__newsletter">
-            <div>
-              <h2 class="fr-h5">Abonnez-vous à notre lettre d’information</h2>
-              <p class="fr-text--sm">Inscrivez-vous à notre infolettre pour vous tenir au courant des nouveautés du projet :</p>
-            </div>
-            <iframe width="540" height="310" src="{{ BREVO_IFRAME_URL }}" title="Formulaire d’inscription à la lettre d’information Aidants Connect" nonce="{{ request.csp_nonce }}"></iframe>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 {% endblock content %}
 
 {% block extrajs %}
