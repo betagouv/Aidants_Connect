@@ -45,8 +45,8 @@
             </div>
           </details>
         </div>
-        <div class="fr-grid-row fr-grid-row--gutters">
-          <div
+        <ul class="fr-grid-row fr-grid-row--gutters fr-raw-list">
+          <li
             class="fr-col-12 fr-col-md-6{% if not physical_option_available %} disabled{% endif %}"
             {% if not physical_option_available %}title="{{ physical_option_unavailable_text }}"{% endif %}
           >
@@ -54,7 +54,7 @@
               <div class="fr-card__body">
                 <p>Une carte physique génératrice de code de connexion à la pression d’un bouton.</p>
                 <div class="fr-grid-row fr-grid-row--center">
-                  <img src="{% static 'images/carte-totp.png' %}" alt="" />
+                  <img src="{% static 'images/carte-totp.png' %}" alt="" aria-hidden="true" />
                 </div>
               </div>
               <div class="fr-card__footer fr-grid-row fr-grid-row--center">
@@ -94,8 +94,8 @@
                 {% endif %}
               </div>
             </div>
-          </div>
-          <div
+          </li>
+          <li
             class="fr-col-12 fr-col-md-6{% if not digital_option_available %} disabled{% endif %}"
             {% if not digital_option_available %}title="{{ digital_option_unavailable_text }}"{% endif %}
           >
@@ -106,7 +106,7 @@
                   Vous avez besoin du téléphone utilisé par l’aidant pour configurer cette option.
                 </p>
                 <div class="fr-grid-row fr-grid-row--center">
-                  <img src="{% static 'images/application-totp.png' %}" alt="" />
+                  <img src="{% static 'images/application-totp.png' %}" alt="" aria-hidden="true" />
                 </div>
               </div>
                 <div class="fr-card__footer fr-grid-row fr-grid-row--center">
@@ -129,8 +129,8 @@
                 {% endif %}
               </div>
             </div>
-          </div>
-        </div>
+          </li>
+        </ul>
       </div>
     </div>
   </div>
