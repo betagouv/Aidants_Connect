@@ -27,7 +27,16 @@
   <legend class="fr-fieldset__legend fr-text--lg fr-mb-1v">Informations administratives</legend>
   <div class="fr-fieldset__element fr-col-sm-4">{% aidantc_dsfr_form_field_no_asterisk form.siret %}</div>
 </fieldset>
-{{ form.address_fieldset }}
+<fieldset
+  class="fr-fieldset fr-mt-12v"
+  {% if not GOUV_ADDRESS_SEARCH_API_DISABLED %}
+  data-controller="address-autocomplete"
+  data-address-autocomplete-api-base-url-value="{{ GOUV_ADDRESS_SEARCH_API_BASE_URL }}"
+  {% endif %}
+>
+  <legend class="fr-fieldset__legend fr-text--lg fr-mb-1v">Adresse postale</legend>
+  {{ form.address_fieldset }}
+</fieldset>
 <fieldset class="fr-fieldset fr-mt-12v">
   <legend class="fr-fieldset__legend fr-text--lg fr-mb-1v">Informations descriptives</legend>
   <div class="fr-fieldset__element">{% aidantc_dsfr_form_field_no_asterisk form.web_site %}</div>
