@@ -33,7 +33,7 @@
           {% endif %}
         >
           <div class="fr-alert{% if notification.type == notification_type.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION %} fr-alert--info{% else %} fr-alert--info{% endif %}">
-            <h3 class="fr-alert__title">{{ notification.type_label }}</h3>
+            <p class="fr-alert__title">{{ notification.type_label }}</p>
             <p>{{ notification.to_html }}</p>
             {% if notification.must_ack %}
               <button
@@ -47,76 +47,6 @@
           </div>
         </div>
       {% endfor %}
-    </div>
-    <h2 class="fr-h3 fr-mt-6w fr-mb-3w" hidden><span class="fr-icon-bank-card-fill fr-text-title--blue-france fr-mr-1w" aria-hidden="true"></span>Gestion des cartes Aidants</h2>
-    <div class="fr-grid-row fr-grid-row--gutters fr-mb-4v" hidden>
-      <div class="fr-col-md-4 fr-col-sm-6 fr-col-12">
-        <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
-          <div class="fr-tile__body">
-            <div class="fr-tile__content">
-              <h3 class="fr-tile__title">
-                <a href="#">Faire une demande d'envois de cartes</a>
-              </h3>
-            </div>
-          </div>
-          <div class="fr-tile__header">
-            <div class="fr-tile__pictogram">
-              <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/document/national-identity-card.svg' %}" alt=""/>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="fr-col-md-4 fr-col-sm-6 fr-col-12">
-        <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
-          <div class="fr-tile__body">
-            <div class="fr-tile__content">
-              <h3 class="fr-tile__title">
-                <a href="#">Déclarer l’envoi d’un colis de retour</a>
-              </h3>
-            </div>
-          </div>
-          <div class="fr-tile__header">
-            <div class="fr-tile__pictogram">
-              <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/document/tax-stamp.svg' %}" alt=""/>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="fr-col-md-4 fr-col-sm-6 fr-col-12">
-        <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
-          <div class="fr-tile__body">
-            <div class="fr-tile__content">
-              <h3 class="fr-tile__title">
-                <a href="#">Carte perdue, défectueuse ?</a>
-              </h3>
-            </div>
-          </div>
-          <div class="fr-tile__header">
-            <div class="fr-tile__pictogram">
-              <img class="fr-responsive-img" src="{% static 'dsfr/dist/artwork/pictograms/system/error.svg' %}" alt=""/>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="fr-grid-row fr-grid-row--gutters fr-mb-6w" hidden>
-      <div class="fr-col-md-4 fr-col-12">
-        <div class="fr-bordered fr-p-4w">
-          <h3 class="fr-h5">Stock de cartes théorique</h3>
-          <p class="fr-text--xl">nb</p>
-          <div class="fr-grid-row fr-grid-row--right">
-            <a href="" class="fr-btn fr-btn--secondary fr-btn--sm fr-text-sm">Déclarer le nombre de cartes réel</a>
-          </div>
-        </div>
-      </div>
-      <div class="fr-col-md-8 fr-col-12">
-        <div class="fr-bordered fr-p-4w">
-          <h3 class="fr-h5">Événements en cours</h3>
-          <div class="fr-grid-row fr-grid-row--right">
-            <a href="" class="fr-btn fr-btn--secondary fr-btn--sm fr-text-sm">Voir les évènements terminés</a>
-          </div>
-        </div>
-      </div>
     </div>
     <h2 class="fr-h3 fr-mt-6w fr-mb-3w"><span class="fr-icon-settings-5-fill fr-text-title--blue-france fr-mr-1w" aria-hidden="true"></span>Paramètre de l'organisation</h2>
     <div class="fr-grid-row fr-grid-row--gutters fr-mb-4v">

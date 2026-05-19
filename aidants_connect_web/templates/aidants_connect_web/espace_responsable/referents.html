@@ -23,7 +23,7 @@
           {% endif %}
         >
           <div class="fr-alert{% if notification.type == notification_type.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION %} fr-alert--info{% else %} fr-alert--info{% endif %}">
-            <h3 class="fr-alert__title">{{ notification.type_label }}</h3>
+            <p class="fr-alert__title">{{ notification.type_label }}</p>
             <p>{{ notification.to_html }}</p>
             {% if notification.must_ack %}
               <button
