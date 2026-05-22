@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.conf import settings
 
 from django_blocklist.middleware import BlocklistMiddleware
-from django_blocklist.utils import add_to_blocklist, user_ip_from_request
+from django_blocklist.utils import update_blocklist, user_ip_from_request
 from redis import Redis
 from redis.exceptions import ConnectionError as RedisConnectionError
 
@@ -41,6 +41,6 @@ class ThrottleIPMiddleware:
             )
 
             if num_fail >= settings.BLOCKLIST_REQUEST_THRESHOLD:
-                add_to_blocklist({ip})
+                update_blocklist({ip})
 
         return response

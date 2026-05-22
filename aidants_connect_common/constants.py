@@ -5,6 +5,8 @@ from typing import List, Tuple
 from django.conf import settings
 from django.db.models import Choices, IntegerChoices, TextChoices
 from django.db.models.enums import ChoicesMeta as DjangoChoicesMeta
+
+# from django.db.models.enums import ChoicesType as DjangoChoicesMeta
 from django.utils.functional import Promise, classproperty
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
