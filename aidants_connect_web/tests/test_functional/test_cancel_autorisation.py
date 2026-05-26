@@ -51,7 +51,12 @@ class CancelAutorisationTests(FunctionalTestCase):
         )
 
     def test_cancel_autorisation_of_active_mandat(self):
-        self.open_live_url(f"/usagers/{self.usager_josephine.id}/")
+        self.open_live_url(
+            reverse(
+                "espace_aidant:usager_details",
+                kwargs={"usager_id": self.usager_josephine.id},
+            )
+        )
 
         self.login_aidant(self.aidant_thierry)
 
@@ -75,13 +80,15 @@ class CancelAutorisationTests(FunctionalTestCase):
 
         # Display attestation
         path = reverse(
-            "autorisation_cancelation_attestation",
+            "espace_aidant:autorisation_cancelation_attestation",
             kwargs={
                 "usager_id": self.usager_josephine.id,
                 "autorisation_id": self.money_authorization.id,
             },
         )
-        self.check_accessibility("autorisation_cancelation_success", strict=False)
+        self.check_accessibility(
+            "espace_aidant:autorisation_cancelation_success", strict=False
+        )
 
         self.selenium.find_element(By.XPATH, f'.//a[@href="{path}"]').click()
 
@@ -99,9 +106,12 @@ class CancelAutorisationTests(FunctionalTestCase):
 
         # See again all mandats of usager page
         self.open_live_url(
-            reverse("usager_details", kwargs={"usager_id": self.usager_josephine.id})
+            reverse(
+                "espace_aidant:usager_details",
+                kwargs={"usager_id": self.usager_josephine.id},
+            )
         )
-        self.check_accessibility("usager_details", strict=False)
+        self.check_accessibility("espace_aidant:usager_details", strict=False)
 
         active_autorisations_after = self.selenium.find_elements(
             By.CLASS_NAME, "mandats-actifs"
@@ -166,7 +176,7 @@ class CancelAutorisationTests(FunctionalTestCase):
         # )
         #
         # self.open_live_url(
-        #     reverse("usager_details", kwargs={"usager_id": self.usager_josephine.id})
+        #     reverse("espace_aidant:usager_details", kwargs={"usager_id": self.usager_josephine.id})  # noqa: E501
         # )
         #
         # active_autorisations_after = self.selenium.find_elements(

@@ -75,7 +75,7 @@ class Home(TemplateView):
             {
                 **common_infos,
                 "title": "Créer un mandat",
-                "url": reverse("new_mandat"),
+                "url": reverse("espace_aidant:new_mandat"),
                 "svg_path": static(
                     "dsfr/dist/artwork/pictograms/document/document-add.svg"
                 ),
@@ -84,7 +84,7 @@ class Home(TemplateView):
                 **common_infos,
                 "id": "view-mandats",
                 "title": "Accéder aux mandats",
-                "url": reverse("usagers"),
+                "url": reverse("espace_aidant:usagers"),
                 "svg_path": static("dsfr/dist/artwork/pictograms/digital/search.svg"),
             },
             {
@@ -162,7 +162,7 @@ class Home(TemplateView):
 class ValidateCGU(FormView):
     template_name = "aidants_connect_web/espace_aidant/validate_cgu.html"
     form_class = ValidateCGUForm
-    success_url = reverse_lazy("espace_aidant_home")
+    success_url = reverse_lazy("espace_aidant:home")
 
     def dispatch(self, request, *args, **kwargs):
         self.aidant: Aidant = request.user
@@ -184,7 +184,7 @@ class ValidateCGU(FormView):
 @method_decorator(login_required, name="dispatch")
 class SwitchMainOrganisation(BaseFormView):
     form_class = SwitchMainAidantOrganisationForm
-    success_url = reverse_lazy("espace_aidant_home")
+    success_url = reverse_lazy("espace_aidant:home")
     next_url = None
 
     def dispatch(self, request, *args, **kwargs):
@@ -192,7 +192,7 @@ class SwitchMainOrganisation(BaseFormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        return redirect("espace_aidant_home")
+        return redirect("espace_aidant:home")
 
     def get_form_kwargs(self):
         return {**super().get_form_kwargs(), "aidant": self.aidant}

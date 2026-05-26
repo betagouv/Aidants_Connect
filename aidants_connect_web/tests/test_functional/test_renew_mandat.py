@@ -48,11 +48,13 @@ class RenewMandatTests(FunctionalTestCase):
         )
         self.assertEqual(Mandat.objects.filter(usager=self.usager).count(), 1)
 
-        self.open_live_url(f"/renew_mandat/{self.usager.pk}")
+        self.open_live_url(
+            reverse("espace_aidant:renew_mandat", kwargs={"usager_id": self.usager.pk})
+        )
 
         self.login_aidant(self.aidant)
 
-        self.check_accessibility("renew_mandat", strict=True)
+        self.check_accessibility("espace_aidant:renew_mandat", strict=True)
 
         demarches_section = self.selenium.find_element(
             By.CSS_SELECTOR, ".demarches-section"
@@ -108,7 +110,9 @@ class RenewMandatTests(FunctionalTestCase):
         )
         self.assertEqual(Mandat.objects.filter(usager=self.usager).count(), 1)
 
-        self.open_live_url(f"/renew_mandat/{self.usager.pk}")
+        self.open_live_url(
+            reverse("espace_aidant:renew_mandat", kwargs={"usager_id": self.usager.pk})
+        )
 
         self.login_aidant(self.aidant)
 
@@ -207,7 +211,9 @@ class RenewMandatTests(FunctionalTestCase):
         )
         self.assertEqual(Mandat.objects.filter(usager=self.usager).count(), 1)
 
-        self.open_live_url(f"/renew_mandat/{self.usager.pk}")
+        self.open_live_url(
+            reverse("espace_aidant:renew_mandat", kwargs={"usager_id": self.usager.pk})
+        )
 
         self.login_aidant(self.aidant)
 
@@ -266,15 +272,15 @@ class RenewMandatTests(FunctionalTestCase):
 
         # # Send recap mandate and go to second step
         self.selenium.find_element(By.ID, "submit_renew_button").click()
-        self.wait.until(self.path_matches("renew_remote_second_step"))
+        self.wait.until(self.path_matches("espace_aidant:renew_remote_second_step"))
 
-        self.check_accessibility("renew_remote_second_step", strict=True)
+        self.check_accessibility("espace_aidant:renew_remote_second_step", strict=True)
 
         # # Send user consent request
         self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-        self.wait.until(self.path_matches("renew_mandat_waiting_room"))
+        self.wait.until(self.path_matches("espace_aidant:renew_mandat_waiting_room"))
 
-        self.check_accessibility("renew_mandat_waiting_room", strict=True)
+        self.check_accessibility("espace_aidant:renew_mandat_waiting_room", strict=True)
 
         # # Test the message is correctly logged
         consent_request_log: Journal = Journal.objects.find_sms_consent_requests(
@@ -288,7 +294,7 @@ class RenewMandatTests(FunctionalTestCase):
 
         # Test that page blocks until user has consented
         self.selenium.refresh()
-        self.wait.until(self.path_matches("renew_mandat_waiting_room"))
+        self.wait.until(self.path_matches("espace_aidant:renew_mandat_waiting_room"))
 
         # Simulate user content
         self._user_consents("0 800 840 800")

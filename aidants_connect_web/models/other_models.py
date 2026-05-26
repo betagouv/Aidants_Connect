@@ -356,12 +356,15 @@ class StructureChangeRequest(models.Model):
         related_name="structure_change_requests",
         verbose_name="Nouvelle structure",
     )
-    previous_organisation = models.ForeignKey(
+    previous_organisations = models.ManyToManyField(
         Organisation,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="outgoing_structure_change_requests",
-        verbose_name="Ancienne structure",
+        related_name="structure_change_requests_as_previous",
+        blank=True,
+        verbose_name="Anciennes structures",
+        help_text=(
+            "Structures dont l'aidant était membre avant la demande "
+            "(hors nouvelle structure). Retirées du compte à la validation."
+        ),
     )
     status = models.CharField(
         "État",
@@ -409,8 +412,8 @@ class StructureChangeRequest(models.Model):
                 aidant.save()
 
             aidant.organisations.add(self.organisation)
-            if self.previous_organisation:
-                aidant.organisations.remove(self.previous_organisation)
+            for org in self.previous_organisations.all():
+                aidant.remove_from_organisation(org)
             self.status = StructureChangeRequestStatuses.STATUS_VALIDATED
             self.save()
 

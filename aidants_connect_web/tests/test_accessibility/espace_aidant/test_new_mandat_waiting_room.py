@@ -67,13 +67,15 @@ class NewMandatWaitingRoomAccessibilityTests(AccessibilityTestCase):
         )
 
         # Navigate directly to waiting room
-        url = reverse("new_mandat_waiting_room")
+        url = reverse("espace_aidant:new_mandat_waiting_room")
         await self.page.goto(self.live_server_url + url)
 
     @async_test
     async def test_accessibility(self):
         await self.lazy_loading(self._open_url)
-        await self.check_accessibility(page_name="new_mandat_waiting_room", strict=True)
+        await self.check_accessibility(
+            page_name="espace_aidant:new_mandat_waiting_room", strict=True
+        )
 
     @async_test
     async def test_title_is_correct(self):

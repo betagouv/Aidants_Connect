@@ -22,7 +22,7 @@
                   Modifier l'organisation
                 </h1>
 
-                <form method="post" action="{% url "espace_responsable_aidant_change_organisations" aidant_id=aidant.id %}">
+                <form method="post" action="{% url "espace_referent:aidant_change_organisations" aidant_id=aidant.id %}">
                   {% csrf_token %}
                   <fieldset class="fr-fieldset">
                     <legend class="fr-text fr-text--regular fr-mb-3w fr-ml-2w">

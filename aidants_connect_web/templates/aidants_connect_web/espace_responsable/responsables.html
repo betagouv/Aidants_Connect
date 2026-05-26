@@ -67,7 +67,7 @@
           <ul class="fr-my-6v">
             {% for responsable in organisation.responsables.all %}
               <li>
-                <a class="fr-link" href="{% url 'espace_responsable_aidant' aidant_id=responsable.pk %}">
+                <a class="fr-link" href="{% url 'espace_referent:aidant_detail' aidant_id=responsable.pk %}">
                   {{ responsable.get_full_name }} ({{ responsable.email }})
                 </a>
               </li>
@@ -79,7 +79,7 @@
           {% for aidant in organisation.referents_eligible_aidants %}
             <form method="post" class="fr-m-4v flex">
               <p class="spacer fr-my-auto fr-mr-6v">
-                <a class="fr-link" href="{% url 'espace_responsable_aidant' aidant_id=aidant.id %}">
+                <a class="fr-link" href="{% url 'espace_referent:aidant_detail' aidant_id=aidant.id %}">
                   {{ aidant.get_full_name }}
                 </a>
               </p>

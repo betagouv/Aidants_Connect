@@ -68,7 +68,7 @@ class ViewAutorisationsTests(FunctionalTestCase):
         )
 
     def test_grouped_autorisations(self):
-        self.open_live_url(reverse("espace_aidant_home"))
+        self.open_live_url(reverse("espace_aidant:home"))
 
         # Login
         self.login_aidant(self.aidant)

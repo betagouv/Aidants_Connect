@@ -243,3 +243,19 @@ summary::marker {
 .fr-input-otp-token {
   max-width: calc(6ch + 2rem);
 }
+
+// Fix DSFR alignment issue between select and input in same row
+.fr-fieldset {
+  align-items: flex-start;
+}
+
+// Fix DSFR alignment issue between radio and input in same row
+.add-aidant-wizard-profile-fieldset {
+  &>.fr-radio-group {
+    margin-left: 0.5rem;
+
+    .fr-radio-group>.fr-label {
+      margin-top: 1rem;
+    }
+  }
+}

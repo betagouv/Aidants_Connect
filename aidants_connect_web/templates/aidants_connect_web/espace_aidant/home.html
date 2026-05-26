@@ -9,7 +9,7 @@
       class="fr-col-12 fr-my-4v"
       {% if notification.must_ack %}
       data-controller="notification"
-      data-notification-url-value="{% url 'notification_mark' notification_id=notification.pk %}"
+      data-notification-url-value="{% url 'espace_aidant:notification_mark' notification_id=notification.pk %}"
       {% endif %}
     >
       <div class="fr-alert{% if notification.type == notification.NotificationType.WARNING %} fr-alert--warning{% elif notification.type == notification_type.INFORMATION.value %} fr-alert--info{% else %} fr-alert--info{% endif %}">

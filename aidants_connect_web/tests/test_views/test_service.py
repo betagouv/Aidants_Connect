@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.test import TestCase, tag
@@ -45,18 +46,21 @@ class LoginPageTests(TestCase):
     def test_journal_records_when_aidant_logs_in(self):
         self.assertEqual(len(Journal.objects.all()), 0)
         self.client.force_login(self.aidant)
-        response = self.client.get("/espace-aidant/")
+        response = self.client.get(reverse("espace_aidant:home"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "aidants_connect_web/espace_aidant/home.html")
         self.assertEqual(Journal.objects.count(), 1)
         self.assertEqual(Journal.objects.all()[0].action, "connect_aidant")
-        self.client.get("/usagers/")
+        self.client.get(reverse("espace_aidant:usagers"))
         self.assertEqual(Journal.objects.count(), 1)
 
     def test_login_view_redirects_to_next_if_aidant_is_authenticated(self):
         self.assertEqual(len(Journal.objects.all()), 0)
         self.client.force_login(self.aidant)
-        response = self.client.get("/accounts/login/?next=/espace-aidant/", follow=True)
+        response = self.client.get(
+            f"{reverse('login')}?{urlencode({'next': reverse('espace_aidant:home')})}",
+            follow=True,
+        )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "aidants_connect_web/espace_aidant/home.html")
 
@@ -102,11 +106,11 @@ class ActivityCheckPageTests(TestCase):
     def test_totp_page_with_resolvable_next_redirects(self):
         self.client.force_login(self.aidant_thierry)
         response = self.client.post(
-            "/activity_check/?next=/creation_mandat/",
+            f"/activity_check/?{urlencode({'next': reverse('espace_aidant:new_mandat')})}",  # noqa: E501
             data={"otp_token": "123456"},
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "/creation_mandat/")
+        self.assertEqual(response.url, reverse("espace_aidant:new_mandat"))
 
     def test_totp_page_with_non_resolvable_next_triggers_404(self):
         # test with get
@@ -125,13 +129,18 @@ class ActivityCheckPageTests(TestCase):
         self.client.force_login(self.aidant_thierry)
         self.assertEqual(Journal.objects.count(), 1)
         with freeze_time(timezone.now() + settings.ACTIVITY_CHECK_DURATION):
+            next_usager = (
+                reverse("espace_aidant:usager_details", kwargs={"usager_id": 1})
+                + "?a=test"
+            )
             response = self.client.post(
-                "/activity_check/?next=/usagers/1/?a=test", data={"otp_token": "123456"}
+                f"/activity_check/?{urlencode({'next': next_usager})}",
+                data={"otp_token": "123456"},
             )
             self.assertEqual(Journal.objects.count(), 2)
             self.assertEqual(Journal.objects.last().action, "activity_check_aidant")
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.url, "/usagers/1/?a=test")
+            self.assertEqual(response.url, next_usager)
 
 
 @tag("service")

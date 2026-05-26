@@ -2,14 +2,14 @@
   <div class="fr-alert fr-alert--info fr-my-4v">
     Pour utiliser Aidants Connect, vous devez associer une application d’authentification à votre compte.<br />
     Cette application génère de façon aléatoire un code temporaire nécessaire pour chaque connexion à Aidants Connect.<br />
-    <a class="fr-link" href="{% url "espace_responsable_choose_totp" aidant_id=user.id %}">
+    <a class="fr-link" href="{% url "espace_referent:choose_totp" aidant_id=user.id %}">
       Associer une application
     </a>
   </div>
 {% elif user.must_validate_cgu %}
   <div class="fr-alert fr-alert--warning fr-my-8v">
     Attention : avant de pouvoir effectuer une action sur Aidants Connect, vous devez
-    <a class="fr-link" href="{% url "espace_aidant_cgu" %}">valider les conditions générales d’utilisation</a>
+    <a class="fr-link" href="{% url "espace_aidant:cgu" %}">valider les conditions générales d’utilisation</a>
     .
   </div>
 {% endif %}

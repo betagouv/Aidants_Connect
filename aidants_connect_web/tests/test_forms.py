@@ -10,9 +10,11 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from aidants_connect_web.constants import (
     OTP_APP_DEVICE_NAME,
+    AddAidantProfileChoice,
     RemoteConsentMethodChoices,
 )
 from aidants_connect_web.forms import (
+    AddAidantProfileChoiceForm,
     AddAppOTPToAidantForm,
     AidantChangeForm,
     AidantCreationForm,
@@ -616,3 +618,20 @@ class HabilitationRequestCreationFormTests(TestCase):
     def test_filter_queryset_organisation(self):
         form = HabilitationRequestCreationForm(referent=self.referent)
         self.assertEqual(1, form.fields["organisation"].queryset.count())
+
+
+@tag("forms")
+class AddAidantProfileChoiceFormTests(TestCase):
+    def test_step1_form_has_two_choices(self):
+        form = AddAidantProfileChoiceForm()
+        self.assertEqual(len(form.fields["profile"].choices), 2)
+
+    def test_step1_form_valid_with_none_trained(self):
+        form = AddAidantProfileChoiceForm(
+            data={"profile": AddAidantProfileChoice.NOT_YET_TRAINED}
+        )
+        self.assertTrue(form.is_valid())
+        self.assertEqual(
+            int(form.cleaned_data["profile"]),
+            AddAidantProfileChoice.NOT_YET_TRAINED.value,
+        )

@@ -64,7 +64,7 @@
                     <li>
                       <a
                         id="remove-totp-card-from-aidant-{{ aidant.id }}"
-                        href="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
+                        href="{% url "espace_referent:aidant_remove_card" aidant_id=aidant.id %}"
                         class="fr-btn"
                       >
                         Délier la carte physique
@@ -74,7 +74,7 @@
                       <li>
                         <a
                           id="validate-totp-card-for-aidant-{{ aidant.id }}"
-                          href="{% url "espace_responsable_validate_totp" aidant_id=aidant.id %}"
+                          href="{% url "espace_referent:validate_totp" aidant_id=aidant.id %}"
                           class="fr-btn"
                         >
                           Valider la carte physique
@@ -86,7 +86,7 @@
                   {# By default, we display that button, just disabled if the user is inactive #}
                   <a
                     id="add-totp-card-to-aidant-{{ aidant.id }}"
-                    {% if physical_option_available %}href="{% url "espace_responsable_associate_totp" aidant_id=aidant.id %}"{% endif %}
+                    {% if physical_option_available %}href="{% url "espace_referent:associate_totp" aidant_id=aidant.id %}"{% endif %}
                     class="fr-btn"
                   >
                     Utiliser une carte physique
@@ -113,7 +113,7 @@
                 {% if aidant.has_otp_app %}
                   <a
                     id="add-otp-app-to-aidant-{{ aidant.id }}"
-                    href="{% url 'espace_responsable_aidant_remove_app_otp' aidant_id=aidant.id %}"
+                    href="{% url 'espace_referent:aidant_remove_app_otp' aidant_id=aidant.id %}"
                     class="fr-btn"
                   >
                     Délier une application d'authentification
@@ -121,7 +121,7 @@
                 {% else %}
                   <a
                     id="add-otp-app-to-aidant-{{ aidant.id }}"
-                    {% if digital_option_available %}href="{% url 'espace_responsable_aidant_add_app_otp' aidant_id=aidant.id %}"{% endif %}
+                    {% if digital_option_available %}href="{% url 'espace_referent:aidant_add_app_otp' aidant_id=aidant.id %}"{% endif %}
                     class="fr-btn"
                   >
                     Utiliser une application d'authentification

@@ -16,6 +16,7 @@ class FormationAttendantResource(ModelResource):
     first_name = Field(attribute="attendant__first_name", column_name="PRENOM")
     last_name = Field(attribute="attendant__last_name", column_name="NOM")
     email = Field(attribute="attendant__email", column_name="EMAIL")
+    profession = Field(attribute="attendant__profession", column_name="PROFESSION")
     structure = Field(
         attribute="attendant__organisation__name", column_name="STRUCTURE"
     )
@@ -23,6 +24,20 @@ class FormationAttendantResource(ModelResource):
     id = Field(attribute="id", column_name="ID")
     formation = Field(column_name="FORMATION")
     state = Field(column_name="ETAT")
+    financement_conum = Field(
+        column_name="FINANCEMENT CONUM", attribute="financement_conum__name"
+    )
+
+    conseiller_numerique = Field(
+        column_name="Conseiller numérique", attribute="attendant__conseiller_numerique"
+    )
+
+    formation_done = Field(
+        column_name="Présence en formation", attribute="attendant__formation_done"
+    )
+    test_pix_passed = Field(
+        column_name="Test PIX Passé", attribute="attendant__test_pix_passed"
+    )
 
     class Meta:
         model = FormationAttendant
@@ -30,9 +45,13 @@ class FormationAttendantResource(ModelResource):
             "first_name",
             "last_name",
             "email",
+            "profession",
             "structure",
             "formation",
             "state",
+            "formation_done",
+            "conseiller_numerique",
+            "financement_conum",
             "id_grist",
             "id",
         )

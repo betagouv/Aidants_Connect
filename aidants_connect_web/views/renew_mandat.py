@@ -29,8 +29,8 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
     form_class = MandatForm
     template_name = "aidants_connect_web/new_mandat/renew_mandat.html"
 
-    waiting_room_path = "renew_mandat_waiting_room"
-    mandat_form_path = "renew_mandat"
+    waiting_room_path = "espace_aidant:renew_mandat_waiting_room"
+    mandat_form_path = "espace_aidant:renew_mandat"
 
     def dispatch(self, request, *args, **kwargs):
         request.session.pop("connection", None)
@@ -42,13 +42,13 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
             django_messages.error(
                 request, "Erreur : cet usager n'a aucun mandat renouvelable."
             )
-            return redirect("espace_aidant_home")
+            return redirect("espace_aidant:home")
 
         if not self.usager:
             django_messages.error(
                 request, "Erreur : cet usager est introuvable ou inaccessible."
             )
-            return redirect("espace_aidant_home")
+            return redirect("espace_aidant:home")
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -100,7 +100,7 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
             **super().get_context_data(**kwargs),
             "aidant": self.aidant,
             "translation_url": self.request.build_absolute_uri(
-                reverse("mandate_translation")
+                reverse("espace_aidant:mandate_translation")
             ),
             "has_mandate_translations": MandateTranslation.objects.exists(),
         }
@@ -110,18 +110,18 @@ class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
 
     def get_success_url(self):
         return (
-            reverse("new_mandat_recap")
+            reverse("espace_aidant:new_mandat_recap")
             if self.connection.remote_constent_method
             not in RemoteConsentMethodChoices.blocked_methods()
-            else reverse("renew_remote_second_step")
+            else reverse("espace_aidant:renew_remote_second_step")
         )
 
 
 class RemoteConsentSecondStepView(MandatRemoteConsentSecondStepView):
-    success_url = reverse_lazy("renew_mandat_waiting_room")
+    success_url = reverse_lazy("espace_aidant:renew_mandat_waiting_room")
 
 
 # MandatWaitingRoom is already decorated with aidant_logged_with_activity_required
 class WaitingRoom(MandatWaitingRoom):
-    poll_route_name = "renew_mandat_waiting_room_json"
-    next_route_name = "new_mandat_recap"
+    poll_route_name = "espace_aidant:renew_mandat_waiting_room_json"
+    next_route_name = "espace_aidant:new_mandat_recap"

@@ -32,7 +32,7 @@
 
         {% csrf_token %}
         <div class="flex flex-between">
-          <a href="{% url 'usager_details' usager_id=usager_id %}" class="fr-btn fr-btn--secondary">Annuler</a>
+          <a href="{% url 'espace_aidant:usager_details' usager_id=usager_id %}" class="fr-btn fr-btn--secondary">Annuler</a>
           <button class="warning fr-btn float-right" type="submit">Révoquer le mandat</button>
         </div>
       </form>

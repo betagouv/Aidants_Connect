@@ -42,7 +42,7 @@ def user_is_aidant(view=None, redirect_field_name="next"):
 
     decorator = user_passes_test(
         test,
-        login_url="espace_aidant_home",
+        login_url="espace_aidant:home",
         redirect_field_name=redirect_field_name,
     )
     return decorator if (view is None) else decorator(view)
@@ -69,7 +69,7 @@ def user_is_responsable_structure(view=None, redirect_field_name="next"):
 
     decorator = user_passes_test(
         test,
-        login_url="espace_aidant_home",
+        login_url="espace_aidant:home",
         redirect_field_name=redirect_field_name,
     )
     return decorator if (view is None) else decorator(view)

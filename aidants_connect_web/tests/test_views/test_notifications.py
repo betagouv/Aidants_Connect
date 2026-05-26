@@ -18,12 +18,12 @@ class NotificationsTests(TestCase):
         )
 
     def test_triggers_correct_view(self):
-        found = resolve(reverse("notification_list"))
+        found = resolve(reverse("espace_aidant:notification_list"))
         self.assertEqual(found.func.view_class, notifications.Notifications)
 
     def test_renders_correct_template(self):
         self.client.force_login(self.aidant)
-        response = self.client.get(reverse("notification_list"))
+        response = self.client.get(reverse("espace_aidant:notification_list"))
         self.assertTemplateUsed(
             response, "aidants_connect_web/notifications/notification_list.html"
         )
@@ -41,7 +41,8 @@ class NotificationDetailTests(TestCase):
     def test_triggers_correct_view(self):
         found = resolve(
             reverse(
-                "notification_detail", kwargs={"notification_id": self.notification.pk}
+                "espace_aidant:notification_detail",
+                kwargs={"notification_id": self.notification.pk},
             )
         )
         self.assertEqual(found.func.view_class, notifications.NotificationDetail)
@@ -50,7 +51,8 @@ class NotificationDetailTests(TestCase):
         self.client.force_login(self.aidant)
         response = self.client.get(
             reverse(
-                "notification_detail", kwargs={"notification_id": self.notification.pk}
+                "espace_aidant:notification_detail",
+                kwargs={"notification_id": self.notification.pk},
             )
         )
         self.assertTemplateUsed(
@@ -61,7 +63,8 @@ class NotificationDetailTests(TestCase):
         self.client.force_login(self.aidant2)
         response = self.client.get(
             reverse(
-                "notification_detail", kwargs={"notification_id": self.notification.pk}
+                "espace_aidant:notification_detail",
+                kwargs={"notification_id": self.notification.pk},
             )
         )
         self.assertEqual(404, response.status_code)
@@ -86,7 +89,7 @@ class MarkNotificationTests(TestCase):
         self.client.force_login(self.aidant)
         response = self.client.post(
             reverse(
-                "notification_mark",
+                "espace_aidant:notification_mark",
                 kwargs={"notification_id": self.unread_notification.pk},
             )
         )
@@ -98,7 +101,7 @@ class MarkNotificationTests(TestCase):
         self.client.force_login(self.aidant2)
         response = self.client.post(
             reverse(
-                "notification_mark",
+                "espace_aidant:notification_mark",
                 kwargs={"notification_id": self.unread_notification.pk},
             )
         )
@@ -109,7 +112,7 @@ class MarkNotificationTests(TestCase):
         self.client.force_login(self.aidant)
         response = self.client.delete(
             reverse(
-                "notification_mark",
+                "espace_aidant:notification_mark",
                 kwargs={"notification_id": self.read_notification.pk},
             )
         )
@@ -121,7 +124,7 @@ class MarkNotificationTests(TestCase):
         self.client.force_login(self.aidant2)
         response = self.client.post(
             reverse(
-                "notification_mark",
+                "espace_aidant:notification_mark",
                 kwargs={"notification_id": self.unread_notification.pk},
             )
         )

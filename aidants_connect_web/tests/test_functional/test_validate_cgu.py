@@ -19,20 +19,20 @@ class ValidateCGUTests(FunctionalTestCase):
         )
 
     def test_validate_cgu(self):
-        self.open_live_url(reverse("espace_aidant_cgu"))
+        self.open_live_url(reverse("espace_aidant:cgu"))
 
         # Login
         self.login_aidant(self.aidant)
 
         self.assertIsNone(self.aidant.validated_cgu_version)
-        self.check_accessibility("espace_aidant_cgu", strict=True)
+        self.check_accessibility("espace_aidant:cgu", strict=True)
 
         # Espace Aidant home
         self.selenium.find_element(By.CSS_SELECTOR, 'label[for="id_agree"]').click()
         self.selenium.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
 
-        self.wait.until(self.path_matches("espace_aidant_home"))
-        self.check_accessibility("espace_aidant_home", strict=True)
+        self.wait.until(self.path_matches("espace_aidant:home"))
+        self.check_accessibility("espace_aidant:home", strict=True)
 
         el = self.selenium.find_element(
             By.XPATH, "//*[contains(@class, 'fr-alert') and contains(., 'CGU')]"

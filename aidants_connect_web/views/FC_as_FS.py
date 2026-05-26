@@ -33,7 +33,7 @@ class FCAuthorize(RequireConnectionView):
                 self.connection.user_phone, self.connection.consent_request_id
             ).exists()
         ):
-            return redirect(reverse("new_mandat_waiting_room"))
+            return redirect(reverse("espace_aidant:new_mandat_waiting_room"))
 
         self.connection.state = token_urlsafe(16)
         self.connection.nonce = token_urlsafe(16)
@@ -87,7 +87,7 @@ def fc_callback(request):
             f"?{urlencode({'connection_id': connection_id})}" if connection_id else ""
         )
 
-        return redirect(f"{reverse('new_mandat')}{query_params}")
+        return redirect(f"{reverse('espace_aidant:new_mandat')}{query_params}")
 
     fc_base = settings.FC_AS_FS_BASE_URL
     fc_id = settings.FC_AS_FS_ID
@@ -204,7 +204,7 @@ def fc_callback_v2(request):
             f"?{urlencode({'connection_id': connection_id})}" if connection_id else ""
         )
 
-        return redirect(f"{reverse('new_mandat')}{query_params}")
+        return redirect(f"{reverse('espace_aidant:new_mandat')}{query_params}")
 
     fc_base = settings.FC_AS_FS_BASE_URL_V2
     fc_id = settings.FC_AS_FS_ID_V2

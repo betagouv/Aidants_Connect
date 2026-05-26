@@ -616,7 +616,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
                 "aidant": aidant,
                 "formation_url": build_url(reverse("habilitation_faq_formation")),
                 "espace_referent_url": build_url(
-                    reverse("espace_responsable_organisation")
+                    reverse("espace_referent:organisation")
                 ),
             },
         )

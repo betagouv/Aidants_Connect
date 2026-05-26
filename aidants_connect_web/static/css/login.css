@@ -1,3 +1,7 @@
+.fr-body--login #main {
+  padding: 0;
+}
+
 .main-content-fluid [class*="fr-col"] {
   padding-top: 0;
   padding-bottom: 0;
@@ -10,7 +14,7 @@
   height: 100%;
 }
 
-.otp-app-panel .background > img {
+.otp-app-panel .background>img {
   position: absolute;
   width: 100%;
   bottom: 0;
@@ -19,8 +23,7 @@
   z-index: 0;
 }
 
-
-.otp-app-panel .background > :not(img) {
+.otp-app-panel .background> :not(img) {
   position: relative;
   z-index: 1;
 }
@@ -31,7 +34,13 @@
 
 .otp-app-explaination {
   min-height: 952px;
+
   @media (max-width: 767px) {
     min-height: 1054px;
   }
+}
+
+.login-left-icon {
+  max-width: 75%;
+  height: auto;
 }

@@ -43,7 +43,7 @@ class RenewMandatTests(TestCase):
         )
         self.client.force_login(self.aidant_thierry)
         self.assertEqual(Mandat.objects.count(), 1)
-        response = self.client.get(reverse("usagers"))
+        response = self.client.get(reverse("espace_aidant:usagers"))
         self.assertNotContains(response, "Renouveler")
 
     def test_no_renew_button_displayed_if_revoked_mandat(self):
@@ -59,7 +59,7 @@ class RenewMandatTests(TestCase):
         )
         self.client.force_login(self.aidant_thierry)
         self.assertEqual(Mandat.objects.count(), 1)
-        response = self.client.get(reverse("usagers"))
+        response = self.client.get(reverse("espace_aidant:usagers"))
         self.assertNotContains(response, "Renouveler")
 
     def test_new_mandat_clears_the_session(self):
@@ -76,7 +76,7 @@ class RenewMandatTests(TestCase):
 
         self.assertEqual(1, self.client.session["connection"])
 
-        self.client.get(reverse("renew_mandat", args=(self.usager.pk,)))
+        self.client.get(reverse("espace_aidant:renew_mandat", args=(self.usager.pk,)))
 
         self.assertIsNone(self.client.session.get("connection"))
 
@@ -91,9 +91,9 @@ class RenewMandatTests(TestCase):
         self.assertEqual(Connection.objects.count(), 0)
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
         response = self.client.post(
-            reverse("renew_mandat", args=(self.usager.pk,)), data=data
+            reverse("espace_aidant:renew_mandat", args=(self.usager.pk,)), data=data
         )
-        self.assertRedirects(response, reverse("new_mandat_recap"))
+        self.assertRedirects(response, reverse("espace_aidant:new_mandat_recap"))
         self.assertEqual(Connection.objects.count(), 1)
         self.assertEqual(Mandat.objects.count(), 1)
 
@@ -108,9 +108,9 @@ class RenewMandatTests(TestCase):
         self.assertEqual(Connection.objects.count(), 0)
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
         response = self.client.post(
-            reverse("renew_mandat", args=(self.usager.pk,)), data=data
+            reverse("espace_aidant:renew_mandat", args=(self.usager.pk,)), data=data
         )
-        self.assertRedirects(response, reverse("new_mandat_recap"))
+        self.assertRedirects(response, reverse("espace_aidant:new_mandat_recap"))
         self.assertEqual(Connection.objects.count(), 1)
         self.assertEqual(Mandat.objects.count(), 1)
         journals = Journal.objects.filter(action="init_renew_mandat")
@@ -128,9 +128,9 @@ class RenewMandatTests(TestCase):
         self.assertEqual(Connection.objects.count(), 0)
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
         response = self.client.post(
-            reverse("renew_mandat", args=(self.usager.pk,)), data=data
+            reverse("espace_aidant:renew_mandat", args=(self.usager.pk,)), data=data
         )
-        self.assertRedirects(response, reverse("espace_aidant_home"))
+        self.assertRedirects(response, reverse("espace_aidant:home"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
             messages[0].message, "Erreur : cet usager n'a aucun mandat renouvelable."
@@ -151,9 +151,9 @@ class RenewMandatTests(TestCase):
         self.assertEqual(Connection.objects.count(), 0)
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
         response = self.client.post(
-            reverse("renew_mandat", args=(self.usager.pk,)), data=data
+            reverse("espace_aidant:renew_mandat", args=(self.usager.pk,)), data=data
         )
-        self.assertRedirects(response, reverse("espace_aidant_home"))
+        self.assertRedirects(response, reverse("espace_aidant:home"))
         messages = list(django_messages.get_messages(response.wsgi_request))
         self.assertEqual(
             messages[0].message, "Erreur : cet usager n'a aucun mandat renouvelable."
@@ -183,9 +183,9 @@ class RenewMandatTests(TestCase):
         self.assertEqual(Connection.objects.count(), 0)
         data = {"demarche": ["papiers", "logement"], "duree": "SHORT"}
         response = self.client.post(
-            reverse("renew_mandat", args=(self.usager.pk,)), data=data
+            reverse("espace_aidant:renew_mandat", args=(self.usager.pk,)), data=data
         )
-        self.assertRedirects(response, reverse("new_mandat_recap"))
+        self.assertRedirects(response, reverse("espace_aidant:new_mandat_recap"))
         self.assertEqual(Connection.objects.count(), 1)
         self.assertEqual(Mandat.objects.count(), 3)
         journals = Journal.objects.filter(action="init_renew_mandat")

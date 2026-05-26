@@ -16,7 +16,7 @@
     <form
       method="post"
       class="fr-col-12 fr-col-lg-6 fr-col-md-8"
-      action="{% url "espace_responsable_aidant_remove_card" aidant_id=aidant.id %}"
+      action="{% url "espace_referent:aidant_remove_card" aidant_id=aidant.id %}"
     >
       {% csrf_token %}
       {{ form }}

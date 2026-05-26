@@ -12,7 +12,6 @@ class StructureChangeRequestAdmin(VisibleToAdminMetier, ModelAdmin):
         "email",
         "aidant",
         "organisation",
-        "previous_organisation",
         "new_email",
         "status",
         "created_at",
@@ -20,7 +19,8 @@ class StructureChangeRequestAdmin(VisibleToAdminMetier, ModelAdmin):
     )
     list_filter = ("status", "created_at")
     search_fields = ("email", "new_email", "organisation__name", "aidant__email")
-    raw_id_fields = ("organisation", "previous_organisation", "aidant")
+    raw_id_fields = ("organisation", "aidant")
+    filter_horizontal = ("previous_organisations",)
     readonly_fields = ("created_at", "updated_at")
     ordering = ("-created_at",)
     actions = ("mark_validated",)
@@ -33,7 +33,7 @@ class StructureChangeRequestAdmin(VisibleToAdminMetier, ModelAdmin):
                     "aidant",
                     "email",
                     "organisation",
-                    "previous_organisation",
+                    "previous_organisations",
                     "new_email",
                     "status",
                 ),

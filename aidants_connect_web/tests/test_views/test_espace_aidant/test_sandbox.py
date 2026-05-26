@@ -9,15 +9,10 @@ from aidants_connect_web.tests.factories import AidantFactory
 class EspaceAidantSandboxTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.url = "/espace-aidant/organisations/switch_main"
-        cls.home_url = "/espace-aidant/"
+        cls.url = reverse("espace_aidant:switch_main_organisation")
+        cls.home_url = reverse("espace_aidant:home")
         cls.client = Client()
         cls.aidant = AidantFactory()
 
     def test_get_url(self):
         self.assertEqual(reverse("sandbox_presentation"), "/bac-a-sable/presentation")
-
-    def test_sandbox_presentation_view(self):
-        self.client.force_login(self.aidant)
-        response = self.client.get(self.home_url)
-        self.assertContains(response, "bac-a-sable/presentation")

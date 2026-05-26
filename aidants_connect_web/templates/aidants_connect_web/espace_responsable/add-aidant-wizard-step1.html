@@ -1,0 +1,56 @@
+{% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
+{% load ac_common ac_extras dsfr_tags form_extras static %}
+
+{% block title %}Ajouter un aidant - Aidants Connect{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
+{% endblock extracss %}
+
+{% block content %}
+  <div class="fr-container">
+    {% include "layouts/_js-unavailable-alert.html" %}
+    {% dsfr_django_messages %}
+
+    <h1 class="fr-mb-2w">Ajouter un aidant</h1>
+    <p class="fr-text--lg">
+      Sauf mention contraire, tous les champs sont obligatoires.
+    </p>
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-md-8 fr-col-offset-md-1">
+        <div class="fr-alert fr-alert--warning fr-mt-6v">
+          <p>
+            Attention : Aidants Connect ne fournit plus de cartes pour les nouveaux aidants, l'application d'authentification est le moyen de connexion par défaut. Pour plus d'informations,
+            <a href="https://docs.numerique.gouv.fr/docs/c11214cb-cc9a-4781-a695-381f61ec1cd8/" class="fr-link" target="_blank" rel="noopener noreferrer">
+              consultez notre guide
+            </a>.
+          </p>
+        </div>
+        <div class="fr-stepper fr-mt-6v">
+          <h2 class="fr-stepper__title">
+            Profil des aidants à ajouter
+            <span class="fr-stepper__state">Étape {{ wizard_step }} sur {{ wizard_total_steps }}</span>
+          </h2>
+          <div class="fr-stepper__steps" data-fr-current-step="{{ wizard_step }}" data-fr-steps="{{ wizard_total_steps }}"></div>
+        </div>
+        <form method="post" action="{% url 'espace_referent:aidant_new_profile' %}" class="fr-mt-4w">
+          {% csrf_token %}
+          <fieldset class="fr-fieldset add-aidant-wizard-profile-fieldset{% if form.profile.errors %} fr-fieldset--error{% endif %}">
+            {% aidantc_dsfr_form_field_no_asterisk form.profile %}
+            {% if form.profile.errors %}
+              <div class="fr-messages-group" id="profile-messages">
+                {{ form.profile.errors }}
+              </div>
+            {% endif %}
+          </fieldset>
+
+          <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--right fr-mt-4w">
+            <li>
+              <button type="submit" class="fr-btn">Passer à l'étape suivante</button>
+            </li>
+          </ul>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

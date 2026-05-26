@@ -205,7 +205,8 @@ class ViewCancelMandatTests(TestCase):
         self.client.force_login(self.aidant)
         response = self.client.get(
             reverse(
-                "confirm_mandat_cancelation", args=(self.mandat_aidant_phillomene.id,)
+                "espace_aidant:confirm_mandat_cancelation",
+                args=(self.mandat_aidant_phillomene.id,),
             )
         )
         self.assertEqual(

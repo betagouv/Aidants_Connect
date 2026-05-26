@@ -2661,13 +2661,16 @@ class StructureChangeRequestTests(TestCase):
             aidant=aidant,
             email=aidant.email,
             organisation=new_org,
-            previous_organisation=old_org,
             new_email="newemail@example.com",
         )
+        req.previous_organisations.add(old_org)
         self.assertEqual(req.email, aidant.email)
         self.assertEqual(req.new_email, "newemail@example.com")
         self.assertEqual(req.organisation, new_org)
-        self.assertEqual(req.previous_organisation, old_org)
+        self.assertCountEqual(
+            list(req.previous_organisations.all()),
+            [old_org],
+        )
         self.assertEqual(req.aidant, aidant)
 
     def test_get_full_name_returns_aidant_name(self):
@@ -2678,8 +2681,8 @@ class StructureChangeRequestTests(TestCase):
             aidant=aidant,
             email=aidant.email,
             organisation=new_org,
-            previous_organisation=old_org,
         )
+        req.previous_organisations.add(old_org)
         self.assertEqual(req.get_full_name(), aidant.get_full_name())
 
     def test_validate_moves_aidant_to_new_org_and_removes_from_old(self):
@@ -2690,8 +2693,8 @@ class StructureChangeRequestTests(TestCase):
             aidant=aidant,
             email=aidant.email,
             organisation=new_org,
-            previous_organisation=old_org,
         )
+        req.previous_organisations.add(old_org)
 
         result = req.validate_structure_change()
 
@@ -2712,9 +2715,9 @@ class StructureChangeRequestTests(TestCase):
             aidant=aidant,
             email=aidant.email,
             organisation=new_org,
-            previous_organisation=old_org,
             new_email="changed@example.com",
         )
+        req.previous_organisations.add(old_org)
 
         result = req.validate_structure_change()
 
@@ -2737,9 +2740,9 @@ class StructureChangeRequestTests(TestCase):
                 aidant=aidant,
                 email=aidant.email,
                 organisation=new_org,
-                previous_organisation=old_org,
                 status=status,
             )
+            req.previous_organisations.add(old_org)
             self.assertFalse(req.validate_structure_change())
             # Clean up constraint for next iteration
             req.delete()
@@ -2756,14 +2759,35 @@ class StructureChangeRequestTests(TestCase):
             aidant=aidant,
             email=aidant.email,
             organisation=new_org,
-            previous_organisation=old_org,
         )
+        req.previous_organisations.add(old_org)
 
         req.validate_structure_change()
 
         aidant.refresh_from_db()
         self.assertTrue(aidant.referent_non_aidant)
         self.assertFalse(aidant.can_create_mandats)
+
+    def test_validate_removes_all_previous_organisations_when_aidant_has_several(self):
+        old_org = OrganisationFactory()
+        other_org = OrganisationFactory()
+        new_org = OrganisationFactory()
+        aidant = AidantFactory(organisation=old_org)
+        aidant.organisations.add(other_org)
+
+        req = StructureChangeRequest.objects.create(
+            aidant=aidant,
+            email=aidant.email,
+            organisation=new_org,
+        )
+        req.previous_organisations.set([old_org, other_org])
+
+        self.assertTrue(req.validate_structure_change())
+
+        aidant.refresh_from_db()
+        self.assertIn(new_org, aidant.organisations.all())
+        self.assertNotIn(old_org, aidant.organisations.all())
+        self.assertNotIn(other_org, aidant.organisations.all())
 
 
 class LogEmailSendingTests(TestCase):

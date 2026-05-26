@@ -30,9 +30,9 @@ class EspaceResponsableRemoveAidantOrganisationsTest(TestCase):
         cls.aidant_referent = aidant_referent
 
     def get_form_url(self, aidant, organisation):
-        return (
-            f"/espace-responsable/aidant/{aidant.id}/"
-            f"supprimer-organisation/{organisation.id}/"
+        return reverse(
+            "espace_referent:remove_aidant_from_organisation",
+            kwargs={"aidant_id": aidant.id, "organisation_id": organisation.id},
         )
 
     def test_remove_from_organisation(self):
@@ -44,7 +44,7 @@ class EspaceResponsableRemoveAidantOrganisationsTest(TestCase):
         response = self.client.post(
             self.get_form_url(aidant, responsable.organisation),
         )
-        self.assertRedirects(response, reverse("espace_responsable_aidants"))
+        self.assertRedirects(response, reverse("espace_referent:aidants"))
         aidant.refresh_from_db()
         self.assertEqual(len(aidant.organisations.all()), 2)
 

@@ -45,16 +45,20 @@ class ValidateCarteTOTPTests(TestCase):
             post__with_carte_totp_confirmed=False,
         )
 
-        cls.org_id = cls.responsable_tom.organisation.id
-
-        cls.organisation_url = f"/espace-responsable/organisation/{cls.org_id}"
-        cls.aidant_url = f"/espace-responsable/aidant/{cls.aidant_tim.id}/"
-        cls.responsable_url = f"/espace-responsable/aidant/{cls.responsable_tom.id}/"
-        cls.validation_url = (
-            f"/espace-responsable/aidant/{cls.aidant_tim.id}/valider-carte"
+        cls.organisation_url = reverse("espace_referent:organisation")
+        cls.aidant_url = reverse(
+            "espace_referent:aidant_detail", kwargs={"aidant_id": cls.aidant_tim.id}
         )
-        cls.validation_url_responsable = (
-            f"/espace-responsable/aidant/{cls.responsable_tom.id}/valider-carte"
+        cls.responsable_url = reverse(
+            "espace_referent:aidant_detail",
+            kwargs={"aidant_id": cls.responsable_tom.id},
+        )
+        cls.validation_url = reverse(
+            "espace_referent:validate_totp", kwargs={"aidant_id": cls.aidant_tim.id}
+        )
+        cls.validation_url_responsable = reverse(
+            "espace_referent:validate_totp",
+            kwargs={"aidant_id": cls.responsable_tom.id},
         )
 
     def test_validation_page_triggers_the_right_view(self):
@@ -162,7 +166,7 @@ class ValidateCarteTOTPTests(TestCase):
 
         response = self.client.post(
             reverse(
-                "espace_responsable_validate_totp",
+                "espace_referent:validate_totp",
                 kwargs={"aidant_id": self.deactivated_aidant.pk},
             ),
             data={"serial_number": self.deactivated_aidant.carte_totp.serial_number},
@@ -170,7 +174,7 @@ class ValidateCarteTOTPTests(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "espace_responsable_aidant",
+                "espace_referent:aidant_detail",
                 kwargs={"aidant_id": self.deactivated_aidant.id},
             ),
         )

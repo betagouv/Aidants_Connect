@@ -19,7 +19,7 @@ class HomeAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_accessibility(self):
         await self.lazy_loading(self._open_url)
-        await self.check_accessibility(page_name="espace_aidant_home", strict=True)
+        await self.check_accessibility(page_name="espace_aidant:home", strict=True)
 
     @async_test
     async def test_title_is_correct(self):

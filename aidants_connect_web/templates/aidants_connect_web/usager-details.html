@@ -33,7 +33,7 @@
                 <a
                   id="view-mandat-attestation-{{ mandat.pk }}"
                   class="fr-btn fr-btn--secondary fr-btn--icon-left"
-                  href="{% url 'mandat_visualisation' mandat_id=mandat.id %}"
+                  href="{% url 'espace_aidant:mandat_visualisation' mandat_id=mandat.id %}"
                 >
                   Voir le mandat
                 </a>
@@ -52,7 +52,7 @@
                   <a
                     id="cancel-mandat-{{ mandat.pk }}"
                     class="fr-btn fr-btn--warning fr-btn--icon-left fr-icon-delete-bin-line"
-                    href="{% url 'confirm_mandat_cancelation' mandat_id=mandat.pk %}"
+                    href="{% url 'espace_aidant:confirm_mandat_cancelation' mandat_id=mandat.pk %}"
                   >
                     Révoquer
                   </a>
@@ -60,7 +60,7 @@
               {% elif mandat.was_explicitly_revoked %}
                 <a
                   class="fr-btn fr-btn--icon-left fr-btn--sm auth-revocation-attestation"
-                  href="{% url 'mandat_cancellation_attestation' mandat_id=mandat.pk %}"
+                  href="{% url 'espace_aidant:mandat_cancellation_attestation' mandat_id=mandat.pk %}"
                 >
                   Voir la révocation
                 </a>
@@ -111,7 +111,7 @@
                             {% if aidant.can_create_mandats and not autorisation.revocation_date %}
                               <a
                                 id="mandat-{{ mandat.pk }}-auth-revocation-{{ autorisation.demarche }}"
-                                href="{% url 'confirm_autorisation_cancelation' usager_id=usager.id autorisation_id=autorisation.id %}"
+                                href="{% url 'espace_aidant:confirm_autorisation_cancelation' usager_id=usager.id autorisation_id=autorisation.id %}"
                                 class="fr-btn fr-btn--warning fr-btn--secondary fr-btn--icon-left fr-btn--sm fr-icon-delete-bin-fill"
                               >
                                 Révoquer la thématique
@@ -120,7 +120,7 @@
                               <a
                                 id="mandat-{{ mandat.pk }}-auth-revocation-attestation-{{ autorisation.demarche }}"
                                 class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-printer-fill fr-btn--sm"
-                                href="{% url 'autorisation_cancelation_attestation' autorisation_id=autorisation.id usager_id=mandat.usager.id %}"
+                                href="{% url 'espace_aidant:autorisation_cancelation_attestation' autorisation_id=autorisation.id usager_id=mandat.usager.id %}"
                               >
                                 Voir la révocation
                               </a>

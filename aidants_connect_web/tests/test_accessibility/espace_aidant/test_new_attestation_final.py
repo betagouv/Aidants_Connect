@@ -32,13 +32,15 @@ class NewAttestationFinalAccessibilityTests(AccessibilityTestCase):
     async def _open_url(self):
         """Helper method to navigate to navigate_to_new_attestation_final page"""
         await self.login_aidant(self.aidant, self.otp)
-        url = reverse("new_attestation_final", args=(self.mandat.pk,))
+        url = reverse("espace_aidant:new_attestation_final", args=(self.mandat.pk,))
         await self.page.goto(self.live_server_url + url)
 
     @async_test
     async def test_accessibility(self):
         await self.lazy_loading(self._open_url)
-        await self.check_accessibility(page_name="new_attestation_final", strict=True)
+        await self.check_accessibility(
+            page_name="espace_aidant:new_attestation_final", strict=True
+        )
 
     @async_test
     async def test_title_is_correct(self):

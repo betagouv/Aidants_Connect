@@ -100,4 +100,17 @@ class HabilitationRequestCourseType(IntegerChoices):
     P2P = (auto(), "Formation entre pairs")
 
 
+class AddAidantProfileChoice(IntegerChoices):
+    """Profile of aidants to add: not yet trained vs already trained and habilitated."""
+
+    NOT_YET_TRAINED = (
+        auto(),
+        "Ils ne sont pas encore formés à Aidants Connect",
+    )
+    ALREADY_TRAINED = (
+        auto(),
+        "Ils sont déjà formés et habilités Aidants Connect",
+    )
+
+
 CODE_EMAIL_FNE_MANAGER_CONNEXION_MODE = "FNECONNEXIONMODE"
