@@ -62,7 +62,7 @@
   <div class="fr-grid-row">
     <div class="fr-notice fr-notice--info fr-col-12 fr-grid-row fr-px-3w">
         <div class="fr-col-12 fr-px-1w fr-text--center">
-          <h3 class="fr-h4 fr-mt-2w">Déposer une demande d'habilitation</h3>
+          <h2 class="fr-h4 fr-mt-2w">Déposer une demande d'habilitation</h2>
           <p class="fr-text-default--grey">Vous avez pris connaissance de toutes les informations concernant l’habilitation et l’inscription à Aidants Connect et souhaitez déposer une demande d'habilitation.</p>
           <div class="fr-mt-4w fr-mb-2w">
             <a href="https://tally.so/r/31BYqb" class="fr-btn">Déposer une demande <span class="fr-icon-arrow-right-line fr-ml-1w"></span></a>
@@ -71,15 +71,15 @@
     </div>
   </div>
   <div class="fr-grid-row fr-mt-4w">
-    {% include 'habilitation/follow-my-request.html' %}
     <div class="fr-card fr-col-12 fr-grid-row fr-px-3w">
         <div class="fr-col-12 fr-px-1w fr-text--center">
-          <h3 class="fr-h4 fr-mt-4w">Suivre ma demande</h3>
+          <h2 class="fr-h4 fr-mt-4w">Suivre ma demande</h2>
           <p class="fr-text-default--grey">Vous avez déjà déposé une demande d’habilitation et souhaitez accéder à votre demande.</p>
           <div class="fr-mt-4w fr-mb-4w">
             <button class="fr-btn fr-btn--secondary" data-follow-request-modale-target="dialogBtn">Suivre ma demande <span class="fr-icon-arrow-right-line fr-ml-1w"></span></button>
           </div>
         </div>
     </div>
+    {% include 'habilitation/follow-my-request.html' %}
   </div>
 {% endblock body %}
