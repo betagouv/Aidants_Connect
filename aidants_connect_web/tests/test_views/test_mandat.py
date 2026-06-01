@@ -987,6 +987,7 @@ class AttestationFinalTests(TestCase):
             )
 
 
+@override_settings(FF_ACTIVATE_SMS_CONSENT=True)
 class RemoteSecondStepMissingFirstStepTests(TestCase):
     @classmethod
     def setUpTestData(cls):
