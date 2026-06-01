@@ -3,14 +3,16 @@
 <div class="{{ field.field.widget.group_class|default:'fr-input-group' }}{% if field.errors %} {{ field.field.widget.group_class|default:'fr-input-group' }}--error{% endif %}{% if field.field.disabled %} fr-input-group--disabled{% endif %}">
   {% if field.field.widget.checkbox_select_multiple or field.field.widget.input_type == 'radio' %}
     {# Pour les widgets multi-options, utiliser l'ID de la section comme cible du label #}
-    <div class="fr-label">
-      {# djlint:off #}
-      {{ field.label }}{# Astérisque retiré : {% if field.field.required %}*{% endif %} #}
-      {% if field.help_text %}
-        <span class="fr-hint-text">{{ field.help_text|safe }}</span>
-      {% endif %}
-      {# djlint:on #}
-    </div>
+    {% if not hide_group_label %}
+      <div class="fr-label">
+        {# djlint:off #}
+        {{ field.label }}{# Astérisque retiré : {% if field.field.required %}*{% endif %} #}
+        {% if field.help_text %}
+          <span class="fr-hint-text">{{ field.help_text|safe }}</span>
+        {% endif %}
+        {# djlint:on #}
+      </div>
+    {% endif %}
       {% if is_inline %}
         <div class="fr-fieldset--inline fr-my-4v">
         {{ field|dsfr_input_class_attr }}
