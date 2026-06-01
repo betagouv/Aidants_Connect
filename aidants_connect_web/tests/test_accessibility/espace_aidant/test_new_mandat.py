@@ -52,3 +52,18 @@ class NewMandatAccessibilityTests(AccessibilityTestCase):
         page_content = await self.page.content()
         self.assertIn("sauf mention contraire", page_content.lower())
         self.assertIn("champs sont obligatoires", page_content.lower())
+
+    @async_test
+    async def test_mandat_form_steps(self):
+        await self.lazy_loading(self._open_url)
+        step_headings = self.page.locator("form h2.fr-label.title-count")
+        await expect(step_headings).to_have_count(4)
+        await expect(step_headings.nth(0)).to_have_text("Informez l’usager")
+        await expect(step_headings.nth(1)).to_have_text(
+            "Sélectionnez la ou les démarches"
+        )
+        await expect(step_headings.nth(2)).to_have_text("Choisissez la durée du mandat")
+        await expect(step_headings.nth(3)).to_have_text(
+            "Connectez l’usager à FranceConnect"
+        )
+        await expect(self.page.locator("#id_is_remote")).to_have_count(0)

@@ -23,29 +23,6 @@
       </div>
     {% endif %}
     <p class="fr-text--lg">Sauf mention contraire, tous les champs sont obligatoires.</p>
-    <div class="fr-callout">
-      <h2>Mentions à lire à l’usager</h2>
-      <p class="fr-text--lg">Le mandat est une autorisation écrite qui permet à l’aidant de réaliser pour vous des démarches
-        administratives. Il vous protège et protège l’aidant qui vous accompagne. Vous pourrez y mettre fin à tout
-        moment.</p>
-      <h3 class="fr-callout__title">Avec ce mandat, l’aidant s’engage à :</h3>
-      <article class="fr-callout__text">
-        <ul>
-          <li>
-            réaliser les démarches listées dans le mandat à partir des informations que vous lui avez données ;
-          </li>
-          <li>
-            utiliser et enregistrer seulement les informations nécessaires à ces démarches ;
-          </li>
-          <li>
-            ne pas effectuer d’autres démarches que celles listées dans le mandat ;
-          </li>
-          <li>
-            sécuriser l’ensemble de vos informations et les supprimer lorsqu’elles ne sont plus utiles.
-          </li>
-        </ul>
-      </article>
-    </div>
     <form
       method="post"
       data-controller="mandate-form-controller"
@@ -67,44 +44,53 @@
       {% endif %}
       {% csrf_token %}
 
-      <section class="demarches-section">
-        <fieldset role="group" aria-label="Sélectionnez la ou les démarches">
-         <legend class="fr-sr-only">Sélectionnez la ou les démarches</legend>
-        {% aidantc_dsfr_form_field_no_asterisk form.demarche %}
+      <section class="mandat-step" aria-labelledby="mandat-step-inform">
+        <h2 id="mandat-step-inform" class="fr-label title-count">Informez l’usager</h2>
+        <div class="fr-callout">
+          <h3 class="fr-callout__title">Mentions à lire à l’usager</h3>
+          <article class="fr-callout__text">
+            <p>Le mandat est une autorisation écrite qui permet à l’aidant de réaliser pour vous des démarches
+              administratives. Il vous protège et protège l’aidant qui vous accompagne. Vous pourrez y mettre fin à tout
+              moment.</p>
+            <p class="fr-my-4w"><strong>Avec ce mandat, l’aidant s’engage à :</strong></p>
+            <ul class="fr-callout__text">
+              <li>réaliser les démarches listées dans le mandat à partir des informations que vous lui avez données ;</li>
+              <li>utiliser et enregistrer seulement les informations nécessaires à ces démarches ;</li>
+              <li>ne pas effectuer d’autres démarches que celles listées dans le mandat ;</li>
+              <li>sécuriser l’ensemble de vos informations et les supprimer lorsqu’elles ne sont plus utiles.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="mandat-step demarches-section" aria-labelledby="mandat-step-demarches">
+        <h2 id="mandat-step-demarches" class="fr-label title-count">{{ form.demarche.label }}</h2>
+        <fieldset role="group" aria-labelledby="mandat-step-demarches">
+          {% aidantc_dsfr_form_field_no_asterisk form.demarche True %}
         </fieldset>
       </section>
 
       {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
 
       <div class="fr-col-12 fr-col-lg-8">
-        <fieldset role="group" aria-label="Choisissez la durée du mandat">
-        <legend class="fr-sr-only">Choisissez la durée du mandat</legend>
-        {% aidantc_dsfr_form_field_no_asterisk form.duree %}
-        </fieldset>
+        <section class="mandat-step" aria-labelledby="mandat-step-duree">
+          <h2 id="mandat-step-duree" class="fr-label title-count">{{ form.duree.label }}</h2>
+          <fieldset role="group" aria-labelledby="mandat-step-duree">
+            {% aidantc_dsfr_form_field_no_asterisk form.duree True %}
+          </fieldset>
+        </section>
 
-        <h3 class="fr-h6 fr-mt-2w">Signature à distance</h3>
-
-        <fieldset class="is-remote-section fr-fieldset">
-          <section class="fr-checkbox-group">
-            {% dsfr_form_field form.is_remote %}
-            <input
-              type="hidden"
-              name="{{ form.remote_constent_method.html_name }}"
-              value="{{ legacy_method_value }}"
-            >
-            <div class="fr-text-default--grey fr-text--xs fr-ml-4w">Vous devrez imprimer le mandat et le faire signer à la personne accompagnée aussi vite que possible. Ce mandat vous protège légalement.</div>
-          </section>
-        </fieldset>
-
-        {% block input_submit_form %}
-          <h3 class="fr-label title-count">Connectez l’usager à FranceConnect</h3>
-          <section id="france_connection">
-            <button id="submit-btn" class="fr-connect fr-ml-6w" type="submit">
-              <span class="fr-connect__login">S’identifier avec</span>
-              <span class="fr-connect__brand">FranceConnect</span>
-            </button>
-          </section>
-        {% endblock input_submit_form %}
+        <section class="mandat-step" aria-labelledby="mandat-step-submit">
+          {% block input_submit_form %}
+            <h2 id="mandat-step-submit" class="fr-label title-count">Connectez l’usager à FranceConnect</h2>
+            <section id="france_connection">
+              <button id="submit-btn" class="fr-connect fr-ml-6w" type="submit">
+                <span class="fr-connect__login">S’identifier avec</span>
+                <span class="fr-connect__brand">FranceConnect</span>
+              </button>
+            </section>
+          {% endblock input_submit_form %}
+        </section>
       </div>
     </form>
   </div>

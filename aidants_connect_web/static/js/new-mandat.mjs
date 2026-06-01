@@ -1,21 +1,14 @@
 import {BaseController, aidantsConnectApplicationReady} from "AidantsConnectApplication"
 
 class MandateFormController extends BaseController {
-    static targets = [
-        "isRemoteInput",
-        "remoteLabelText",
-        "bdfWarning",
-    ];
+    static targets = ["bdfWarning"];
 
     static values = {
-        isRemote: Boolean,
         bdfWarning: String,
         scopes: {type: Object, default: {}},
     }
 
     connect () {
-        this.isRemoteValue = this.isRemoteInputTarget.checked;
-
         const scopesValue = this.scopesValue;
         document.querySelectorAll(".mandat-demarche input").forEach(it => {
             it.dataset.action = `${ this.identifier }#scopeSelected`;
@@ -32,14 +25,6 @@ class MandateFormController extends BaseController {
 
     scopesValueChanged (val) {
         this.mutateVisibility(this.scopesValue[this.bdfWarningValue], this.bdfWarningTarget);
-    }
-
-    isRemoteInputTriggered (evt) {
-        this.isRemoteValue = evt.target.checked
-    }
-
-    isRemoteValueChanged (value) {
-        this.remoteLabelTextTargets.forEach(elt => this.mutateVisibility(value, elt));
     }
 }
 
