@@ -335,48 +335,6 @@ class MandatFormTests(TestCase):
             form_3.errors["duree"], ["Veuillez sélectionner la durée du mandat."]
         )
 
-        form_4 = MandatForm(
-            self.organisation,
-            data={"demarche": ["travail"], "duree": "SHORT", "is_remote": True},
-        )
-        self.assertFalse(form_4.is_valid())
-        self.assertListEqual(
-            form_4.errors["remote_constent_method"],
-            [
-                "Vous devez choisir parmis l'une des "
-                "méthodes de consentement à distance."
-            ],
-        )
-
-        form_5 = MandatForm(
-            self.organisation,
-            data={
-                "demarche": ["travail"],
-                "duree": "SHORT",
-                "is_remote": True,
-                "remote_constent_method": RemoteConsentMethodChoices.LEGACY.name,
-            },
-        )
-        self.assertTrue(form_5.is_valid())
-
-        form_6 = MandatForm(
-            self.organisation,
-            data={
-                "demarche": ["travail"],
-                "duree": "SHORT",
-                "is_remote": True,
-                "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
-            },
-        )
-        self.assertFalse(form_6.is_valid())
-        self.assertListEqual(
-            form_6.errors["user_phone"],
-            [
-                "Un numéro de téléphone est obligatoire "
-                "si le consentement est demandé par SMS."
-            ],
-        )
-
     def test_non_existing_demarche_triggers_error(self):
         form = MandatForm(
             self.organisation, data={"demarche": ["test"], "duree": "SHORT"}
@@ -396,36 +354,6 @@ class MandatFormTests(TestCase):
             form.errors["duree"],
             ["Sélectionnez un choix valide. test n’en fait pas partie."],
         )
-
-    def test_remote_fields_emptied_when_mandate_is_not_remote(self):
-        # Remote mandate related fields a cleaned when mandate is not remote
-        form = MandatForm(
-            self.organisation,
-            data={
-                "demarche": ["argent"],
-                "duree": "SHORT",
-                "is_remote": False,
-                "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
-                "user_phone": "0 800 840 800",
-            },
-        )
-        self.assertTrue(form.is_valid())
-        self.assertEqual("", form.cleaned_data["remote_constent_method"])
-        self.assertEqual("", form.cleaned_data["user_phone"])
-
-        # Remote mandate related fields a cleaned when mandate is not remote
-        form = MandatForm(
-            self.organisation,
-            data={
-                "demarche": ["argent"],
-                "duree": "SHORT",
-                "is_remote": True,
-                "remote_constent_method": RemoteConsentMethodChoices.LEGACY.name,
-                "user_phone": "0 800 840 800",
-            },
-        )
-        self.assertTrue(form.is_valid())
-        self.assertEqual("", form.cleaned_data["user_phone"])
 
     def test_disallowed_demarche_triggers_error(self):
         form = MandatForm(

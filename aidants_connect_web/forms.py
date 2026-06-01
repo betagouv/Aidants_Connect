@@ -36,7 +36,7 @@ from aidants_connect_common.forms import (
     ErrorCodesManipulationMixin,
     PatchedForm,
 )
-from aidants_connect_common.widgets import DetailedRadioSelect, JSModulePath, NoopWidget
+from aidants_connect_common.widgets import JSModulePath, NoopWidget
 from aidants_connect_web.constants import (
     AddAidantProfileChoice,
     HabilitationRequestCourseType,
@@ -331,40 +331,6 @@ class MandatForm(PatchedForm):
         widget=MandatDureeRadioSelect,
     )
 
-    is_remote = forms.BooleanField(
-        label="Je souhaite signer le mandat à distance",
-        label_suffix="",
-        required=False,
-    )
-
-    remote_constent_method = forms.ChoiceField(
-        label="Sélectionnez une méthode de consentement à distance",
-        choices=get_choices_for_remote_method,
-        required=False,
-        error_messages={
-            "required": _(
-                "Erreur : veuillez sélectionner la méthode de consentement à distance."
-            )
-        },
-        widget=DetailedRadioSelect,
-    )
-
-    user_phone = AcPhoneNumberField(
-        label="Numéro de téléphone de la personne accompagnée",
-        label_suffix=" :",
-        initial="",
-        required=False,
-    )
-
-    user_remote_contact_verified = forms.BooleanField(
-        required=False,
-        label=(
-            "Je certifie avoir validé l’identité de l’usager répondant au numéro de "
-            "téléphone qui recevra la demande de consentement par SMS."
-        ),
-        label_suffix="",
-    )
-
     def __init__(self, organisation: Organisation, *args, **kwargs):
         self.organisation = organisation
         super().__init__(*args, **kwargs)
@@ -372,59 +338,6 @@ class MandatForm(PatchedForm):
             (key, settings.DEMARCHES[key])
             for key in self.organisation.allowed_demarches
         ]
-
-    def clean_remote_constent_method(self):
-        if not self.cleaned_data["is_remote"]:
-            return ""
-
-        # the form errors only triggers if html novalidate is set in form
-        if not self.cleaned_data.get("remote_constent_method"):
-            self.add_error(
-                "remote_constent_method",
-                _(
-                    "Vous devez choisir parmis l'une des "
-                    "méthodes de consentement à distance."
-                ),
-            )
-            return ""
-
-        return self.cleaned_data["remote_constent_method"]
-
-    def clean_user_phone(self):
-        if (
-            not self.cleaned_data["is_remote"]
-            or self.cleaned_data.get("remote_constent_method")
-            != RemoteConsentMethodChoices.SMS.name
-        ):
-            return ""
-
-        if not self.cleaned_data.get("user_phone"):
-            self.add_error(
-                "user_phone",
-                _(
-                    "Un numéro de téléphone est obligatoire "
-                    "si le consentement est demandé par SMS."
-                ),
-            )
-            return ""
-
-        return self.cleaned_data["user_phone"]
-
-    def clean_user_remote_contact_verified(self):
-        if (
-            not self.cleaned_data["is_remote"]
-            or self.cleaned_data.get("remote_constent_method")
-            not in RemoteConsentMethodChoices.blocked_methods()
-        ):
-            return True
-
-        if not self.cleaned_data.get("user_remote_contact_verified"):
-            raise ValidationError(
-                self.fields["user_remote_contact_verified"].error_messages["required"],
-                code="required",
-            )
-
-        return True
 
 
 class OTPForm(DsfrBaseForm):
