@@ -4,33 +4,27 @@ from secrets import token_urlsafe
 from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth.hashers import make_password
-from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import FormView
 
 from aidants_connect_common.constants import AuthorizationDurations
 from aidants_connect_pico_cms.models import MandateTranslation
-from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.decorators import aidant_logged_with_activity_required
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Aidant, Connection, Journal, Mandat, Usager
 from aidants_connect_web.views.mandat import (
     RemoteConsentSecondStepView as MandatRemoteConsentSecondStepView,
 )
-from aidants_connect_web.views.mandat import RemoteMandateMixin
 from aidants_connect_web.views.mandat import WaitingRoom as MandatWaitingRoom
 
 logger = logging.getLogger()
 
 
 @aidant_logged_with_activity_required
-class RenewMandat(RemoteMandateMixin, FormView):
+class RenewMandat(FormView):
     form_class = MandatForm
     template_name = "aidants_connect_web/new_mandat/renew_mandat.html"
-
-    waiting_room_path = "espace_aidant:renew_mandat_waiting_room"
-    mandat_form_path = "espace_aidant:renew_mandat"
 
     def dispatch(self, request, *args, **kwargs):
         request.session.pop("connection", None)
@@ -55,15 +49,6 @@ class RenewMandat(RemoteMandateMixin, FormView):
     def form_valid(self, form):
         data = form.cleaned_data
         access_token = make_password(token_urlsafe(64), settings.FC_AS_FI_HASH_SALT)
-        self.consent_request_id = ""
-
-        if isinstance(
-            result := self.process_consent_first_step(
-                self.aidant, self.aidant.organisation, form
-            ),
-            HttpResponse,
-        ):
-            return result
 
         self.connection = Connection.objects.create(
             aidant=self.aidant,
@@ -73,10 +58,9 @@ class RenewMandat(RemoteMandateMixin, FormView):
             usager=self.usager,
             demarches=data["demarche"],
             duree_keyword=data["duree"],
-            mandat_is_remote=data["is_remote"],
-            remote_constent_method=data["remote_constent_method"],
-            user_phone=data["user_phone"],
-            consent_request_id=self.consent_request_id,
+            mandat_is_remote=False,
+            remote_constent_method="",
+            consent_request_id="",
         )
         duree = AuthorizationDurations.duration(self.connection.duree_keyword)
         Journal.log_init_renew_mandat(
@@ -85,10 +69,10 @@ class RenewMandat(RemoteMandateMixin, FormView):
             access_token=self.connection.access_token,
             demarches=self.connection.demarches,
             duree=duree,
-            is_remote_mandat=self.connection.mandat_is_remote,
-            remote_constent_method=data["remote_constent_method"],
-            user_phone=data["user_phone"],
-            consent_request_id=self.consent_request_id,
+            is_remote_mandat=False,
+            remote_constent_method="",
+            user_phone="",
+            consent_request_id="",
         )
 
         self.request.session["connection"] = self.connection.pk
@@ -109,12 +93,7 @@ class RenewMandat(RemoteMandateMixin, FormView):
         return {**super().get_form_kwargs(), "organisation": self.aidant.organisation}
 
     def get_success_url(self):
-        return (
-            reverse("espace_aidant:new_mandat_recap")
-            if self.connection.remote_constent_method
-            not in RemoteConsentMethodChoices.blocked_methods()
-            else reverse("espace_aidant:renew_remote_second_step")
-        )
+        return reverse("espace_aidant:new_mandat_recap")
 
 
 class RemoteConsentSecondStepView(MandatRemoteConsentSecondStepView):
