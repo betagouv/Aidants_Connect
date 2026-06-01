@@ -38,7 +38,6 @@ from aidants_connect_web.decorators import (
 )
 from aidants_connect_web.forms import (
     MandatForm,
-    PatchedForm,
     RecapMandatForm,
     RemoteConsentMethodChoices,
 )
@@ -56,26 +55,6 @@ from aidants_connect_web.views.service import humanize_demarche_names
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
-
-
-class MandatCreationJsFormView(FormView):
-    def get_form(self, form_class=None):
-        form: PatchedForm = super().get_form(form_class)
-        form.widget_attrs(
-            "is_remote",
-            {
-                "data-action": "mandate-form-controller#isRemoteInputTriggered",
-                "data-mandate-form-controller-target": "isRemoteInput",
-            },
-        )
-
-        return form
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "legacy_method_value": RemoteConsentMethodChoices.LEGACY.name,
-        }
 
 
 class RemoteMandateMixin:
@@ -370,7 +349,7 @@ class RenderAttestationAbstract(TemplateView):
 
 
 @aidant_logged_with_activity_required
-class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
+class NewMandat(RemoteMandateMixin, FormView):
     form_class = MandatForm
     template_name = "aidants_connect_web/new_mandat/new_mandat.html"
 

@@ -44,8 +44,7 @@ fieldset {
     color: var(--text-mention-grey);
   }
 }
-.fr-input-group > .fr-label,
-.fr-label.title-count {
+h2.fr-label.title-count {
   font-size: 1.75rem;
   line-height: 2.25rem;
   font-weight: 700;
@@ -73,8 +72,7 @@ fieldset {
   }
 }
 @media (min-width: 48em) {
-  .fr-input-group > .fr-label,
-  .fr-label.title-count {
+  h2.fr-label.title-count {
     font-size: 1.75rem;
     line-height: 2.25rem;
   }

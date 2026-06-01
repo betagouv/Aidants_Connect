@@ -7,6 +7,7 @@ from django.contrib.auth.hashers import make_password
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
+from django.views.generic import FormView
 
 from aidants_connect_common.constants import AuthorizationDurations
 from aidants_connect_pico_cms.models import MandateTranslation
@@ -14,7 +15,6 @@ from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.decorators import aidant_logged_with_activity_required
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import Aidant, Connection, Journal, Mandat, Usager
-from aidants_connect_web.views.mandat import MandatCreationJsFormView
 from aidants_connect_web.views.mandat import (
     RemoteConsentSecondStepView as MandatRemoteConsentSecondStepView,
 )
@@ -25,7 +25,7 @@ logger = logging.getLogger()
 
 
 @aidant_logged_with_activity_required
-class RenewMandat(RemoteMandateMixin, MandatCreationJsFormView):
+class RenewMandat(RemoteMandateMixin, FormView):
     form_class = MandatForm
     template_name = "aidants_connect_web/new_mandat/renew_mandat.html"
 

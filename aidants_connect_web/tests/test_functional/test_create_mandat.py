@@ -119,109 +119,16 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         self.open_live_url(reverse("espace_aidant:usagers"))
 
-    def test_create_new_remote_mandat_with_legacy_consent(self):
+    def test_remote_signature_is_not_available_on_new_mandat_form(self):
         self.open_live_url(reverse("espace_aidant:new_mandat"))
 
         self.login_aidant(self.aidant)
 
-        demarches_section = self.selenium.find_element(
-            By.CSS_SELECTOR, ".demarches-section"
-        )
-        demarches = demarches_section.find_elements(By.TAG_NAME, "input")
-        self.assertEqual(len(demarches), 10)
-
-        demarches_section.find_element(
-            By.CSS_SELECTOR, "#id_demarche_argent ~ label"
-        ).click()
-        demarches_section.find_element(
-            By.CSS_SELECTOR, "#id_demarche_famille ~ label"
-        ).click()
-
-        short_duree_label = self.selenium.find_element(
-            By.CSS_SELECTOR, "#id_duree_short ~ label"
-        )
-        self.assertEqual(
-            "Mandat court expire demain", short_duree_label.text.replace("\n", " ")
-        )
-        short_duree_label.click()
-
-        # Enable remote signature
-        self.selenium.find_element(By.CSS_SELECTOR, "#id_is_remote ~ label").click()
-        self.assertEqual(
-            "Mandat court à distance expire demain",
-            self.selenium.find_element(
-                By.CSS_SELECTOR, "#id_duree_short ~ label"
-            ).text.replace("\n", " "),
-        )
-
-        remote_method = self.selenium.find_element(
-            By.CSS_SELECTOR,
-            'input[name="remote_constent_method"][type="hidden"]',
-        )
-        self.assertEqual(
-            RemoteConsentMethodChoices.LEGACY.name,
-            remote_method.get_attribute("value"),
-        )
+        self.assertFalse(self.selenium.find_elements(By.ID, "id_is_remote"))
         self.assertFalse(
             self.selenium.find_elements(
-                By.CSS_SELECTOR, 'input[id^="id_remote_constent_method"]'
+                By.CSS_SELECTOR, 'input[name="remote_constent_method"]'
             )
-        )
-        self.assertFalse(self.selenium.find_elements(By.ID, "id_user_phone"))
-        self.assertFalse(
-            self.selenium.find_elements(By.ID, "id_user_remote_contact_verified")
-        )
-
-        self._inject_session_cookie(is_remote=True)
-        self.open_live_url(reverse("espace_aidant:new_mandat_recap"))
-        self.wait.until(self.path_matches("espace_aidant:new_mandat_recap"))
-
-        # Recap all the information for the Mandat
-        recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual("Récapitulatif du mandat à distance", recap_title)
-        recap_text = self.selenium.find_element(By.ID, "recap-text").text
-        self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
-        checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
-        self.selenium.find_element(By.CSS_SELECTOR, "#id_personal_data ~ label").click()
-        id_otp_token = checkboxes[-2]
-        self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
-        id_otp_token.send_keys(self.otp)
-        submit_button = checkboxes[-1]
-        self.assertEqual(submit_button.get_attribute("type"), "submit")
-        submit_button.click()
-
-        # Success page
-        success_title = self.selenium.find_element(
-            By.CSS_SELECTOR, ".attestation-content h1"
-        ).text
-        self.assertEqual(
-            success_title,
-            "Mandat pour réaliser des démarches en ligne\n"
-            "avec le service « Aidants Connect »",
-        )
-        mandat_qs = Mandat.objects.filter(organisation=self.aidant.organisation)
-        self.assertEqual(1, mandat_qs.count())
-        self.assertEqual(2, mandat_qs[0].autorisations.count())
-
-    def test_sms_consent_is_not_available_from_new_mandat_form(self):
-        self.open_live_url(reverse("espace_aidant:new_mandat"))
-
-        self.login_aidant(self.aidant)
-        self.selenium.find_element(By.CSS_SELECTOR, "#id_is_remote ~ label").click()
-
-        self.assertFalse(
-            self.selenium.find_elements(By.ID, "id_remote_constent_method_sms")
-        )
-        self.assertFalse(self.selenium.find_elements(By.ID, "id_user_phone"))
-        self.assertFalse(
-            self.selenium.find_elements(By.ID, "id_user_remote_contact_verified")
-        )
-        self.assertEqual(
-            RemoteConsentMethodChoices.LEGACY.name,
-            self.selenium.find_element(
-                By.CSS_SELECTOR,
-                'input[name="remote_constent_method"][type="hidden"]',
-            ).get_attribute("value"),
         )
 
     def test_bdf_warn_notification(self):
