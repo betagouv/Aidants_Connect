@@ -37,6 +37,8 @@ class DetailedRadioSelect(RadioSelect):
     container_classes = ""
     input_wrapper_classes = ""
     label_classes = ""
+    option_tile_classes = ""
+    hide_group_label = False
     checkbox_select_multiple = False
 
     def create_option(
@@ -64,6 +66,7 @@ class DetailedRadioSelect(RadioSelect):
         opts_context["label_classes"] = merge_html_attr_values(
             [self.label_classes, f"{self.input_wrapper_base_class}-label"]
         )
+        opts_context["option_tile_classes"] = self.option_tile_classes
 
         if "id" in attrs:
             opts_context["attrs"]["id"] = self.id_for_label(

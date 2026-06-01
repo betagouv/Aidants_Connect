@@ -104,10 +104,16 @@ def merge_html_attr_values(attr_value: str | Iterable) -> str:
 
 
 @register.inclusion_tag("forms/aidantc-dsfr-input-snippet-no-asterisk.html")
-def aidantc_dsfr_form_field_no_asterisk(field):
+def aidantc_dsfr_form_field_no_asterisk(field, hide_group_label=None):
     """Template tag DSFR sans astérisque"""
     is_inline = getattr(field.field.widget, "inline", False)
-    return {"field": field, "is_inline": is_inline}
+    if hide_group_label is None:
+        hide_group_label = getattr(field.field.widget, "hide_group_label", False)
+    return {
+        "field": field,
+        "is_inline": is_inline,
+        "hide_group_label": hide_group_label,
+    }
 
 
 @register.simple_tag
