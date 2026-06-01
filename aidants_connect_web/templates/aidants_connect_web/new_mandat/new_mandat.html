@@ -66,6 +66,8 @@
       <section class="mandat-step demarches-section" aria-labelledby="mandat-step-demarches">
         <h2 id="mandat-step-demarches" class="fr-label title-count">{{ form.demarche.label }}</h2>
         <fieldset role="group" aria-labelledby="mandat-step-demarches">
+          {# Visually hidden legend required by the checkboxgroup a11y rule #}
+          <legend class="fr-sr-only">{{ form.demarche.label }}</legend>
           {% aidantc_dsfr_form_field_no_asterisk form.demarche True %}
         </fieldset>
       </section>
@@ -76,6 +78,8 @@
         <section class="mandat-step" aria-labelledby="mandat-step-duree">
           <h2 id="mandat-step-duree" class="fr-label title-count">{{ form.duree.label }}</h2>
           <fieldset role="group" aria-labelledby="mandat-step-duree">
+            {# Visually hidden legend required by the radiogroup a11y rule #}
+            <legend class="fr-sr-only">{{ form.duree.label }}</legend>
             {% aidantc_dsfr_form_field_no_asterisk form.duree True %}
           </fieldset>
         </section>
