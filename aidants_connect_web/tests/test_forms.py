@@ -276,7 +276,7 @@ class AidantChangeFormTests(TestCase):
         self.assertEqual(aidant.username, "good@mail.net")
 
 
-class SMSConsentFeatureFlagsTests(TestCase):
+class SMSConsentSuppressionTests(TestCase):
     @override_settings(FF_ACTIVATE_SMS_CONSENT=False)
     def test_not_sms_method_when_ff_sms_is_false(self):
         remote_method = get_choices_for_remote_method()
@@ -292,7 +292,7 @@ class SMSConsentFeatureFlagsTests(TestCase):
     @override_settings(FF_ACTIVATE_SMS_CONSENT=True)
     def test_sms_method_present_when_ff_sms_is_true(self):
         remote_method = get_choices_for_remote_method()
-        self.assertTrue(
+        self.assertFalse(
             any(
                 [
                     key == RemoteConsentMethodChoices.SMS.name

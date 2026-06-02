@@ -274,17 +274,9 @@ class DsfrOtpForm(OTPForm, DsfrBaseForm):
 
 
 def get_choices_for_remote_method():
-    from django.conf import settings
 
     remote_choices = RemoteConsentMethodChoices.choices
-    if settings.FF_ACTIVATE_SMS_CONSENT:
-        return remote_choices
-    else:
-        return [
-            (key, value)
-            for key, value in remote_choices
-            if key != RemoteConsentMethodChoices.SMS.name
-        ]
+    return [(key, value) for key, value in remote_choices]
 
 
 class MandatForm(PatchedForm):

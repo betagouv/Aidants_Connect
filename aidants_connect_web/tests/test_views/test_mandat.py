@@ -13,7 +13,6 @@ from django.utils import formats, timezone
 from freezegun import freeze_time
 
 from aidants_connect_pico_cms.models import MandateTranslation
-from aidants_connect_web.constants import RemoteConsentMethodChoices
 from aidants_connect_web.forms import MandatForm
 from aidants_connect_web.models import (
     Aidant,
@@ -985,36 +984,3 @@ class AttestationFinalTests(TestCase):
                     got: {response.context[key]}"""
                 ),
             )
-
-
-@override_settings(FF_ACTIVATE_SMS_CONSENT=True)
-class RemoteSecondStepMissingFirstStepTests(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.aidant = AidantFactory()
-
-    def test_direct_access_without_first_step_shows_error(self):
-        """Test direct access to remote second step without SMS recap shows error"""
-        self.client.force_login(self.aidant)
-
-        connection = ConnectionFactory(
-            aidant=self.aidant,
-            organisation=self.aidant.organisation,
-            mandat_is_remote=True,
-            remote_constent_method=RemoteConsentMethodChoices.SMS.name,
-            consent_request_id="test-uuid",
-            user_phone="0800840800",
-        )
-
-        session = self.client.session
-        session["connection"] = connection.pk
-        session.save()
-
-        response = self.client.post(
-            reverse("espace_aidant:new_mandat_remote_second_step")
-        )
-
-        self.assertRedirects(response, reverse("espace_aidant:new_mandat"))
-        messages = list(django_messages.get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertIn("récapitulatif de mandat n'a pas été envoyé", messages[0].message)

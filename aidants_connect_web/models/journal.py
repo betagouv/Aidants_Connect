@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
-from typing import TYPE_CHECKING, Collection, Iterable, Optional
+from typing import TYPE_CHECKING, Iterable, Optional
 
 from django.conf import settings
 from django.db import IntegrityError, models
@@ -31,78 +31,78 @@ class JournalQuerySet(models.QuerySet):
     def excluding_staff(self):
         return self.exclude(aidant__organisation__name=settings.STAFF_ORGANISATION_NAME)
 
-    def has_user_explicitly_consented(
-        self,
-        user: Usager,
-        aidant: Aidant,
-        remote_constent_method: RemoteConsentMethodChoices,
-        user_phone: str,
-        consent_request_id: str,
-    ) -> JournalQuerySet:
-        return self.filter(
-            action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
-            usager=user,
-            aidant=aidant,
-            remote_constent_method=remote_constent_method,
-            is_remote_mandat=True,
-            user_phone=user_phone,
-            consent_request_id=consent_request_id,
-        ).exists()
-
-    def find_sms_consent_requests(
-        self, user_phone: PhoneNumber, consent_request_id: str | None = None
-    ):
-        return self._find_consent_actions(
-            action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
-            user_phone=user_phone,
-            consent_request_id=consent_request_id,
-        )
-
-    def find_sms_consent_recap(
-        self, user_phone: PhoneNumber, consent_request_id: str | None = None
-    ):
-        return self._find_consent_actions(
-            action=JournalActionKeywords.REMOTE_SMS_RECAP_SENT,
-            user_phone=user_phone,
-            consent_request_id=consent_request_id,
-        )
-
-    def find_sms_user_consent(
-        self, user_phone: PhoneNumber, consent_request_id: str | None = None
-    ):
-        return self._find_consent_actions(
-            action=JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
-            user_phone=user_phone,
-            consent_request_id=consent_request_id,
-        )
-
-    def find_sms_user_consent_or_denial(
-        self, user_phone: PhoneNumber, consent_request_id: str | None = None
-    ):
-        return self._find_consent_actions(
-            action=[
-                JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
-                JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
-            ],
-            user_phone=user_phone,
-            consent_request_id=consent_request_id,
-        )
-
-    def _find_consent_actions(
-        self,
-        action: str | Collection,
-        user_phone: PhoneNumber,
-        consent_request_id: str | None = None,
-    ):
-        kwargs = {"user_phone": format_number(user_phone, PhoneNumberFormat.E164)}
-        if isinstance(action, str):
-            kwargs["action"] = action
-        else:
-            kwargs["action__in"] = list(action)
-        if consent_request_id:
-            kwargs["consent_request_id"] = consent_request_id
-
-        return self.filter(**kwargs)
+    # def has_user_explicitly_consented(
+    #     self,
+    #     user: Usager,
+    #     aidant: Aidant,
+    #     remote_constent_method: RemoteConsentMethodChoices,
+    #     user_phone: str,
+    #     consent_request_id: str,
+    # ) -> JournalQuerySet:
+    #     return self.filter(
+    #         action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
+    #         usager=user,
+    #         aidant=aidant,
+    #         remote_constent_method=remote_constent_method,
+    #         is_remote_mandat=True,
+    #         user_phone=user_phone,
+    #         consent_request_id=consent_request_id,
+    #     ).exists()
+    #
+    # def find_sms_consent_requests(
+    #     self, user_phone: PhoneNumber, consent_request_id: str | None = None
+    # ):
+    #     return self._find_consent_actions(
+    #         action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
+    #         user_phone=user_phone,
+    #         consent_request_id=consent_request_id,
+    #     )
+    #
+    # def find_sms_consent_recap(
+    #     self, user_phone: PhoneNumber, consent_request_id: str | None = None
+    # ):
+    #     return self._find_consent_actions(
+    #         action=JournalActionKeywords.REMOTE_SMS_RECAP_SENT,
+    #         user_phone=user_phone,
+    #         consent_request_id=consent_request_id,
+    #     )
+    #
+    # def find_sms_user_consent(
+    #     self, user_phone: PhoneNumber, consent_request_id: str | None = None
+    # ):
+    #     return self._find_consent_actions(
+    #         action=JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
+    #         user_phone=user_phone,
+    #         consent_request_id=consent_request_id,
+    #     )
+    #
+    # def find_sms_user_consent_or_denial(
+    #     self, user_phone: PhoneNumber, consent_request_id: str | None = None
+    # ):
+    #     return self._find_consent_actions(
+    #         action=[
+    #             JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
+    #             JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
+    #         ],
+    #         user_phone=user_phone,
+    #         consent_request_id=consent_request_id,
+    #     )
+    #
+    # def _find_consent_actions(
+    #     self,
+    #     action: str | Collection,
+    #     user_phone: PhoneNumber,
+    #     consent_request_id: str | None = None,
+    # ):
+    #     kwargs = {"user_phone": format_number(user_phone, PhoneNumberFormat.E164)}
+    #     if isinstance(action, str):
+    #         kwargs["action"] = action
+    #     else:
+    #         kwargs["action__in"] = list(action)
+    #     if consent_request_id:
+    #         kwargs["consent_request_id"] = consent_request_id
+    #
+    #     return self.filter(**kwargs)
 
     def find_demarches_for_organisation(self, org: Organisation):
         return self.filter(

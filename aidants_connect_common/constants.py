@@ -119,10 +119,10 @@ class JournalActionKeywords(metaclass=JournalActionKeywordsMeta):
     INIT_RENEW_MANDAT = "init_renew_mandat"
     TRANSFER_MANDAT = "transfer_mandat"
     SWITCH_ORGANISATION = "switch_organisation"
-    REMOTE_SMS_CONSENT_RECEIVED = "remote_sms_consent_received"
-    REMOTE_SMS_DENIAL_RECEIVED = "remote_sms_denial_received"
-    REMOTE_SMS_CONSENT_SENT = "remote_sms_consent_sent"
-    REMOTE_SMS_RECAP_SENT = "remote_sms_recap_sent"
+    # REMOTE_SMS_CONSENT_RECEIVED = "remote_sms_consent_received"
+    # REMOTE_SMS_DENIAL_RECEIVED = "remote_sms_denial_received"
+    # REMOTE_SMS_CONSENT_SENT = "remote_sms_consent_sent"
+    # REMOTE_SMS_RECAP_SENT = "remote_sms_recap_sent"
 
 
 JOURNAL_ACTIONS = (
@@ -155,22 +155,22 @@ JOURNAL_ACTIONS = (
         "Transférer un mandat à une autre organisation",
     ),
     (JournalActionKeywords.SWITCH_ORGANISATION, "Changement d'organisation"),
-    (
-        JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
-        "Consentement reçu pour un mandat conclu par SMS",
-    ),
-    (
-        JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
-        "Refus reçu pour un mandat conclu par SMS",
-    ),
-    (
-        JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
-        "Demande de consentement pour un mandat conclu par SMS envoyé",
-    ),
-    (
-        JournalActionKeywords.REMOTE_SMS_RECAP_SENT,
-        "Récapitulatif préalable pour mandat conclu par SMS envoyé",
-    ),
+    # (
+    #     JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
+    #     "Consentement reçu pour un mandat conclu par SMS",
+    # ),
+    # (
+    #     JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
+    #     "Refus reçu pour un mandat conclu par SMS",
+    # ),
+    # (
+    #     JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
+    #     "Demande de consentement pour un mandat conclu par SMS envoyé",
+    # ),
+    # (
+    #     JournalActionKeywords.REMOTE_SMS_RECAP_SENT,
+    #     "Récapitulatif préalable pour mandat conclu par SMS envoyé",
+    # ),
 )
 
 
