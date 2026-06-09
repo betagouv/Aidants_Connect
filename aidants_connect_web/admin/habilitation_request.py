@@ -276,6 +276,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
         "connexion_mode",
         "course_type",
         "id_fne",
+        "pix_score",
         "created_at",
     )
     readonly_fields = (
@@ -340,6 +341,7 @@ class HabilitationRequestAdmin(ImportExportMixin, VisibleToAdminMetier, ModelAdm
                     "date_formation",
                     "test_pix_passed",
                     "date_test_pix",
+                    "pix_score",
                 )
             },
         ),

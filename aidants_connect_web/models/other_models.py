@@ -94,6 +94,7 @@ class HabilitationRequest(models.Model):
         ),
     )
 
+    pix_score = models.PositiveSmallIntegerField("Note PIX", blank=True, null=True)
     created_at = models.DateTimeField("Date de création", auto_now_add=True)
     updated_at = models.DateTimeField("Date de modification", auto_now=True)
     formation_done = models.BooleanField("Formation faite", default=False)

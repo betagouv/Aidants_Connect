@@ -33,9 +33,15 @@ def update_pix_and_create_aidant(json_result):
             aidants_a_former = HabilitationRequest.objects.filter(
                 email=person["email saisi"].lower()
             )
-
             if aidants_a_former.exists():
+                score_pix = None
+                if "résultat" in person:
+                    score_pix = int(person["résultat"] * 100)
                 for aidant_a_former in aidants_a_former:
+                    if score_pix and aidant_a_former.pix_score != score_pix:
+                        aidant_a_former.pix_score = score_pix
+                        aidant_a_former.save()
+
                     if not aidant_a_former.test_pix_passed:
                         aidant_a_former.test_pix_passed = True
                         aidant_a_former.date_test_pix = date_test_pix
