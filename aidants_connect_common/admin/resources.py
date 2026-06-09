@@ -38,6 +38,9 @@ class FormationAttendantResource(ModelResource):
     test_pix_passed = Field(
         column_name="Test PIX Passé", attribute="attendant__test_pix_passed"
     )
+    test_pix_score = Field(
+        column_name="Note Test PIX", attribute="attendant__pix_score"
+    )
 
     class Meta:
         model = FormationAttendant
@@ -54,6 +57,8 @@ class FormationAttendantResource(ModelResource):
             "financement_conum",
             "id_grist",
             "id",
+            "test_pix_passed",
+            "test_pix_score",
         )
 
     def dehydrate_state(self, f_attendant):
