@@ -72,7 +72,7 @@ class RenewMandatAccessibilityTests(AccessibilityTestCase):
         await self.lazy_loading(self._open_url)
         step_headings = self.page.locator("form h2.fr-label.title-count")
         await expect(step_headings).to_have_count(4)
-        await expect(step_headings.nth(0)).to_have_text("Informez l’usager")
+        await expect(step_headings.nth(0)).to_have_text("Lisez ces mentions à l’usager")
         await expect(step_headings.nth(1)).to_have_text(
             "Sélectionnez la ou les démarches"
         )
