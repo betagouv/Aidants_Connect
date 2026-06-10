@@ -1,0 +1,63 @@
+{% extends 'aidants_connect_web/espace_responsable/otp_tunnel/layout.html' %}
+
+{% block title %}Félicitations - Accéder à l’espace référent - Aidants Connect{% endblock %}
+
+{% block otp_tunnel_body %}
+
+
+  <div class="fr-stepper">
+    <h1 class="fr-stepper__title">
+      Accéder à l’espace référent
+      <span class="fr-stepper__state">Étape {{ wizard_step }} sur {{ wizard_total_steps }}</span>
+    </h1>
+    <div
+      class="fr-stepper__steps"
+      data-fr-current-step="{{ wizard_step }}"
+      data-fr-steps="{{ wizard_total_steps }}"
+    ></div>
+  </div>
+
+  <h2>
+    <span aria-hidden="true">🎉</span>
+    Félicitations
+  </h2>
+
+  <p>
+    L’application est associée à votre compte ! Vous pouvez accéder à l’espace référent et, lors de vos prochaines connexions, utiliser l’application pour générer un code temporaire.
+  </p>
+
+  <div class="fr-callout">
+    <h3 class="fr-h5">Les prochaines étapes en tant que référent</h3>
+    <ul>
+      <li>
+        Si vous êtes l’unique référent de votre structure, pensez à
+        <a class="fr-link" href="{% url 'espace_referent:referents' %}">désigner un co-référent</a>
+        (depuis « Gestion des référents », cliquez sur « Ajouter un référent »). Cela permet d’assurer un suivi en votre absence et une continuité en cas de départ de la structure.
+      </li>
+      <li>
+        <a class="fr-link" href="{% url 'espace_referent:organisation' %}">Configurez les thématiques</a>
+        des accompagnements réalisés au sein de votre structure (depuis la page « Organisation »). Cela permet de restreindre le périmètre des mandats créés par les aidants.
+      </li>
+      <li>
+        Si ce n’est pas déjà fait, <strong>participez à l’un de nos webinaires</strong> pour tout savoir sur le rôle de référent :
+        <a class="fr-link" href="https://rdv.anct.gouv.fr/org/roFEEt/aidants-connect" target="_blank" rel="noreferrer noopener">lien d’inscription</a>.
+      </li>
+    </ul>
+  </div>
+
+{% endblock otp_tunnel_body %}
+
+{% block otp_tunnel_footer %}
+  <footer class="otp-tunnel-card__footer">
+    <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--icon-right">
+      <li>
+        <a
+          href="{% url 'espace_referent:home' %}"
+          class="fr-btn fr-icon-arrow-right-line"
+        >
+          Accéder à l’espace référent
+        </a>
+      </li>
+    </ul>
+  </footer>
+{% endblock otp_tunnel_footer %}

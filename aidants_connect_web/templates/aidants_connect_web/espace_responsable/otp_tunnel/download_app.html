@@ -1,0 +1,88 @@
+{% extends 'aidants_connect_web/espace_responsable/otp_tunnel/layout.html' %}
+
+{% load static %}
+
+{% block title %}Télécharger une application d’authentification - Aidants Connect{% endblock %}
+
+{% block otp_tunnel_body %}
+   <div class="fr-stepper">
+    <h1 class="fr-stepper__title">
+      Télécharger une application d’authentification
+      <span class="fr-stepper__state">Étape {{ wizard_step }} sur {{ wizard_total_steps }}</span>
+    </h1>
+    <div
+      class="fr-stepper__steps"
+      data-fr-current-step="{{ wizard_step }}"
+      data-fr-steps="{{ wizard_total_steps }}"
+    ></div>
+  </div>
+
+  <p>
+    Les applications d’authentification génèrent des codes à usage unique pour s’authentifier en toute sécurité sur un service.
+  </p>
+
+  <ul>
+    <li class="fr-mt-2w">Si vous disposez déjà d’une application d’authentification sur votre téléphone, pour un autre service, vous pouvez l’utiliser pour Aidants Connect.</li>
+    <li class="fr-mt-4w">
+      Si vous ne disposez pas déjà d’une application d’authentification, téléchargez sur votre téléphone l’application de votre choix. Quelques exemples :
+      <ul class="otp-tunnel-app-list">
+        <li>
+          <img
+            class="otp-tunnel-app-list__icon"
+            src="{% static 'images/otp-tunnel/freeotp-authenticator.png' %}"
+            alt=""
+            width="44"
+            height="44"
+          />
+          <strong>FreeOTP Authenticator</strong>
+        </li>
+        <li>
+          <img
+            class="otp-tunnel-app-list__icon"
+            src="{% static 'images/otp-tunnel/google-authenticator.png' %}"
+            alt=""
+            width="44"
+            height="44"
+          />
+          <strong>Google Authenticator</strong>
+        </li>
+        <li>
+          <img
+            class="otp-tunnel-app-list__icon"
+            src="{% static 'images/otp-tunnel/microsoft-authenticator.png' %}"
+            alt=""
+            width="44"
+            height="44"
+          />
+          <strong>Microsoft Authenticator</strong>
+        </li>
+      </ul>
+    </li>
+  </ul>
+  <p>
+    Une fois l’application installée sur votre téléphone, passez à l’étape suivante.
+  </p>
+{% endblock otp_tunnel_body %}
+
+{% block otp_tunnel_footer %}
+  <footer class="otp-tunnel-card__footer otp-tunnel-card__footer_with_border">
+    <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--icon-left">
+      <li>
+        <a
+          href="{% url 'espace_referent:otp_tunnel_welcome' %}"
+          class="fr-btn fr-btn--secondary fr-icon-arrow-left-line"
+        >
+          Retour
+        </a>
+      </li>
+      <li>
+        <a
+          href="{% url 'espace_referent:otp_tunnel_scan_qr_code' %}"
+          class="fr-btn fr-icon-arrow-right-line"
+        >
+          Étape suivante
+        </a>
+      </li>
+    </ul>
+  </footer>
+{% endblock otp_tunnel_footer %}

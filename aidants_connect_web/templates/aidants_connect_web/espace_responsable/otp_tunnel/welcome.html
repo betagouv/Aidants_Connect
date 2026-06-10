@@ -1,0 +1,48 @@
+{% extends 'aidants_connect_web/espace_responsable/otp_tunnel/layout.html' %}
+
+{% block title %}Bienvenue - Configuration d’une application d’authentification - Aidants Connect{% endblock %}
+
+{% block otp_tunnel_header_action %}
+  <a
+    href="{% url 'espace_referent:otp_tunnel_dismiss' %}"
+    class="fr-btn fr-btn--secondary"
+  >
+    Faire plus tard
+  </a>
+{% endblock otp_tunnel_header_action %}
+
+{% block otp_tunnel_body %}
+  <h1>
+    <span aria-hidden="true">👋</span>
+    Bienvenue
+  </h1>
+  <p class="fr-text--lg">
+    Il s’agit de votre première connexion à l’espace référent. Pour y accéder, vous devez associer une application d’authentification à votre compte. Cette application vous permettra de générer des codes temporaires, nécessaires pour vous connecter sur Aidants Connect.
+  </p>
+  <p class="fr-text--lg">
+    <strong>Munissez-vous de votre téléphone mobile et suivez les étapes !</strong>
+  </p>
+{% endblock otp_tunnel_body %}
+
+{% block otp_tunnel_footer %}
+  <footer class="otp-tunnel-card__footer otp-tunnel-card__footer_with_border">
+    <ul class="fr-btns-group fr-btns-group--inline-md">
+      <li>
+        <a
+          href="{% url 'espace_referent:otp_tunnel_download_app' %}"
+          class="fr-btn"
+        >
+          Associer l’application d’authentification
+        </a>
+      </li>
+      <li>
+        <a
+          href="{% url 'espace_referent:choose_totp' aidant_id=referent.id %}"
+          class="fr-btn fr-btn--secondary"
+        >
+          Associer une carte physique
+        </a>
+      </li>
+    </ul>
+  </footer>
+{% endblock otp_tunnel_footer %}

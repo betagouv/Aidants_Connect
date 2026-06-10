@@ -1,0 +1,37 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block nav %}{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block body_class %}otp-tunnel{% endblock %}
+
+{% block extracss %}
+  <link href="{% static 'css/otp-tunnel.css' %}" rel="stylesheet">
+  {% block otp_tunnel_extracss %}{% endblock %}
+{% endblock extracss %}
+
+{% block content %}
+  <div class="otp-tunnel-page">
+    <div class="otp-tunnel-card">
+      {% include "layouts/_messages.html" %}
+
+      <header class="otp-tunnel-card__header">
+        <img
+          class="otp-tunnel-card__logo"
+          src="{% static 'images/aidants-connect_logo.png' %}"
+          alt="Aidants Connect"
+        />
+        {% block otp_tunnel_header_action %}{% endblock %}
+      </header>
+
+      <div class="otp-tunnel-card__body">
+        {% block otp_tunnel_body %}{% endblock %}
+      </div>
+
+      {% block otp_tunnel_footer %}{% endblock %}
+    </div>
+  </div>
+{% endblock content %}
