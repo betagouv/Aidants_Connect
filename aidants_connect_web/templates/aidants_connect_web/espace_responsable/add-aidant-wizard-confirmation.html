@@ -27,22 +27,22 @@
           {% if direct_adds %}
             <p class="fr-text fr-mt-4w">
               Les aidants suivants vont être ajoutés à l'organisation {{ referent.organisation.name }} :
-              <ul>
-                {% for aidant in direct_adds %}
-                  <li>{{ aidant.email }}</li>
-                {% endfor %}
-              </ul>
             </p>
+            <ul>
+              {% for aidant in direct_adds %}
+                <li>{{ aidant.email }}</li>
+              {% endfor %}
+            </ul>
           {% endif %}
           {% if structure_requests %}
             <p class="fr-text {% if not direct_adds %}fr-mt-4w{% endif %}">
               La demande d'ajout, pour les aidants suivants, sera vérifiée par notre équipe :
-              <ul>
-                {% for aidant in structure_requests %}
-                  <li>{{ aidant.email }}</li>
-                {% endfor %}
-              </ul>
             </p>
+            <ul>
+              {% for aidant in structure_requests %}
+                <li>{{ aidant.email }}</li>
+              {% endfor %}
+            </ul>
             <p class="fr-text">
               Une fois la demande validée, les aidants seront liés à votre organisation. Si besoin, vous pourrez leur associer un nouveau moyen de connexion depuis l'onglet « Aidants actifs ».
             </p>

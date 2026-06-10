@@ -1,10 +1,24 @@
-{% extends 'layouts/main-habilitation.html' %}
+{% extends 'layouts/dsfr_error_base.html' %}
 
-{% block title %}Aidants Connect - Cette page n'existe pas (erreur 404){% endblock %}
+{% block title %}Aidants Connect - Page non trouvée (erreur 404){% endblock %}
 
-{% block content %}
-  <div class="fr-container">
-    <h4 class="fr-pt-8v">Cette page n’existe pas (404)</h4>
-    <a id="to-home" class="fr-link" href="{% url 'home_page' %}">Retourner à l’accueil</a>
-  </div>
-{% endblock content %}
+{% block error_title %}Page non trouvée{% endblock %}
+
+{% block error_code %}Erreur 404{% endblock %}
+
+{% block error_content %}
+  <p class="fr-text--lead fr-mb-3w">
+    La page que vous cherchez est introuvable. Excusez-nous pour la gène occasionnée.
+  </p>
+  <p class="fr-text--sm fr-mb-5w">
+    Si vous avez tapé l'adresse web dans le navigateur, vérifiez qu'elle est correcte. La page n'est peut-être plus disponible.
+    <br>
+    Dans ce cas, pour continuer votre visite vous pouvez consulter notre page d'accueil.
+    <br>
+    Sinon contactez-nous pour que l'on puisse vous rediriger vers la bonne information.
+  </p>
+{% endblock error_content %}
+
+{% block error_actions %}
+  {% include 'layouts/_dsfr_error_actions.html' with show_home=True show_contact=True contact_subject='Erreur 404' contact_secondary=True %}
+{% endblock error_actions %}

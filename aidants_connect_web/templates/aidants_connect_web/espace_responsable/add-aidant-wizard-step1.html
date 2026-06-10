@@ -36,6 +36,7 @@
         <form method="post" action="{% url 'espace_referent:aidant_new_profile' %}" class="fr-mt-4w">
           {% csrf_token %}
           <fieldset class="fr-fieldset add-aidant-wizard-profile-fieldset{% if form.profile.errors %} fr-fieldset--error{% endif %}">
+            <legend class="fr-sr-only">Profil des aidants à ajouter</legend>
             {% aidantc_dsfr_form_field_no_asterisk form.profile %}
             {% if form.profile.errors %}
               <div class="fr-messages-group" id="profile-messages">

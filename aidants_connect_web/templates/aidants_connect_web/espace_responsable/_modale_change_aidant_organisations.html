@@ -18,9 +18,9 @@
                 </button>
               </div>
               <div class="fr-modal__content">
-                <h1 id="modal-change-organisations-{{ aidant.id }}-title" class="fr-modal__title">
+                <h2 id="modal-change-organisations-{{ aidant.id }}-title" class="fr-modal__title">
                   Modifier l'organisation
-                </h1>
+                </h2>
 
                 <form method="post" action="{% url "espace_referent:aidant_change_organisations" aidant_id=aidant.id %}">
                   {% csrf_token %}

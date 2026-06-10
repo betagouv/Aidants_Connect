@@ -17,9 +17,14 @@
         <p>Confirmez-vous l’annulation de la demande d'habilitation pour ce profil ?</p>
 
         <p>
-          {{ request.aidant_full_name }}<br/>
-          {% mailto recipient=request.email %}<br/>
-          {{ request.profession }}<br/>
+          <dl>
+            <dt>Nom :</dt>
+            <dd>{{ request.aidant_full_name }}</dd>
+            <dt>Email :</dt>
+            <dd>{% mailto recipient=request.email %}</dd>
+            <dt>Profession :</dt>
+            <dd>{{ request.profession }}</dd>
+          </dl>
         </p>
 
         <a class="fr-btn fr-btn--secondary" href="{% url 'espace_referent:aidants' %}">Retour</a>

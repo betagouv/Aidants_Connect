@@ -1,0 +1,18 @@
+{% load ac_common %}
+<ul class="fr-btns-group fr-btns-group--inline-md">
+  {% if show_home %}
+    <li>
+      <a id="to-home" class="fr-btn" href="{% url 'home_page' %}">Page d'accueil</a>
+    </li>
+  {% endif %}
+  {% if show_contact %}
+    <li>
+      <a
+        class="fr-btn{% if contact_secondary %} fr-btn--secondary{% endif %}"
+        href="{% mailto_href AC_CONTACT_EMAIL subject=contact_subject %}"
+      >
+        Contactez-nous
+      </a>
+    </li>
+  {% endif %}
+</ul>

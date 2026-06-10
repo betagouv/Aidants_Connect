@@ -46,9 +46,9 @@
       {% if warn_scope %}
         {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
       {% endif %}
-      <div class="fr-grid-row fr-grid-row--gutters fr-mt-3w">
+      <ul class="fr-grid-row fr-grid-row--gutters fr-mt-3w fr-raw-list">
         {% for demarche, demarche_info in demarches.items %}
-          <div class="fr-col-md-6 fr-col-12">
+          <li class="fr-col-md-6 fr-col-12">
             <div class="fr-tile fr-tile--sm" >
               <div class="fr-tile__body">
                 <div class="fr-tile__content">
@@ -69,9 +69,9 @@
                   </div>
                 </div>
             </div>
-          </div>
+          </li>
         {% endfor %}
-      </div>
+      </ul>
       {% csrf_token %}
       <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
       <div class="fr-alert fr-alert--info fr-alert--sm fr-mt-3w">
