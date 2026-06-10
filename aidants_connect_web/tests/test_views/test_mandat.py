@@ -1,15 +1,10 @@
-import re
 from datetime import date, datetime, timedelta
 from textwrap import dedent
-from typing import List
-from unittest import mock
-from unittest.mock import ANY, MagicMock, Mock
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.contrib import messages as django_messages
-from django.db import transaction
 from django.test import TestCase, override_settings, tag
 from django.test.client import Client
 from django.urls import resolve, reverse
@@ -36,178 +31,11 @@ from aidants_connect_web.tests.factories import (
     UsagerFactory,
 )
 from aidants_connect_web.views import mandat
-from aidants_connect_web.views.mandat import RemoteMandateMixin
 from aidants_connect_web.views.service import humanize_demarche_names
 
 fc_callback_url = settings.FC_AS_FI_CALLBACK_URL
 
 UUID = "7ce05928-979c-49ab-8e10-a1a221d39acb"
-
-
-@tag("new_mandat")
-class TestRemoteMandateMixin(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.client = Client()
-        cls.phone_number = "0 800 840 800"
-        cls.aidant_thierry = AidantFactory()
-
-    def test_process_consent_returns_none_if_not_remote_or_not_blocked_method(self):
-        target = RemoteMandateMixin()
-
-        form = self._get_form(["papiers", "logement"])
-
-        for method in RemoteConsentMethodChoices.blocked_methods():
-            setattr(target, f"_process_{method}_first_step", MagicMock())
-
-        result = target.process_consent_first_step(
-            self.aidant_thierry, self.aidant_thierry.organisation, form
-        )
-
-        for method in RemoteConsentMethodChoices.blocked_methods():
-            getattr(target, f"_process_{method}_first_step").assert_not_called()
-
-        self.assertIs(None, result)
-
-        form = self._get_form(
-            ["papiers", "logement"], RemoteConsentMethodChoices.LEGACY
-        )
-
-        for method in RemoteConsentMethodChoices.blocked_methods():
-            setattr(target, f"_process_{method}_first_step", MagicMock())
-
-        result = target.process_consent_first_step(
-            self.aidant_thierry, self.aidant_thierry.organisation, form
-        )
-
-        for method in RemoteConsentMethodChoices.blocked_methods():
-            getattr(target, f"_process_{method}_first_step").assert_not_called()
-
-        self.assertIs(None, result)
-
-    @mock.patch("aidants_connect_web.views.mandat.uuid4")
-    @mock.patch("aidants_connect_common.utils.sms_api.SmsApiMock.send_sms")
-    def test_process_sms_first_step_template(
-        self, send_sms_mock: Mock, uuid4_mock: Mock
-    ):
-        uuid4_mock.return_value = UUID
-
-        form = self._get_form(
-            list(settings.DEMARCHES.keys()), RemoteConsentMethodChoices.SMS
-        )
-
-        RemoteMandateMixin().process_consent_first_step(
-            self.aidant_thierry, self.aidant_thierry.organisation, form
-        )
-
-        send_sms_mock.assert_called_once_with(
-            ANY,
-            UUID,
-            self._trim_margin(
-                """Aidant Connect, bonjour.
-                |
-                |L'organisation COMMUNE D'HOULBEC COCHEREL va créer un mandat\
-                | pour une durée d'un mois (31 jours) en votre nom pour les démarches\
-                | suivantes :
-                |
-                |- Argent - impôts - consommation,
-                |- Étranger - europe,
-                |- Famille - scolarité,
-                |- Justice,
-                |- Logement,
-                |- Loisirs - sport - culture,
-                |- Papiers - citoyenneté - élections,
-                |- Social - santé,
-                |- Transports - mobilité,
-                |- Travail - formation."""
-            ),
-        )
-
-        send_sms_mock.reset_mock()
-
-        with transaction.atomic():
-            Journal.objects.filter(consent_request_id=UUID).delete()
-
-        form = self._get_form(["papiers"], RemoteConsentMethodChoices.SMS)
-
-        RemoteMandateMixin().process_consent_first_step(
-            self.aidant_thierry, self.aidant_thierry.organisation, form
-        )
-
-        send_sms_mock.assert_called_once_with(
-            ANY,
-            UUID,
-            self._trim_margin(
-                """Aidant Connect, bonjour.
-                |
-                |L'organisation COMMUNE D'HOULBEC COCHEREL va\
-                | créer un mandat pour une durée d'un mois (31 jours) en votre nom pour\
-                | la démarche Papiers - citoyenneté - élections."""
-            ),
-        )
-
-    @mock.patch("aidants_connect_common.utils.sms_api.SmsApiMock.send_sms")
-    def test_process_sms_second_step_template(self, send_sms_mock: Mock):
-        connection: Connection = ConnectionFactory(
-            aidant=self.aidant_thierry,
-            organisation=self.aidant_thierry.organisation,
-            mandat_is_remote=True,
-            remote_constent_method=RemoteConsentMethodChoices.SMS.name,
-            consent_request_id=UUID,
-            user_phone="0 800 840 800",
-            duree_keyword="SHORT",
-        )
-
-        Journal.log_user_mandate_recap_sms_sent(
-            aidant=connection.aidant,
-            demarche=connection.demarche,
-            duree=connection.duree_keyword,
-            remote_constent_method=connection.remote_constent_method,
-            user_phone=connection.user_phone,
-            consent_request_id=connection.consent_request_id,
-            message="message=0",
-        )
-
-        RemoteMandateMixin().process_consent_second_step(connection)
-
-        send_sms_mock.assert_called_once_with(
-            ANY,
-            UUID,
-            self._trim_margin(
-                """Aidant Connect, bonjour.
-                |
-                |Donnez-vous votre accord pour la création de ce mandat ?\
-                | Répondez « Oui » pour accepter le mandat."""
-            ),
-        )
-
-    def _trim_margin(self, message):
-        return re.sub(r"[\r\t\f\v  ]+\|", "", message, flags=re.MULTILINE)
-
-    def _get_form(
-        self,
-        demarche: List[str],
-        remote_constent_method: RemoteConsentMethodChoices | None = None,
-    ):
-        data = {
-            "demarche": demarche,
-            "duree": "MONTH",
-            "is_remote": remote_constent_method is not None,
-            "user_phone": self.phone_number,
-            "user_remote_contact_verified": True,
-        }
-
-        if remote_constent_method:
-            data["remote_constent_method"] = remote_constent_method.value
-
-        form = MandatForm(self.aidant_thierry.organisation, data=data)
-
-        if not form.is_valid():
-            self.fail(
-                f"Test form is invalid because of the following errors: {form.errors}"
-            )
-
-        return form
 
 
 @tag("new_mandat")
@@ -267,61 +95,9 @@ class NewMandatTests(TestCase):
         response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
         self.assertRedirects(response, "/fc_authorizev2/", target_status_code=302)
 
-        # When mandate is remote and consent method is absent,
-        # mandate creation should fail
-        data = {
-            "demarche": ["papiers", "logement"],
-            "duree": "SHORT",
-            "is_remote": True,
-        }
-        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
-        self.assertEqual(response.status_code, 200)
-
-        # When mandate is remote and consent method is legacy,
-        # mandate creation should succeed
-        data = {
-            "demarche": ["papiers", "logement"],
-            "duree": "SHORT",
-            "is_remote": True,
-            "remote_constent_method": RemoteConsentMethodChoices.LEGACY.name,
-        }
-        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
-        self.assertRedirects(response, "/fc_authorizev2/", target_status_code=302)
-
-        # When mandate is remote and consent method is SMS and phone number is absent,
-        # mandate creation should fail
-        data = {
-            "demarche": ["papiers", "logement"],
-            "duree": "SHORT",
-            "is_remote": True,
-            "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
-        }
-        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
-        self.assertEqual(response.status_code, 200)
-
-        data["user_phone"] = self.phone_number
-        data["user_remote_contact_verified"] = True
-        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
-        self.assertRedirects(
-            response, reverse("espace_aidant:new_mandat_remote_second_step")
-        )
-
         data = {"demarche": ["papiers", "logement"], "duree": "LONG"}
         response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
         self.assertRedirects(response, "/fc_authorizev2/", target_status_code=302)
-        data = {
-            "demarche": ["papiers", "logement"],
-            "duree": "LONG",
-            "is_remote": True,
-            "remote_constent_method": RemoteConsentMethodChoices.SMS.name,
-            "user_phone": self.phone_number,
-            "user_remote_contact_verified": True,
-        }
-        response = self.client.post(reverse("espace_aidant:new_mandat"), data=data)
-        self.assertRedirects(
-            response,
-            reverse("espace_aidant:new_mandat_remote_second_step"),
-        )
 
     def test_disallowed_demarche_triggers_error(self):
         self.client.force_login(self.aidante_safia)
@@ -1211,6 +987,7 @@ class AttestationFinalTests(TestCase):
             )
 
 
+@override_settings(FF_ACTIVATE_SMS_CONSENT=True)
 class RemoteSecondStepMissingFirstStepTests(TestCase):
     @classmethod
     def setUpTestData(cls):

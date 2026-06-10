@@ -1,31 +1,19 @@
-from distutils.util import strtobool
-from random import randint
-from unittest import mock
-from unittest.mock import Mock
-
 from django.conf import settings
-from django.test import Client, override_settings, tag
+from django.test import Client, tag
 from django.urls import reverse
-from django.utils import timezone
 
-from phonenumbers import PhoneNumberFormat, format_number
-from phonenumbers import parse as parse_number
-from requests import post as requests_post
 from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions
 
 from aidants_connect_common.constants import AuthorizationDurations
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.constants import RemoteConsentMethodChoices
-from aidants_connect_web.models import Aidant, Journal, Mandat
+from aidants_connect_web.models import Aidant, Mandat
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     ConnectionFactory,
     UsagerFactory,
 )
-
-UUID = "1f75d571-4127-445b-a141-ea837580da14"
 
 
 @tag("functional", "new_mandat")
@@ -51,31 +39,15 @@ class CreateNewMandatTests(FunctionalTestCase):
     ):
         """Injecte le cookie de session configuré dans Selenium"""
         self.open_live_url("/")
-        if remote_constent_method == RemoteConsentMethodChoices.SMS.name:
-            connection = ConnectionFactory(
-                aidant=self.aidant,
-                usager=self.usager,
-                organisation=self.aidant.organisation,
-                mandat_is_remote=is_remote,
-                remote_constent_method=remote_constent_method,
-                demarches=["argent", "famille"],
-                duree_keyword=AuthorizationDurations.SHORT,
-                user_phone=format_number(
-                    parse_number("0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION),
-                    PhoneNumberFormat.E164,
-                ),
-                consent_request_id=UUID,
-            )
-        else:
-            connection = ConnectionFactory(
-                aidant=self.aidant,
-                usager=self.usager,
-                organisation=self.aidant.organisation,
-                mandat_is_remote=is_remote,
-                remote_constent_method=remote_constent_method,
-                demarches=["argent", "famille"],
-                duree_keyword=AuthorizationDurations.SHORT,
-            )
+        connection = ConnectionFactory(
+            aidant=self.aidant,
+            usager=self.usager,
+            organisation=self.aidant.organisation,
+            mandat_is_remote=is_remote,
+            remote_constent_method=remote_constent_method,
+            demarches=["argent", "famille"],
+            duree_keyword=AuthorizationDurations.SHORT,
+        )
 
         client = Client()
         client.force_login(self.aidant)
@@ -147,238 +119,17 @@ class CreateNewMandatTests(FunctionalTestCase):
 
         self.open_live_url(reverse("espace_aidant:usagers"))
 
-    def test_create_new_remote_mandat_with_legacy_consent(self):
+    def test_remote_signature_is_not_available_on_new_mandat_form(self):
         self.open_live_url(reverse("espace_aidant:new_mandat"))
 
         self.login_aidant(self.aidant)
 
-        demarches_section = self.selenium.find_element(
-            By.CSS_SELECTOR, ".demarches-section"
-        )
-        demarches = demarches_section.find_elements(By.TAG_NAME, "input")
-        self.assertEqual(len(demarches), 10)
-
-        demarches_section.find_element(
-            By.CSS_SELECTOR, "#id_demarche_argent ~ label"
-        ).click()
-        demarches_section.find_element(
-            By.CSS_SELECTOR, "#id_demarche_famille ~ label"
-        ).click()
-
-        short_duree_label = self.selenium.find_element(
-            By.CSS_SELECTOR, "#id_duree_short ~ label"
-        )
-        self.assertEqual(
-            "Mandat court expire demain", short_duree_label.text.replace("\n", " ")
-        )
-        short_duree_label.click()
-
-        # Select remote method
-        self.selenium.find_element(By.CSS_SELECTOR, "#id_is_remote ~ label").click()
-        self.assertEqual(
-            "Mandat court à distance expire demain",
-            self.selenium.find_element(
-                By.CSS_SELECTOR, "#id_duree_short ~ label"
-            ).text.replace("\n", " "),
-        )
-
-        # Check that I must fill a remote consent method
-        # # wait for the execution of JS
-        self.wait.until(
-            self._element_is_required(By.ID, "id_remote_constent_method_legacy")
-        )
-        elts = self.selenium.find_elements(
-            By.CSS_SELECTOR, 'input[id^="id_remote_constent_method"]'
-        )
-        self.assertEqual(2, len(elts))
-        [self.assertTrue(elt.get_attribute("required")) for elt in elts]
-
-        # # Select legacy consent method
-        text = RemoteConsentMethodChoices.LEGACY.label["label"]
-        self.selenium.find_element(By.XPATH, f"//*[contains(text(), '{text}')]").click()
-
-        self._inject_session_cookie(is_remote=True)
-        self.open_live_url(reverse("espace_aidant:new_mandat_recap"))
-        self.wait.until(self.path_matches("espace_aidant:new_mandat_recap"))
-
-        # Recap all the information for the Mandat
-        recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual("Récapitulatif du mandat à distance", recap_title)
-        recap_text = self.selenium.find_element(By.ID, "recap-text").text
-        self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
-        checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
-        self.selenium.find_element(By.CSS_SELECTOR, "#id_personal_data ~ label").click()
-        id_otp_token = checkboxes[-2]
-        self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
-        id_otp_token.send_keys(self.otp)
-        submit_button = checkboxes[-1]
-        self.assertEqual(submit_button.get_attribute("type"), "submit")
-        submit_button.click()
-
-        # Success page
-        success_title = self.selenium.find_element(
-            By.CSS_SELECTOR, ".attestation-content h1"
-        ).text
-        self.assertEqual(
-            success_title,
-            "Mandat pour réaliser des démarches en ligne\n"
-            "avec le service « Aidants Connect »",
-        )
-        mandat_qs = Mandat.objects.filter(organisation=self.aidant.organisation)
-        self.assertEqual(1, mandat_qs.count())
-        self.assertEqual(2, mandat_qs[0].autorisations.count())
-
-    @override_settings(
-        SMS_API_DISABLED=False,
-        LM_SMS_SERVICE_USERNAME="username",
-        LM_SMS_SERVICE_PASSWORD="password",
-        LM_SMS_SERVICE_BASE_URL=f"http://localhost:{settings.FC_AS_FS_TEST_PORT}",
-        LM_SMS_SERVICE_OAUTH2_ENDPOINT=reverse("test_sms_api_token"),
-        LM_SMS_SERVICE_SND_SMS_ENDPOINT=reverse("test_sms_api_sms"),
-    )
-    @mock.patch("aidants_connect_web.views.mandat.uuid4")
-    def test_create_new_remote_mandat_with_sms_consent(self, uuid4_mock: Mock):
-        uuid4_mock.return_value = UUID
-
-        self.open_live_url(reverse("espace_aidant:new_mandat"))
-
-        self.login_aidant(self.aidant)
-
-        demarches_section = self.selenium.find_element(
-            By.CSS_SELECTOR, ".demarches-section"
-        )
-        demarches = demarches_section.find_elements(By.TAG_NAME, "input")
-        self.assertEqual(len(demarches), 10)
-
-        demarches_section.find_element(
-            By.CSS_SELECTOR, "#id_demarche_argent ~ label"
-        ).click()
-        demarches_section.find_element(
-            By.CSS_SELECTOR, "#id_demarche_famille ~ label"
-        ).click()
-
-        short_duree_label = self.selenium.find_element(
-            By.CSS_SELECTOR, "#id_duree_short ~ label"
-        )
-        short_duree_label.click()
-        self.assertEqual(
-            "Mandat court expire demain", short_duree_label.text.replace("\n", " ")
-        )
-
-        # Select remote method
-        self.selenium.find_element(By.CSS_SELECTOR, "#id_is_remote ~ label").click()
-        self.assertEqual(
-            "Mandat court à distance expire demain",
-            self.selenium.find_element(
-                By.CSS_SELECTOR, "#id_duree_short ~ label"
-            ).text.replace("\n", " "),
-        )
-
-        # Check that I must fill a remote consent method
-        # # wait for the execution of JS
-        self.wait.until(
-            self._element_is_required(By.ID, "id_remote_constent_method_sms")
-        )
-        elts = self.selenium.find_elements(
-            By.CSS_SELECTOR, 'input[id^="id_remote_constent_method"]'
-        )
-        self.assertEqual(2, len(elts))
-        [self.assertTrue(elt.get_attribute("required")) for elt in elts]
-
-        # # Select SMS consent method
-        text = RemoteConsentMethodChoices.SMS.label["label"]
-        self.selenium.find_element(By.XPATH, f"//*[contains(text(), '{text}')]").click()
-        self.wait.until(self._element_is_required(By.ID, "id_user_phone"))
-        self.wait.until(
-            self._element_is_required(By.ID, "id_user_remote_contact_verified")
-        )
-        self.selenium.find_element(By.ID, "id_user_phone").send_keys("0 800 840 800")
-        self.selenium.find_element(
-            By.CSS_SELECTOR, "#id_user_remote_contact_verified ~ label"
-        ).click()
-
-        # # Send recap mandate and go to second step
-        self.selenium.find_element(By.CSS_SELECTOR, ".fr-connect").click()
-        self.wait.until(
-            self.path_matches("espace_aidant:new_mandat_remote_second_step")
-        )
-
-        # # Send user consent request
-        self.selenium.find_element(By.CSS_SELECTOR, '[type="submit"]').click()
-        self.wait.until(self.path_matches("espace_aidant:new_mandat_waiting_room"))
-
-        # # Test the message is correctly logged
-        consent_request_log: Journal = Journal.objects.find_sms_consent_requests(
-            parse_number("0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION), UUID
-        )[0]
-
-        self.assertIn(
-            "Aidant Connect, bonjour",
-            consent_request_log.additional_information,
-        )
-
-        # # Test that page blocks until user has consented
-        self.selenium.refresh()
-        self.wait.until(self.path_matches("espace_aidant:new_mandat_waiting_room"))
-
-        # Try to force creation of mandate; should be redirected to waiting room
-        self.open_live_url(reverse("espace_aidant:new_mandat_recap"))
-
-        self.wait.until(self.path_matches("espace_aidant:new_mandat_waiting_room"))
-
-        # Simulate user content
-        self._user_consents("0 800 840 800")
-        self.wait.until(self._user_has_responded("0 800 840 800"))
-        # # Test user consent is correctly logged
-        user_consent_log: Journal = Journal.objects.find_sms_user_consent(
-            parse_number("0 800 840 800", settings.PHONENUMBER_DEFAULT_REGION), UUID
-        )[0]
-        self.assertEqual("message=Oui", user_consent_log.additional_information)
-
-        # Testing JS script
-        # Change poll time for immediate execution
-        self.selenium.execute_script(
-            """
-            document.querySelector(
-                "[data-controller='remote-consent-waiting-room']"
-            ).setAttribute(
-                "data-remote-content-waiting-room-poll-timeout-value", "1"
+        self.assertFalse(self.selenium.find_elements(By.ID, "id_is_remote"))
+        self.assertFalse(
+            self.selenium.find_elements(
+                By.CSS_SELECTOR, 'input[name="remote_constent_method"]'
             )
-        """
         )
-
-        self._inject_session_cookie(
-            is_remote=True, remote_constent_method=RemoteConsentMethodChoices.SMS.name
-        )
-        self.open_live_url(reverse("espace_aidant:new_mandat_recap"))
-        self.wait.until(self.path_matches("espace_aidant:new_mandat_recap"))
-
-        # Recap all the information for the Mandat
-        recap_title = self.selenium.find_element(By.TAG_NAME, "h1").text
-        self.assertEqual("Récapitulatif du mandat à distance", recap_title)
-        recap_text = self.selenium.find_element(By.ID, "recap-text").text
-        self.assertIn("Angela Claire Louise DUBOIS ", recap_text)
-        checkboxes = self.selenium.find_elements(By.TAG_NAME, "input")
-        self.selenium.find_element(By.CSS_SELECTOR, "#id_personal_data ~ label").click()
-        id_otp_token = checkboxes[-2]
-        self.assertEqual(id_otp_token.get_attribute("id"), "id_otp_token")
-        id_otp_token.send_keys(self.otp)
-        submit_button = checkboxes[-1]
-        self.assertEqual(submit_button.get_attribute("type"), "submit")
-        submit_button.click()
-
-        # Success page
-        success_title = self.selenium.find_element(
-            By.CSS_SELECTOR, ".attestation-content h1"
-        ).text
-        self.assertEqual(
-            success_title,
-            "Mandat pour réaliser des démarches en ligne\n"
-            "avec le service « Aidants Connect »",
-        )
-        mandat_qs = Mandat.objects.filter(organisation=self.aidant.organisation)
-        self.assertEqual(1, mandat_qs.count())
-        self.assertEqual(2, mandat_qs[0].autorisations.count())
 
     def test_bdf_warn_notification(self):
         self.open_live_url(reverse("espace_aidant:new_mandat"))
@@ -420,46 +171,3 @@ class CreateNewMandatTests(FunctionalTestCase):
             ["papiers", "famille", "social"],
             [elt.get_attribute("value") for elt in demarches],
         )
-
-    def _element_is_required(self, by: By, value: str):
-        def _predicate(driver: WebDriver):
-            attr = driver.find_element(by, value).get_attribute("required")
-            return strtobool(attr)
-
-        return _predicate
-
-    def _user_responds(self, phone_number: str, text: str):
-        number = parse_number(phone_number, settings.PHONENUMBER_DEFAULT_REGION)
-        journal: Journal = Journal.objects.find_sms_consent_requests(
-            number, UUID
-        ).first()
-
-        requests_post(
-            f"http://localhost:{settings.FC_AS_FS_TEST_PORT}{reverse('sms_callback')}",
-            json={
-                "messageId": str(randint(10_000_000, 99_999_999)),
-                "smsMTId": str(randint(10_000_000, 99_999_999)),
-                "smsMTCorrelationId": journal.consent_request_id,
-                "originatorAddress": format_number(number, PhoneNumberFormat.E164),
-                "destinationAdress": str(randint(10_000, 99_999)),
-                "timeStamp": timezone.now().isoformat(),
-                "message": text,
-                "userDataHeader": "",
-                "mcc": "208",
-                "mnc": "14",
-            },
-        )
-
-    def _user_consents(self, phone_number: str):
-        self._user_responds(phone_number, "Oui")
-
-    def _user_denies(self, phone_number: str):
-        self._user_responds(phone_number, "Nope")
-
-    def _user_has_responded(self, phone_number: str):
-        def _predicate(driver):
-            return Journal.objects.find_sms_user_consent_or_denial(
-                parse_number(phone_number, settings.PHONENUMBER_DEFAULT_REGION), UUID
-            ).exists()
-
-        return _predicate

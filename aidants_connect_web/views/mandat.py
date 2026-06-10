@@ -38,7 +38,6 @@ from aidants_connect_web.decorators import (
 )
 from aidants_connect_web.forms import (
     MandatForm,
-    PatchedForm,
     RecapMandatForm,
     RemoteConsentMethodChoices,
 )
@@ -56,26 +55,6 @@ from aidants_connect_web.views.service import humanize_demarche_names
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
-
-
-class MandatCreationJsFormView(FormView):
-    def get_form(self, form_class=None):
-        form: PatchedForm = super().get_form(form_class)
-        form.widget_attrs(
-            "is_remote",
-            {
-                "data-action": "mandate-form-controller#isRemoteInputTriggered",
-                "data-mandate-form-controller-target": "isRemoteInput",
-            },
-        )
-
-        return form
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "sms_method_value": RemoteConsentMethodChoices.SMS.name,
-        }
 
 
 class RemoteMandateMixin:
@@ -116,8 +95,8 @@ class RemoteMandateMixin:
         self, aidant: Aidant, organisation: Organisation, form: MandatForm
     ) -> None | HttpResponse:
         if (
-            not form.cleaned_data["is_remote"]
-            or form.cleaned_data["remote_constent_method"]
+            not form.cleaned_data.get("is_remote")
+            or form.cleaned_data.get("remote_constent_method", "")
             not in RemoteConsentMethodChoices.blocked_methods()
         ):
             return None
@@ -370,7 +349,7 @@ class RenderAttestationAbstract(TemplateView):
 
 
 @aidant_logged_with_activity_required
-class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
+class NewMandat(FormView):
     form_class = MandatForm
     template_name = "aidants_connect_web/new_mandat/new_mandat.html"
 
@@ -404,10 +383,7 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
             if self.connection is None
             else {
                 "duree": self.connection.duree_keyword,
-                "is_remote": self.connection.mandat_is_remote,
                 "demarche": self.connection.demarches,
-                "user_phone": self.connection.user_phone,
-                "remote_constent_method": self.connection.remote_constent_method,
             }
         )
 
@@ -415,34 +391,19 @@ class NewMandat(RemoteMandateMixin, MandatCreationJsFormView):
         return {**super().get_form_kwargs(), "organisation": self.aidant.organisation}
 
     def get_success_url(self):
-        return (
-            reverse("fc_authorizev2")
-            if self.connection.remote_constent_method
-            not in RemoteConsentMethodChoices.blocked_methods()
-            else reverse("espace_aidant:new_mandat_remote_second_step")
-        )
+        return reverse("fc_authorizev2")
 
     def form_valid(self, form: MandatForm):
         data = form.cleaned_data
-        self.consent_request_id = ""
-
-        if isinstance(
-            result := self.process_consent_first_step(
-                self.aidant, self.aidant.organisation, form
-            ),
-            HttpResponse,
-        ):
-            return result
 
         self.connection = Connection.objects.create(
             aidant=self.aidant,
             organisation=self.aidant.organisation,
             demarches=data["demarche"],
             duree_keyword=data["duree"],
-            mandat_is_remote=data["is_remote"],
-            remote_constent_method=data["remote_constent_method"],
-            user_phone=data["user_phone"],
-            consent_request_id=self.consent_request_id,
+            mandat_is_remote=False,
+            remote_constent_method="",
+            consent_request_id="",
         )
 
         self.request.session["connection"] = self.connection.pk
