@@ -1,4 +1,33 @@
 (function () {
+  const KEY_SUMMARY_LABELS = {
+    show: "Afficher la clé",
+    hide: "Masquer la clé",
+  };
+
+  const keyDetails = document.querySelector(".otp-tunnel-scan-panel__key-details");
+  if (keyDetails) {
+    const summaryLabel = keyDetails.querySelector("[data-key-summary-label]");
+    const secretKey = document.getElementById("otp-device-secret-key");
+
+    if (summaryLabel) {
+      const updateKeySummaryLabel = () => {
+        summaryLabel.textContent = keyDetails.open
+          ? KEY_SUMMARY_LABELS.hide
+          : KEY_SUMMARY_LABELS.show;
+      };
+
+      if (secretKey) {
+        keyDetails.querySelector("summary")?.setAttribute(
+          "aria-controls",
+          secretKey.id
+        );
+      }
+
+      updateKeySummaryLabel();
+      keyDetails.addEventListener("toggle", updateKeySummaryLabel);
+    }
+  }
+
   const otpInputContainer = document.querySelector("[data-otp-input]");
   const digitsContainer = document.querySelector("[data-otp-digits]");
   const tokenInput = document.getElementById("id_otp_token");

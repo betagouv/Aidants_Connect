@@ -37,8 +37,10 @@
           alt="QR code à scanner dans votre application d’authentification"
         />
         <details class="otp-tunnel-scan-panel__key-details">
-          <summary class="fr-link">Afficher la clé</summary>
-          <p class="otp-tunnel-scan-panel__secret">{{ otp_device_secret_key }}</p>
+          <summary class="fr-link">
+            <span data-key-summary-label>Afficher la clé</span>
+          </summary>
+          <p class="otp-tunnel-scan-panel__secret" id="otp-device-secret-key">{{ otp_device_secret_key }}</p>
         </details>
       </div>
 

@@ -219,6 +219,7 @@ class OtpTunnelScanQrCodeViewTests(TestCase):
             "Entrez le code de vérification à 6 chiffres affiché sur votre applicat",
         )
         self.assertContains(response, "Afficher la clé")
+        self.assertContains(response, "data-key-summary-label")
         self.assertContains(response, "Retour")
         self.assertContains(response, "Étape suivante")
 
@@ -427,7 +428,7 @@ class OtpTunnelCongratulationsViewTests(TestCase):
         self.assertContains(response, "Étape 3 sur 3")
         self.assertContains(response, "Accéder à l’espace référent")
         self.assertContains(response, "L’application est associée à votre compte")
-        self.assertContains(response, "Les prochaines étapes en tant que référent")
+        self.assertNotContains(response, "Faire plus tard")
 
     def test_congratulations_navigation_links_point_to_expected_urls(self):
         self.client.force_login(self.referent_with_otp)
