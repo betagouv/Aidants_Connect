@@ -105,7 +105,11 @@ def formation_aidant(instance: FormationAttendant, created: bool, **_):
 
     emails = set()
     if isinstance(person, HabilitationRequest):
-        emails |= set(person.organisation.responsables.values_list("email", flat=True))
+        emails |= set(
+            person.organisation.responsables.filter(is_active=True).values_list(
+                "email", flat=True
+            )
+        )
         try:
             person = person.manger_request or person.aidant_request
             emails.add(person.organisation.issuer.email)
