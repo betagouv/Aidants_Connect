@@ -83,6 +83,12 @@ OTP_TUNNEL_DISMISSED_SESSION_KEY = "otp_tunnel_dismissed"
 # Total number of steps in the OTP onboarding tunnel (excluding the welcome page).
 OTP_TUNNEL_TOTAL_STEPS = 3
 
+# Session key holding the in-progress TOTP device of the OTP onboarding tunnel.
+# Kept distinct from the "otp_device" key used by ``AddAppOTPToAidant`` to avoid
+# any cross-flow collision (the tunnel always pairs a device to the current
+# referent, never to a managed aidant).
+OTP_TUNNEL_DEVICE_SESSION_KEY = "otp_tunnel_device"
+
 
 def referent_should_enter_otp_tunnel(request) -> bool:
     """Return True when the logged-in referent should be redirected to the
@@ -1677,15 +1683,24 @@ class OtpTunnelScanQrCodeView(OtpTunnelStepViewMixin, FormView):
             name=OTP_APP_DEVICE_NAME % self.referent.pk,
             confirmed=False,
         )
-        request.session["otp_device"] = model_to_dict(self.otp_device)
+        device_fields = model_to_dict(self.otp_device)
+        # Never persist the device owner in session: it is always rebuilt from
+        # request.user on POST so a referent can only ever confirm a device for
+        # themselves.
+        device_fields.pop("user", None)
+        request.session[OTP_TUNNEL_DEVICE_SESSION_KEY] = device_fields
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        session_device = request.session.get("otp_device")
+        session_device = request.session.get(OTP_TUNNEL_DEVICE_SESSION_KEY)
         if not session_device:
             # Lost session (timeout, dismissed tunnel, ...): restart at this step.
             return redirect("espace_referent:otp_tunnel_scan_qr_code")
-        self.otp_device = TOTPDevice(**self._device_kwargs_from_session(session_device))
+        # The owner is forced to the current referent, never read from session.
+        self.otp_device = TOTPDevice(
+            user=self.referent,
+            **self._device_kwargs_from_session(session_device),
+        )
         return super().post(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -1701,7 +1716,7 @@ class OtpTunnelScanQrCodeView(OtpTunnelStepViewMixin, FormView):
                     self.referent, self.referent, self.otp_device.name
                 )
 
-            self.request.session.pop("otp_device", None)
+            self.request.session.pop(OTP_TUNNEL_DEVICE_SESSION_KEY, None)
 
             from aidants_connect_web.signals import card_associated_to_aidant
 
@@ -1736,15 +1751,18 @@ class OtpTunnelScanQrCodeView(OtpTunnelStepViewMixin, FormView):
 
     @staticmethod
     def _device_kwargs_from_session(fields: dict) -> dict:
-        """Rebuild TOTPDevice kwargs from a dict produced by ``model_to_dict``,
-        casting foreign keys to their attname/id form."""
+        """Rebuild TOTPDevice kwargs from a dict produced by ``model_to_dict``.
+
+        Foreign keys (the device owner) are intentionally skipped: the owner is
+        always set from request.user by the caller and must never be trusted
+        from the session.
+        """
         result = {}
         for field_name, field_value in fields.items():
             field = TOTPDevice._meta.get_field(field_name)
             if field.many_to_one:
-                result[field.attname] = int(field_value)
-            else:
-                result[field_name] = field_value
+                continue
+            result[field_name] = field_value
         return result
 
 

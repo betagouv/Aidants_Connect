@@ -264,7 +264,9 @@ class OtpTunnelScanQrCodeViewTests(TestCase):
     def test_scan_qr_code_displays_secret_key_in_base32(self):
         self.client.force_login(self.referent_without_otp)
         response = self.client.get(reverse("espace_referent:otp_tunnel_scan_qr_code"))
-        session_device = self.client.session["otp_device"]
+        session_device = self.client.session[
+            espace_responsable.OTP_TUNNEL_DEVICE_SESSION_KEY
+        ]
         device = TOTPDevice(
             **espace_responsable.OtpTunnelScanQrCodeView._device_kwargs_from_session(
                 session_device
@@ -278,9 +280,13 @@ class OtpTunnelScanQrCodeViewTests(TestCase):
     def test_scan_qr_code_stores_unconfirmed_otp_device_in_session(self):
         self.client.force_login(self.referent_without_otp)
         self.client.get(reverse("espace_referent:otp_tunnel_scan_qr_code"))
-        session_device = self.client.session.get("otp_device")
+        session_device = self.client.session.get(
+            espace_responsable.OTP_TUNNEL_DEVICE_SESSION_KEY
+        )
         self.assertIsNotNone(session_device)
-        self.assertEqual(session_device["user"], self.referent_without_otp.pk)
+        # The device owner is intentionally not stored in session; it is always
+        # rebuilt from request.user on POST.
+        self.assertNotIn("user", session_device)
         self.assertEqual(
             session_device["name"],
             OTP_APP_DEVICE_NAME % self.referent_without_otp.pk,
@@ -342,7 +348,9 @@ class OtpTunnelScanQrCodeViewTests(TestCase):
             device.name, OTP_APP_DEVICE_NAME % self.referent_without_otp.pk
         )
 
-        self.assertNotIn("otp_device", self.client.session)
+        self.assertNotIn(
+            espace_responsable.OTP_TUNNEL_DEVICE_SESSION_KEY, self.client.session
+        )
 
     @mock.patch.object(TOTP, "verify")
     def test_scan_qr_code_valid_otp_token_logs_card_association_journal_entry(
@@ -359,6 +367,36 @@ class OtpTunnelScanQrCodeViewTests(TestCase):
             data={"otp_token": "123456"},
         )
         self.assertGreater(Journal.objects.count(), previous_journal_count)
+
+    @mock.patch.object(TOTP, "verify")
+    def test_scan_qr_code_confirms_device_for_current_referent_only(
+        self, mock_verify: Mock
+    ):
+        # Even if the session payload carries a foreign owner (e.g. left over
+        # from another OTP flow), the confirmed device must belong to the
+        # logged-in referent and never to that other user.
+        mock_verify.return_value = True
+
+        self.client.force_login(self.referent_without_otp)
+        self.client.get(reverse("espace_referent:otp_tunnel_scan_qr_code"))
+
+        session = self.client.session
+        session[espace_responsable.OTP_TUNNEL_DEVICE_SESSION_KEY][
+            "user"
+        ] = self.simple_aidant.pk
+        session.save()
+
+        self.client.post(
+            reverse("espace_referent:otp_tunnel_scan_qr_code"),
+            data={"otp_token": "123456"},
+        )
+
+        self.assertFalse(TOTPDevice.objects.filter(user=self.simple_aidant).exists())
+        self.assertTrue(
+            TOTPDevice.objects.filter(
+                user=self.referent_without_otp, confirmed=True
+            ).exists()
+        )
 
     def test_scan_qr_code_post_without_session_restarts_at_scan_qr_code(self):
         self.client.force_login(self.referent_without_otp)
