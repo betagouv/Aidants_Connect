@@ -2,15 +2,6 @@
 
 {% block title %}Bienvenue - Configuration d’une application d’authentification - Aidants Connect{% endblock %}
 
-{% block otp_tunnel_header_action %}
-  <a
-    href="{% url 'espace_referent:otp_tunnel_dismiss' %}"
-    class="fr-btn fr-btn--secondary"
-  >
-    Faire plus tard
-  </a>
-{% endblock otp_tunnel_header_action %}
-
 {% block otp_tunnel_body %}
   <h1>
     <span aria-hidden="true">👋</span>
@@ -37,7 +28,7 @@
       </li>
       <li>
         <a
-          href="{% url 'espace_referent:choose_totp' aidant_id=referent.id %}"
+          href="{% url 'espace_referent:associate_totp' aidant_id=referent.id %}"
           class="fr-btn fr-btn--secondary"
         >
           Associer une carte physique

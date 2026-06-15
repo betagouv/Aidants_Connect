@@ -24,7 +24,14 @@
           src="{% static 'images/aidants-connect_logo.png' %}"
           alt="Aidants Connect"
         />
-        {% block otp_tunnel_header_action %}{% endblock %}
+        {% block otp_tunnel_header_action %}
+          <a
+            href="{% url 'espace_referent:otp_tunnel_dismiss' %}"
+            class="fr-btn fr-btn--tertiary"
+          >
+            Faire plus tard
+          </a>
+        {% endblock otp_tunnel_header_action %}
       </header>
 
       <div class="otp-tunnel-card__body">
