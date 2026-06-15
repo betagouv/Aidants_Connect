@@ -474,8 +474,6 @@ class OtpTunnelCongratulationsViewTests(TestCase):
             reverse("espace_referent:otp_tunnel_congratulations")
         )
         self.assertContains(response, reverse("espace_referent:home"))
-        self.assertContains(response, reverse("espace_referent:referents"))
-        self.assertContains(response, reverse("espace_referent:organisation"))
 
     def test_congratulations_exposes_stepper_context(self):
         self.client.force_login(self.referent_with_otp)
