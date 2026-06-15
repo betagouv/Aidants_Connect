@@ -6,14 +6,10 @@
 
 .otp-tunnel-card {
   width: 100%;
-  max-width: 52rem;
+  max-width: 54rem;
   background-color: var(--background-default-grey);
   border: 1px solid var(--border-default-grey);
   padding: 1.5rem 2rem;
-
-  &:has(.otp-tunnel-scan-panel) {
-    max-width: 64rem;
-  }
 
   &__header {
     display: flex;
@@ -125,8 +121,9 @@
 
   &__secret {
     margin: 0.75rem 0 0;
-    word-break: break-all;
     font-family: monospace;
+    white-space: nowrap;
+    overflow-x: auto;
   }
 }
 
