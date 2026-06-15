@@ -82,12 +82,21 @@ class OtpTunnelDismissViewTests(TestCase):
     def test_dismiss_redirects_to_home_and_sets_session_flag(self):
         self.client.force_login(self.referent_without_otp)
 
-        response = self.client.get(
+        response = self.client.post(
             reverse("espace_referent:otp_tunnel_dismiss"),
             follow=False,
         )
         self.assertEqual(response.status_code, 302)
         self.assertTrue(
+            self.client.session.get(espace_responsable.OTP_TUNNEL_DISMISSED_SESSION_KEY)
+        )
+
+    def test_dismiss_rejects_get_to_avoid_state_change_via_get(self):
+        self.client.force_login(self.referent_without_otp)
+
+        response = self.client.get(reverse("espace_referent:otp_tunnel_dismiss"))
+        self.assertEqual(response.status_code, 405)
+        self.assertFalse(
             self.client.session.get(espace_responsable.OTP_TUNNEL_DISMISSED_SESSION_KEY)
         )
 
@@ -97,7 +106,7 @@ class OtpTunnelDismissViewTests(TestCase):
         response = self.client.get(reverse("espace_referent:home"))
         self.assertRedirects(response, reverse("espace_referent:otp_tunnel_welcome"))
 
-        self.client.get(reverse("espace_referent:otp_tunnel_dismiss"))
+        self.client.post(reverse("espace_referent:otp_tunnel_dismiss"))
 
         response = self.client.get(reverse("espace_referent:home"))
         self.assertEqual(response.status_code, 200)

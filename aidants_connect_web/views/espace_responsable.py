@@ -1618,9 +1618,13 @@ class OtpTunnelWelcomeView(TemplateView):
 @responsable_logged_required
 class OtpTunnelDismissView(View):
     """Mark the OTP tunnel as dismissed for the current session and send the
-    referent back to their home page."""
+    referent back to their home page.
 
-    def get(self, request, *args, **kwargs):
+    Only reachable through POST: dismissing mutates session state and must
+    therefore be CSRF-protected (a GET could be triggered cross-site, e.g. via
+    an <img> tag, to silently skip the 2FA onboarding nudge)."""
+
+    def post(self, request, *args, **kwargs):
         request.session[OTP_TUNNEL_DISMISSED_SESSION_KEY] = True
         return redirect("espace_referent:home")
 

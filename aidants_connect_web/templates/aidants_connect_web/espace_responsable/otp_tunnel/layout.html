@@ -25,12 +25,16 @@
           alt="Aidants Connect"
         />
         {% block otp_tunnel_header_action %}
-          <a
-            href="{% url 'espace_referent:otp_tunnel_dismiss' %}"
-            class="fr-btn fr-btn--tertiary"
+          <form
+            method="post"
+            action="{% url 'espace_referent:otp_tunnel_dismiss' %}"
+            class="otp-tunnel-card__dismiss-form"
           >
-            Faire plus tard
-          </a>
+            {% csrf_token %}
+            <button type="submit" class="fr-btn fr-btn--tertiary">
+              Faire plus tard
+            </button>
+          </form>
         {% endblock otp_tunnel_header_action %}
       </header>
 
