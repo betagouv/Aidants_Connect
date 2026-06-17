@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.test import TestCase, tag
 from django.utils import timezone
@@ -19,10 +21,13 @@ from aidants_connect_web.statistics import compute_statistics
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AttestationJournalFactory,
+    AutorisationFactory,
     CarteTOTPFactory,
     HabilitationRequestFactory,
     JournalFactory,
+    MandatFactory,
     OrganisationFactory,
+    UsagerFactory,
 )
 
 
@@ -266,6 +271,7 @@ class AllStatisticsTests(TestCase):
         self.assertEqual(stats.number_old_aidants_warned, 2)
 
         self.assertEqual(stats.number_aidants_with_otp_app, 1)
+        self.assertEqual(stats.number_active_mandats, 0)
 
     def test_by_department_computing_new_statistics(self):
         stats = compute_statistics(
@@ -344,3 +350,49 @@ class AllStatisticsTests(TestCase):
 
         self.assertEqual(stats.number_orgas_in_zrr, 0)
         self.assertEqual(stats.number_aidants_in_zrr, 0)
+
+
+@tag("statistics")
+class ActiveMandatsStatisticsTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.orga = OrganisationFactory()
+        cls.staff_orga = OrganisationFactory(name=settings.STAFF_ORGANISATION_NAME)
+        cls.usager = UsagerFactory()
+
+        cls.active_mandat = MandatFactory(organisation=cls.orga, usager=cls.usager)
+        AutorisationFactory(mandat=cls.active_mandat)
+
+        cls.expired_mandat = MandatFactory(
+            organisation=cls.orga,
+            usager=UsagerFactory(),
+            expiration_date=datetime(year=2000, month=1, day=1, tzinfo=timezone.utc),
+        )
+        AutorisationFactory(mandat=cls.expired_mandat)
+
+        cls.staff_mandat = MandatFactory(
+            organisation=cls.staff_orga, usager=UsagerFactory()
+        )
+        AutorisationFactory(mandat=cls.staff_mandat)
+
+    def test_global_active_mandats_count_includes_staff_mandats(self):
+        stats = compute_statistics(AidantStatistiques())
+        self.assertEqual(stats.number_active_mandats, 2)
+
+    def test_department_active_mandats_count_excludes_other_departments(self):
+        region, _ = Region.objects.get_or_create(
+            insee_code="99", defaults={"name": "Région test stats"}
+        )
+        dep, _ = Department.objects.get_or_create(
+            insee_code="990",
+            defaults={
+                "region": region,
+                "name": "Département test stats",
+                "zipcode": "99000",
+            },
+        )
+        self.orga.department_insee_code = dep.insee_code
+        self.orga.save()
+
+        stats = compute_statistics(AidantStatistiquesbyDepartment(departement=dep))
+        self.assertEqual(stats.number_active_mandats, 1)
