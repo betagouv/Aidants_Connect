@@ -17,6 +17,7 @@ from aidants_connect_web.models import (
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
     AidantStatistiquesbyRegion,
+    Journal,
     Mandat,
 )
 from aidants_connect_web.statistics import compute_statistics, get_monthly_series
@@ -455,5 +456,40 @@ class MandatsEvolutionStatisticsTests(TestCase):
         self.assertEqual(series["labels"][-1], "02/2024")
         self.assertEqual(series["values"][12], 1)
         self.assertEqual(series["values"][13], 1)
+        self.assertEqual(series["values"][-1], 1)
+        self.assertEqual(sum(series["values"]), 3)
+
+
+@tag("statistics")
+class DemarchesEvolutionStatisticsTests(TestCase):
+    @freeze_time("2024-03-15 12:00:00")
+    def test_monthly_series_counts_demarches_by_creation_month(self):
+        orga = OrganisationFactory()
+        aidant = AidantFactory(organisation=orga)
+        for month in (4, 5):
+            JournalFactory(
+                organisation=orga,
+                aidant=aidant,
+                action=JournalActionKeywords.USE_AUTORISATION,
+                creation_date=datetime(2023, month, 1, tzinfo=timezone.utc),
+            )
+        JournalFactory(
+            organisation=orga,
+            aidant=aidant,
+            action=JournalActionKeywords.USE_AUTORISATION,
+            creation_date=datetime(2024, 2, 1, tzinfo=timezone.utc),
+        )
+
+        series = get_monthly_series(
+            Journal.objects.filter(action=JournalActionKeywords.USE_AUTORISATION),
+            "creation_date",
+            months=24,
+        )
+
+        self.assertEqual(len(series["labels"]), 24)
+        self.assertEqual(series["labels"][0], "03/2022")
+        self.assertEqual(series["labels"][-1], "02/2024")
+        self.assertEqual(series["values"][13], 1)
+        self.assertEqual(series["values"][14], 1)
         self.assertEqual(series["values"][-1], 1)
         self.assertEqual(sum(series["values"]), 3)

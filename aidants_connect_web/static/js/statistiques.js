@@ -112,9 +112,9 @@ function initDemarchesChart () {
     })
 }
 
-function initMandatsEvolutionChart () {
-    const evolutionNode = document.querySelector("#mandats-evolution-data")
-    const canvas = document.querySelector("#mandats-evolution-chart")
+function initEvolutionChart ({ dataId, canvasId, label }) {
+    const evolutionNode = document.querySelector(dataId)
+    const canvas = document.querySelector(canvasId)
     if (!evolutionNode || !canvas) {
         return
     }
@@ -136,7 +136,7 @@ function initMandatsEvolutionChart () {
         data: {
             labels: data.labels,
             datasets: [{
-                label: "Mandats créés",
+                label,
                 data: data.values,
                 borderColor: color,
                 backgroundColor: color,
@@ -172,7 +172,16 @@ function initMandatsEvolutionChart () {
 
 function chartInit () {
     initDemarchesChart()
-    initMandatsEvolutionChart()
+    initEvolutionChart({
+        dataId: "#mandats-evolution-data",
+        canvasId: "#mandats-evolution-chart",
+        label: "Mandats créés",
+    })
+    initEvolutionChart({
+        dataId: "#demarches-evolution-data",
+        canvasId: "#demarches-evolution-chart",
+        label: "Démarches réalisées",
+    })
 }
 
 aidantsConnectApplicationReady.then(chartInit)

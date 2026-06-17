@@ -40,7 +40,8 @@
 }
 
 #mandats-chart,
-#mandats-evolution-chart {
+#mandats-evolution-chart,
+#demarches-evolution-chart {
   height: 32rem;
 }
 
@@ -50,6 +51,7 @@
 }
 
 #fr-transcription-modal-mandats-chart-transcription table tr th,
-#fr-transcription-modal-mandats-evolution-chart-transcription table tr th {
+#fr-transcription-modal-mandats-evolution-chart-transcription table tr th,
+#fr-transcription-modal-demarches-evolution-chart-transcription table tr th {
   padding: 0.5rem 1rem;
 }

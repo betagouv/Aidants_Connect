@@ -28,6 +28,7 @@ from ..models import (
 )
 
 MANDATS_EVOLUTION_MONTHS = 24
+DEMARCHES_EVOLUTION_MONTHS = 24
 
 
 def _month_key(value: date | datetime) -> tuple[int, int]:
