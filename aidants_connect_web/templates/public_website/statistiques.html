@@ -32,6 +32,55 @@
     </section>
 
     <section>
+      <h2 class="fr-title-icon-left fr-icon-statistics-evolution">Évolution des mandats créés</h2>
+      <p class="fr-text--sm">
+        Nombre de mandats créés via Aidants Connect sur les 24 derniers mois complets.
+      </p>
+      <div class="stats-container">
+        <canvas id="mandats-evolution-chart" aria-label="Évolution mensuelle du nombre de mandats créés" role="img"></canvas>
+      </div>
+      <div class="fr-transcription fr-mb-4w" id="mandats-evolution-chart-transcription">
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-evolution-chart-transcription">Transcription</button>
+        <div class="fr-collapse" id="fr-transcription-collapse-mandats-evolution-chart-transcription">
+          <div class="fr-transcription__footer">
+            <div class="fr-transcription__actions-group">
+              <button aria-controls="fr-transcription-modal-mandats-evolution-chart-transcription" data-fr-opened="false" type="button" class="fr-btn--fullscreen fr-btn">Agrandir</button>
+            </div>
+          </div>
+          <dialog id="fr-transcription-modal-mandats-evolution-chart-transcription" class="fr-modal" aria-labelledby="fr-transcription-modal-title-mandats-evolution-chart-transcription">
+            <div class="fr-container fr-container--fluid fr-container-md">
+              <div class="fr-grid-row fr-grid-row--center">
+                <div class="fr-col-12 fr-col-md-10 fr-col-lg-8">
+                  <div class="fr-modal__body">
+                    <div class="fr-modal__header">
+                      <button aria-controls="fr-transcription-modal-mandats-evolution-chart-transcription" title="Fermer" type="button" class="fr-btn--close fr-btn">Fermer</button>
+                    </div>
+                    <div class="fr-modal__content">
+                      <h1 id="fr-transcription-modal-title-mandats-evolution-chart-transcription" class="fr-modal__title">Transcription du graphique d’évolution des mandats créés</h1>
+                      <table>
+                        <caption>Évolution mensuelle du nombre de mandats créés</caption>
+                        <tr>
+                          <th scope="col">Mois</th>
+                          <th scope="col">Nombre de mandats créés</th>
+                        </tr>
+                        {% for entry in mandats_evolution_transcription %}
+                          <tr>
+                            <th scope="row">{{ entry.month }}</th>
+                            <td>{{ entry.value }}</td>
+                          </tr>
+                        {% endfor %}
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </dialog>
+        </div>
+      </div>
+    </section>
+
+    <section>
       <h2 class="fr-title-icon-left fr-icon-statistics-type-demarche">Par type de démarche</h2>
       <div class="stats-container">
         <canvas id="mandats-chart" aria-label="Répartition du nombre de démarches par type" role="img"></canvas>
@@ -99,5 +148,6 @@
 
 {% block extrajs %}
   {{ data|json_script:"data" }}
+  {{ mandats_evolution_data|json_script:"mandats-evolution-data" }}
   <script type="module" src="{% static 'js/statistiques.js' %}"></script>
 {% endblock extrajs %}
