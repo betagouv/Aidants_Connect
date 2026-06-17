@@ -245,6 +245,7 @@ def compute_statistics(
     ostat.number_old_inactive_aidants_warned = number_old_inactive_aidants_warned
     ostat.number_aidants_with_otp_app = number_aidants_with_otp_app
     ostat.revoked_mandats = mandats.seperatly_revoked().count()
+    ostat.number_active_mandats = mandats.active().count()
     ostat.save()
 
     return ostat
