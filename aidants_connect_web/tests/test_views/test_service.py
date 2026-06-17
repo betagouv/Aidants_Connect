@@ -301,6 +301,10 @@ class StatistiquesTests(TestCase):
             len(response.context["mandats_evolution_data"]["labels"]),
             24,
         )
+        self.assertEqual(
+            len(response.context["demarches_evolution_data"]["labels"]),
+            24,
+        )
 
     def test_usager_helped_a_long_time_ago_not_counted_as_recent(self):
         # "statistiques_demarches": demarches_aggregation,
