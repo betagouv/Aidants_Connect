@@ -116,6 +116,11 @@ class StatistiquesView(TemplateView):
         mandat_count = Mandat.objects.exclude(
             organisation__name=settings.STAFF_ORGANISATION_NAME
         ).count()
+        active_mandat_count = (
+            Mandat.objects.exclude(organisation__name=settings.STAFF_ORGANISATION_NAME)
+            .active()
+            .count()
+        )
 
         organisations_accredited_count = (
             Organisation.objects.accredited()
@@ -150,6 +155,7 @@ class StatistiquesView(TemplateView):
                 "Démarches administratives réalisées": data_total,
                 "Personnes accompagnées": usagers_helped_count,
                 "Mandats créés": mandat_count,
+                "Mandats actifs": active_mandat_count,
             },
             data=data,
             demarches_transcription=demarches_transcription,

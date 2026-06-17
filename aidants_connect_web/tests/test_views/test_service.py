@@ -296,6 +296,7 @@ class StatistiquesTests(TestCase):
         # mandats should be non-staff_organisation and active
         response = self.client.get(reverse("statistiques"))
         self.assertEqual(response.context["usage_section"]["Mandats créés"], 2)
+        self.assertEqual(response.context["usage_section"]["Mandats actifs"], 1)
 
     def test_usager_helped_a_long_time_ago_not_counted_as_recent(self):
         # "statistiques_demarches": demarches_aggregation,
