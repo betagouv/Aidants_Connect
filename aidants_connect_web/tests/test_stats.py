@@ -7,6 +7,7 @@ from django.utils.timezone import now
 
 from dateutil.relativedelta import relativedelta
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from freezegun import freeze_time
 
 from aidants_connect_common.constants import JournalActionKeywords
 from aidants_connect_common.models import Commune, Department, Region
@@ -16,8 +17,9 @@ from aidants_connect_web.models import (
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
     AidantStatistiquesbyRegion,
+    Mandat,
 )
-from aidants_connect_web.statistics import compute_statistics
+from aidants_connect_web.statistics import compute_statistics, get_monthly_series
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AttestationJournalFactory,
@@ -396,3 +398,62 @@ class ActiveMandatsStatisticsTests(TestCase):
 
         stats = compute_statistics(AidantStatistiquesbyDepartment(departement=dep))
         self.assertEqual(stats.number_active_mandats, 1)
+
+
+@tag("statistics")
+class MandatsEvolutionStatisticsTests(TestCase):
+    def test_monthly_series_counts_mandats_by_creation_month(self):
+        orga = OrganisationFactory()
+        usager_one = UsagerFactory()
+        usager_two = UsagerFactory()
+
+        MandatFactory(
+            organisation=orga,
+            usager=usager_one,
+            creation_date=datetime(2024, 1, 15, tzinfo=timezone.utc),
+        )
+        MandatFactory(
+            organisation=orga,
+            usager=usager_two,
+            creation_date=datetime(2024, 2, 10, tzinfo=timezone.utc),
+        )
+
+        series = get_monthly_series(
+            Mandat.objects.filter(organisation=orga), "creation_date"
+        )
+
+        self.assertEqual(series["labels"], ["01/2024", "02/2024"])
+        self.assertEqual(series["values"], [1, 1])
+
+    @freeze_time("2024-03-15 12:00:00")
+    def test_monthly_series_limits_to_last_twenty_four_months(self):
+        orga = OrganisationFactory()
+        MandatFactory(
+            organisation=orga,
+            usager=UsagerFactory(),
+            creation_date=datetime(2023, 3, 1, tzinfo=timezone.utc),
+        )
+        MandatFactory(
+            organisation=orga,
+            usager=UsagerFactory(),
+            creation_date=datetime(2023, 4, 1, tzinfo=timezone.utc),
+        )
+        MandatFactory(
+            organisation=orga,
+            usager=UsagerFactory(),
+            creation_date=datetime(2024, 2, 1, tzinfo=timezone.utc),
+        )
+
+        series = get_monthly_series(
+            Mandat.objects.filter(organisation=orga),
+            "creation_date",
+            months=24,
+        )
+
+        self.assertEqual(len(series["labels"]), 24)
+        self.assertEqual(series["labels"][0], "03/2022")
+        self.assertEqual(series["labels"][-1], "02/2024")
+        self.assertEqual(series["values"][12], 1)
+        self.assertEqual(series["values"][13], 1)
+        self.assertEqual(series["values"][-1], 1)
+        self.assertEqual(sum(series["values"]), 3)

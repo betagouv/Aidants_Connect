@@ -10,6 +10,10 @@
   mask-image: url(/static/images/icons/statistiques-utilisation.svg);
 }
 
+.fr-icon-statistics-evolution::before {
+  mask-image: url(/static/images/icons/statistiques-utilisation.svg);
+}
+
 .stats-container {
   border: solid 1px var(--border-default-grey);
   padding: 2rem;
@@ -35,10 +39,12 @@
   line-height: 3.5rem;
 }
 
-#mandats-chart {
+#mandats-chart,
+#mandats-evolution-chart {
   height: 32rem;
 }
 
-#fr-transcription-modal-mandats-chart-transcription table tr th {
+#fr-transcription-modal-mandats-chart-transcription table tr th,
+#fr-transcription-modal-mandats-evolution-chart-transcription table tr th {
   padding: 0.5rem 1rem;
 }

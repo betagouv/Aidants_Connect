@@ -1,7 +1,12 @@
+from datetime import date, datetime
 from typing import Union
 
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Count, Q, QuerySet
+from django.db.models.functions import TruncMonth
+from django.utils import timezone
+
+from dateutil.relativedelta import relativedelta
 
 from aidants_connect_common.constants import (
     JournalActionKeywords,
@@ -21,6 +26,72 @@ from ..models import (
     Mandat,
     Organisation,
 )
+
+MANDATS_EVOLUTION_MONTHS = 24
+
+
+def _month_key(value: date | datetime) -> tuple[int, int]:
+    if isinstance(value, datetime):
+        value = timezone.localdate(value)
+    return value.year, value.month
+
+
+def _format_month(year: int, month: int) -> str:
+    return f"{month:02d}/{year}"
+
+
+def _month_keys_between(start: date, end: date) -> list[tuple[int, int]]:
+    keys: list[tuple[int, int]] = []
+    cursor = start.replace(day=1)
+    end = end.replace(day=1)
+    while cursor <= end:
+        keys.append((cursor.year, cursor.month))
+        cursor += relativedelta(months=1)
+    return keys
+
+
+def get_monthly_series(
+    qs: QuerySet, date_field: str, months: int | None = None
+) -> dict[str, list]:
+    tz = timezone.get_current_timezone()
+    month_keys: list[tuple[int, int]] | None = None
+
+    if months is not None:
+        current_month = timezone.localdate().replace(day=1)
+        end_month = current_month - relativedelta(months=1)
+        start_month = end_month - relativedelta(months=months - 1)
+        qs = qs.filter(
+            **{
+                f"{date_field}__date__gte": start_month,
+                f"{date_field}__date__lt": current_month,
+            }
+        )
+        month_keys = _month_keys_between(start_month, end_month)
+
+    monthly_counts = (
+        qs.annotate(month=TruncMonth(date_field, tzinfo=tz))
+        .values("month")
+        .annotate(count=Count("pk"))
+        .order_by("month")
+    )
+    counts_by_month = {
+        _month_key(entry["month"]): entry["count"]
+        for entry in monthly_counts
+        if entry["month"] is not None
+    }
+
+    if month_keys is not None:
+        return {
+            "labels": [_format_month(year, month) for year, month in month_keys],
+            "values": [counts_by_month.get(key, 0) for key in month_keys],
+        }
+
+    labels: list[str] = []
+    values: list[int] = []
+    for year, month in sorted(counts_by_month):
+        labels.append(_format_month(year, month))
+        values.append(counts_by_month[(year, month)])
+    return {"labels": labels, "values": values}
 
 
 def compute_all_statistics():
