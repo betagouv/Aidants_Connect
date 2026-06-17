@@ -16,7 +16,11 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from aidants_connect_pico_cms.models import Testimony
 from aidants_connect_web.forms import OTPForm
 from aidants_connect_web.models import Aidant, Journal, Mandat, Organisation
-from aidants_connect_web.statistics import MANDATS_EVOLUTION_MONTHS, get_monthly_series
+from aidants_connect_web.statistics import (
+    DEMARCHES_EVOLUTION_MONTHS,
+    MANDATS_EVOLUTION_MONTHS,
+    get_monthly_series,
+)
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -161,6 +165,15 @@ class StatistiquesView(TemplateView):
                 mandats_evolution_data["labels"], mandats_evolution_data["values"]
             )
         ]
+        demarches_evolution_data = get_monthly_series(
+            self.autorisation_use_qs, "creation_date", months=DEMARCHES_EVOLUTION_MONTHS
+        )
+        demarches_evolution_transcription = [
+            {"month": month, "value": value}
+            for month, value in zip(
+                demarches_evolution_data["labels"], demarches_evolution_data["values"]
+            )
+        ]
 
         return super().get_context_data(
             **kwargs,
@@ -174,6 +187,8 @@ class StatistiquesView(TemplateView):
             demarches_transcription=demarches_transcription,
             mandats_evolution_data=mandats_evolution_data,
             mandats_evolution_transcription=mandats_evolution_transcription,
+            demarches_evolution_data=demarches_evolution_data,
+            demarches_evolution_transcription=demarches_evolution_transcription,
             deployment_section=(
                 {
                     "Aidants habilités": aidants_count,
