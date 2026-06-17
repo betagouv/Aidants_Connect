@@ -1,13 +1,18 @@
 import "ChartJS"
 import "ChartJSDatalabel"
-import {aidantsConnectApplicationReady} from "AidantsConnectApplication"
+import { aidantsConnectApplicationReady } from "AidantsConnectApplication"
 
-function chartInit () {
+function getChartColor () {
+    const style = getComputedStyle(document.body)
+    return style.getPropertyValue("--artwork-minor-blue-france")
+}
+
+function initDemarchesChart () {
     /** @type {Object.<string, any[]>} */
-    const data = JSON.parse(document.querySelector("#data").textContent);
-    const ctx = document.querySelector("#mandats-chart").getContext("2d");
-    const style = getComputedStyle(document.body);
-    const color = style.getPropertyValue("--artwork-minor-blue-france")
+    const data = JSON.parse(document.querySelector("#data").textContent)
+    const ctx = document.querySelector("#mandats-chart").getContext("2d")
+    const style = getComputedStyle(document.body)
+    const color = getChartColor()
     const globalPadding = 16
 
     window.Chart.defaults.font.family = style.fontFamily
@@ -15,14 +20,14 @@ function chartInit () {
     window.Chart.defaults.font.size = style.fontSize
 
     const icons = data.icons.map(it => {
-        const image = new Image();
-        image.src = it;
+        const image = new Image()
+        image.src = it
         image.alt = ""
         return image
     })
 
-    function drawIcons (chart, {width}) {
-        const {ctx, scales: {x, y}} = chart;
+    function drawIcons (chart, { width }) {
+        const { ctx, scales: { x, y } } = chart
         if (x === undefined || y === undefined) {
             return
         }
@@ -44,9 +49,9 @@ function chartInit () {
     const afterDraw = {
         id: "afterDraw",
         afterDraw (chart) {
-            drawIcons(chart, {height: window.innerHeight, width: window.innerWidth})
+            drawIcons(chart, { height: window.innerHeight, width: window.innerWidth })
         },
-    };
+    }
 
     new window.Chart(ctx, {
         type: "bar",
@@ -72,12 +77,12 @@ function chartInit () {
                 }
             },
             plugins: {
-                legend: {display: false},
-                title: {display: false},
-                tooltip: {enabled: false},
+                legend: { display: false },
+                title: { display: false },
+                tooltip: { enabled: false },
                 datalabels: {
-                    color: color,
-                    font: {weight: "bold"},
+                    color,
+                    font: { weight: "bold" },
                     anchor: "end",
                     align: "top",
                     clamp: true,
@@ -100,11 +105,74 @@ function chartInit () {
                         display: false,
                         drawBorder: false
                     },
-                    ticks: {display: false}
+                    ticks: { display: false }
                 }
             }
         }
-    });
+    })
+}
+
+function initMandatsEvolutionChart () {
+    const evolutionNode = document.querySelector("#mandats-evolution-data")
+    const canvas = document.querySelector("#mandats-evolution-chart")
+    if (!evolutionNode || !canvas) {
+        return
+    }
+
+    const data = JSON.parse(evolutionNode.textContent)
+    if (data.labels.length === 0) {
+        return
+    }
+
+    const ctx = canvas.getContext("2d")
+    const style = getComputedStyle(document.body)
+    const color = getChartColor()
+
+    window.Chart.defaults.font.family = style.fontFamily
+    window.Chart.defaults.font.size = style.fontSize
+
+    new window.Chart(ctx, {
+        type: "line",
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: "Mandats créés",
+                data: data.values,
+                borderColor: color,
+                backgroundColor: color,
+                fill: false,
+                tension: 0.2,
+                pointRadius: 3,
+            }]
+        },
+        options: {
+            responsive: true,
+            aspectRatio: 2.5,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        maxRotation: 90,
+                        minRotation: 45,
+                        autoSkip: false,
+                    },
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { display: false },
+                },
+            }
+        }
+    })
+}
+
+function chartInit () {
+    initDemarchesChart()
+    initMandatsEvolutionChart()
 }
 
 aidantsConnectApplicationReady.then(chartInit)
