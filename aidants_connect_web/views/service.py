@@ -13,6 +13,7 @@ from django.views.generic import TemplateView
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
+from aidants_connect_common.constants import AuthorizationDurationChoices
 from aidants_connect_pico_cms.models import Testimony
 from aidants_connect_web.forms import OTPForm
 from aidants_connect_web.models import Aidant, Journal, Mandat, Organisation
@@ -113,6 +114,32 @@ class StatistiquesView(TemplateView):
 
         return data, data_total
 
+    def get_mandat_durees_stats(self) -> dict[str, list]:
+        counts_by_duree = {
+            entry["duree_keyword"]: entry["total"]
+            for entry in Mandat.objects.exclude(
+                organisation__name=settings.STAFF_ORGANISATION_NAME
+            )
+            .values("duree_keyword")
+            .annotate(total=Count("duree_keyword"))
+        }
+
+        entries = [
+            (label, counts_by_duree.get(keyword, 0))
+            for keyword, label in AuthorizationDurationChoices.choices
+        ]
+
+        null_count = counts_by_duree.get(None, 0)
+        if null_count:
+            entries.append(("Non renseignée", null_count))
+
+        entries.sort(key=lambda entry: entry[1], reverse=True)
+
+        return {
+            "titles": [title for title, _ in entries],
+            "values": [value for _, value in entries],
+        }
+
     def get_context_data(self, **kwargs):
         usagers_helped_count = (
             self.autorisation_use_qs.values("usager").distinct().count()
@@ -132,11 +159,6 @@ class StatistiquesView(TemplateView):
             .exclude(name=settings.STAFF_ORGANISATION_NAME)
             .count()
         )
-        organisations_not_accredited_count = (
-            Organisation.objects.not_yet_accredited()
-            .exclude(name=settings.STAFF_ORGANISATION_NAME)
-            .count()
-        )
 
         aidant_totp_devices_id = TOTPDevice.objects.all().values_list(
             "user_id", flat=True
@@ -144,14 +166,23 @@ class StatistiquesView(TemplateView):
         aidants_count = self.active_aidants_qs.filter(
             id__in=list(set(aidant_totp_devices_id))
         ).count()
-        aidants_not_accredited_count = self.active_aidants_qs.filter(
-            carte_totp__isnull=True
-        ).count()
+        operational_aidants_qs = self.active_aidants_qs.filter(carte_totp__isnull=False)
+        operational_aidants_count = operational_aidants_qs.count()
+        organisations_using_ac_count = (
+            operational_aidants_qs.values("organisation").distinct().count()
+        )
 
         data, data_total = self.get_demarches_stats()
         demarches_transcription = [
             {"title": title, "value": value}
             for title, value in zip(data["titles"], data["values"])
+        ]
+        mandat_durees_data = self.get_mandat_durees_stats()
+        mandat_durees_transcription = [
+            {"title": title, "value": value}
+            for title, value in zip(
+                mandat_durees_data["titles"], mandat_durees_data["values"]
+            )
         ]
         mandats_qs = Mandat.objects.exclude(
             organisation__name=settings.STAFF_ORGANISATION_NAME
@@ -174,30 +205,38 @@ class StatistiquesView(TemplateView):
                 demarches_evolution_data["labels"], demarches_evolution_data["values"]
             )
         ]
+        demarches_realisees_since_date = (
+            self.autorisation_use_qs.order_by("creation_date")
+            .values_list("creation_date", flat=True)
+            .first()
+        )
 
         return super().get_context_data(
             **kwargs,
             usage_section={
-                "Démarches administratives réalisées": data_total,
+                "Démarches réalisées": data_total,
                 "Personnes accompagnées": usagers_helped_count,
                 "Mandats créés": mandat_count,
                 "Mandats actifs": active_mandat_count,
             },
             data=data,
             demarches_transcription=demarches_transcription,
+            mandat_durees_data=mandat_durees_data,
+            mandat_durees_transcription=mandat_durees_transcription,
             mandats_evolution_data=mandats_evolution_data,
             mandats_evolution_transcription=mandats_evolution_transcription,
             demarches_evolution_data=demarches_evolution_data,
             demarches_evolution_transcription=demarches_evolution_transcription,
+            demarches_realisees_since_date=demarches_realisees_since_date,
             deployment_section=(
                 {
                     "Aidants habilités": aidants_count,
-                    "Aidants en cours d’habilitation": aidants_not_accredited_count,
+                    "Utilisateurs d'Aidants connect": operational_aidants_count,
                 },
                 {
                     "Structures habilitées": organisations_accredited_count,
-                    "Structures en cours d’habilitation": (
-                        organisations_not_accredited_count
+                    "Structures utilisatrices de l'outil Aidants Connect": (
+                        organisations_using_ac_count
                     ),
                 },
             ),

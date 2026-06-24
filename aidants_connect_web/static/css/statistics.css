@@ -39,6 +39,10 @@
   line-height: 3.5rem;
 }
 
+#mandats-durees-chart {
+  height: 24rem;
+}
+
 #mandats-chart,
 #mandats-evolution-chart,
 #demarches-evolution-chart {
@@ -46,6 +50,7 @@
 }
 
 #fr-transcription-modal-mandats-chart-transcription table tr th,
+#fr-transcription-modal-mandats-durees-chart-transcription table tr th,
 #fr-transcription-modal-mandats-evolution-chart-transcription table tr th,
 #fr-transcription-modal-demarches-evolution-chart-transcription table tr th {
   padding: 0.5rem 1rem;

@@ -1,0 +1,10 @@
+<button type="button"
+        class="fr-btn--tooltip fr-btn fr-btn--tertiary-no-outline stat-info-tooltip"
+        id="button-{{ tooltip_id }}"
+        aria-describedby="{{ tooltip_id }}">
+  <span class="fr-sr-only">{{ sr_only_label }}</span>
+</button>
+<span class="fr-tooltip fr-placement"
+      id="{{ tooltip_id }}"
+      role="tooltip"
+      aria-hidden="true">{{ tooltip_content }}</span>
