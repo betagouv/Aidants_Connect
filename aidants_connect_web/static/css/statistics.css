@@ -43,6 +43,10 @@
   height: 24rem;
 }
 
+#operational-aidants-evolution-chart {
+  height: 32rem;
+}
+
 #mandats-chart,
 #mandats-evolution-chart,
 #demarches-evolution-chart {
