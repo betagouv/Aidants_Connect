@@ -266,6 +266,11 @@ function chartInit () {
         canvasId: "#demarches-evolution-chart",
         label: "Démarches réalisées",
     })
+    initEvolutionChart({
+        dataId: "#operational-aidants-evolution-data",
+        canvasId: "#operational-aidants-evolution-chart",
+        label: "Aidants opérationnels",
+    })
 }
 
 aidantsConnectApplicationReady.then(chartInit)
