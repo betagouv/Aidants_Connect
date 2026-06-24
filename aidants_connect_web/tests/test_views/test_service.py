@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from freezegun import freeze_time
 
+from aidants_connect_common.constants import AuthorizationDurationChoices
 from aidants_connect_web.models import Journal, Organisation
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -274,6 +275,18 @@ class StatistiquesTests(TestCase):
             1,
             "Should count aidant_thierry alone",
         )
+        self.assertEqual(
+            response.context["deployment_section"][0]["Utilisateurs d'Aidants connect"],
+            1,
+            "Should count aidant_thierry alone (operational aidant with carte TOTP)",
+        )
+        self.assertEqual(
+            response.context["deployment_section"][1][
+                "Structures utilisatrices de l'outil Aidants Connect"
+            ],
+            1,
+            "Should count aidant_thierry's organisation alone",
+        )
 
     def test_stats_show_the_correct_number_of_aidants_totp_device_only(self):
         # aidants should be non-staff_organisation
@@ -290,6 +303,18 @@ class StatistiquesTests(TestCase):
             response.context["deployment_section"][0]["Aidants habilités"],
             2,
             "Should count aidant_thierry and aidant_totp",
+        )
+        self.assertEqual(
+            response.context["deployment_section"][0]["Utilisateurs d'Aidants connect"],
+            1,
+            "Should count only aidant_thierry (TOTP app without carte TOTP is not operational)",  # noqa: E501
+        )
+        self.assertEqual(
+            response.context["deployment_section"][1][
+                "Structures utilisatrices de l'outil Aidants Connect"
+            ],
+            1,
+            "Should still count only aidant_thierry's organisation",
         )
 
     def test_stats_show_the_correct_number_of_mandats_non_staff_organisation(self):
@@ -309,9 +334,7 @@ class StatistiquesTests(TestCase):
     def test_usager_helped_a_long_time_ago_not_counted_as_recent(self):
         # "statistiques_demarches": demarches_aggregation,
         response = self.client.get(reverse("statistiques"))
-        self.assertEqual(
-            response.context["usage_section"]["Démarches administratives réalisées"], 3
-        )
+        self.assertEqual(response.context["usage_section"]["Démarches réalisées"], 3)
         self.assertEqual(response.context["usage_section"]["Personnes accompagnées"], 2)
 
     def test_all_help_is_counted_for_demarche_stat_except_staff_organisation(self):
@@ -319,6 +342,37 @@ class StatistiquesTests(TestCase):
         response = self.client.get(reverse("statistiques"))
         self.assertEqual(response.context["data"]["values"][0], 3)
         self.assertEqual(response.context["data"]["values"][1], 0)
+
+    def test_stats_show_mandat_durees_distribution(self):
+        response = self.client.get(reverse("statistiques"))
+        mandat_durees_data = response.context["mandat_durees_data"]
+        self.assertEqual(
+            mandat_durees_data["titles"][0],
+            AuthorizationDurationChoices.SHORT.label,
+        )
+        self.assertEqual(mandat_durees_data["values"][0], 2)
+        self.assertEqual(
+            sum(mandat_durees_data["values"]),
+            response.context["usage_section"]["Mandats créés"],
+        )
+
+    def test_stats_page_includes_demarches_realisees_info(self):
+        response = self.client.get(reverse("statistiques"))
+        self.assertIsNotNone(response.context["demarches_realisees_since_date"])
+        self.assertContains(response, "demarches-realisees-usage-info")
+        self.assertContains(
+            response,
+            "Connexions réalisées via Aidants Connect - pour suivre et réaliser une ou plusieurs démarches administratives",  # noqa: E501
+        )
+        self.assertContains(response, "Depuis le")
+
+    def test_stats_page_includes_demarche_type_info(self):
+        response = self.client.get(reverse("statistiques"))
+        self.assertContains(response, "demarche-type-info")
+        self.assertContains(
+            response,
+            "Domaine déclaré par l'aidant à l'utilisation du mandat",
+        )
 
 
 @tag("service")

@@ -7,6 +7,84 @@ function getChartColor () {
     return style.getPropertyValue("--artwork-minor-blue-france")
 }
 
+function initSimpleBarChart ({ dataId, canvasId, datasetLabel, horizontal = false }) {
+    const dataNode = document.querySelector(dataId)
+    const canvas = document.querySelector(canvasId)
+    if (!dataNode || !canvas) {
+        return
+    }
+
+    const data = JSON.parse(dataNode.textContent)
+    const ctx = canvas.getContext("2d")
+    const style = getComputedStyle(document.body)
+    const color = getChartColor()
+
+    window.Chart.defaults.font.family = style.fontFamily
+    window.Chart.defaults.backgroundColor = color
+    window.Chart.defaults.font.size = style.fontSize
+
+    new window.Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: data.titles,
+            datasets: [{
+                label: datasetLabel,
+                data: data.values,
+            }]
+        },
+        plugins: [window.ChartDataLabels],
+        options: {
+            indexAxis: horizontal ? "y" : "x",
+            responsive: true,
+            aspectRatio: horizontal ? 1.2 : 3,
+            maintainAspectRatio: false,
+            layout: {
+                padding: horizontal
+                    ? { top: 0, right: 48, bottom: 0, left: 0 }
+                    : { top: 20, right: 0, bottom: 0, left: 0 },
+            },
+            plugins: {
+                legend: { display: false },
+                title: { display: false },
+                tooltip: { enabled: false },
+                datalabels: {
+                    color,
+                    font: { weight: "bold" },
+                    anchor: "end",
+                    align: horizontal ? "right" : "top",
+                    clamp: true,
+                },
+            },
+            scales: horizontal
+                ? {
+                    x: {
+                        beginAtZero: true,
+                        grid: { display: false, drawBorder: false },
+                        ticks: { display: false },
+                    },
+                    y: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { autoSkip: false },
+                    },
+                }
+                : {
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: {
+                            maxRotation: 90,
+                            minRotation: 0,
+                            autoSkip: false,
+                        },
+                    },
+                    y: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { display: false },
+                    },
+                },
+        }
+    })
+}
+
 function initDemarchesChart () {
     /** @type {Object.<string, any[]>} */
     const data = JSON.parse(document.querySelector("#data").textContent)
@@ -172,6 +250,12 @@ function initEvolutionChart ({ dataId, canvasId, label }) {
 
 function chartInit () {
     initDemarchesChart()
+    initSimpleBarChart({
+        dataId: "#mandats-durees-data",
+        canvasId: "#mandats-durees-chart",
+        datasetLabel: "Nombre de mandats",
+        horizontal: true,
+    })
     initEvolutionChart({
         dataId: "#mandats-evolution-data",
         canvasId: "#mandats-evolution-chart",
