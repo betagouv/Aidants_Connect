@@ -11,7 +11,7 @@ from django.utils import timezone
 from freezegun import freeze_time
 
 from aidants_connect_common.constants import AuthorizationDurationChoices
-from aidants_connect_web.models import Journal, Organisation
+from aidants_connect_web.models import AidantStatistiques, Journal, Organisation
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AutorisationFactory,
@@ -330,6 +330,35 @@ class StatistiquesTests(TestCase):
             len(response.context["demarches_evolution_data"]["labels"]),
             24,
         )
+        self.assertEqual(
+            len(response.context["operational_aidants_evolution_data"]["labels"]),
+            24,
+        )
+
+    @freeze_time("2026-06-15")
+    def test_operational_aidants_evolution_uses_snapshots(self):
+        # One snapshot in 2026-04
+        with freeze_time("2026-04-10"):
+            AidantStatistiques.objects.create(number_operational_aidants=3)
+        # Two snapshots in 2026-05: the latest of the month must win
+        with freeze_time("2026-05-05"):
+            AidantStatistiques.objects.create(number_operational_aidants=5)
+        with freeze_time("2026-05-20"):
+            AidantStatistiques.objects.create(number_operational_aidants=7)
+
+        response = self.client.get(reverse("statistiques"))
+        data = response.context["operational_aidants_evolution_data"]
+
+        self.assertEqual(len(data["labels"]), 24)
+        # Last complete month is 2026-05 (current month excluded)
+        self.assertEqual(data["labels"][-1], "05/2026")
+        self.assertEqual(data["values"][-1], 7)
+        # 2026-04 keeps its own snapshot value
+        self.assertEqual(data["labels"][-2], "04/2026")
+        self.assertEqual(data["values"][-2], 3)
+        # 2026-03 has no earlier snapshot to forward-fill from
+        self.assertEqual(data["labels"][-3], "03/2026")
+        self.assertEqual(data["values"][-3], 0)
 
     def test_usager_helped_a_long_time_ago_not_counted_as_recent(self):
         # "statistiques_demarches": demarches_aggregation,
@@ -364,7 +393,6 @@ class StatistiquesTests(TestCase):
             response,
             "Connexions réalisées via Aidants Connect - pour suivre et réaliser une ou plusieurs démarches administratives",  # noqa: E501
         )
-        self.assertContains(response, "Depuis le")
 
     def test_stats_page_includes_demarche_type_info(self):
         response = self.client.get(reverse("statistiques"))

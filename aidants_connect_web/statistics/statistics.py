@@ -29,6 +29,7 @@ from ..models import (
 
 MANDATS_EVOLUTION_MONTHS = 24
 DEMARCHES_EVOLUTION_MONTHS = 24
+OPERATIONAL_AIDANTS_EVOLUTION_MONTHS = 24
 
 
 def _month_key(value: date | datetime) -> tuple[int, int]:
@@ -93,6 +94,52 @@ def get_monthly_series(
         labels.append(_format_month(year, month))
         values.append(counts_by_month[(year, month)])
     return {"labels": labels, "values": values}
+
+
+def get_operational_aidants_monthly_series(
+    months: int = OPERATIONAL_AIDANTS_EVOLUTION_MONTHS,
+) -> dict[str, list]:
+    """Build a monthly series of operational aidants from stored snapshots.
+
+    ``number_operational_aidants`` is a state metric (not a dated event), so it
+    cannot be rebuilt with ``get_monthly_series``. Instead we rely on the
+    periodic ``AidantStatistiques`` snapshots: for each of the last ``months``
+    complete months we keep the latest snapshot value, then forward-fill months
+    without a snapshot with the previous known value.
+    """
+    tz = timezone.get_current_timezone()
+    current_month = timezone.localdate().replace(day=1)
+    end_month = current_month - relativedelta(months=1)
+    start_month = end_month - relativedelta(months=months - 1)
+
+    snapshots = (
+        AidantStatistiques.objects.filter(
+            created_at__date__gte=start_month,
+            created_at__date__lt=current_month,
+        )
+        .annotate(month=TruncMonth("created_at", tzinfo=tz))
+        .values("month", "number_operational_aidants", "created_at")
+        .order_by("month", "created_at")
+    )
+
+    value_by_month: dict[tuple[int, int], int] = {}
+    for entry in snapshots:
+        if entry["month"] is None:
+            continue
+        value_by_month[_month_key(entry["month"])] = entry["number_operational_aidants"]
+
+    month_keys = _month_keys_between(start_month, end_month)
+    values: list[int] = []
+    last_value = 0
+    for key in month_keys:
+        if key in value_by_month:
+            last_value = value_by_month[key]
+        values.append(last_value)
+
+    return {
+        "labels": [_format_month(year, month) for year, month in month_keys],
+        "values": values,
+    }
 
 
 def compute_all_statistics():

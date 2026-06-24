@@ -20,7 +20,9 @@ from aidants_connect_web.models import Aidant, Journal, Mandat, Organisation
 from aidants_connect_web.statistics import (
     DEMARCHES_EVOLUTION_MONTHS,
     MANDATS_EVOLUTION_MONTHS,
+    OPERATIONAL_AIDANTS_EVOLUTION_MONTHS,
     get_monthly_series,
+    get_operational_aidants_monthly_series,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -205,6 +207,16 @@ class StatistiquesView(TemplateView):
                 demarches_evolution_data["labels"], demarches_evolution_data["values"]
             )
         ]
+        operational_aidants_evolution_data = get_operational_aidants_monthly_series(
+            months=OPERATIONAL_AIDANTS_EVOLUTION_MONTHS
+        )
+        operational_aidants_evolution_transcription = [
+            {"month": month, "value": value}
+            for month, value in zip(
+                operational_aidants_evolution_data["labels"],
+                operational_aidants_evolution_data["values"],
+            )
+        ]
         demarches_realisees_since_date = (
             self.autorisation_use_qs.order_by("creation_date")
             .values_list("creation_date", flat=True)
@@ -227,6 +239,10 @@ class StatistiquesView(TemplateView):
             mandats_evolution_transcription=mandats_evolution_transcription,
             demarches_evolution_data=demarches_evolution_data,
             demarches_evolution_transcription=demarches_evolution_transcription,
+            operational_aidants_evolution_data=operational_aidants_evolution_data,
+            operational_aidants_evolution_transcription=(
+                operational_aidants_evolution_transcription
+            ),
             demarches_realisees_since_date=demarches_realisees_since_date,
             deployment_section=(
                 {

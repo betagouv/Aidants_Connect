@@ -140,6 +140,52 @@
     </section>
 
     <section>
+      <h2 class="fr-title-icon-left fr-icon-statistics-evolution">Évolution des utilisateurs d'Aidants Connect</h2>
+      <div class="stats-container">
+        <canvas id="operational-aidants-evolution-chart" aria-label="Évolution mensuelle du nombre d’aidants opérationnels" role="img"></canvas>
+      </div>
+      <div class="fr-transcription fr-mb-4w" id="operational-aidants-evolution-chart-transcription">
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-operational-aidants-evolution-chart-transcription">Transcription</button>
+        <div class="fr-collapse" id="fr-transcription-collapse-operational-aidants-evolution-chart-transcription">
+          <div class="fr-transcription__footer">
+            <div class="fr-transcription__actions-group">
+              <button aria-controls="fr-transcription-modal-operational-aidants-evolution-chart-transcription" data-fr-opened="false" type="button" class="fr-btn--fullscreen fr-btn">Agrandir</button>
+            </div>
+          </div>
+          <dialog id="fr-transcription-modal-operational-aidants-evolution-chart-transcription" class="fr-modal" aria-labelledby="fr-transcription-modal-title-operational-aidants-evolution-chart-transcription">
+            <div class="fr-container fr-container--fluid fr-container-md">
+              <div class="fr-grid-row fr-grid-row--center">
+                <div class="fr-col-12 fr-col-md-10 fr-col-lg-8">
+                  <div class="fr-modal__body">
+                    <div class="fr-modal__header">
+                      <button aria-controls="fr-transcription-modal-operational-aidants-evolution-chart-transcription" title="Fermer" type="button" class="fr-btn--close fr-btn">Fermer</button>
+                    </div>
+                    <div class="fr-modal__content">
+                      <h1 id="fr-transcription-modal-title-operational-aidants-evolution-chart-transcription" class="fr-modal__title">Transcription du graphique d’évolution des aidants opérationnels</h1>
+                      <table>
+                        <caption>Évolution mensuelle du nombre d’aidants opérationnels</caption>
+                        <tr>
+                          <th scope="col">Mois</th>
+                          <th scope="col">Nombre d’aidants opérationnels</th>
+                        </tr>
+                        {% for entry in operational_aidants_evolution_transcription %}
+                          <tr>
+                            <th scope="row">{{ entry.month }}</th>
+                            <td>{{ entry.value }}</td>
+                          </tr>
+                        {% endfor %}
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </dialog>
+        </div>
+      </div>
+    </section>
+
+    <section>
       <h2 class="fr-title-icon-left fr-icon-statistics-type-demarche stat-title-with-info">
         <span>Par type de démarche</span>
         {% include "public_website/_stat_info_tooltip.html" with tooltip_id="demarche-type-info" sr_only_label="Informations sur le type de démarche" tooltip_content="Domaine déclaré par l'aidant à l'utilisation du mandat" %}
@@ -259,5 +305,6 @@
   {{ mandat_durees_data|json_script:"mandats-durees-data" }}
   {{ mandats_evolution_data|json_script:"mandats-evolution-data" }}
   {{ demarches_evolution_data|json_script:"demarches-evolution-data" }}
+  {{ operational_aidants_evolution_data|json_script:"operational-aidants-evolution-data" }}
   <script type="module" src="{% static 'js/statistiques.js' %}"></script>
 {% endblock extrajs %}
