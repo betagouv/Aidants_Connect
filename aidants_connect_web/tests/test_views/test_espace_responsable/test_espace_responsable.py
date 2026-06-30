@@ -22,6 +22,11 @@ class EspaceResponsableOrganisationPage(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.responsable_tom = AidantFactory(post__is_organisation_manager=True)
+        TOTPDevice.objects.create(
+            user=cls.responsable_tom,
+            name=OTP_APP_DEVICE_NAME % cls.responsable_tom.pk,
+            confirmed=True,
+        )
         cls.id_organisation = cls.responsable_tom.organisation.id
         cls.autre_organisation = OrganisationFactory()
 

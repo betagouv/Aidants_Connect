@@ -1,0 +1,131 @@
+{% extends 'aidants_connect_web/espace_responsable/otp_tunnel/layout.html' %}
+
+{% load static %}
+
+{% block title %}Ajouter le compte Aidants Connect sur l’application - Aidants Connect{% endblock %}
+
+{% block otp_tunnel_body %}
+  <div class="fr-stepper">
+    <h1 class="fr-stepper__title">
+      Ajouter le compte Aidants Connect sur l’application
+      <span class="fr-stepper__state">Étape {{ wizard_step }} sur {{ wizard_total_steps }}</span>
+    </h1>
+    <div
+      class="fr-stepper__steps"
+      data-fr-current-step="{{ wizard_step }}"
+      data-fr-steps="{{ wizard_total_steps }}"
+    ></div>
+  </div>
+
+  <p>
+    Une fois l’application installée, vous devez ajouter votre compte Aidants Connect sur l’application.
+  </p>
+
+  <form id="otp-scan-form" method="post" novalidate>
+    {% csrf_token %}
+    <div class="otp-tunnel-scan-panel">
+      <div class="otp-tunnel-scan-panel__column">
+        <div class="otp-tunnel-scan-step">
+          <span class="otp-tunnel-scan-step__number" aria-hidden="true">1</span>
+          <p class="otp-tunnel-scan-step__text">
+            Utilisez votre application d’Authentification pour scanner le code QR ci-dessous.
+          </p>
+        </div>
+        <img
+          class="otp-tunnel-scan-panel__qr-code"
+          src="{{ otp_device_qr_code_href }}"
+          alt="QR code à scanner dans votre application d’authentification"
+        />
+        <details class="otp-tunnel-scan-panel__key-details">
+          <summary class="fr-link">
+            <span data-key-summary-label>Afficher la clé</span>
+          </summary>
+          <p class="otp-tunnel-scan-panel__secret" id="otp-device-secret-key">{{ otp_device_secret_key }}</p>
+        </details>
+      </div>
+
+      <div class="otp-tunnel-scan-panel__divider" aria-hidden="true"></div>
+
+      <div class="otp-tunnel-scan-panel__column">
+        <div class="otp-tunnel-scan-step">
+          <span class="otp-tunnel-scan-step__number" aria-hidden="true">2</span>
+          <p class="otp-tunnel-scan-step__text">
+            Entrez le code de vérification à 6 chiffres affiché sur votre application.
+          </p>
+        </div>
+        <div class="otp-tunnel-otp-input" data-otp-input>
+          <div class="otp-tunnel-otp-fallback">
+            <label class="fr-label" for="id_otp_token">
+              Code de vérification
+            </label>
+            <input
+              type="text"
+              name="otp_token"
+              id="id_otp_token"
+              class="fr-input fr-input-otp-token"
+              inputmode="numeric"
+              maxlength="6"
+              pattern="[0-9]{6}"
+              autocomplete="one-time-code"
+              value="{{ form.otp_token.value|default_if_none:'' }}"
+              autofocus
+            />
+          </div>
+          <div
+            class="otp-tunnel-otp-digits"
+            data-otp-digits
+            role="group"
+            aria-label="Code de vérification à 6 chiffres"
+            hidden
+          >
+            {% for _ in "123456" %}
+              <input
+                type="text"
+                inputmode="numeric"
+                maxlength="1"
+                pattern="[0-9]"
+                class="otp-tunnel-otp-digits__input"
+                aria-label="Chiffre {{ forloop.counter }} du code de vérification"
+                tabindex="-1"
+              />
+            {% endfor %}
+          </div>
+        </div>
+        {% if form.otp_token.errors %}
+          <p class="fr-error-text" id="otp-token-error">
+            {{ form.otp_token.errors.0 }}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+{% endblock otp_tunnel_body %}
+
+{% block otp_tunnel_footer %}
+  <footer class="otp-tunnel-card__footer">
+    <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--icon-left">
+      <li>
+        <a
+          href="{% url 'espace_referent:otp_tunnel_download_app' %}"
+          class="fr-btn fr-btn--secondary fr-icon-arrow-left-line"
+        >
+          Retour
+        </a>
+      </li>
+      <li>
+        <button
+          type="submit"
+          form="otp-scan-form"
+          class="fr-btn fr-icon-arrow-right-line"
+        >
+          Étape suivante
+        </button>
+      </li>
+    </ul>
+  </footer>
+{% endblock otp_tunnel_footer %}
+
+{% block extrajs %}
+  {{ block.super }}
+  <script defer src="{% static 'js/otp-tunnel-scan.js' %}"></script>
+{% endblock extrajs %}

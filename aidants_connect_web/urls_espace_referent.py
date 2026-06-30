@@ -120,4 +120,29 @@ urlpatterns = [
         espace_responsable.FormationRegistrationView.as_view(),
         name="register_formation",
     ),
+    path(
+        "configurer-otp/bienvenue/",
+        espace_responsable.OtpTunnelWelcomeView.as_view(),
+        name="otp_tunnel_welcome",
+    ),
+    path(
+        "configurer-otp/quitter/",
+        espace_responsable.OtpTunnelDismissView.as_view(),
+        name="otp_tunnel_dismiss",
+    ),
+    path(
+        "configurer-otp/telecharger-application/",
+        espace_responsable.OtpTunnelDownloadAppView.as_view(),
+        name="otp_tunnel_download_app",
+    ),
+    path(
+        "configurer-otp/scanner-qr-code/",
+        espace_responsable.OtpTunnelScanQrCodeView.as_view(),
+        name="otp_tunnel_scan_qr_code",
+    ),
+    path(
+        "configurer-otp/felicitations/",
+        espace_responsable.OtpTunnelCongratulationsView.as_view(),
+        name="otp_tunnel_congratulations",
+    ),
 ]

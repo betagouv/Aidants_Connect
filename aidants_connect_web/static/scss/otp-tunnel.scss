@@ -1,0 +1,230 @@
+.otp-tunnel-page {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem 4rem;
+}
+
+.otp-tunnel-card {
+  width: 100%;
+  max-width: 54rem;
+  background-color: var(--background-default-grey);
+  border: 1px solid var(--border-default-grey);
+  padding: 1.5rem 2rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-default-grey);
+  }
+
+  &__logo {
+    width: 6.25rem;
+    height: auto;
+  }
+
+  &__body {
+    padding: 2rem 0;
+
+    .fr-stepper__title {
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  &__footer {
+    &_with_border {
+      border-top: 1px solid var(--border-default-grey);
+      padding-top: 1.5rem;
+    }
+
+    .fr-btns-group {
+      display: flex;
+      justify-content: space-between;
+      margin: 0;
+      width: 100%;
+
+      .fr-btn {
+        margin-left: 0;
+      }
+    }
+
+    &--in-body {
+      margin: 2rem -2rem -2rem;
+    }
+  }
+}
+
+.otp-tunnel-app-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+
+  > li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    border-radius: 0.25rem;
+  }
+}
+
+.otp-tunnel-scan-panel {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  border: 1px solid var(--border-default-grey);
+  background-color: var(--background-default-grey);
+
+  &__column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 1.5rem;
+  }
+
+  &__divider {
+    flex-shrink: 0;
+    width: 1px;
+    background-color: var(--border-default-grey);
+  }
+
+  &__qr-code {
+    width: 100%;
+    max-width: 12rem;
+    height: auto;
+  }
+
+  &__key-details {
+    margin-top: 1rem;
+
+    summary {
+      cursor: pointer;
+      list-style: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+    }
+  }
+
+  &__secret {
+    margin: 0.75rem 0 0;
+    font-family: monospace;
+    white-space: nowrap;
+    overflow-x: auto;
+  }
+}
+
+.otp-tunnel-scan-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  &__number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: var(--background-action-high-blue-france);
+    color: var(--text-inverted-blue-france);
+    font-weight: 700;
+  }
+
+  &__text {
+    margin: 0;
+    max-width: 18rem;
+  }
+}
+
+.otp-tunnel-otp-digits {
+  display: none;
+  gap: 0.5rem;
+  justify-content: center;
+
+  &__input {
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: none;
+    border-bottom: 2px solid var(--border-plain-grey);
+    background-color: var(--background-contrast-grey);
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+
+    &:focus {
+      outline: 2px solid var(--border-active-blue-france);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.otp-tunnel-otp-input--enhanced {
+  .otp-tunnel-otp-fallback {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .otp-tunnel-otp-digits {
+    display: flex;
+  }
+}
+
+@media (max-width: 48rem) {
+  .otp-tunnel-scan-panel {
+    flex-direction: column;
+    gap: 0;
+
+    &__divider {
+      width: auto;
+      height: 1px;
+    }
+  }
+
+  .otp-tunnel-card {
+    &__header,
+    &__body,
+    &__footer {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    &__footer {
+      flex-direction: column;
+      align-items: stretch;
+
+      .fr-btns-group {
+        width: 100%;
+      }
+
+      &--in-body {
+        margin-left: -1rem;
+        margin-right: -1rem;
+        margin-bottom: -2rem;
+      }
+    }
+  }
+}
