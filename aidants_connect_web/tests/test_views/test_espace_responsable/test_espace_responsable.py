@@ -2,6 +2,7 @@ from django.contrib import messages as django_messages
 from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve, reverse
+from django.utils import timezone
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from faker import Faker
@@ -92,6 +93,7 @@ class EspaceResponsableOrganisationPage(TestCase):
             len(settings.DEMARCHES.keys()),
             len(self.responsable_tom.organisation.allowed_demarches),
         )
+        self.assertIsNone(self.responsable_tom.organisation.demarches_configured_at)
         self.client.force_login(self.responsable_tom)
         response = self.client.post(
             reverse("espace_referent:organisation"),
@@ -103,6 +105,34 @@ class EspaceResponsableOrganisationPage(TestCase):
             2,
             len(self.responsable_tom.organisation.allowed_demarches),
         )
+        self.assertIsNotNone(self.responsable_tom.organisation.demarches_configured_at)
+
+    def test_home_shows_demarches_to_configure_label_when_not_configured(self):
+        self.assertTrue(self.responsable_tom.organisation.demarches_need_configuration)
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertContains(response, "À configurer")
+
+    def test_home_hides_demarches_to_configure_label_after_validation_with_all(self):
+        self.client.force_login(self.responsable_tom)
+        response = self.client.post(
+            reverse("espace_referent:organisation"),
+            data={"demarches": list(settings.DEMARCHES.keys())},
+        )
+        self.assertRedirects(response, reverse("espace_referent:organisation"))
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertNotContains(response, "À configurer")
+
+    def test_home_hides_demarches_to_configure_label_when_subset_selected(self):
+        organisation = self.responsable_tom.organisation
+        organisation.allowed_demarches = ["papiers", "logement"]
+        organisation.demarches_configured_at = timezone.now()
+        organisation.save(
+            update_fields=("allowed_demarches", "demarches_configured_at")
+        )
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertNotContains(response, "À configurer")
 
     def test_I_must_select_at_least_one_demarche(self):
         # All demarches are allowed

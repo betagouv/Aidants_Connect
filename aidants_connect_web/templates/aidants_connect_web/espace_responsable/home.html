@@ -89,6 +89,9 @@
                 <p class="fr-tile__title">
                   <a href="{% url 'espace_referent:organisation' %}">Configurer les thématiques</a>
                 </p>
+                {% if organisation.demarches_need_configuration %}
+                  <p class="fr-badge fr-badge--pink-tuile fr-icon-flashlight-fill fr-badge--icon-left fr-mb-1w">À configurer</p>
+                {% endif %}
               </div>
             </div>
             <div class="fr-tile__header">
