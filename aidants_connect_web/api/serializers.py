@@ -50,6 +50,12 @@ class OrganisationSerializer(serializers.HyperlinkedModelSerializer):
         extra_kwargs = {"url": {"lookup_field": "uuid"}}
 
 
+class FNEReferentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Aidant
+        fields = ["id", "first_name", "last_name", "email"]
+
+
 class FNEOrganisationSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="fne_organisations-detail", lookup_field="uuid"
@@ -60,6 +66,8 @@ class FNEOrganisationSerializer(serializers.ModelSerializer):
     updated_at = serializers.ModelField(
         model_field=_organisation_meta.get_field("updated_at")
     )
+
+    referents = FNEReferentSerializer(many=True, read_only=True, source="responsables")
 
     class Meta:
         model = Organisation
@@ -80,6 +88,7 @@ class FNEOrganisationSerializer(serializers.ModelSerializer):
             "num_mandats",
             "france_services_label",
             "france_services_number",
+            "referents",
         ]
 
 
@@ -126,4 +135,5 @@ class FNEAidantSerializer(serializers.HyperlinkedModelSerializer):
             "conseiller_numerique",
             "get_supports_number",
             "get_supports_number_for_current_month",
+            "get_supports_number_last_six_months",
         ]

@@ -244,7 +244,7 @@ class AidantAdmin(FunctionalTestCase):
                 karl_marx@internationale.de
                 Ces profils n’ont pas été désactivés.
                 """  # noqa: E501
-            ).strip(),
+            ).strip(),  # noqa: E501
             self.selenium.find_element(By.CSS_SELECTOR, ".messagelist .warning").text,
         )
 
