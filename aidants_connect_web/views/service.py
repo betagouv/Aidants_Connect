@@ -11,8 +11,6 @@ from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import TemplateView
 
-from django_otp.plugins.otp_totp.models import TOTPDevice
-
 from aidants_connect_common.constants import AuthorizationDurationChoices
 from aidants_connect_pico_cms.models import Testimony
 from aidants_connect_web.forms import OTPForm
@@ -27,6 +25,20 @@ from aidants_connect_web.statistics import (
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
+
+
+def _build_evolution_transcription(series: dict[str, list]) -> list[dict]:
+    """Turn an evolution series into accessible transcription rows.
+
+    Each row exposes both the monthly increase and the cumulative total so the
+    transcription stays readable even though the chart line is cumulative.
+    """
+    return [
+        {"month": month, "monthly": monthly, "cumulative": cumulative}
+        for month, monthly, cumulative in zip(
+            series["labels"], series["monthly"], series["cumulative"]
+        )
+    ]
 
 
 def humanize_demarche_names(name: str) -> str:
@@ -162,17 +174,7 @@ class StatistiquesView(TemplateView):
             .count()
         )
 
-        aidant_totp_devices_id = TOTPDevice.objects.all().values_list(
-            "user_id", flat=True
-        )
-        aidants_count = self.active_aidants_qs.filter(
-            id__in=list(set(aidant_totp_devices_id))
-        ).count()
-        operational_aidants_qs = self.active_aidants_qs.filter(carte_totp__isnull=False)
-        operational_aidants_count = operational_aidants_qs.count()
-        organisations_using_ac_count = (
-            operational_aidants_qs.values("organisation").distinct().count()
-        )
+        aidants_count = self.active_aidants_qs.count()
 
         data, data_total = self.get_demarches_stats()
         demarches_transcription = [
@@ -192,31 +194,21 @@ class StatistiquesView(TemplateView):
         mandats_evolution_data = get_monthly_series(
             mandats_qs, "creation_date", months=MANDATS_EVOLUTION_MONTHS
         )
-        mandats_evolution_transcription = [
-            {"month": month, "value": value}
-            for month, value in zip(
-                mandats_evolution_data["labels"], mandats_evolution_data["values"]
-            )
-        ]
+        mandats_evolution_transcription = _build_evolution_transcription(
+            mandats_evolution_data
+        )
         demarches_evolution_data = get_monthly_series(
             self.autorisation_use_qs, "creation_date", months=DEMARCHES_EVOLUTION_MONTHS
         )
-        demarches_evolution_transcription = [
-            {"month": month, "value": value}
-            for month, value in zip(
-                demarches_evolution_data["labels"], demarches_evolution_data["values"]
-            )
-        ]
+        demarches_evolution_transcription = _build_evolution_transcription(
+            demarches_evolution_data
+        )
         operational_aidants_evolution_data = get_operational_aidants_monthly_series(
             months=OPERATIONAL_AIDANTS_EVOLUTION_MONTHS
         )
-        operational_aidants_evolution_transcription = [
-            {"month": month, "value": value}
-            for month, value in zip(
-                operational_aidants_evolution_data["labels"],
-                operational_aidants_evolution_data["values"],
-            )
-        ]
+        operational_aidants_evolution_transcription = _build_evolution_transcription(
+            operational_aidants_evolution_data
+        )
         demarches_realisees_since_date = (
             self.autorisation_use_qs.order_by("creation_date")
             .values_list("creation_date", flat=True)
@@ -227,9 +219,11 @@ class StatistiquesView(TemplateView):
             **kwargs,
             usage_section={
                 "Démarches réalisées": data_total,
-                "Personnes accompagnées": usagers_helped_count,
                 "Mandats créés": mandat_count,
                 "Mandats actifs": active_mandat_count,
+                "Aidants habilités": aidants_count,
+                "Structures habilitées": organisations_accredited_count,
+                "Personnes accompagnées": usagers_helped_count,
             },
             data=data,
             demarches_transcription=demarches_transcription,
@@ -244,18 +238,6 @@ class StatistiquesView(TemplateView):
                 operational_aidants_evolution_transcription
             ),
             demarches_realisees_since_date=demarches_realisees_since_date,
-            deployment_section=(
-                {
-                    "Aidants habilités": aidants_count,
-                    "Utilisateurs d'Aidants connect": operational_aidants_count,
-                },
-                {
-                    "Structures habilitées": organisations_accredited_count,
-                    "Structures utilisatrices de l'outil Aidants Connect": (
-                        organisations_using_ac_count
-                    ),
-                },
-            ),
         )
 
 

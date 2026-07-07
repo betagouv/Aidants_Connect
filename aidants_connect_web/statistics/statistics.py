@@ -52,16 +52,34 @@ def _month_keys_between(start: date, end: date) -> list[tuple[int, int]]:
     return keys
 
 
+def _cumulate(values: list[int], baseline: int = 0) -> list[int]:
+    cumulative: list[int] = []
+    running = baseline
+    for value in values:
+        running += value
+        cumulative.append(running)
+    return cumulative
+
+
 def get_monthly_series(
     qs: QuerySet, date_field: str, months: int | None = None
 ) -> dict[str, list]:
+    """Build a monthly series for a dated-event queryset.
+
+    Returns, per month:
+    - ``values``: the per-month flow (new events that month);
+    - ``cumulative``: the running total (line), seeded with everything that
+      happened before the window so the curve reflects real all-time totals.
+    """
     tz = timezone.get_current_timezone()
     month_keys: list[tuple[int, int]] | None = None
+    baseline = 0
 
     if months is not None:
         current_month = timezone.localdate().replace(day=1)
         end_month = current_month - relativedelta(months=1)
         start_month = end_month - relativedelta(months=months - 1)
+        baseline = qs.filter(**{f"{date_field}__date__lt": start_month}).count()
         qs = qs.filter(
             **{
                 f"{date_field}__date__gte": start_month,
@@ -83,9 +101,12 @@ def get_monthly_series(
     }
 
     if month_keys is not None:
+        monthly = [counts_by_month.get(key, 0) for key in month_keys]
         return {
             "labels": [_format_month(year, month) for year, month in month_keys],
-            "values": [counts_by_month.get(key, 0) for key in month_keys],
+            "values": monthly,
+            "monthly": monthly,
+            "cumulative": _cumulate(monthly, baseline),
         }
 
     labels: list[str] = []
@@ -93,24 +114,39 @@ def get_monthly_series(
     for year, month in sorted(counts_by_month):
         labels.append(_format_month(year, month))
         values.append(counts_by_month[(year, month)])
-    return {"labels": labels, "values": values}
+    return {
+        "labels": labels,
+        "values": values,
+        "monthly": values,
+        "cumulative": _cumulate(values),
+    }
 
 
 def get_operational_aidants_monthly_series(
     months: int = OPERATIONAL_AIDANTS_EVOLUTION_MONTHS,
 ) -> dict[str, list]:
-    """Build a monthly series of operational aidants from stored snapshots.
+    """Build a monthly series of accredited aidants from stored snapshots.
 
-    ``number_operational_aidants`` is a state metric (not a dated event), so it
-    cannot be rebuilt with ``get_monthly_series``. Instead we rely on the
-    periodic ``AidantStatistiques`` snapshots: for each of the last ``months``
-    complete months we keep the latest snapshot value, then forward-fill months
-    without a snapshot with the previous known value.
+    Uses the same metric as the public "Aidants habilités" counter
+    (``number_aidant_can_create_mandat``). This is a state metric (not a dated
+    event), so it cannot be rebuilt with ``get_monthly_series``. Instead we rely
+    on the periodic ``AidantStatistiques`` snapshots: for each of the last
+    ``months`` complete months we keep the latest snapshot value, then
+    forward-fill months without a snapshot with the previous known value.
     """
     tz = timezone.get_current_timezone()
     current_month = timezone.localdate().replace(day=1)
     end_month = current_month - relativedelta(months=1)
     start_month = end_month - relativedelta(months=months - 1)
+
+    # Level just before the window, used both to forward-fill the first months
+    # and to compute the first month-over-month delta.
+    baseline = (
+        AidantStatistiques.objects.filter(created_at__date__lt=start_month)
+        .order_by("created_at")
+        .values_list("number_aidant_can_create_mandat", flat=True)
+        .last()
+    ) or 0
 
     snapshots = (
         AidantStatistiques.objects.filter(
@@ -118,7 +154,7 @@ def get_operational_aidants_monthly_series(
             created_at__date__lt=current_month,
         )
         .annotate(month=TruncMonth("created_at", tzinfo=tz))
-        .values("month", "number_operational_aidants", "created_at")
+        .values("month", "number_aidant_can_create_mandat", "created_at")
         .order_by("month", "created_at")
     )
 
@@ -126,19 +162,31 @@ def get_operational_aidants_monthly_series(
     for entry in snapshots:
         if entry["month"] is None:
             continue
-        value_by_month[_month_key(entry["month"])] = entry["number_operational_aidants"]
+        value_by_month[_month_key(entry["month"])] = entry[
+            "number_aidant_can_create_mandat"
+        ]
 
     month_keys = _month_keys_between(start_month, end_month)
-    values: list[int] = []
-    last_value = 0
+    # ``level`` is already a cumulative stock (the snapshot value at each month);
+    # ``monthly`` is the month-over-month increase derived from it.
+    level: list[int] = []
+    last_value = baseline
     for key in month_keys:
         if key in value_by_month:
             last_value = value_by_month[key]
-        values.append(last_value)
+        level.append(last_value)
+
+    monthly: list[int] = []
+    previous = baseline
+    for value in level:
+        monthly.append(value - previous)
+        previous = value
 
     return {
         "labels": [_format_month(year, month) for year, month in month_keys],
-        "values": values,
+        "values": level,
+        "monthly": monthly,
+        "cumulative": level,
     }
 
 
