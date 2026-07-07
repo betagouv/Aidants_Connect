@@ -18,7 +18,6 @@ from aidants_connect_web.tests.factories import (
     CarteTOTPFactory,
     MandatFactory,
     OrganisationFactory,
-    TOTPDeviceFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import service
@@ -271,50 +270,14 @@ class StatistiquesTests(TestCase):
         # aidants should be non-staff_organisation
         response = self.client.get(reverse("statistiques"))
         self.assertEqual(
-            response.context["deployment_section"][0]["Aidants habilités"],
+            response.context["usage_section"]["Aidants habilités"],
             1,
             "Should count aidant_thierry alone",
         )
         self.assertEqual(
-            response.context["deployment_section"][0]["Utilisateurs d'Aidants connect"],
-            1,
-            "Should count aidant_thierry alone (operational aidant with carte TOTP)",
-        )
-        self.assertEqual(
-            response.context["deployment_section"][1][
-                "Structures utilisatrices de l'outil Aidants Connect"
-            ],
+            response.context["usage_section"]["Structures habilitées"],
             1,
             "Should count aidant_thierry's organisation alone",
-        )
-
-    def test_stats_show_the_correct_number_of_aidants_totp_device_only(self):
-        # aidants should be non-staff_organisation
-
-        aidant_totp = AidantFactory(
-            can_create_mandats=True,
-            last_name="Dupont",
-            is_active=True,
-        )
-        TOTPDeviceFactory(user=aidant_totp)
-
-        response = self.client.get(reverse("statistiques"))
-        self.assertEqual(
-            response.context["deployment_section"][0]["Aidants habilités"],
-            2,
-            "Should count aidant_thierry and aidant_totp",
-        )
-        self.assertEqual(
-            response.context["deployment_section"][0]["Utilisateurs d'Aidants connect"],
-            1,
-            "Should count only aidant_thierry (TOTP app without carte TOTP is not operational)",  # noqa: E501
-        )
-        self.assertEqual(
-            response.context["deployment_section"][1][
-                "Structures utilisatrices de l'outil Aidants Connect"
-            ],
-            1,
-            "Should still count only aidant_thierry's organisation",
         )
 
     def test_stats_show_the_correct_number_of_mandats_non_staff_organisation(self):
@@ -339,12 +302,12 @@ class StatistiquesTests(TestCase):
     def test_operational_aidants_evolution_uses_snapshots(self):
         # One snapshot in 2026-04
         with freeze_time("2026-04-10"):
-            AidantStatistiques.objects.create(number_operational_aidants=3)
+            AidantStatistiques.objects.create(number_aidant_can_create_mandat=3)
         # Two snapshots in 2026-05: the latest of the month must win
         with freeze_time("2026-05-05"):
-            AidantStatistiques.objects.create(number_operational_aidants=5)
+            AidantStatistiques.objects.create(number_aidant_can_create_mandat=5)
         with freeze_time("2026-05-20"):
-            AidantStatistiques.objects.create(number_operational_aidants=7)
+            AidantStatistiques.objects.create(number_aidant_can_create_mandat=7)
 
         response = self.client.get(reverse("statistiques"))
         data = response.context["operational_aidants_evolution_data"]
@@ -359,6 +322,41 @@ class StatistiquesTests(TestCase):
         # 2026-03 has no earlier snapshot to forward-fill from
         self.assertEqual(data["labels"][-3], "03/2026")
         self.assertEqual(data["values"][-3], 0)
+        # The line is the cumulative stock (same as the snapshot level)
+        self.assertEqual(data["cumulative"], data["values"])
+        # The bars are the month-over-month increase derived from the level
+        self.assertEqual(data["monthly"][-1], 4)
+        self.assertEqual(data["monthly"][-2], 3)
+        self.assertEqual(data["monthly"][-3], 0)
+
+    @freeze_time("2026-06-15")
+    def test_mandats_evolution_exposes_monthly_and_cumulative(self):
+        orga = OrganisationFactory()
+        # Two mandats before the 24-month window feed the cumulative baseline
+        for _ in range(2):
+            MandatFactory(
+                organisation=orga,
+                usager=UsagerFactory(),
+                creation_date=datetime(2020, 1, 1, tzinfo=timezone.utc),
+            )
+        # One mandat during the last complete month (2026-05)
+        MandatFactory(
+            organisation=orga,
+            usager=UsagerFactory(),
+            creation_date=datetime(2026, 5, 10, tzinfo=timezone.utc),
+        )
+
+        response = self.client.get(reverse("statistiques"))
+        data = response.context["mandats_evolution_data"]
+
+        self.assertEqual(data["labels"][-1], "05/2026")
+        # Monthly flow only counts the event of that month
+        self.assertEqual(data["monthly"][-1], 1)
+        # Cumulative includes the two pre-window mandats as a baseline
+        self.assertEqual(data["cumulative"][-1], data["cumulative"][-2] + 1)
+        self.assertGreaterEqual(data["cumulative"][0], 2)
+        # Cumulative is monotonically non-decreasing
+        self.assertEqual(data["cumulative"], sorted(data["cumulative"]))
 
     def test_usager_helped_a_long_time_ago_not_counted_as_recent(self):
         # "statistiques_demarches": demarches_aggregation,

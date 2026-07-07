@@ -7,6 +7,11 @@ function getChartColor () {
     return style.getPropertyValue("--artwork-minor-blue-france")
 }
 
+function getCssColor (varName, fallback) {
+    const value = getComputedStyle(document.body).getPropertyValue(varName)
+    return value.trim() || fallback
+}
+
 function initSimpleBarChart ({ dataId, canvasId, datasetLabel, horizontal = false }) {
     const dataNode = document.querySelector(dataId)
     const canvas = document.querySelector(canvasId)
@@ -204,31 +209,48 @@ function initEvolutionChart ({ dataId, canvasId, label }) {
 
     const ctx = canvas.getContext("2d")
     const style = getComputedStyle(document.body)
-    const color = getChartColor()
+    const lineColor = getChartColor()
+    const barColor = getCssColor("--artwork-minor-green-emeraude", "#34cb6a")
 
     window.Chart.defaults.font.family = style.fontFamily
     window.Chart.defaults.font.size = style.fontSize
 
     new window.Chart(ctx, {
-        type: "line",
+        type: "bar",
         data: {
             labels: data.labels,
-            datasets: [{
-                label,
-                data: data.values,
-                borderColor: color,
-                backgroundColor: color,
-                fill: false,
-                tension: 0.2,
-                pointRadius: 3,
-            }]
+            datasets: [
+                {
+                    type: "line",
+                    label: `${label} (total cumulé)`,
+                    data: data.cumulative,
+                    yAxisID: "yCumulative",
+                    borderColor: lineColor,
+                    backgroundColor: lineColor,
+                    fill: false,
+                    tension: 0.2,
+                    pointRadius: 2,
+                    order: 0,
+                },
+                {
+                    type: "bar",
+                    label: "Évolution du mois",
+                    data: data.monthly,
+                    yAxisID: "yMonthly",
+                    backgroundColor: barColor,
+                    borderColor: barColor,
+                    order: 1,
+                },
+            ]
         },
         options: {
             responsive: true,
             aspectRatio: 2.5,
             maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
             plugins: {
-                legend: { display: false },
+                legend: { display: true },
+                tooltip: { enabled: true },
             },
             scales: {
                 x: {
@@ -239,9 +261,19 @@ function initEvolutionChart ({ dataId, canvasId, label }) {
                         autoSkip: false,
                     },
                 },
-                y: {
+                yCumulative: {
+                    type: "linear",
+                    position: "left",
                     beginAtZero: true,
                     grid: { display: false },
+                    title: { display: true, text: "Total cumulé" },
+                },
+                yMonthly: {
+                    type: "linear",
+                    position: "right",
+                    beginAtZero: true,
+                    grid: { display: false },
+                    title: { display: true, text: "Évolution du mois" },
                 },
             }
         }
@@ -269,7 +301,7 @@ function chartInit () {
     initEvolutionChart({
         dataId: "#operational-aidants-evolution-data",
         canvasId: "#operational-aidants-evolution-chart",
-        label: "Aidants opérationnels",
+        label: "Aidants habilités",
     })
 }
 

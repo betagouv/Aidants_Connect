@@ -22,7 +22,7 @@
       <div class="stats-container">
         <ul class="fr-grid-row fr-grid-row--gutters fr-raw-list">
         {% for label, count in usage_section.items %}
-          <li class="stat-col fr-col-12 fr-col-md-3 fr-m-0">
+          <li class="stat-col fr-col-12 fr-col-md-4 fr-m-0">
             <span class="stat-number">{{ count }}</span>
             <span class="stat-label-with-info">
               <span>{{ label }}</span><br>
@@ -41,7 +41,7 @@
     <section>
       <h2 class="fr-title-icon-left fr-icon-statistics-evolution">Évolution des mandats créés</h2>
       <p class="fr-text--sm">
-        Nombre de mandats créés via Aidants Connect sur les 24 derniers mois complets.
+        Total cumulé de mandats créés via Aidants Connect (courbe) et nombre créé chaque mois (barres), sur les 24 derniers mois complets.
       </p>
       <div class="stats-container">
         <canvas id="mandats-evolution-chart" aria-label="Évolution mensuelle du nombre de mandats créés" role="img"></canvas>
@@ -68,12 +68,14 @@
                         <caption>Évolution mensuelle du nombre de mandats créés</caption>
                         <tr>
                           <th scope="col">Mois</th>
-                          <th scope="col">Nombre de mandats créés</th>
+                          <th scope="col">Mandats créés dans le mois</th>
+                          <th scope="col">Total cumulé</th>
                         </tr>
                         {% for entry in mandats_evolution_transcription %}
                           <tr>
                             <th scope="row">{{ entry.month }}</th>
-                            <td>{{ entry.value }}</td>
+                            <td>{{ entry.monthly }}</td>
+                            <td>{{ entry.cumulative }}</td>
                           </tr>
                         {% endfor %}
                       </table>
@@ -93,7 +95,7 @@
         {% include "public_website/_stat_info_tooltip.html" with tooltip_id="demarches-evolution-info" sr_only_label="Informations sur l'évolution des démarches réalisées" tooltip_content="Connexions réalisées via Aidants Connect - pour suivre et réaliser une ou plusieurs démarches administratives sur les 24 derniers mois complets" %}
       </h2>
       <p class="fr-text--sm">
-        Nombre de démarches administratives réalisées via Aidants Connect sur les 24 derniers mois complets.
+        Total cumulé de démarches réalisées via Aidants Connect (courbe) et nombre réalisé chaque mois (barres), sur les 24 derniers mois complets.
       </p>
       <div class="stats-container">
         <canvas id="demarches-evolution-chart" aria-label="Évolution mensuelle du nombre de démarches réalisées" role="img"></canvas>
@@ -120,12 +122,14 @@
                         <caption>Évolution mensuelle du nombre de démarches réalisées</caption>
                         <tr>
                           <th scope="col">Mois</th>
-                          <th scope="col">Nombre de démarches réalisées</th>
+                          <th scope="col">Démarches réalisées dans le mois</th>
+                          <th scope="col">Total cumulé</th>
                         </tr>
                         {% for entry in demarches_evolution_transcription %}
                           <tr>
                             <th scope="row">{{ entry.month }}</th>
-                            <td>{{ entry.value }}</td>
+                            <td>{{ entry.monthly }}</td>
+                            <td>{{ entry.cumulative }}</td>
                           </tr>
                         {% endfor %}
                       </table>
@@ -140,9 +144,12 @@
     </section>
 
     <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-evolution">Évolution des utilisateurs d'Aidants Connect</h2>
+      <h2 class="fr-title-icon-left fr-icon-statistics-evolution">Évolution des aidants habilités</h2>
+      <p class="fr-text--sm">
+        Total cumulé d’aidants habilités (courbe) et évolution chaque mois (barres), sur les 24 derniers mois complets.
+      </p>
       <div class="stats-container">
-        <canvas id="operational-aidants-evolution-chart" aria-label="Évolution mensuelle du nombre d’aidants opérationnels" role="img"></canvas>
+        <canvas id="operational-aidants-evolution-chart" aria-label="Évolution mensuelle du nombre d’aidants habilités" role="img"></canvas>
       </div>
       <div class="fr-transcription fr-mb-4w" id="operational-aidants-evolution-chart-transcription">
         <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-operational-aidants-evolution-chart-transcription">Transcription</button>
@@ -161,17 +168,19 @@
                       <button aria-controls="fr-transcription-modal-operational-aidants-evolution-chart-transcription" title="Fermer" type="button" class="fr-btn--close fr-btn">Fermer</button>
                     </div>
                     <div class="fr-modal__content">
-                      <h1 id="fr-transcription-modal-title-operational-aidants-evolution-chart-transcription" class="fr-modal__title">Transcription du graphique d’évolution des aidants opérationnels</h1>
+                      <h1 id="fr-transcription-modal-title-operational-aidants-evolution-chart-transcription" class="fr-modal__title">Transcription du graphique d’évolution des aidants habilités</h1>
                       <table>
-                        <caption>Évolution mensuelle du nombre d’aidants opérationnels</caption>
+                        <caption>Évolution mensuelle du nombre d’aidants habilités</caption>
                         <tr>
                           <th scope="col">Mois</th>
-                          <th scope="col">Nombre d’aidants opérationnels</th>
+                          <th scope="col">Évolution sur le mois</th>
+                          <th scope="col">Total</th>
                         </tr>
                         {% for entry in operational_aidants_evolution_transcription %}
                           <tr>
                             <th scope="row">{{ entry.month }}</th>
-                            <td>{{ entry.value }}</td>
+                            <td>{{ entry.monthly }}</td>
+                            <td>{{ entry.cumulative }}</td>
                           </tr>
                         {% endfor %}
                       </table>
@@ -277,24 +286,6 @@
             </div>
           </dialog>
         </div>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-use">Déploiement</h2>
-      <div class="fr-grid-row fr-grid-row--gutters">
-        {% for section in deployment_section %}
-          <div class="fr-col-12 fr-col-md-6">
-            <ul class="stats-container fr-grid-row fr-raw-list">
-              {% for label, count in section.items %}
-                <li class="stat-col fr-col-12 fr-col-sm-6">
-                  <span class="stat-number">{{ count }}</span>
-                  {{ label }}
-                </li>
-              {% endfor %}
-            </ul>
-          </div>
-        {% endfor %}
       </div>
     </section>
   </div>
