@@ -23,127 +23,93 @@
         <h2 id="actions-rapides-referent-title" class="fr-sr-only">Actions rapides</h2>
           <ul class="fr-grid-row fr-grid-row--gutters fr-raw-list">
             <li class="fr-col-md-3 fr-col-12">
-          <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
-            <div class="fr-tile__body">
-              <div class="fr-tile__content">
-                <p class="fr-tile__title">
-                  <a href="{% url 'espace_referent:aidants' %}">Gérer les comptes des aidants</a>
-                </p>
+              <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <p class="fr-tile__title">
+                      <a href="{% url 'espace_referent:aidants' %}">Gérer les comptes des aidants</a>
+                    </p>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogramm">
+                    <img
+                      class="fr-responsive-img"
+                      src="{% static 'dsfr/dist/artwork/pictograms/system/success.svg' %}"
+                      alt=""
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="fr-tile__header">
-              <div class="fr-tile__pictogramm">
-                <img
-                  class="fr-responsive-img"
-                  src="{% static 'dsfr/dist/artwork/pictograms/system/success.svg' %}"
-                  alt=""
-                />
-              </div>
-            </div>
-          </div>
             </li>
             <li class="fr-col-md-3 fr-col-12">
-          <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
-            <div class="fr-tile__body">
-              <div class="fr-tile__content">
-                <p class="fr-tile__title">
-                  <a href="{% url 'espace_referent:aidant_new_profile' %}">Habiliter de nouveaux aidants</a>
-                </p>
+              <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <p class="fr-tile__title">
+                      <a href="{% url 'espace_referent:aidant_new_profile' %}">Habiliter de nouveaux aidants</a>
+                    </p>
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogramm">
+                    <img
+                      class="fr-responsive-img"
+                      src="{% static 'dsfr/dist/artwork/pictograms/digital/avatar.svg' %}"
+                      alt=""
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="fr-tile__header">
-              <div class="fr-tile__pictogramm">
-                <img
-                  class="fr-responsive-img"
-                  src="{% static 'dsfr/dist/artwork/pictograms/digital/avatar.svg' %}"
-                  alt=""
-                />
-              </div>
-            </div>
-          </div>
             </li>
             <li class="fr-col-md-3 fr-col-12">
-          <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
-            <div class="fr-tile__body">
-              <div class="fr-tile__content">
-                <p class="fr-tile__title">
-                  <a href="{% url 'espace_referent:referents' %}">Désigner un co-référent</a>
-                </p>
+              <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <p class="fr-tile__title">
+                      <a href="{% url 'espace_referent:referents' %}">Désigner un co-référent</a>
+                    </p>
+                    <p class="fr-tile__detail">
+                      Assurez la continuité du suivi en cas d'absence ou de départ.
+                    </p>
+                    {% if not has_coreferent %}
+                      <p class="fr-badge fr-badge--pink-tuile fr-icon-flashlight-fill fr-badge--icon-left fr-mb-1w">À configurer</p>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogramm">
+                    <img
+                      class="fr-responsive-img"
+                      src="{% static 'dsfr/dist/artwork/pictograms/environment/human-cooperation.svg' %}"
+                      alt=""
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="fr-tile__header">
-              <div class="fr-tile__pictogramm">
-                <img
-                  class="fr-responsive-img"
-                  src="{% static 'dsfr/dist/artwork/pictograms/environment/human-cooperation.svg' %}"
-                  alt=""
-                />
-              </div>
-            </div>
-          </div>
             </li>
             <li class="fr-col-md-3 fr-col-12">
-          <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
-            <div class="fr-tile__body">
-              <div class="fr-tile__content">
-                <p class="fr-tile__title">
-                  <a href="{% url 'espace_referent:organisation' %}">Configurer les thématiques</a>
-                </p>
-                {% if organisation.demarches_need_configuration %}
-                  <p class="fr-badge fr-badge--pink-tuile fr-icon-flashlight-fill fr-badge--icon-left fr-mb-1w">À configurer</p>
-                {% endif %}
+              <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <p class="fr-tile__title">
+                      <a href="{% url 'espace_referent:organisation' %}">Définir vos thématiques</a>
+                    </p>
+                    {% if organisation.demarches_need_configuration %}
+                      <p class="fr-badge fr-badge--pink-tuile fr-icon-flashlight-fill fr-badge--icon-left fr-mb-1w">À configurer</p>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="fr-tile__header">
+                  <div class="fr-tile__pictogramm">
+                    <img
+                      class="fr-responsive-img"
+                      src="{% static 'dsfr/dist/artwork/pictograms/system/system.svg' %}"
+                      alt=""
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="fr-tile__header">
-              <div class="fr-tile__pictogramm">
-                <img
-                  class="fr-responsive-img"
-                  src="{% static 'dsfr/dist/artwork/pictograms/system/system.svg' %}"
-                  alt=""
-                />
-              </div>
-            </div>
-          </div>
-            </li>
-            <li class="fr-col-md-3 fr-col-12" hidden>
-          <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
-            <div class="fr-tile__body">
-              <div class="fr-tile__content">
-                <p class="fr-tile__title">
-                  <a href="#">Gérer les cartes </a>
-                </p>
-              </div>
-            </div>
-            <div class="fr-tile__header">
-              <div class="fr-tile__pictogramm">
-                <img
-                  class="fr-responsive-img"
-                  src="{% static 'dsfr/dist/artwork/pictograms/document/national-identity-card.svg' %}"
-                  alt=""
-                />
-              </div>
-            </div>
-          </div>
-            </li>
-            <li class="fr-col-md-3 fr-col-12">
-          <div class="fr-tile fr-tile--sm fr-tile--horizontal fr-enlarge-link">
-            <div class="fr-tile__body">
-              <div class="fr-tile__content">
-                <p class="fr-tile__title">
-                  {% mailto AC_CONTACT_EMAIL link_text="Contacter l'équipe" %}
-                </p>
-              </div>
-            </div>
-            <div class="fr-tile__header">
-              <div class="fr-tile__pictogramm">
-                <img
-                  class="fr-responsive-img"
-                  src="{% static 'dsfr/dist/artwork/pictograms/digital/mail-send.svg' %}"
-                  alt=""
-                />
-              </div>
-            </div>
-          </div>
             </li>
           </ul>
       </section>

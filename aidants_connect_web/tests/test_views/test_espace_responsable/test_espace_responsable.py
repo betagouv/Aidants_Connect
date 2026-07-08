@@ -12,6 +12,7 @@ from aidants_connect_web.constants import OTP_APP_DEVICE_NAME, ReferentRequestSt
 from aidants_connect_web.models.other_models import CoReferentNonAidantRequest
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    CoReferentNonAidantRequestFactory,
     HabilitationRequestFactory,
     OrganisationFactory,
 )
@@ -111,9 +112,13 @@ class EspaceResponsableOrganisationPage(TestCase):
         self.assertTrue(self.responsable_tom.organisation.demarches_need_configuration)
         self.client.force_login(self.responsable_tom)
         response = self.client.get(reverse("espace_referent:home"))
-        self.assertContains(response, "À configurer")
+        # Both the démarches and the co-referent badges are displayed
+        self.assertFalse(response.context["has_coreferent"])
+        self.assertContains(response, "À configurer", count=2)
 
     def test_home_hides_demarches_to_configure_label_after_validation_with_all(self):
+        # Designate a co-referent so that only the démarches badge is under test
+        self.responsable_tom.organisation.responsables.add(AidantFactory())
         self.client.force_login(self.responsable_tom)
         response = self.client.post(
             reverse("espace_referent:organisation"),
@@ -130,9 +135,60 @@ class EspaceResponsableOrganisationPage(TestCase):
         organisation.save(
             update_fields=("allowed_demarches", "demarches_configured_at")
         )
+        # Designate a co-referent so that only the démarches badge is under test
+        organisation.responsables.add(AidantFactory())
         self.client.force_login(self.responsable_tom)
         response = self.client.get(reverse("espace_referent:home"))
         self.assertNotContains(response, "À configurer")
+
+    def _configure_demarches(self):
+        # Configure démarches so that the démarches badge is hidden and only the
+        # co-referent badge can appear on the home page
+        organisation = self.responsable_tom.organisation
+        organisation.allowed_demarches = ["papiers"]
+        organisation.demarches_configured_at = timezone.now()
+        organisation.save(
+            update_fields=("allowed_demarches", "demarches_configured_at")
+        )
+
+    def test_home_shows_coreferent_label_when_no_coreferent(self):
+        self._configure_demarches()
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertFalse(response.context["has_coreferent"])
+        self.assertContains(response, "À configurer")
+
+    def test_home_hides_coreferent_label_when_other_responsable_designated(self):
+        self._configure_demarches()
+        self.responsable_tom.organisation.responsables.add(AidantFactory())
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertTrue(response.context["has_coreferent"])
+        self.assertNotContains(response, "À configurer")
+
+    def test_home_hides_coreferent_label_when_pending_request(self):
+        self._configure_demarches()
+        CoReferentNonAidantRequestFactory(
+            organisation=self.responsable_tom.organisation,
+            status=ReferentRequestStatuses.STATUS_NEW,
+        )
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertTrue(response.context["has_coreferent"])
+        self.assertNotContains(response, "À configurer")
+
+    def test_home_shows_coreferent_label_when_request_already_validated(self):
+        self._configure_demarches()
+        # A validated request is materialized as a responsable, so on its own it
+        # must not be counted as a designated co-referent
+        CoReferentNonAidantRequestFactory(
+            organisation=self.responsable_tom.organisation,
+            status=ReferentRequestStatuses.STATUS_VALIDATED,
+        )
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertFalse(response.context["has_coreferent"])
+        self.assertContains(response, "À configurer")
 
     def test_I_must_select_at_least_one_demarche(self):
         # All demarches are allowed

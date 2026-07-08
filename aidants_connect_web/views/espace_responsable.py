@@ -178,9 +178,18 @@ class HomeView(DetailView, FormView):
         return self.object
 
     def get_context_data(self, **kwargs):
+        # A co-referent is either another responsable of the organisation
+        # or a pending (not yet validated) co-referent request.
+        has_coreferent = (
+            self.object.responsables.exclude(pk=self.referent.pk).exists()
+            or CoReferentNonAidantRequest.objects.filter(organisation=self.object)
+            .exclude(status=ReferentRequestStatuses.STATUS_VALIDATED)
+            .exists()
+        )
         return {
             **super().get_context_data(**kwargs),
             "referent": self.referent,
+            "has_coreferent": has_coreferent,
         }
 
 
