@@ -8,10 +8,12 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from faker import Faker
 
 from aidants_connect import settings
+from aidants_connect_common.tests.factories import FormationFactory
 from aidants_connect_web.constants import OTP_APP_DEVICE_NAME, ReferentRequestStatuses
 from aidants_connect_web.models.other_models import CoReferentNonAidantRequest
 from aidants_connect_web.tests.factories import (
     AidantFactory,
+    CarteTOTPFactory,
     CoReferentNonAidantRequestFactory,
     HabilitationRequestFactory,
     OrganisationFactory,
@@ -189,6 +191,67 @@ class EspaceResponsableOrganisationPage(TestCase):
         response = self.client.get(reverse("espace_referent:home"))
         self.assertFalse(response.context["has_coreferent"])
         self.assertContains(response, "À configurer")
+
+    def test_home_hides_finalization_label_when_nothing_to_finalize(self):
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertEqual(0, response.context["aidants_to_train_count"])
+        self.assertEqual(0, response.context["aidants_without_otp_count"])
+        self.assertNotContains(response, "À finaliser")
+
+    def test_home_shows_finalization_label_for_aidants_to_train(self):
+        HabilitationRequestFactory(
+            organisation=self.responsable_tom.organisation,
+            status=ReferentRequestStatuses.STATUS_PROCESSING,
+        )
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertEqual(1, response.context["aidants_to_train_count"])
+        self.assertContains(response, "À finaliser")
+        self.assertContains(response, "1 aidant à former")
+
+    def test_home_excludes_request_registered_to_formation_from_train_count(self):
+        request = HabilitationRequestFactory(
+            organisation=self.responsable_tom.organisation,
+            status=ReferentRequestStatuses.STATUS_PROCESSING,
+        )
+        FormationFactory().register_attendant(request)
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertEqual(0, response.context["aidants_to_train_count"])
+
+    def test_home_shows_finalization_label_for_aidants_without_otp(self):
+        AidantFactory(organisation=self.responsable_tom.organisation)
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertEqual(1, response.context["aidants_without_otp_count"])
+        self.assertContains(response, "À finaliser")
+        self.assertContains(response, "1 connexion OTP à activer")
+
+    def test_home_excludes_aidants_with_configured_card_from_otp_count(self):
+        aidant = AidantFactory(organisation=self.responsable_tom.organisation)
+        CarteTOTPFactory(aidant=aidant).get_or_create_totp_device(confirmed=True)
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertEqual(0, response.context["aidants_without_otp_count"])
+
+    def test_home_excludes_aidants_with_mobile_app_from_otp_count(self):
+        aidant = AidantFactory(organisation=self.responsable_tom.organisation)
+        TOTPDevice.objects.create(
+            user=aidant,
+            name=OTP_APP_DEVICE_NAME % aidant.pk,
+            confirmed=True,
+        )
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertEqual(0, response.context["aidants_without_otp_count"])
+
+    def test_home_excludes_referent_from_otp_count(self):
+        # The referent has no TOTP card but must not be counted as an aidant
+        # needing an OTP association
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertEqual(0, response.context["aidants_without_otp_count"])
 
     def test_I_must_select_at_least_one_demarche(self):
         # All demarches are allowed
