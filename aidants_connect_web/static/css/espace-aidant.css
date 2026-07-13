@@ -75,3 +75,47 @@ details[name="mandat-action"] .details-content a {
 .organisation-thematique .fr-tile:has(input[checked]) {
   background-color: var(--blue-france-925-125);
 }
+
+/*
+ * DSFR draws a blue accent line at the bottom of the tile through the enlarged
+ * link's `::before` pseudo-element. Override its color to pink-tuile for the
+ * referent home quick-actions tiles.
+ */
+section[aria-labelledby="actions-rapides-referent-title"] .fr-tile__title a::before {
+  background-image: linear-gradient(0deg,
+      var(--border-plain-pink-tuile),
+      var(--border-plain-pink-tuile));
+}
+
+/*
+ * The quick-actions tiles have a custom layout to display the pictogram and the
+ * badge side by side.
+ */
+section[aria-labelledby="actions-rapides-referent-title"] .fr-tile__content {
+  align-items: stretch;
+}
+
+section[aria-labelledby="actions-rapides-referent-title"] .referent-action-tile__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+section[aria-labelledby="actions-rapides-referent-title"] .referent-action-tile__header .fr-tile__pictogram {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+section[aria-labelledby="actions-rapides-referent-title"] .referent-action-tile__header .fr-badge {
+  flex-shrink: 0;
+  margin: 0 0 0 auto;
+}
+
+section[aria-labelledby="actions-rapides-referent-title"] .fr-tile__title,
+section[aria-labelledby="actions-rapides-referent-title"] .fr-tile__detail {
+  width: 100%;
+  text-align: left;
+}
