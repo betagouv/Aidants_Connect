@@ -178,9 +178,41 @@ class HomeView(DetailView, FormView):
         return self.object
 
     def get_context_data(self, **kwargs):
+        # A co-referent is either another responsable of the organisation
+        # or a pending (not yet validated) co-referent request.
+        has_coreferent = (
+            self.object.responsables.exclude(pk=self.referent.pk).exists()
+            or CoReferentNonAidantRequest.objects.filter(organisation=self.object)
+            .exclude(status=ReferentRequestStatuses.STATUS_VALIDATED)
+            .exists()
+        )
+        # Aidants whose eligibility is validated but who are not yet registered
+        # to a formation session
+        aidants_to_train_count = (
+            self.object.habilitation_requests.filter(
+                status__in=[
+                    ReferentRequestStatuses.STATUS_PROCESSING.value,
+                    ReferentRequestStatuses.STATUS_PROCESSING_P2P.value,
+                ],
+                formations__isnull=True,
+                created_by_fne=False,
+            )
+            .distinct()
+            .count()
+        )
+        # Active aidants (excluding referents) allowed to create mandats but
+        # without any configured OTP device (mobile app)
+        aidants_without_otp_count = self.object.aidants_not_responsables.filter(
+            is_active=True,
+            can_create_mandats=True,
+            totpdevice__isnull=True,
+        ).count()
         return {
             **super().get_context_data(**kwargs),
             "referent": self.referent,
+            "has_coreferent": has_coreferent,
+            "aidants_to_train_count": aidants_to_train_count,
+            "aidants_without_otp_count": aidants_without_otp_count,
         }
 
 
