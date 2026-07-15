@@ -6,10 +6,6 @@
   mask-image: url(/static/images/icons/statistiques-type-demarche.svg);
 }
 
-.fr-icon-statistics-deployment::before {
-  mask-image: url(/static/images/icons/statistiques-utilisation.svg);
-}
-
 .fr-icon-statistics-evolution::before {
   mask-image: url(/static/images/icons/statistiques-utilisation.svg);
 }
