@@ -56,6 +56,7 @@ django-celery-beat = "==2.9.0"
 django-blocklist = "==3.2.1"
 django = "==4.2.30"
 pytz = "*"
+pynsee = "*"
 
 [dev-packages]
 pipenv = "*"

@@ -25,6 +25,8 @@ from django.utils.translation import gettext as _
 
 import sentry_sdk
 from dsfr.forms import DsfrBaseForm
+from pynsee.sirene import get_sirene_data
+from pynsee.utils import init_conn
 
 from aidants_connect_common.constants import RequestOriginConstants
 from aidants_connect_common.forms import (
@@ -44,8 +46,6 @@ from aidants_connect_habilitation.models import (
 )
 from aidants_connect_web.constants import ReferentRequestStatuses
 from aidants_connect_web.models import HabilitationRequest, OrganisationType
-
-from .insee_utils import get_client_insee_api
 
 
 class AddressValidatableForm(DsfrBaseForm):
@@ -167,12 +167,12 @@ class OrganisationSiretVerificationRequestForm(DsfrBaseForm):
 
     def clean_siret(self):
         siret = self.data["siret"].replace(" ", "")
+        init_conn(sirene_key=settings.NEW_API_INSEE_TOKEN)
         if len(siret) != 14:
             raise ValidationError("Erreur: le siret n'est pas valide")
         try:
-            api = get_client_insee_api()
-            res = api.siret(siret).get()
-            res["etablissement"]["uniteLegale"]["denominationUniteLegale"]
+            res = list(get_sirene_data(str(siret)).itertuples())[0]
+            res.categorieJuridiqueUniteLegale
         except Exception as e:
             sentry_sdk.capture_message(e)
             raise ValidationError(
