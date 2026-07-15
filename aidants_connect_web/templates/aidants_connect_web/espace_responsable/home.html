@@ -2,10 +2,6 @@
 
 {% load ac_common partials static %}
 
-
-
-
-
 {% block title %}Espace Référent - Aidants Connect{% endblock %}
 
 {% block extracss %}
@@ -50,33 +46,10 @@
                           {{ aidants_to_train_count }} aidant{{ aidants_to_train_count|pluralize }} à former<br>
                         {% endif %}
                         {% if aidants_without_otp_count %}
-                          {{ aidants_without_otp_count }} connexion{{ aidants_without_otp_count|pluralize }} OTP à activer
+                          {{ aidants_without_otp_count }} moyen{{ aidants_without_otp_count|pluralize }} de connexion à activer
                         {% endif %}
                       </p>
                     {% endif %}
-                  </div>
-                </div>
-              </div>
-            </li>
-            <li class="fr-col-md-3 fr-col-12">
-              <div class="fr-tile fr-tile--sm fr-enlarge-link">
-                <div class="fr-tile__body">
-                  <div class="fr-tile__content">
-                    <div class="referent-action-tile__header">
-                      <div class="fr-tile__pictogram">
-                        <img
-                          class="fr-responsive-img"
-                          src="{% static 'dsfr/dist/artwork/pictograms/digital/avatar.svg' %}"
-                          alt=""
-                        />
-                      </div>
-                    </div>
-                    <p class="fr-tile__title">
-                      <a href="{% url 'espace_referent:aidant_new_profile' %}">Ajouter un aidant</a>
-                    </p>
-                    <p class="fr-tile__detail">
-                      Ajoutez un nouvel aidant pour lui donner accès à l'outil.
-                    </p>
                   </div>
                 </div>
               </div>
@@ -134,6 +107,29 @@
                     </p>
                     <p class="fr-tile__detail">
                       Limitez le périmètre des mandats créés par vos aidants.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li class="fr-col-md-3 fr-col-12">
+              <div class="fr-tile fr-tile--sm fr-enlarge-link">
+                <div class="fr-tile__body">
+                  <div class="fr-tile__content">
+                    <div class="referent-action-tile__header">
+                      <div class="fr-tile__pictogram">
+                        <img
+                          class="fr-responsive-img"
+                          src="{% static 'dsfr/dist/artwork/pictograms/digital/avatar.svg' %}"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+                    <p class="fr-tile__title">
+                      <a href="{% url 'espace_referent:aidant_new_profile' %}">Ajouter un aidant</a>
+                    </p>
+                    <p class="fr-tile__detail">
+                      Ajoutez un nouvel aidant pour lui donner accès à l'outil.
                     </p>
                   </div>
                 </div>
