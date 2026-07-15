@@ -6,10 +6,6 @@
   mask-image: url(/static/images/icons/statistiques-type-demarche.svg);
 }
 
-.fr-icon-statistics-deployment::before {
-  mask-image: url(/static/images/icons/statistiques-utilisation.svg);
-}
-
 .fr-icon-statistics-evolution::before {
   mask-image: url(/static/images/icons/statistiques-utilisation.svg);
 }
@@ -37,20 +33,6 @@
   color: var(--artwork-minor-blue-france);
   font-size: 3rem;
   line-height: 3.5rem;
-}
-
-#mandats-durees-chart {
-  height: 24rem;
-}
-
-#operational-aidants-evolution-chart {
-  height: 32rem;
-}
-
-#mandats-chart,
-#mandats-evolution-chart,
-#demarches-evolution-chart {
-  height: 32rem;
 }
 
 #fr-transcription-modal-mandats-chart-transcription table tr th,

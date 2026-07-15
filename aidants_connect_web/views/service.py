@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Tuple
 
@@ -39,6 +40,40 @@ def _build_evolution_transcription(series: dict[str, list]) -> list[dict]:
             series["labels"], series["monthly"], series["cumulative"]
         )
     ]
+
+
+def _dsfr_bar_chart_props(
+    titles: list,
+    values: list,
+    name: str,
+    *,
+    horizontal: bool = False,
+    aspect_ratio: str = "2",
+) -> dict[str, str]:
+    props = {
+        "x": json.dumps([titles], ensure_ascii=False),
+        "y": json.dumps([values], ensure_ascii=False),
+        "name": json.dumps([name], ensure_ascii=False),
+        "aspect_ratio": aspect_ratio,
+    }
+    if horizontal:
+        props["horizontal"] = "true"
+    return props
+
+
+def _dsfr_bar_line_chart_props(
+    series: dict[str, list],
+    *,
+    name_line: str,
+    aspect_ratio: str = "2.5",
+) -> dict[str, str]:
+    return {
+        "x": json.dumps(series["labels"], ensure_ascii=False),
+        "y_bar": json.dumps(series["monthly"], ensure_ascii=False),
+        "y_line": json.dumps(series["cumulative"], ensure_ascii=False),
+        "name_line": f"{name_line} (total cumulé)",
+        "aspect_ratio": aspect_ratio,
+    }
 
 
 def humanize_demarche_names(name: str) -> str:
@@ -98,7 +133,7 @@ class StatistiquesView(TemplateView):
         )
 
     def get_demarches_stats(self) -> Tuple[dict[str, list], int]:
-        data = {"icons": [], "titles": [], "values": []}
+        data = {"titles": [], "values": []}
 
         qs = (
             self.autorisation_use_qs.values("demarche")
@@ -113,7 +148,6 @@ class StatistiquesView(TemplateView):
             demarche = settings.DEMARCHES[entry["demarche"]]
             count = entry["total"]
             demarches_met.append(entry["demarche"])
-            data["icons"].append(demarche["icon"])
             data["titles"].append(demarche["titre_court"])
             data["values"].append(count)
             data_total += count
@@ -122,7 +156,6 @@ class StatistiquesView(TemplateView):
         for k, v in settings.DEMARCHES.items():
             if k in demarches_met:
                 continue
-            data["icons"].append(v["icon"])
             data["titles"].append(v["titre_court"])
             data["values"].append(0)
 
@@ -226,18 +259,45 @@ class StatistiquesView(TemplateView):
                 "Personnes accompagnées": usagers_helped_count,
             },
             data=data,
+            demarches_chart=_dsfr_bar_chart_props(
+                data["titles"],
+                data["values"],
+                "Nombre de démarches",
+                aspect_ratio="3",
+            ),
             demarches_transcription=demarches_transcription,
             mandat_durees_data=mandat_durees_data,
+            mandat_durees_chart=_dsfr_bar_chart_props(
+                mandat_durees_data["titles"],
+                mandat_durees_data["values"],
+                "Nombre de mandats",
+                horizontal=True,
+                aspect_ratio="3.5",
+            ),
             mandat_durees_transcription=mandat_durees_transcription,
             mandats_evolution_data=mandats_evolution_data,
+            mandats_evolution_chart=_dsfr_bar_line_chart_props(
+                mandats_evolution_data,
+                name_line="Mandats créés",
+            ),
             mandats_evolution_transcription=mandats_evolution_transcription,
             demarches_evolution_data=demarches_evolution_data,
+            demarches_evolution_chart=_dsfr_bar_line_chart_props(
+                demarches_evolution_data,
+                name_line="Démarches réalisées",
+            ),
             demarches_evolution_transcription=demarches_evolution_transcription,
             operational_aidants_evolution_data=operational_aidants_evolution_data,
+            operational_aidants_evolution_chart=_dsfr_bar_line_chart_props(
+                operational_aidants_evolution_data,
+                name_line="Aidants habilités",
+            ),
             operational_aidants_evolution_transcription=(
                 operational_aidants_evolution_transcription
             ),
             demarches_realisees_since_date=demarches_realisees_since_date,
+            dsfr_chart_css_url=settings.DSFR_CHART_CSS_URL,
+            dsfr_chart_js_url=settings.DSFR_CHART_JS_URL,
         )
 
 
