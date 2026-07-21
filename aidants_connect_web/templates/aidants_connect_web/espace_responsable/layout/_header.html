@@ -8,7 +8,7 @@
       class="fr-nav__link"
       target="_self"
       href="{% url 'espace_referent:home' %}"
-      {% if view_name == 'espace_referent:home' %} aria-current="true"{% endif %}
+      {% if view_name == 'espace_referent:home' %} aria-current="page"{% endif %}
     >Accueil Référent</a>
   </li>
   <li class="fr-nav__item">
@@ -16,7 +16,7 @@
       class="fr-nav__link"
       target="_self"
       href="{% url 'espace_referent:aidants' %}"
-      {% if view_name|startswith:'espace_referent:aidant' and not is_aidant_referent_of_current_org %}aria-current="true"{% endif %}
+      {% if view_name|startswith:'espace_referent:aidant' and not is_aidant_referent_of_current_org %}aria-current="page"{% endif %}
     >Gestion des aidants</a>
   </li>
   <li class="fr-nav__item">
@@ -24,7 +24,7 @@
       class="fr-nav__link"
       target="_self"
       href="{% url 'espace_referent:referents' %}"
-    {% if view_name == 'espace_referent:referents' %}aria-current="true"{% elif view_name|startswith:'espace_referent:aidant' and is_aidant_referent_of_current_org %}aria-current="true"{% endif %}
+    {% if view_name == 'espace_referent:referents' %}aria-current="page"{% elif view_name|startswith:'espace_referent:aidant' and is_aidant_referent_of_current_org %}aria-current="page"{% endif %}
     >Gestion des référents</a>
   </li>
   <li class="fr-nav__item">
@@ -32,7 +32,7 @@
       class="fr-nav__link"
       target="_self"
       href="{% url 'espace_referent:organisation' %}"
-      {% if view_name == 'espace_referent:organisation' %}aria-current="true"{% endif %}
+      {% if view_name == 'espace_referent:organisation' %}aria-current="page"{% endif %}
     >Détails de l'organisation</a>
   </li>
   <li class="fr-nav__item">
