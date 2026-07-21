@@ -259,3 +259,37 @@ summary::marker {
     }
   }
 }
+
+// DSFR navigation: active link indicator on mobile -------------------------
+//
+// Regression in DSFR v1.13.0 → v1.14.x: the left border on the current
+// top-level nav link (.fr-nav__link) is no longer rendered on mobile (< lg).
+// Desktop (≥ 62em) still shows a bottom underline; mobile only changes text
+// colour because the ::before pseudo-element lacks dimensions.
+//
+// Submenu links (.fr-menu, .fr-mega-menu) are unaffected — only direct
+// .fr-nav__list items are missing the indicator.
+//
+// Upstream fix: GouvernementFR/dsfr PR #1367, shipped in DSFR v1.15.0.
+// Remove this block once django-dsfr bundles DSFR ≥ 1.15.0.
+//
+// Values mirror DSFR v1.12.1 navigation/module/_default.scss and the
+// existing .fr-menu .fr-nav__link[aria-current] rules still present in v1.14.
+@media (max-width: 61.98em) {
+  .fr-nav__link[aria-current]:not([aria-current="false"]),
+  .fr-nav__btn[aria-current]:not([aria-current="false"]) {
+    position: relative;
+
+    &::before {
+      content: "";
+      display: block;
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 2px;
+      height: 1.5rem;
+      margin-top: -0.75rem;
+      // background-color is already set by DSFR scheme rules
+    }
+  }
+}
