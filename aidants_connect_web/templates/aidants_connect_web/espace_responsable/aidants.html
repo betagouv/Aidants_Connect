@@ -62,21 +62,21 @@
         {% if organisation_active_aidants %}
           {% include "aidants_connect_web/espace_responsable/_organisation_aidants_list.html" with aidants=organisation_active_aidants is_referent=False %}
         {% else %}
-          Il n'y a pas d'aidant actif pour cette organisation.
+          <p>Il n'y a pas d'aidant actif pour cette organisation.</p>
         {% endif %}
       </div>
       <div id="tab-2-panel" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-2" tabindex="0">
         {% if eligibility_validated_requests or unregistrable_requests or pending_structure_requests or closed_structure_requests %}
           {% include "aidants_connect_web/espace_responsable/_organisation_pending_requests_table.html" with eligibility_validated_requests=eligibility_validated_requests unregistrable_requests=unregistrable_requests pending_structure_requests=pending_structure_requests closed_structure_requests=closed_structure_requests %}
         {% else %}
-          Il n'y a pas de demande en cours pour cette organisation.
+          <p>Il n'y a pas de demande en cours pour cette organisation.</p>
         {% endif %}
       </div>
       <div id="tab-3-panel" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tab-3" tabindex="0">
         {% if organisation_inactive_aidants %}
           {% include "aidants_connect_web/espace_responsable/_organisation_inactives_aidants_list.html" with aidants=organisation_inactive_aidants is_referent=False %}
         {% else %}
-          Il n'y a pas d'aidant désactivé pour cette organisation.
+          <p>Il n'y a pas d'aidant désactivé pour cette organisation.</p>
         {% endif %}
       </div>
   </div>
