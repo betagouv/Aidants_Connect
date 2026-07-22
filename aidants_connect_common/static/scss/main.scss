@@ -104,6 +104,19 @@ p:last-child:not(.keep-margin-bottom) {
   mask-image: url(../images/icons/AC-loader.svg)
 }
 
+// Marianne brand mark (.fr-logo): keep DSFR calibrated text metrics.
+// WCAG 1.4.12 test styles (letter/word-spacing on *) otherwise widen
+// "République Française" and force horizontal scroll on the header.
+// Specificity must beat `html body *` from the bookmarklet.
+@media (max-width: 61.98em) {
+  html body .fr-footer .fr-logo {
+    letter-spacing: -0.01em !important;
+    line-height: 1.0317460317em !important;
+    margin-bottom: 0 !important;
+    word-spacing: 0 !important;
+  }
+}
+
 // Cancel DSFR modal transition as it's messing with functionnal tests
 .fr-modal {
 
