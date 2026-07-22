@@ -17,7 +17,7 @@
       <li><a href="{% url 'home_page' %}" class="fr-link">Accueil</a></li>
       <li>
         Habilitation et formation :
-        <ul class="fr-ml-2w">
+        <ul class="fr-ml-2w fr-mb-0">
           <li><a href="{% url 'habilitation_faq_habilitation' %}" class="fr-link">Habilitation</a></li>
           <li><a href="{% url 'habilitation_faq_formation' %}" class="fr-link">Formation</a></li>
           <li><a href="{% url 'habilitation_new' %}" class="fr-link">Nouvelle demande d'habilitation</a></li>
@@ -28,35 +28,29 @@
       <li><a href="{% url 'statistiques' %}" class="fr-link">Statistiques</a></li>
       <li><a href="{% url 'faq_generale' %}" class="fr-link">Aide</a></li>
       <li><a href="{% url 'sandbox_presentation' %}" class="fr-link">Site bac à sable</a></li>
-    </ul>
-
-    {% if user.is_authenticated and user.can_create_mandats %}
-    <ul class="fr-mb-4w">
+      {% if user.is_authenticated and user.can_create_mandats %}
       <li>
         Espace aidant :
-        <ul class="fr-ml-2w">
+        <ul class="fr-ml-2w fr-mb-0">
           <li><a href="{% url 'espace_aidant:home' %}" class="fr-link">Accueil</a></li>
           <li><a href="{% url 'espace_aidant:usagers' %}" class="fr-link">Mandats</a></li>
           <li><a href="{% url 'espace_aidant:new_mandat' %}" class="fr-link">Créer un mandat</a></li>
         </ul>
       </li>
-    </ul>
-    {% endif %}
-
-    {% if user.is_authenticated and user.is_responsable_structure %}
-    <ul class="fr-mb-4w">
+      {% endif %}
+      {% if user.is_authenticated and user.is_responsable_structure %}
       <li>
         Espace référent :
-        <ul class="fr-ml-2w">
+        <ul class="fr-ml-2w fr-mb-0">
           <li><a href="{% url 'espace_referent:home' %}" class="fr-link">Accueil</a></li>
           <li><a href="{% url 'espace_referent:aidants' %}" class="fr-link">Aidants</a></li>
+          <li><a href="{% url 'espace_referent:aidant_new_profile' %}" class="fr-link">Ajouter un aidant</a></li>
           <li><a href="{% url 'espace_referent:referents' %}" class="fr-link">Référents</a></li>
           <li><a href="{% url 'espace_referent:organisation' %}" class="fr-link">Mon organisation</a></li>
         </ul>
       </li>
+      {% endif %}
     </ul>
-    {% endif %}
-
   </div>
 </section>
 {% endblock content %}
