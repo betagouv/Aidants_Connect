@@ -84,7 +84,7 @@ h4,
   color: var(--text-active-red-marianne);
 }
 
-p:last-child {
+p:last-child:not(.keep-margin-bottom) {
   margin-bottom: 0;
 }
 
@@ -276,6 +276,7 @@ summary::marker {
 // Values mirror DSFR v1.12.1 navigation/module/_default.scss and the
 // existing .fr-menu .fr-nav__link[aria-current] rules still present in v1.14.
 @media (max-width: 61.98em) {
+
   .fr-nav__link[aria-current]:not([aria-current="false"]),
   .fr-nav__btn[aria-current]:not([aria-current="false"]) {
     position: relative;
