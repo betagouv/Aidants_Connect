@@ -80,13 +80,13 @@ class Organisation(models.Model):
     siren = models.BigIntegerField("N° SIREN", default=1)
 
     legal_cat_level_one = models.CharField(
-        "Niveau I catégories juridiques", max_length=255, null=True
+        "Niveau I catégories juridiques", max_length=255, null=True, blank=True
     )
     legal_cat_level_two = models.CharField(
-        "Niveau II catégories juridiques", max_length=255, null=True
+        "Niveau II catégories juridiques", max_length=255, null=True, blank=True
     )
     legal_cat_level_three = models.CharField(
-        "Niveau III catégories juridiques", max_length=255, null=True
+        "Niveau III catégories juridiques", max_length=255, null=True, blank=True
     )
 
     data_pass_id = models.PositiveIntegerField("Datapass ID", null=True, unique=True)
@@ -97,13 +97,14 @@ class Organisation(models.Model):
     )
     is_experiment = models.BooleanField("Structure d'expérimentation ?", default=False)
     siret = models.BigIntegerField("N° SIRET", default=1)
-    invalid_siret = models.BooleanField("Siret Invalide", default=False)
+    invalid_siret = models.BooleanField("Siret Invalide", default=False, blank=True)
+    doublon_siret = models.BooleanField("Siret en Doublon", default=False, blank=True)
     address = models.TextField("Adresse", default="No address provided")
     address_complement = models.TextField(
         "Complément d'adresse", max_length=255, blank=True, default=""
     )
     zipcode = models.CharField("Code Postal", max_length=10, default="0")
-    city = models.CharField("Ville", max_length=255, null=True)
+    city = models.CharField("Ville", max_length=255, null=True, blank=True)
 
     city_insee_code = models.CharField(
         "Code INSEE de la ville", max_length=5, null=True, blank=True

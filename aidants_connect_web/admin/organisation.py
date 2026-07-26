@@ -238,7 +238,7 @@ class OrganisationAdmin(
             "Information catégorie INSEE",
             {
                 "fields": (
-                    ("siret", "siren"),
+                    ("siret", "siren", "invalid_siret", "doublon_siret"),
                     "legal_category",
                     (
                         "legal_cat_level_one",
@@ -301,6 +301,8 @@ class OrganisationAdmin(
     )
     search_fields = ("=id", "name", "siret", "data_pass_id")
     list_filter = (
+        "invalid_siret",
+        "doublon_siret",
         RegionFilter,
         DepartmentFilter,
         "is_active",
