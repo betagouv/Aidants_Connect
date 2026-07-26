@@ -444,6 +444,8 @@ def export_for_bizdevs(request_pk: int, *, logger=None) -> str:
             "organisation__data_pass_id",
             "organisation__created_by_fne",
             "organisation__siret",
+            "organisation__invalid_siret",
+            "organisation__doublon_siret",
             "organisation__address",
             "organisation__zipcode",
             "organisation__city",
