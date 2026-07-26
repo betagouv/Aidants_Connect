@@ -291,6 +291,7 @@ class OrganisationRequest(models.Model):
     # Organisation
     name = models.TextField("Nom de la structure")
     siret = models.BigIntegerField("N° SIRET")
+    invalid_siret = models.BooleanField("Siret Invalide", default=False)
     legal_category = models.CharField(
         "categorieJuridiqueUniteLegale", max_length=30, default="0"
     )

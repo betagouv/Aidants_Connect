@@ -97,6 +97,7 @@ class Organisation(models.Model):
     )
     is_experiment = models.BooleanField("Structure d'expérimentation ?", default=False)
     siret = models.BigIntegerField("N° SIRET", default=1)
+    invalid_siret = models.BooleanField("Siret Invalide", default=False)
     address = models.TextField("Adresse", default="No address provided")
     address_complement = models.TextField(
         "Complément d'adresse", max_length=255, blank=True, default=""
