@@ -22,6 +22,8 @@ def get_and_save_insee_informations(organisation, api_insee):
             ]
         except Exception as e:
             print("Erreur SIREN", organisation.siret, e)
+            organisation.invalid_siret = True
+            organisation.save()
     elif len(str(organisation.siret)) == 14:
         try:
             res = api_insee.siret(str(organisation.siret)).get()
@@ -30,6 +32,11 @@ def get_and_save_insee_informations(organisation, api_insee):
             ]
         except Exception as e:
             print("Erreur SIRET", organisation.siret, e)
+            organisation.invalid_siret = True
+            organisation.save()
+    else:
+        organisation.invalid_siret = True
+        organisation.save()
     if catlegale:
         organisation.legal_category = catlegale
         organisation.save()
