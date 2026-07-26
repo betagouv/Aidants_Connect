@@ -86,11 +86,11 @@ class LinebreaklessTests(TestCase):
                 """\
                 {% load ac_common %}
                 {% linebreakless dont_lstrip=True %}
-                This is a line; 
+                This is a line;
                 this is line
-                {% endlinebreakless %}"""  # noqa: W291
+                {% endlinebreakless %}"""  # noqa: E501
             )
-        )
+        )  # noqa: W291
 
         self.assertEqual("This is a line; this is line", result.strip())
 

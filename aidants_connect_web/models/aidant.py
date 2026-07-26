@@ -9,7 +9,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.files import File
 from django.db import models
-from django.db.models import Q
+from django.db.models import Count, Q
+from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.text import slugify
@@ -404,6 +405,31 @@ class Aidant(AbstractUser):
             .distinct()
             .count()
         )
+
+    def get_supports_number_last_six_months(self):
+        six_months_ago = timezone.now() - relativedelta(months=5)
+        qs_actions_per_month = (
+            self.journal_entries.filter(
+                action__in=[
+                    JournalActionKeywords.FRANCECONNECT_USAGER,
+                    JournalActionKeywords.CREATE_ATTESTATION,
+                    JournalActionKeywords.CREATE_AUTORISATION,
+                    JournalActionKeywords.USE_AUTORISATION,
+                    JournalActionKeywords.INIT_RENEW_MANDAT,
+                ]
+            )
+            .filter(creation_date__gte=six_months_ago)
+            .annotate(month=TruncMonth("creation_date"))
+            .values("month")
+            .annotate(count=Count("id"))
+            .order_by("month")
+        )
+
+        actions_per_month = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+        for i, row in enumerate(qs_actions_per_month):
+            actions_per_month[i] = row["count"]
+
+        return actions_per_month
 
     def get_last_action_timestamp(self):
         """

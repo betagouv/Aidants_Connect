@@ -279,7 +279,7 @@ class HabilitationRequest(models.Model):
                         RETURN NEW;
                         """  # noqa: E501
                     ).strip()
-                ),
+                ),  # noqa: E501
             ),
         )
 
