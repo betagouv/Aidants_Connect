@@ -6,7 +6,7 @@ from django.contrib import messages as django_messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.db.models import Q, QuerySet
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.urls import path, reverse_lazy
 from django.utils import timezone
 from django.utils.safestring import mark_safe
@@ -339,6 +339,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "mass_deactivate",
         "add_habilitationrequest_to_manager",
         "generate_attestation",
+        "donwload_attestation",
     ]
     raw_id_fields = ("responsable_de", "organisation", "organisations")
     readonly_fields = (
@@ -561,6 +562,25 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         self.message_user(request, f"{nb} Attestation(s) générée(s)")
 
     generate_attestation.short_description = "Générer l'attestation"
+
+    def donwload_attestation(self, request: HttpRequest, queryset: QuerySet):
+        nb = queryset.count()
+        if nb > 1:
+            self.message_user(
+                request, "On ne peut télécharger qu'une seule attestation à la fois"
+            )
+            return
+        for aidant in queryset:
+            aidant.generate_attestation()
+            return HttpResponse(
+                aidant.attestation.read(),
+                content_type="application/pdf",
+                headers={
+                    "Content-Disposition": f'attachment; filename="{aidant.attestation.name}"'  # noqa: E501
+                },
+            )
+
+    donwload_attestation.short_description = "Télécharger l'attestation d'un aidant"
 
     def mass_deactivate(self, request: HttpRequest, queryset: QuerySet):
         queryset.update(is_active=False)
