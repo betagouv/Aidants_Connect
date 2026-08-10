@@ -56,7 +56,9 @@ class NewMandatAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_mandat_form_steps(self):
         await self.lazy_loading(self._open_url)
-        step_headings = self.page.locator("form h2.fr-label.title-count")
+        steps = self.page.locator("form ol.mandat-steps > li.mandat-step")
+        await expect(steps).to_have_count(4)
+        step_headings = steps.locator("h2.fr-label.title-count")
         await expect(step_headings).to_have_count(4)
         await expect(step_headings.nth(0)).to_have_text("Lisez ces mentions à l’usager")
         await expect(step_headings.nth(1)).to_have_text(
@@ -67,3 +69,41 @@ class NewMandatAccessibilityTests(AccessibilityTestCase):
             "Connectez l’usager à FranceConnect"
         )
         await expect(self.page.locator("#id_is_remote")).to_have_count(0)
+
+    @async_test
+    async def test_demarche_fieldset_has_required_hint(self):
+        await self.lazy_loading(self._open_url)
+        demarche_fieldset = self.page.locator("#demarche-fieldset")
+        await expect(demarche_fieldset).to_be_attached()
+        await expect(demarche_fieldset).to_have_attribute(
+            "aria-describedby", "demarche-hint"
+        )
+        await expect(self.page.locator("#demarche-hint")).to_have_text(
+            "Sélectionnez au moins une démarche."
+        )
+        legend = demarche_fieldset.locator("legend")
+        await expect(legend).to_contain_text("Sélectionnez au moins une démarche.")
+
+    @async_test
+    async def test_demarche_error_summary_focus_and_link(self):
+        await self.lazy_loading(self._open_url)
+        await self.page.locator("#submit-btn").click()
+        await self.page.wait_for_selector("#form-errors")
+
+        form_errors = self.page.locator("#form-errors")
+        await expect(form_errors).to_be_focused()
+        await expect(form_errors).to_have_attribute("tabindex", "-1")
+
+        error_link = form_errors.get_by_role(
+            "link", name="Vous devez sélectionner au moins une démarche."
+        )
+        await expect(error_link).to_have_attribute("href", "#demarche-fieldset")
+
+        demarche_fieldset = self.page.locator("#demarche-fieldset")
+        await expect(demarche_fieldset).to_have_attribute("tabindex", "-1")
+        described_by = await demarche_fieldset.get_attribute("aria-describedby")
+        self.assertIn("demarche-hint", described_by)
+        self.assertIn("id_demarche-desc-error", described_by)
+
+        await error_link.click()
+        await expect(demarche_fieldset).to_be_focused()
