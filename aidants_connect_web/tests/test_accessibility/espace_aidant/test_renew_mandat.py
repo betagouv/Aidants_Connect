@@ -70,7 +70,9 @@ class RenewMandatAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_mandat_form_steps(self):
         await self.lazy_loading(self._open_url)
-        step_headings = self.page.locator("form h2.fr-label.title-count")
+        steps = self.page.locator("form ol.mandat-steps > li.mandat-step")
+        await expect(steps).to_have_count(4)
+        step_headings = steps.locator("h2.fr-label.title-count")
         await expect(step_headings).to_have_count(4)
         await expect(step_headings.nth(0)).to_have_text("Lisez ces mentions à l’usager")
         await expect(step_headings.nth(1)).to_have_text(
