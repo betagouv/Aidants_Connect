@@ -69,7 +69,7 @@
           <h2 class="fr-h3">Comment être habilité à Aidants Connect ? </h2>
         </div>
         <div class="fr-col-12">
-          <ul class="steps-progress-bar">
+          <ol class="steps-progress-bar fr-raw-list">
             <li id="first-step">
               <p class="fr-text--lg fr-px-3w fr-pt-2w fr-pb-4w">Je vérifie mon éligibilité</p>
             </li>
@@ -85,7 +85,7 @@
             <li id="fifth-step">
               <p class="fr-text--lg fr-px-3w fr-pt-2w fr-pb-4w">J’active mon compte et je créé mon premier mandat</p>
             </li>
-          </ul>
+          </ol>
         </div>
         <div class="fr-col-12 fr-text--center fr-mt-4w">
           <a class="fr-btn" href="{% url 'habilitation_faq_habilitation' %}">Déposer une demande d'habilitation</a>
@@ -119,7 +119,7 @@
        </li>
       </ul>
       <div class="fr-col-md-6 fr-col-sm-4 fr-col-12 fr-text--center">
-        <img src="{% static 'images/home_street.svg' %}" alt="">
+        <img class="fr-responsive-img" src="{% static 'images/home_street.svg' %}" alt="">
       </div>
     </div>
   </div>
@@ -200,22 +200,20 @@
       <ul class="fr-grid-row fr-grid-row--gutters fr-mb-6w fr-raw-list">
         {% for testimony in testimonies %}
           <li class="fr-col-md-4 fr-col-sm-6 fr-col-12">
-            <div class="fr-card fr-enlarge-link">
-              <div class="fr-card__body fr-pb-4w">
-                <div class="fr-card__content fr-pb-6w">
-                  <div class="fr-icon-quote-fill fr-text-title--blue-france fr-icon--lg fr-mb-0"></div>
-                  <h3 class="fr-card__title fr-mt-3v">
-                    <a href="{{ testimony.get_absolute_url }}" class="fr-text-title--grey" title="Lire le témoignage de {{ testimony.name }} ({{ testimony.job }}) - {{ testimony.quote }}">« {{ testimony.quote }} »</a>
-                  </h3>
-                  <div class="fr-card__end">
-                    <div class="fr-card__desc">
-                      <p class="fr-text--sm fr-mb-3v">{{ testimony.name }} ({{ testimony.job }})</p>
-                      <p class="fr-link">Lire ce témoignage</p>
-                    </div>
-                  </div>
+            <figure class="fr-quote">
+              <blockquote cite="{{ testimony.get_absolute_url }}">
+                <p class="fr-text--lg keep-margin-bottom">« {{ testimony.quote }} »</p>
+              </blockquote>
+              <figcaption>
+                <p class="fr-quote__author keep-margin-bottom">{{ testimony.name }} ({{ testimony.job }})</p>
+                <div class="fr-quote__source">
+                  <a href="{{ testimony.get_absolute_url }}">
+                    <span class="sr-only">Lire le témoignage de {{ testimony.name }} ({{ testimony.job }})</span>
+                    <span aria-hidden="true">Lire ce témoignage</span>
+                  </a>
                 </div>
-              </div>
-            </div>
+              </figcaption>
+            </figure>
           </li>
         {% endfor %}
       </ul>

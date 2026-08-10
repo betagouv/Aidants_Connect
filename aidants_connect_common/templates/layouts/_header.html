@@ -20,8 +20,8 @@
               </div>
             </div>
             <div class="fr-header__service">
-              <a href="{% url 'home_page' %}" title="Accueil Aidants Connect">
-                <img width="100" src="{% static 'images/aidants-connect_logo.png' %}" alt="Aidants Connect" />
+              <a href="{% url 'home_page' %}">
+                <img width="100" src="{% static 'images/aidants-connect_logo.png' %}" alt="Aidants Connect, retour à l'accueil" />
               </a>
               <p class="fr-header__service-tagline">Sécuriser les professionnels dans l'accompagnement aux démarches</p>
             </div>
@@ -55,7 +55,7 @@
                     <a
                       class="fr-btn fr-icon-question-line"
                       href="{% url 'faq_aidant_generale' %}"
-                      {% if view_name == 'faq_aidant_generale' %}aria-current="true"{% endif %}
+                      {% if view_name == 'faq_aidant_generale' %}aria-current="page"{% endif %}
                     >
                       Aide
                     </a>
@@ -82,6 +82,7 @@
         </button>
         <div class="fr-header__menu-links"></div>
         <nav class="fr-nav" id="navigation-494" role="navigation" aria-label="Menu principal">
+          {# Active links use aria-current="page" per DSFR navigation guidelines #}
           <ul class="fr-nav__list">
             {% block nav_menu %}
               {% if not user_is_authenticated %}
@@ -92,7 +93,7 @@
                     class="fr-nav__link"
                     target="_self"
                     href="{% url 'espace_aidant:home' %}"
-                      {% if view_name == 'espace_aidant:home' %}aria-current="true"{% endif %}
+                      {% if view_name == 'espace_aidant:home' %}aria-current="page"{% endif %}
                   >
                     Accueil
                   </a>
@@ -102,7 +103,7 @@
                     class="fr-nav__link"
                     target="_self"
                     href="{% url 'espace_aidant:usagers' %}"
-                    {% if view_name|startswith:'espace_aidant:usager' %}aria-current="true"{% endif %}
+                    {% if view_name|startswith:'espace_aidant:usager' %}aria-current="page"{% endif %}
                   >
                     Mandats
                   </a>
@@ -113,7 +114,7 @@
                       class="fr-nav__link"
                       target="_self"
                       href="{% url 'espace_aidant:new_mandat' %}"
-                      {% if view_name|startswith:'espace_aidant:new_mandat' %}aria-current="true"{% endif %}
+                      {% if view_name|startswith:'espace_aidant:new_mandat' %}aria-current="page"{% endif %}
                     >
                       Créer un mandat
                     </a>

@@ -53,26 +53,35 @@
       <div class="fr-col-12 fr-col-md-4">
         <div class="fr-bordered fr-p-4w">
           <h3 class="fr-h5">Adresse</h3>
-          <div>
+          <p>
             {{ organisation.address }}<br>
             {{ organisation.zipcode }} {{ organisation.city|default_if_none:"" }}
-          </div>
+          </p>
         </div>
       </div>
       <div class="fr-col-12 organisation-thematique">
         <div class="fr-bordered fr-p-4w">
-          <h3 class="fr-h5">Thématiques administratives disponibles</h3>
-            <form method="post">
-              {% csrf_token %}
+          <form method="post">
+            {% csrf_token %}
+            <fieldset
+              class="fr-fieldset{% if perimetres_form.demarches.errors %} fr-fieldset--error{% endif %}"
+              {% if perimetres_form.demarches.errors %}aria-describedby="id_demarches-desc-error"{% endif %}
+            >
+              <legend class="fr-fieldset__legend fr-fieldset__legend--regular fr-h5">
+                Thématiques administratives disponibles
+                <span class="fr-hint-text">Sélectionnez au moins une thématique.</span>
+              </legend>
               {% if perimetres_form.demarches.errors %}
-                <div class="notification error" role="alert">{{ perimetres_form.demarches.errors }}</div>
+                <div class="notification error" role="alert" id="id_demarches-desc-error">
+                  {{ perimetres_form.demarches.errors }}
+                </div>
               {% endif %}
-              {% dsfr_form_field perimetres_form.demarches %}
-              <div class="fr-grid-row fr-grid-row--right">
-                <button class="fr-btn fr-btn--secondary" type="submit">Enregistrer les modifications</button>
-              </div>
-            </form>
-          </div>
+              {{ perimetres_form.demarches }}
+            </fieldset>
+            <div class="fr-grid-row fr-grid-row--right">
+              <button class="fr-btn fr-btn--secondary" type="submit">Enregistrer les modifications</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

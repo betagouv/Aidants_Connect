@@ -3,6 +3,7 @@
 #main {
   padding: 0;
 }
+
 .bullet-container {
   min-height: 37.5rem;
   background-image: url(../images/AC_Visuel_Home.svg);
@@ -16,18 +17,19 @@
   height: auto;
 }
 
-.steps-progress-bar{
+.steps-progress-bar {
   margin-bottom: 30px;
   overflow: hidden;
   counter-reset: step;
-  width:100%;
-  padding:0px;
-  margin:0px;
+  width: 100%;
+  padding: 0px;
+  margin: 0px;
 }
+
 .steps-progress-bar li {
   list-style-type: none;
   position: relative;
-  text-align:center;
+  text-align: center;
 }
 
 .steps-progress-bar li:before {
@@ -36,11 +38,11 @@
   width: 32px;
   line-height: 32px;
   display: block;
-  background: var(--blue-france-main-525);
+  background: var(--blue-france-sun-113-625);
   border-radius: 3px;
   margin: 0 auto 5px auto;
-  border-radius:16px;
-  color:#fff;
+  border-radius: 16px;
+  color: #fff;
   position: relative;
   z-index: 1;
 }
@@ -48,11 +50,13 @@
 .steps-progress-bar li:first-child:after {
   content: none;
 }
+
 @media (min-width: 48em) {
   .steps-progress-bar li {
     width: 20%;
     float: left;
   }
+
   .steps-progress-bar li:after {
     content: '';
     width: 100%;
@@ -61,9 +65,10 @@
     position: absolute;
     left: -50%;
     top: 16px;
-    z-index:0;
+    z-index: 0;
   }
 }
+
 .icon-26 img {
   width: 26px;
 }
