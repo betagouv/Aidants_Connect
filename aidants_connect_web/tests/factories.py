@@ -23,6 +23,7 @@ from aidants_connect_web.models import (
     CarteTOTP,
     Connection,
     CoReferentNonAidantRequest,
+    EmailStatistics,
     HabilitationRequest,
     Journal,
     LogEmailSending,
@@ -296,3 +297,9 @@ class LogEmailSendingFactory(DjangoModelFactory):
 
     class Meta:
         model = LogEmailSending
+
+
+class EmailStatisticsFactory(DjangoModelFactory):
+
+    class Meta:
+        model = EmailStatistics

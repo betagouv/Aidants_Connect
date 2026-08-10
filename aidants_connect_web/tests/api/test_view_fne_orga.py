@@ -64,6 +64,7 @@ class FNEOrganisationViewSetTests(APITestCase):
                         "address": orga.address,
                         "address_complement": orga.address_complement,
                         "num_mandats": orga.num_mandats,
+                        "referents": [],
                         "france_services_label": orga.france_services_label,
                         "france_services_number": orga.france_services_number,
                     }
@@ -115,6 +116,7 @@ class FNEOrganisationViewSetTests(APITestCase):
                 "address": orga.address,
                 "address_complement": orga.address_complement,
                 "num_mandats": orga.num_mandats,
+                "referents": [],
                 "france_services_label": orga.france_services_label,
                 "france_services_number": orga.france_services_number,
             },
@@ -161,6 +163,7 @@ class FNEOrganisationViewSetTests(APITestCase):
                         "address": orga.address,
                         "address_complement": orga.address_complement,
                         "num_mandats": orga.num_mandats,
+                        "referents": [],
                         "france_services_label": orga.france_services_label,
                         "france_services_number": orga.france_services_number,
                     }
@@ -213,6 +216,7 @@ class FNEOrganisationViewSetTests(APITestCase):
                         "address": orga.address,
                         "address_complement": orga.address_complement,
                         "num_mandats": orga.num_mandats,
+                        "referents": [],
                         "france_services_label": orga.france_services_label,
                         "france_services_number": orga.france_services_number,
                     }
@@ -267,6 +271,7 @@ class FNEOrganisationViewSetTests(APITestCase):
                         "address": orga.address,
                         "address_complement": orga.address_complement,
                         "num_mandats": orga.num_mandats,
+                        "referents": [],
                         "france_services_label": orga.france_services_label,
                         "france_services_number": orga.france_services_number,
                     }

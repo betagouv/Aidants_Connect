@@ -35,9 +35,11 @@ from aidants_connect_web.constants import (
 )
 from aidants_connect_web.models import (
     Aidant,
+    AidantEmailStats,
     Autorisation,
     CarteTOTP,
     Connection,
+    EmailStatistics,
     HabilitationRequest,
     Journal,
     LogEmailSending,
@@ -54,6 +56,7 @@ from aidants_connect_web.tests.factories import (
     AutorisationFactory,
     CarteTOTPFactory,
     CoReferentNonAidantRequestFactory,
+    EmailStatisticsFactory,
     HabilitationRequestFactory,
     JournalFactory,
     MandatFactory,
@@ -2801,3 +2804,27 @@ class LogEmailSendingTests(TestCase):
         LogEmailSending.objects.create(aidant=self.aidant, code_email="CODE")
 
         self.assertEqual(1, LogEmailSending.objects.all().count())
+
+
+class EmailStatisticsTests(TestCase):
+
+    def test_i_can_create_a_log_email_sending(self):
+        self.assertEqual(0, EmailStatistics.objects.all().count())
+
+        EmailStatistics.objects.create(code_email="CODE")
+
+        self.assertEqual(1, EmailStatistics.objects.all().count())
+
+
+class AidantEmailStatsTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.aidant = AidantFactory()
+        cls.email_stats = EmailStatisticsFactory(code_email="CODE1")
+
+    def test_i_can_create_a_log_aidant_email_stats(self):
+        self.assertEqual(0, AidantEmailStats.objects.all().count())
+
+        AidantEmailStats.objects.create(aidant=self.aidant, email_type=self.email_stats)
+
+        self.assertEqual(1, AidantEmailStats.objects.all().count())
