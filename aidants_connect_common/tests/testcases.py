@@ -339,6 +339,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
     # role="navigation" explicitement demandé dans le composant skip link DSFR
     # Selon la doc dsfr, les composants fr-skiplinks, header, nav et footer doivent
     # déclarer les roles. axe-core considère que c'est redondant: on privilégie le dsfr
+    # Même principe pour main[role='main'] (rôle implicite de <main>)
     def check_accessibility(
         self,
         page_name="page",
@@ -349,6 +350,7 @@ class FunctionalTestCase(StaticLiveServerTestCase):
                 ["header[role='banner']"],
                 ["nav[role='navigation']"],
                 ["footer[role='contentinfo']"],
+                ["main[role='main']"],
             ]
         },
     ):
