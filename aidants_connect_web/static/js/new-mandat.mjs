@@ -1,7 +1,7 @@
 import {BaseController, aidantsConnectApplicationReady} from "AidantsConnectApplication"
 
 class MandateFormController extends BaseController {
-    static targets = ["bdfWarning"];
+    static targets = ["bdfWarning", "formErrors"];
 
     static values = {
         bdfWarning: String,
@@ -14,7 +14,11 @@ class MandateFormController extends BaseController {
             it.dataset.action = `${ this.identifier }#scopeSelected`;
             scopesValue[it.value] = it.checked;
         });
-        this.scopesValue = scopesValue
+        this.scopesValue = scopesValue;
+
+        if (this.hasFormErrorsTarget) {
+            this.formErrorsTarget.focus();
+        }
     }
 
     scopeSelected (evt) {
