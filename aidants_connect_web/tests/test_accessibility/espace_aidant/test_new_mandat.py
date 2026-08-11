@@ -87,6 +87,9 @@ class NewMandatAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_demarche_error_summary_focus_and_link(self):
         await self.lazy_loading(self._open_url)
+        # Select a duration so HTML5 required validation on radios does not
+        # block the POST; leave demarches empty to trigger the server error.
+        await self.page.locator("label[for='id_duree_short']").click()
         await self.page.locator("#submit-btn").click()
         await self.page.wait_for_selector("#form-errors")
 
