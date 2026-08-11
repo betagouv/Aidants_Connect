@@ -86,14 +86,23 @@ class NewMandatAccessibilityTests(AccessibilityTestCase):
 
     @async_test
     async def test_demarche_error_summary_focus_and_link(self):
-        await self.lazy_loading(self._open_url)
+        # Do not use lazy_loading: this test POSTs the form. Shared pages keep a
+        # stale session cookie after TransactionTestCase flushes the DB between
+        # tests, so a POST would redirect to login and poison common_page.
+        await self._open_url()
+        await expect(self.page).to_have_title("Nouveau mandat - Aidants Connect")
+
         # Select a duration so HTML5 required validation on radios does not
         # block the POST; leave demarches empty to trigger the server error.
+        await self.page.locator("form").evaluate("form => { form.noValidate = true; }")
         await self.page.locator("label[for='id_duree_short']").click()
-        await self.page.locator("#submit-btn").click()
-        await self.page.wait_for_selector("#form-errors")
+        await expect(self.page.locator("#id_duree_short")).to_be_checked()
+
+        async with self.page.expect_navigation():
+            await self.page.locator("#submit-btn").click()
 
         form_errors = self.page.locator("#form-errors")
+        await expect(form_errors).to_be_visible()
         await expect(form_errors).to_be_focused()
         await expect(form_errors).to_have_attribute("tabindex", "-1")
 
