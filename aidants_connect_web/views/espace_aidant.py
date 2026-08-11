@@ -104,7 +104,7 @@ class Home(TemplateView):
             "Bien démarrer et m’entraîner": [
                 {
                     "title": "Guide d'utilisation Aidants Connect",
-                    "link": "https://docs.numerique.gouv.fr/docs/6d7aa937-9030-4af4-9522-3a725ceda6da/",  # noqa: E501
+                    "link": "https://docs.numerique.gouv.fr/docs/56f0ea3c-89b9-4194-9490-94dcb5726c9f/",  # noqa: E501
                     "new_tab": True,
                     "heading_tag": self.tiles_heading_tag,
                 },
