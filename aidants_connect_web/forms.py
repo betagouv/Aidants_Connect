@@ -195,6 +195,7 @@ class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
         label="Adresse e-mail",
         help_text="Format attendu : prenom-nom@exemple.fr",
         error_messages={"invalid": EMAIL_FORMAT_ERROR_MESSAGE},
+        widget=forms.EmailInput(attrs={"autocomplete": "email"}),
     )
 
     def clean_email(self):
