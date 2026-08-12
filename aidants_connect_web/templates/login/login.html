@@ -73,39 +73,27 @@
             <div class="fr-col-12">
               <form id="login-1760" method="post">
                 {% csrf_token %}
-                <fieldset
-                  class="fr-fieldset fr-py-0 fr-my-0"
-                  id="login-1760-fieldset"
-                  aria-labelledby="login-1760-fieldset-legend"
-                >
-                  <legend id="login-1760-fieldset-legend">
-                    <h1 class="fr-h3 fr-m-0 fr-p-0" role="heading" aria-level="2">Vous êtes habilité Aidants Connect ? Connectez-vous !</h1>
-                  </legend>
-                  <div class="fr-fieldset__element fr-my-6v">
-                    <p class="fr-text--sm">Sauf mention contraire, tous les champs sont obligatoires.</p>
-                  </div>
-                  <div class="fr-fieldset__element fr-my-6v">
-                    <fieldset class="fr-fieldset fr-my-0" id="credentials">
-                      <div class="fr-fieldset__element">
-                        {% aidantc_dsfr_form_field_no_asterisk form.email %}
-                      </div>
-                      <div class="fr-fieldset__element">
-                        {% aidantc_dsfr_form_field_no_asterisk OTP_form.otp_token %}
-                      </div>
-                    </fieldset>
-                  </div>
-                  <div class="fr-fieldset__element fr-my-0 fr-mb-3w">
-                    <button type="submit" class="fr-btn">Se connecter</button>
-                  </div>
-                  <div class="fr-fieldset__element fr-my-0">
-                    <p class="fr-m-0 fr-text--sm fr-mb-6w">
-                      <a href="{% url 'faq_public_generale' %}" class="fr-link"> Je n’arrive pas à me connecter → </a>
-                    </p>
-                    <hr>
-                  </div>
-                  <div class="fr-messages-group" id="login-1760-fieldset-messages" aria-live="assertive">
-                  </div>
-                </fieldset>
+                <h1 class="fr-h3 fr-m-0 fr-p-0" role="heading" aria-level="2">Vous êtes habilité Aidants Connect ? Connectez-vous !</h1>
+                <div class="fr-my-6v">
+                  <p class="fr-text--sm">Sauf mention contraire, tous les champs sont obligatoires.</p>
+                </div>
+                <div class="fr-my-6v">
+                  {% aidantc_dsfr_form_field_no_asterisk form.email %}
+                </div>
+                <div class="fr-my-6v">
+                  {% aidantc_dsfr_form_field_no_asterisk OTP_form.otp_token %}
+                </div>
+                <div class="fr-my-0 fr-mb-3w">
+                  <button type="submit" class="fr-btn">Se connecter</button>
+                </div>
+                <div class="fr-my-0">
+                  <p class="fr-m-0 fr-text--sm fr-mb-6w">
+                    <a href="{% url 'faq_public_generale' %}" class="fr-link"> Je n’arrive pas à me connecter → </a>
+                  </p>
+                  <hr>
+                </div>
+                <div class="fr-messages-group" id="login-1760-messages" aria-live="assertive">
+                </div>
               </form>
               <h2 class="fr-h4 fr-m-0 fr-p-0 fr-mt-3w">Vous êtes référent Aidants Connect ?</h2>
               <p class="fr-text--sm fr-mt-2w">
