@@ -177,10 +177,24 @@ LOGIN_GENERIC_ERROR_MESSAGE = (
     "Les informations saisies ne permettent pas de vous identifier."
 )
 
+EMAIL_FORMAT_ERROR_MESSAGE = (
+    "Le format de l’adresse e-mail est incorrect. "
+    "Format attendu : prenom-nom@exemple.fr"
+)
+OTP_FORMAT_ERROR_MESSAGE = (
+    "Le format du code est incorrect. Format attendu : 6 chiffres (exemple : 123456)"
+)
+MOBILE_FORMAT_ERROR_MESSAGE = (
+    "Le format du numéro de téléphone est incorrect. "
+    "Format attendu : 10 chiffres (exemple : 0607080910)"
+)
+
 
 class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
     email = forms.EmailField(
-        label="Adresse e-mail", help_text="Format attendu : prenom-nom@exemple.fr"
+        label="Adresse e-mail",
+        help_text="Format attendu : prenom-nom@exemple.fr",
+        error_messages={"invalid": EMAIL_FORMAT_ERROR_MESSAGE},
     )
 
     def clean_email(self):
@@ -192,14 +206,17 @@ class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
 
 class ManagerFirstLoginForm(DsfrBaseForm):
     email = forms.EmailField(
-        label="Adresse e-mail", help_text="Format attendu : prenom-nom@exemple.fr"
+        label="Adresse e-mail",
+        help_text="Format attendu : prenom-nom@exemple.fr",
+        error_messages={"invalid": EMAIL_FORMAT_ERROR_MESSAGE},
     )
 
     mobile = AcPhoneNumberField(
         label="Numéro de téléphone mobile",
         label_suffix=" :",
         initial="",
-        help_text="Format attendu : 10 chiffres",
+        help_text="Format attendu : 10 chiffres (exemple : 0607080910)",
+        error_messages={"invalid": MOBILE_FORMAT_ERROR_MESSAGE},
     )
 
     def clean(self):
@@ -242,22 +259,29 @@ class ManagerFirstLoginForm(DsfrBaseForm):
 
 class ManagerFirstLoginWithCodeForm(DsfrBaseForm):
     code_otp = forms.CharField(
-        label="Code de première connexion", help_text="Format attendu : 6 chiffres"
+        label="Code de première connexion",
+        help_text="Format attendu : 6 chiffres (exemple : 123456)",
+        # Length is enforced by the regex only: adding max_length would raise a
+        # second, identical error message for over-long values.
+        validators=[RegexValidator(r"^\d{6}$", message=OTP_FORMAT_ERROR_MESSAGE)],
+        widget=forms.TextInput(attrs={"maxlength": 6}),
     )
 
 
 class DsfrOtpForm(OTPForm, DsfrBaseForm):
     OTP_NUM_DIGITS = magicauth_settings.OTP_NUM_DIGITS
     otp_token = forms.CharField(
-        max_length=OTP_NUM_DIGITS,
-        min_length=OTP_NUM_DIGITS,
-        validators=[RegexValidator(r"^\d{6}$")],
+        # Length is enforced by the regex only: adding max_length would raise a
+        # second, identical error message for over-long values.
+        validators=[RegexValidator(r"^\d{6}$", message=OTP_FORMAT_ERROR_MESSAGE)],
         label=_(
             "Entrez le code à %(OTP_NUM_DIGITS)s chiffres généré par votre téléphone ou votre carte OTP"  # noqa
         )
         % {"OTP_NUM_DIGITS": OTP_NUM_DIGITS},
-        help_text="Format attendu : 6 chiffres",
-        widget=forms.TextInput(attrs={"autocomplete": "off"}),
+        help_text="Format attendu : 6 chiffres (exemple : 123456)",
+        widget=forms.TextInput(
+            attrs={"autocomplete": "off", "maxlength": OTP_NUM_DIGITS}
+        ),
     )
 
     def __init__(self, user, *args, **kwargs):
@@ -342,12 +366,12 @@ class MandatForm(PatchedForm):
 
 class OTPForm(DsfrBaseForm):
     otp_token = forms.CharField(
-        max_length=6,
-        min_length=6,
-        validators=[RegexValidator(r"^\d{6}$")],
+        # Length is enforced by the regex only: adding max_length would raise a
+        # second, identical error message for over-long values.
+        validators=[RegexValidator(r"^\d{6}$", message=OTP_FORMAT_ERROR_MESSAGE)],
         label=("Code temporaire"),
-        help_text=("Format attendu : 6 chiffres"),
-        widget=forms.TextInput(attrs={"autocomplete": "off"}),
+        help_text=("Format attendu : 6 chiffres (exemple : 123456)"),
+        widget=forms.TextInput(attrs={"autocomplete": "off", "maxlength": 6}),
     )
 
     def __init__(self, aidant, *args, **kwargs):
