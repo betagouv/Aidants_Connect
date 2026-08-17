@@ -125,3 +125,7 @@ class FollowMyHabilitationRequestView(FormView):
         return super().render_to_response(
             self.get_context_data(form=form, success=True)
         )
+
+    def form_invalid(self, form):
+        form.set_autofocus_on_first_error()
+        return super().form_invalid(form)

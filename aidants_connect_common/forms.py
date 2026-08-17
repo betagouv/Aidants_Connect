@@ -159,7 +159,15 @@ class FormationRegistrationForm(DsfrBaseForm):
 
 class FollowMyHabilitationRequesrForm(DsfrBaseForm):
     email = forms.EmailField(
-        label="Adresse e-mail", help_text="Format attendu : prenom-nom@exemple.fr"
+        label="Adresse e-mail",
+        help_text="Format attendu : prenom-nom@exemple.fr",
+        error_messages={
+            "invalid": (
+                "Veuillez saisir une adresse e-mail valide. "
+                "Exemple : prenom-nom@exemple.fr"
+            ),
+        },
+        widget=forms.EmailInput(attrs={"autocomplete": "email"}),
     )
 
     def clean_email(self):
@@ -640,14 +648,12 @@ class BaseHabilitationRequestFormSet(BaseModelFormSet, abc.ABC):
 
 
 class AdminValidateorDisableForm(PatchedForm):
-
     def __init__(self, f_attendant, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.f_attendant = f_attendant
 
 
 class AdminChangeFormationForm(PatchedForm, forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # self.f_attendant = f_attendant
