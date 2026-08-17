@@ -13,7 +13,11 @@ from django.test import TestCase, tag
 
 from dsfr.forms import DsfrDjangoTemplates
 
-from aidants_connect_common.forms import BaseModelMultiForm, BaseMultiForm
+from aidants_connect_common.forms import (
+    BaseModelMultiForm,
+    BaseMultiForm,
+    FollowMyHabilitationRequesrForm,
+)
 from aidants_connect_web.models import Aidant, Organisation
 from aidants_connect_web.tests.factories import AidantFactory, OrganisationFactory
 
@@ -396,3 +400,17 @@ class TestBaseModelMultiForm(TestCase):
                 },
             )
             self.assertRaises(ValueError, form.save)
+
+
+@tag("forms")
+class TestFollowMyHabilitationRequesrForm(TestCase):
+    def test_invalid_email_includes_a_real_format_example(self):
+        form = FollowMyHabilitationRequesrForm(data={"email": "not-an-email"})
+        self.assertFalse(form.is_valid())
+        self.assertIn(
+            (
+                "Veuillez saisir une adresse e-mail valide. "
+                "Exemple : prenom-nom@exemple.fr"
+            ),
+            form.errors["email"],
+        )

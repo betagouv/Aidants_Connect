@@ -33,7 +33,7 @@
     {{ field|dsfr_input_class_attr }}
   {% endif %}
   {% if field.errors %}
-    <div id="{{ field.auto_id }}-desc-error">
+    <div class="fr-messages-group" id="{{ field.auto_id }}-desc-error" aria-live="assertive">
       {{ field.errors }}
     </div>
   {% endif %}
