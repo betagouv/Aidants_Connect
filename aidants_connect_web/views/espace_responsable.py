@@ -634,6 +634,7 @@ class AddAppOTPToAidant(ReferentCannotManageAidantResponseMixin, FormView):
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
+            "aidant": self.aidant,
             "otp_device_qr_code_href": (
                 f"data:image/png;base64,{self.get_image_base_64()}"
             ),

@@ -1394,7 +1394,9 @@ class TokenFormV2(TokenForm):
 
 class AddAppOTPToAidantForm(PatchedForm):
     otp_token = forms.CharField(
-        label="Entrez le code de vérification donné par votre application.",
+        label=(
+            "Entrez le code de vérification donné par votre application (Obligatoire)",
+        ),
         label_suffix=" :",
         min_length=6,
         max_length=6,

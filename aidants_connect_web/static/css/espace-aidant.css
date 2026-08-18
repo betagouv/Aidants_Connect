@@ -76,3 +76,11 @@ details[name="mandat-action"] .details-content a {
 .organisation-thematique .fr-tile:has(input[checked]) {
   background-color: var(--blue-france-925-125);
 }
+
+.otp-qr-code {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
