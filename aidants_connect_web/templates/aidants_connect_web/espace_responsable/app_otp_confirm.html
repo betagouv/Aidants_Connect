@@ -1,7 +1,7 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 {% load dsfr_tags form_extras static %}
 
-{% block title %}Aidants Connect - Ajout d’une carte OTP numérique pour {{ aidant.get_full_name }}{% endblock %}
+{% block title %}Aidants Connect - Ajout d’une application OTP numérique pour {{ aidant.get_full_name }}{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
@@ -29,9 +29,10 @@
                 class="fr-link"
                 href="https://apps.apple.com/fr/app/freeotp-authenticator/id872559395"
                 target="_blank"
-                rel="noreferrer noopener "
+                rel="noreferrer noopener"
               >
                 freeOTP sur l’App Store (Apple)
+                <span class="sr-only"> - Ouverture dans une nouvelle fenêtre</span>
               </a>
             </p>
             <p class="fr-btn--icon-left fr-icon-arrow-right-line">
@@ -39,28 +40,27 @@
                 class="fr-link"
                 href="https://play.google.com/store/apps/details?id=org.fedorahosted.freeotp"
                 target="_blank"
-                rel="noreferrer noopener "
+                rel="noreferrer noopener"
               >
                 freeOTP sur le Play Store (Android)
+                <span class="sr-only"> - Ouverture dans une nouvelle fenêtre</span>
               </a>
             </p>
             </section>
             <form method="post">
               {% csrf_token %}
-              <div class="shadowed margin-bottom-2rem padding-1rem">
+              <div class="fr-p-2w fr-mb-4w">
                 <p>
                   Depuis l’application, appuyez sur le bouton <span class="bold">« + » (sur Android)</span>
                   ou sur le bouton <span class="bold">QR Code (sur Apple)</span> puis
                   <span class="bold">scannez le QR Code</span> ci-dessous :
                 </p>
                 <img
-                  class="centering"
+                  class="otp-qr-code"
                   src="{{ otp_device_qr_code_href }}"
                   alt="QR code à flasher dans votre application"
                 />
-                <p>
-                {% dsfr_form_field form.otp_token %}
-                </p>
+                {% aidantc_dsfr_form_field_no_asterisk form.otp_token %}
               </div>
 
               <input type="submit" class="fr-btn" value="Valider le code">
