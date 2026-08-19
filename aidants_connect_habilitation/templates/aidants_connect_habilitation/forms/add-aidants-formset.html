@@ -10,13 +10,19 @@
       <div data-fr-group="false" class="fr-accordions-group fr-mb-4w">
         {% for form in formset.forms %}
           {% if formset.forms|length == 1 %}
-            {% dsfr_alert type="info" extra_classes="fr-alert--sm" content="Information : les élus, les services civiques, les bénévoles, les apprentis et les stagiaires ne peuvent pas être habilités à Aidants Connect" %}
+            <div class="fr-alert fr-alert--info fr-alert--sm">
+              <h3 class="fr-alert__title fr-mb-0">
+                Information : les élus, les services civiques, les bénévoles, les apprentis et les stagiaires ne peuvent pas être habilités à Aidants Connect
+              </h3>
+            </div>
           {% endif %}
           {% include "aidants_connect_habilitation/_accordion_aidant.html" with form=form idx=forloop.counter0 %}
         {% endfor %}
       </div>
 
-      {{ formset.non_form_errors }}
+      <div role="alert">
+        {{ formset.non_form_errors }}
+      </div>
       <button
         id="partial-submit"
         name="partial-submit"
