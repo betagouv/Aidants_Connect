@@ -177,16 +177,15 @@ LOGIN_GENERIC_ERROR_MESSAGE = (
     "Les informations saisies ne permettent pas de vous identifier."
 )
 
+# Error messages must include a real input example so that users who submitted an
+# incorrectly formatted value know what is expected (RGAA 11.10).
 EMAIL_FORMAT_ERROR_MESSAGE = (
-    "Le format de l’adresse e-mail est incorrect. "
-    "Format attendu : prenom-nom@exemple.fr"
+    "Veuillez saisir une adresse e-mail valide. Exemple : prenom-nom@exemple.fr"
 )
-OTP_FORMAT_ERROR_MESSAGE = (
-    "Le format du code est incorrect. Format attendu : 6 chiffres (exemple : 123456)"
-)
+OTP_FORMAT_ERROR_MESSAGE = "Veuillez saisir un code à 6 chiffres. Exemple : 123456"
 MOBILE_FORMAT_ERROR_MESSAGE = (
-    "Le format du numéro de téléphone est incorrect. "
-    "Format attendu : 10 chiffres (exemple : 0607080910)"
+    "Veuillez saisir un numéro de téléphone mobile à 10 chiffres. "
+    "Exemple : 0607080910"
 )
 
 
@@ -194,7 +193,10 @@ class LoginEmailForm(MagicAuthEmailForm, DsfrBaseForm):
     email = forms.EmailField(
         label="Adresse e-mail",
         help_text="Format attendu : prenom-nom@exemple.fr",
-        error_messages={"invalid": EMAIL_FORMAT_ERROR_MESSAGE},
+        error_messages={
+            "invalid": EMAIL_FORMAT_ERROR_MESSAGE,
+            "required": EMAIL_FORMAT_ERROR_MESSAGE,
+        },
         widget=forms.EmailInput(attrs={"autocomplete": "email"}),
     )
 
@@ -209,7 +211,10 @@ class ManagerFirstLoginForm(DsfrBaseForm):
     email = forms.EmailField(
         label="Adresse e-mail",
         help_text="Format attendu : prenom-nom@exemple.fr",
-        error_messages={"invalid": EMAIL_FORMAT_ERROR_MESSAGE},
+        error_messages={
+            "invalid": EMAIL_FORMAT_ERROR_MESSAGE,
+            "required": EMAIL_FORMAT_ERROR_MESSAGE,
+        },
     )
 
     mobile = AcPhoneNumberField(
@@ -217,7 +222,10 @@ class ManagerFirstLoginForm(DsfrBaseForm):
         label_suffix=" :",
         initial="",
         help_text="Format attendu : 10 chiffres (exemple : 0607080910)",
-        error_messages={"invalid": MOBILE_FORMAT_ERROR_MESSAGE},
+        error_messages={
+            "invalid": MOBILE_FORMAT_ERROR_MESSAGE,
+            "required": MOBILE_FORMAT_ERROR_MESSAGE,
+        },
     )
 
     def clean(self):
@@ -265,6 +273,7 @@ class ManagerFirstLoginWithCodeForm(DsfrBaseForm):
         # Length is enforced by the regex only: adding max_length would raise a
         # second, identical error message for over-long values.
         validators=[RegexValidator(r"^\d{6}$", message=OTP_FORMAT_ERROR_MESSAGE)],
+        error_messages={"required": OTP_FORMAT_ERROR_MESSAGE},
         widget=forms.TextInput(attrs={"maxlength": 6}),
     )
 
@@ -280,6 +289,7 @@ class DsfrOtpForm(OTPForm, DsfrBaseForm):
         )
         % {"OTP_NUM_DIGITS": OTP_NUM_DIGITS},
         help_text="Format attendu : 6 chiffres (exemple : 123456)",
+        error_messages={"required": OTP_FORMAT_ERROR_MESSAGE},
         widget=forms.TextInput(
             attrs={"autocomplete": "off", "maxlength": OTP_NUM_DIGITS}
         ),
@@ -289,9 +299,11 @@ class DsfrOtpForm(OTPForm, DsfrBaseForm):
         super().__init__(user, *args, **kwargs)
 
     def clean_otp_token(self):
-        # Replace magicauth's OTP-specific error messages with the same
-        # generic message used for an unknown email, so that the user cannot
-        # tell whether the email or the OTP is at fault.
+        # Replace magicauth's OTP-specific error messages with the same generic
+        # message used for an unknown email, so that the user cannot tell whether
+        # the email or the OTP is at fault. This must also run when there is no
+        # user to check the token against (the email form was invalid), so that
+        # an unknown email and a rejected OTP stay indistinguishable.
         try:
             return super().clean_otp_token()
         except ValidationError as err:
@@ -372,6 +384,7 @@ class OTPForm(DsfrBaseForm):
         validators=[RegexValidator(r"^\d{6}$", message=OTP_FORMAT_ERROR_MESSAGE)],
         label=("Code temporaire"),
         help_text=("Format attendu : 6 chiffres (exemple : 123456)"),
+        error_messages={"required": OTP_FORMAT_ERROR_MESSAGE},
         widget=forms.TextInput(attrs={"autocomplete": "off", "maxlength": 6}),
     )
 
