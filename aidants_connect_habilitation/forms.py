@@ -342,6 +342,7 @@ class ReferentForm(ModelForm, CleanEmailMixin, DsfrBaseForm):
     phone = AcPhoneNumberField(
         initial="",
         label=mark_safe("Numéro de téléphone <strong>mobile</strong>"),
+        help_text="Format attendu : 06 00 00 00 00 ou +33 06 00 00 00 00",
         required=True,
     )
 
