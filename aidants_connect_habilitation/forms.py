@@ -507,6 +507,10 @@ class AidantRequestForm(
 class BaseAidantRequestFormSet(BaseModelFormSet):
     template_name = "aidants_connect_habilitation/forms/add-aidants-formset.html"
 
+    # Index of the form the browser must focus on load. The formset template only
+    # receives the formset itself, so the view can't pass this through the context.
+    autofocus_form_index = None
+
     default_error_messages = {
         "too_few_forms": (
             "Vous devez déclarer au moins 1 aidant si le ou la référente de "
