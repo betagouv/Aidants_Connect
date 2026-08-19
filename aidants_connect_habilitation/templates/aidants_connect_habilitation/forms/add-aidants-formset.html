@@ -16,7 +16,7 @@
               </h3>
             </div>
           {% endif %}
-          {% include "aidants_connect_habilitation/_accordion_aidant.html" with form=form idx=forloop.counter0 %}
+          {% include "aidants_connect_habilitation/_accordion_aidant.html" with form=form idx=forloop.counter0 autofocus_idx=formset.autofocus_form_index %}
         {% endfor %}
       </div>
 
