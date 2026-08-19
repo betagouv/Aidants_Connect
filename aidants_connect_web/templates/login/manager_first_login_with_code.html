@@ -25,7 +25,8 @@
         <div class="fr-container fr-background-alt--grey fr-px-md-0 fr-py-10v fr-py-md-14v">
           <div class="fr-grid-row fr-grid-row-gutters fr-grid-row--center">
             <div class="fr-col-12 fr-col-md-9 fr-col-lg-8">
-              <form id="login-1760" method="post">
+              {# novalidate: browser native messages are replaced by DSFR error messages, which state the expected format #}
+              <form id="login-1760" method="post" novalidate>
                 {% csrf_token %}
                 <h1 class="fr-h3 fr-m-0 fr-p-0">Première connexion référent</h1>
                 <div class="fr-my-6v">

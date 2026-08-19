@@ -1,6 +1,7 @@
 from unittest import mock
 from unittest.mock import Mock
 
+from django.contrib.auth.models import AnonymousUser
 from django.forms.models import model_to_dict
 from django.test import TestCase, override_settings, tag
 from django.test.client import Client
@@ -18,7 +19,11 @@ from aidants_connect_web.forms import (
     AddAppOTPToAidantForm,
     AidantChangeForm,
     AidantCreationForm,
+    DsfrOtpForm,
     HabilitationRequestCreationForm,
+    LoginEmailForm,
+    ManagerFirstLoginForm,
+    ManagerFirstLoginWithCodeForm,
     MandatForm,
     MassEmailActionForm,
     RecapMandatForm,
@@ -563,3 +568,64 @@ class AddAidantProfileChoiceFormTests(TestCase):
             int(form.cleaned_data["profile"]),
             AddAidantProfileChoice.NOT_YET_TRAINED.value,
         )
+
+
+@tag("forms")
+class LoginFormsErrorMessagesTests(TestCase):
+    """Error messages must state the expected format with a real input example."""
+
+    EMAIL_EXAMPLE = "prenom-nom@exemple.fr"
+    OTP_EXAMPLE = "123456"
+    MOBILE_EXAMPLE = "0607080910"
+
+    def test_login_email_invalid_format_error_includes_example(self):
+        form = LoginEmailForm(data={"email": "not-an-email"})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            [
+                (
+                    "Veuillez saisir une adresse e-mail valide. "
+                    f"Exemple : {self.EMAIL_EXAMPLE}"
+                )
+            ],
+            form.errors["email"],
+        )
+
+    def test_login_email_missing_error_includes_example(self):
+        form = LoginEmailForm(data={"email": ""})
+        self.assertFalse(form.is_valid())
+        self.assertIn(self.EMAIL_EXAMPLE, form.errors["email"][0])
+
+    def test_otp_token_invalid_format_error_includes_example(self):
+        form = DsfrOtpForm(AnonymousUser(), data={"otp_token": "12A4"})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            [f"Veuillez saisir un code à 6 chiffres. Exemple : {self.OTP_EXAMPLE}"],
+            form.errors["otp_token"],
+        )
+
+    def test_otp_token_missing_error_includes_example(self):
+        form = DsfrOtpForm(AnonymousUser(), data={"otp_token": ""})
+        self.assertFalse(form.is_valid())
+        self.assertIn(self.OTP_EXAMPLE, form.errors["otp_token"][0])
+
+    def test_manager_first_login_errors_include_examples(self):
+        form = ManagerFirstLoginForm(data={"email": "invalid", "mobile": "12"})
+        self.assertFalse(form.is_valid())
+        self.assertIn(self.EMAIL_EXAMPLE, form.errors["email"][0])
+        self.assertIn(self.MOBILE_EXAMPLE, form.errors["mobile"][0])
+
+    def test_manager_first_login_missing_fields_errors_include_examples(self):
+        form = ManagerFirstLoginForm(data={})
+        self.assertFalse(form.is_valid())
+        self.assertIn(self.EMAIL_EXAMPLE, form.errors["email"][0])
+        self.assertIn(self.MOBILE_EXAMPLE, form.errors["mobile"][0])
+
+    def test_manager_first_login_with_code_errors_include_example(self):
+        form = ManagerFirstLoginWithCodeForm(data={"code_otp": "12345"})
+        self.assertFalse(form.is_valid())
+        self.assertIn(self.OTP_EXAMPLE, form.errors["code_otp"][0])
+
+        form = ManagerFirstLoginWithCodeForm(data={})
+        self.assertFalse(form.is_valid())
+        self.assertIn(self.OTP_EXAMPLE, form.errors["code_otp"][0])
