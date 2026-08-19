@@ -71,7 +71,8 @@
         <div class="fr-container--fluid fr-background-default--grey fr-p-4w fr-py-md-8w fr-px-md-10w fr-px-lg-12w">
           <div class="fr-grid-row fr-grid-row-gutters fr-grid-row--center">
             <div class="fr-col-12">
-              <form id="login-1760" method="post">
+              {# novalidate: browser native messages are replaced by DSFR error messages, which state the expected format #}
+              <form id="login-1760" method="post" novalidate>
                 {% csrf_token %}
                 <h1 class="fr-h3 fr-m-0 fr-p-0" role="heading" aria-level="2">Vous êtes habilité Aidants Connect ? Connectez-vous !</h1>
                 <div class="fr-my-6v">
