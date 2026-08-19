@@ -24,6 +24,7 @@ from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import field_validator
 
+from aidants_connect_common.constants import EMAIL_FORMAT_ERROR_MESSAGE
 from aidants_connect_common.constants import AuthorizationDurations as ADKW
 from aidants_connect_common.forms import (
     AcPhoneNumberField,
@@ -179,9 +180,6 @@ LOGIN_GENERIC_ERROR_MESSAGE = (
 
 # Error messages must include a real input example so that users who submitted an
 # incorrectly formatted value know what is expected (RGAA 11.10).
-EMAIL_FORMAT_ERROR_MESSAGE = (
-    "Veuillez saisir une adresse e-mail valide. Exemple : prenom-nom@exemple.fr"
-)
 OTP_FORMAT_ERROR_MESSAGE = "Veuillez saisir un code à 6 chiffres. Exemple : 123456"
 MOBILE_FORMAT_ERROR_MESSAGE = (
     "Veuillez saisir un numéro de téléphone mobile à 10 chiffres. "

@@ -39,6 +39,7 @@ from phonenumber_field.phonenumber import to_python
 from phonenumbers.phonenumber import PhoneNumber
 
 from aidants_connect.utils import strtobool
+from aidants_connect_common.constants import EMAIL_FORMAT_ERROR_MESSAGE
 from aidants_connect_common.models import Formation, FormationAttendant
 from aidants_connect_common.presenters import GenericHabilitationRequestPresenter
 
@@ -161,12 +162,7 @@ class FollowMyHabilitationRequesrForm(DsfrBaseForm):
     email = forms.EmailField(
         label="Adresse e-mail",
         help_text="Format attendu : prenom-nom@exemple.fr",
-        error_messages={
-            "invalid": (
-                "Veuillez saisir une adresse e-mail valide. "
-                "Exemple : prenom-nom@exemple.fr"
-            ),
-        },
+        error_messages={"invalid": EMAIL_FORMAT_ERROR_MESSAGE},
         widget=forms.EmailInput(attrs={"autocomplete": "email"}),
     )
 

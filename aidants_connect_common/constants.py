@@ -18,6 +18,7 @@ else:
     from types import DynamicClassAttribute as enum_property
 
 __all__ = [
+    "EMAIL_FORMAT_ERROR_MESSAGE",
     "DictChoices",
     "JournalActionKeywords",
     "JOURNAL_ACTIONS",
@@ -28,6 +29,12 @@ __all__ = [
     "MessageStakeholders",
     "FormationAttendantState",
 ]
+
+# Error messages must include a real input example so that users who submitted an
+# incorrectly formatted value know what is expected (RGAA 11.10).
+EMAIL_FORMAT_ERROR_MESSAGE = (
+    "Veuillez saisir une adresse e-mail valide. Exemple : prenom-nom@exemple.fr"
+)
 
 
 class ChoicesMeta(DjangoChoicesMeta):
