@@ -74,17 +74,17 @@
             {{ form }}
 
             <ul class="fr-btns-group fr-btns-group--inline-md fr-btns-group--between fr-my-6w">
-              <li>
               {% if organisation.status == NEW %}
-                <a
-                  class="fr-btn fr-btn--tertiary"
-                  href="{% url 'habilitation_new_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
-                  role="button"
-                >
-                  Revenir à l'étape précédente
-                </a>
+                <li>
+                  <a
+                      class="fr-btn fr-btn--tertiary"
+                      href="{% url 'habilitation_new_aidants' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+                      role="button"
+                    >
+                    Revenir à l'étape précédente
+                  </a>
+                </li>
               {% endif %}
-              </li>
               <li>
                 <input type="submit" class="fr-btn" value="Valider et envoyer la demande">
               </li>
