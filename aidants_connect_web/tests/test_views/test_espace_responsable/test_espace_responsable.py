@@ -226,7 +226,7 @@ class EspaceResponsableOrganisationPage(TestCase):
         response = self.client.get(reverse("espace_referent:home"))
         self.assertEqual(1, response.context["aidants_without_otp_count"])
         self.assertContains(response, "À finaliser")
-        self.assertContains(response, "1 connexion OTP à activer")
+        self.assertContains(response, "1 moyen de connexion à activer")
 
     def test_home_excludes_aidants_with_configured_card_from_otp_count(self):
         aidant = AidantFactory(organisation=self.responsable_tom.organisation)
