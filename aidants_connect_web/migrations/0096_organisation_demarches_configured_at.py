@@ -15,9 +15,8 @@ def set_demarches_configured_at_for_customised_organisations(apps, schema_editor
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ("aidants_connect_web", "0092_habilitationrequest_pix_score"),
+        ("aidants_connect_web", "0095_alter_organisation_city_and_more"),
     ]
 
     operations = [
