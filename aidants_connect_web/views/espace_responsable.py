@@ -145,8 +145,7 @@ class OrganisationView(DetailView, FormView):
         return {"demarches": self.referent.organisation.allowed_demarches}
 
     def form_valid(self, form):
-        self.organisation.allowed_demarches = form.cleaned_data["demarches"]
-        self.organisation.save(update_fields=("allowed_demarches",))
+        self.organisation.update_allowed_demarches(form.cleaned_data["demarches"])
         return super().form_valid(form)
 
 
@@ -249,8 +248,7 @@ class ReferentsView(DetailView, FormView):
         return {"demarches": self.referent.organisation.allowed_demarches}
 
     def form_valid(self, form):
-        self.organisation.allowed_demarches = form.cleaned_data["demarches"]
-        self.organisation.save(update_fields=("allowed_demarches",))
+        self.organisation.update_allowed_demarches(form.cleaned_data["demarches"])
         return super().form_valid(form)
 
 

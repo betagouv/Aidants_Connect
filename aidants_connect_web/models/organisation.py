@@ -134,6 +134,12 @@ class Organisation(models.Model):
         ),
         default=organisation_allowed_demarches,
     )
+    demarches_configured_at = models.DateTimeField(
+        "Thématiques configurées le",
+        null=True,
+        blank=True,
+        default=None,
+    )
 
     is_active = models.BooleanField("Est active", default=True, editable=False)
 
@@ -149,6 +155,19 @@ class Organisation(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+    def has_all_allowed_demarches(self) -> bool:
+        return set(self.allowed_demarches) == set(settings.DEMARCHES.keys())
+
+    @property
+    def demarches_need_configuration(self) -> bool:
+        return self.has_all_allowed_demarches() and self.demarches_configured_at is None
+
+    def update_allowed_demarches(self, demarches: list[str]) -> None:
+        self.allowed_demarches = demarches
+        if self.demarches_configured_at is None:
+            self.demarches_configured_at = timezone.now()
+        self.save(update_fields=("allowed_demarches", "demarches_configured_at"))
 
     class AlreadyExists(Exception):
         pass
