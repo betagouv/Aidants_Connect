@@ -4,23 +4,21 @@
     {{ errors }}
   </section>
 {% endif %}
-<fieldset class="fr-fieldset">
-  <div class="fr-fieldset__element fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+<div class="fr-grid-row fr-grid-row--gutters">
+  <div class="fr-col-12 fr-col-md-6">
     {% aidantc_dsfr_form_field_no_asterisk form.last_name %}
   </div>
-  <div class="fr-fieldset__element fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+  <div class="fr-col-12 fr-col-md-6">
     {% aidantc_dsfr_form_field_no_asterisk form.first_name %}
   </div>
-  <div class="fr-fieldset__element">
-    {% aidantc_dsfr_form_field_no_asterisk form.profession %}
+</div>
+<div class="fr-mt-4v">
+  {% aidantc_dsfr_form_field_no_asterisk form.profession %}
+</div>
+<div class="fr-mt-4v">
+  {% aidantc_dsfr_form_field_no_asterisk form.email %}
+  <div class="fr-alert fr-alert--warning fr-alert--sm">
+    <p class="fr-text--md fr-mb-2w">Toutes les adresses e-mail renseignées dans la demande doivent être nominatives (de type prenom-nom@exemple.fr). La demande d'habilitation sera refusée si les adresses e-mail ne respectent pas ce format.</p>
+    <p class="fr-text--md">Attention : les adresses @poste.net et @laposte.net rencontrent des problèmes de réception si l'identité numérique n'a pas été configurée.</p>
   </div>
-</fieldset>
-<fieldset class="fr-fieldset">
-  <div class="fr-fieldset__element">
-    {% aidantc_dsfr_form_field_no_asterisk form.email %}
-    <div class="fr-alert fr-alert--warning fr-alert--sm">
-      <p class="fr-text--md fr-mb-2w">Toutes les adresses e-mail renseignées dans la demande doivent être nominatives (de type prenom-nom@exemple.fr). La demande d'habilitation sera refusée si les adresses e-mail ne respectent pas ce format.</p>
-      <p class="fr-text--md">Attention : les adresses @poste.net et @laposte.net rencontrent des problèmes de réception si l'identité numérique n'a pas été configurée.</p>
-    </div>
-  </div>
-</fieldset>
+</div>
