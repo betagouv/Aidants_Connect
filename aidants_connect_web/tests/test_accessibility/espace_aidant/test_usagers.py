@@ -28,7 +28,7 @@ class MandatesAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_title_is_correct(self):
         await self.lazy_loading(self._open_url)
-        await expect(self.page).to_have_title("Usagers - Aidants Connect")
+        await expect(self.page).to_have_title("Mes mandats - Aidants Connect")
 
     @async_test
     async def test_skiplinks_are_valid(self):
