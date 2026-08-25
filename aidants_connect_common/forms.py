@@ -196,6 +196,9 @@ class ConseillerNumerique(Form):
         choices=((True, "Oui"), (False, "Non")),
         coerce=lambda value: bool(strtobool(value)),
         widget=RadioSelect,
+        error_messages={
+            "required": "Au moins une option doit être cochée",
+        },
     )
 
     def clean(self):
