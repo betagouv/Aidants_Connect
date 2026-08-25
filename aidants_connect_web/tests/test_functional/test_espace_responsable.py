@@ -473,11 +473,19 @@ class NewHabilitationRequestTests(FunctionalTestCase):
             "test@test.test"
         )
         self.selenium.find_element(By.ID, "partial-submit").click()
+        self.wait.until(self.document_loaded())
 
-        errors = self._wait_for_errors()
-        self.assertGreater(len(errors), 0)
-        for error in errors:
-            self.assertIn("Ce champ est obligatoire.", error.text)
+        prefix = "id_multiform-habilitation_requests-0"
+        self.assertIn(
+            "Ce champ est obligatoire.",
+            self.selenium.find_element(By.ID, f"{prefix}-first_name-desc-error").text,
+        )
+        self.assertIn(
+            "Au moins une option doit être cochée",
+            self.selenium.find_element(
+                By.ID, f"{prefix}-conseiller_numerique-desc-error"
+            ).text,
+        )
 
         self.assertFalse(HabilitationRequest.objects.exists())
 
