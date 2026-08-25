@@ -1,49 +1,92 @@
 @use "colors";
 
-body {
+.mandat-steps {
   counter-reset: fr-label;
+
+  // Restore DSFR list bullets inside steps (fr-raw-list sets --ul-type: none)
+  ul {
+    --ul-type: disc;
+    --ul-start: 1rem;
+    --xl-block: 0.5rem;
+    --li-bottom: 0.25rem;
+  }
+}
+
+// Align FC button on the right of the circle
+.mandat-step {
+  >#france_connection {
+    margin-left: 4.5rem;
+  }
 }
 
 /* New css */
 .border {
   border-bottom: solid 1px var(--border-active-blue-france);
 }
+
 fieldset {
   border: none;
 }
-.fr-checkbox-group input[type="checkbox"] + label.detailed-radio-select-label {
+
+#demarche-fieldset.fr-fieldset,
+#duree-fieldset.fr-fieldset {
+  margin: 0;
+  padding: 0;
+  max-width: none;
+}
+
+#demarche-fieldset .fr-fieldset__legend {
+  margin: 0 0 1rem;
+  padding: 0;
+  max-width: none;
+}
+
+#demarche-fieldset.fr-fieldset--error .fr-fieldset__legend {
+  // Keep text away from the DSFR error stripe
+  padding-left: 0.75rem;
+}
+
+.fr-checkbox-group input[type="checkbox"]+label.detailed-radio-select-label {
   margin: 0;
   justify-content: center;
   height: 100%;
+
   &::before {
     left: unset;
     right: 0;
   }
+
   img {
     display: block;
   }
+
   .detailed-radio-select-label-text {
     font-weight: 700;
   }
+
   .detailed-radio-select-description {
     font-size: 14px;
   }
 }
+
 .mandat-demarche {
   .detailed-radio-select-label-text {
     display: block;
   }
 }
+
 .mandat-duree {
   .detailed-radio-select-label-text {
     font-weight: 700;
   }
+
   .detailed-radio-select-description {
     font-size: 12px;
     display: block;
     color: var(--text-mention-grey);
   }
 }
+
 h2.fr-label.title-count {
   font-size: 1.75rem;
   line-height: 2.25rem;
@@ -54,6 +97,7 @@ h2.fr-label.title-count {
   margin-bottom: 2rem;
   margin-top: 2rem;
   counter-increment: fr-label;
+
   &::before {
     background-color: var(--border-active-blue-france);
     border-radius: 50%;
@@ -71,15 +115,18 @@ h2.fr-label.title-count {
     vertical-align: bottom;
   }
 }
+
 @media (min-width: 48em) {
   h2.fr-label.title-count {
     font-size: 1.75rem;
     line-height: 2.25rem;
   }
 }
+
 .related-fields input[name="user_phone"] {
   background-color: var(--background-contrast-grey);
 }
+
 .checkbox-col {
   margin-left: 2rem;
 }

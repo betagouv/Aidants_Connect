@@ -29,13 +29,27 @@
       data-mandate-form-controller-bdf-warning-value="{{ warn_scope.value }}"
     >
       {% if form.errors %}
-        <div class="fr-alert fr-alert--error" role="alert">
+        <div
+          id="form-errors"
+          class="fr-alert fr-alert--error"
+          role="alert"
+          tabindex="-1"
+          data-mandate-form-controller-target="formErrors"
+        >
           <h3 class="fr-alert__title">Il y a des erreurs dans le formulaire</h3>
           <div class="fr-alert__description">
             <ul>
               {% for field_name, errors in form.errors.items %}
                 {% for error in errors %}
-                  <li>{{ error }}</li>
+                  <li>
+                    {% if field_name == "demarche" %}
+                      <a href="#demarche-fieldset">{{ error }}</a>
+                    {% elif field_name == "duree" %}
+                      <a href="#duree-fieldset">{{ error }}</a>
+                    {% else %}
+                      {{ error }}
+                    {% endif %}
+                  </li>
                 {% endfor %}
               {% endfor %}
             </ul>
@@ -44,53 +58,68 @@
       {% endif %}
       {% csrf_token %}
 
-      <section class="mandat-step" aria-labelledby="mandat-step-inform">
-        <h2 id="mandat-step-inform" class="fr-label title-count">Lisez ces mentions à l’usager</h2>
-        <p>Le mandat est une autorisation écrite qui permet à l’aidant de réaliser pour vous des démarches
-          administratives. Il vous protège et protège l’aidant qui vous accompagne. Vous pourrez y mettre fin à tout
-          moment.</p>
-        <p class="fr-my-6v"><strong>Une fois ce mandat signé par les deux parties, l’aidant s’engage à :</strong></p>
-        <ul>
-          <li>réaliser les démarches listées dans le mandat à partir des informations que vous lui avez données ;</li>
-          <li>utiliser et enregistrer seulement les informations nécessaires à ces démarches ;</li>
-          <li>ne pas effectuer d’autres démarches que celles listées dans le mandat ;</li>
-          <li>sécuriser l’ensemble de vos informations et les supprimer lorsqu’elles ne sont plus utiles.</li>
-        </ul>
-      </section>
+      <ol class="fr-raw-list mandat-steps">
+        <li class="mandat-step" aria-labelledby="mandat-step-inform">
+          <h2 id="mandat-step-inform" class="fr-label title-count">Lisez ces mentions à l’usager</h2>
+          <p>Le mandat est une autorisation écrite qui permet à l’aidant de réaliser pour vous des démarches
+            administratives. Il vous protège et protège l’aidant qui vous accompagne. Vous pourrez y mettre fin à tout
+            moment.</p>
+          <p class="fr-my-6v"><strong>Une fois ce mandat signé par les deux parties, l’aidant s’engage à :</strong></p>
+          <ul>
+            <li>réaliser les démarches listées dans le mandat à partir des informations que vous lui avez données ;</li>
+            <li>utiliser et enregistrer seulement les informations nécessaires à ces démarches ;</li>
+            <li>ne pas effectuer d’autres démarches que celles listées dans le mandat ;</li>
+            <li>sécuriser l’ensemble de vos informations et les supprimer lorsqu’elles ne sont plus utiles.</li>
+          </ul>
+        </li>
 
-      <section class="mandat-step demarches-section" aria-labelledby="mandat-step-demarches">
-        <h2 id="mandat-step-demarches" class="fr-label title-count">{{ form.demarche.label }}</h2>
-        <fieldset role="group" aria-labelledby="mandat-step-demarches">
-          {# Visually hidden legend required by the checkboxgroup a11y rule #}
-          <legend class="fr-sr-only">{{ form.demarche.label }}</legend>
-          {% aidantc_dsfr_form_field_no_asterisk form.demarche True %}
-        </fieldset>
-      </section>
+        <li class="mandat-step demarches-section" aria-labelledby="mandat-step-demarches">
+          <h2 id="mandat-step-demarches" class="fr-label title-count">{{ form.demarche.label }}</h2>
+          <fieldset
+            id="demarche-fieldset"
+            class="fr-fieldset{% if form.demarche.errors %} fr-fieldset--error{% endif %}"
+            role="group"
+            aria-labelledby="mandat-step-demarches"
+            aria-describedby="demarche-hint{% if form.demarche.errors %} id_demarche-desc-error{% endif %}"
+            tabindex="-1"
+          >
+            <legend class="fr-fieldset__legend fr-fieldset__legend--regular">
+              <span class="fr-sr-only">{{ form.demarche.label }}. </span>
+              <span class="fr-hint-text" id="demarche-hint">Sélectionnez au moins une démarche.</span>
+            </legend>
+            {% aidantc_dsfr_form_field_no_asterisk form.demarche True %}
+          </fieldset>
+          {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
+        </li>
 
-      {% include "aidants_connect_web/new_mandat/_bdf-warning-notification.html" %}
-
-      <div class="fr-col-12 fr-col-lg-8">
-        <section class="mandat-step" aria-labelledby="mandat-step-duree">
+        <li class="mandat-step fr-col-12 fr-col-lg-8" aria-labelledby="mandat-step-duree">
           <h2 id="mandat-step-duree" class="fr-label title-count">{{ form.duree.label }}</h2>
-          <fieldset role="group" aria-labelledby="mandat-step-duree">
+          <fieldset
+            id="duree-fieldset"
+            class="fr-fieldset{% if form.duree.errors %} fr-fieldset--error{% endif %}"
+            role="group"
+            aria-labelledby="mandat-step-duree"
+            {% if form.duree.errors %}aria-describedby="id_duree-desc-error"{% endif %}
+            tabindex="-1"
+          >
             {# Visually hidden legend required by the radiogroup a11y rule #}
             <legend class="fr-sr-only">{{ form.duree.label }}</legend>
             {% aidantc_dsfr_form_field_no_asterisk form.duree True %}
           </fieldset>
-        </section>
+        </li>
 
-        <section class="mandat-step" aria-labelledby="mandat-step-submit">
+        <li class="mandat-step fr-col-12 fr-col-lg-8" aria-labelledby="mandat-step-submit">
           {% block input_submit_form %}
             <h2 id="mandat-step-submit" class="fr-label title-count">Connectez l’usager à FranceConnect</h2>
             <section id="france_connection">
-              <button id="submit-btn" class="fr-connect fr-ml-6w" type="submit">
+              <button id="submit-btn" class="fr-connect" type="submit">
                 <span class="fr-connect__login">S’identifier avec</span>
                 <span class="fr-connect__brand">FranceConnect</span>
               </button>
             </section>
           {% endblock input_submit_form %}
-        </section>
-      </div>
+        </li>
+      </ol>
     </form>
   </div>
 {% endblock content %}

@@ -153,6 +153,7 @@ class AccessibilityTestCase(FunctionalTestCase):
         if hasattr(cls, "common_page") and cls.common_page is not None:
             if hasattr(cls.common_page, "context"):
                 cls.loop.run_until_complete(cls.common_page.context.close())
+            cls.common_page = None
         super().tearDownClass()
 
     async def check_accessibility(
