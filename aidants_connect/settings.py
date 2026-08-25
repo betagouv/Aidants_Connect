@@ -14,7 +14,6 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
-from itertools import chain
 from pathlib import Path
 from typing import Optional
 
@@ -502,24 +501,7 @@ CSP_STYLE_SRC_ATTR = (
 )
 
 CSP_OBJECT_SRC = ("'none'",)
-CSP_FRAME_SRC = list(
-    chain.from_iterable(
-        [
-            [
-                f"https://www.youtube.com/embed/{video_id}",
-                f"https://www.youtube-nocookie.com/embed/{video_id}",
-                f"http://www.youtube.com/embed/{video_id}",
-                f"http://www.youtube-nocookie.com/embed/{video_id}",
-            ]
-            for video_id in [
-                "hATrqHG4zYQ",
-                "WTHj_kQXnzs",
-                "ihsm-36I-fE",
-                "AJGo6bydQss",
-            ]
-        ]
-    )
-)
+CSP_FRAME_SRC = ("'none'",)
 
 CSP_INCLUDE_NONCE_IN = ("script-src", "style-src")
 
