@@ -20,21 +20,19 @@
         {% include "layouts/_breadcrumbs.html" %}
         <form method="post" class="fr-my-8v">
           {% csrf_token %}
-          <fieldset class="fr-fieldset">
-            <legend class="fr-fieldset__legend">Confirmation de votre email</legend>
-            <div class="fr-fieldset__element fr-my-8v">
-              <p>
-                Un e-mail vous a été envoyé à l’adresse mail renseignée.<br />
-                <strong>Veuillez cliquer sur le lien inclus dans cet email afin de confirmer votre adresse.</strong>
-              </p>
-              <p>
-                <em>
-                  Si vous n’avez pas reçu cet email, vous pouvez utiliser le bouton ci-dessous afin de déclencher un
-                  nouvel envoi.
-                </em>
-              </p>
-            </div>
-          </fieldset>
+          <p class="fr-text--lg fr-text--bold fr-mb-0">Confirmation de votre email</p>
+          <div class="fr-my-8v">
+            <p>
+              Un e-mail vous a été envoyé à l’adresse mail renseignée.<br />
+              <strong>Veuillez cliquer sur le lien inclus dans cet email afin de confirmer votre adresse.</strong>
+            </p>
+            <p>
+              <em>
+                Si vous n’avez pas reçu cet email, vous pouvez utiliser le bouton ci-dessous afin de déclencher un
+                nouvel envoi.
+              </em>
+            </p>
+          </div>
           <section class="fr-btns-group fr-btns-group--inline fr-btns-group--right">
             <ul>
               <li>
