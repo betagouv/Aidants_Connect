@@ -13,6 +13,7 @@
 
 {% block content %}
   <div class="fr-container--fluid">
+    <h1 class="fr-sr-only">Connectez-vous</h1>
     <div class="fr-grid-row">
       <div class="fr-col-12 fr-col-md-6 fr-background-alt--blue-france fr-p-4w fr-p-md-8w">
         <div class="fr-container--fluid">
@@ -74,7 +75,7 @@
               {# novalidate: browser native messages are replaced by DSFR error messages, which state the expected format #}
               <form id="login-1760" method="post" novalidate>
                 {% csrf_token %}
-                <h1 class="fr-h3 fr-m-0 fr-p-0" role="heading" aria-level="2">Vous êtes habilité Aidants Connect ? Connectez-vous !</h1>
+                <h2 class="fr-h3 fr-m-0 fr-p-0">Vous êtes habilité Aidants Connect ? Connectez-vous !</h2>
                 <div class="fr-my-6v">
                   <p class="fr-text--sm">Sauf mention contraire, tous les champs sont obligatoires.</p>
                 </div>
