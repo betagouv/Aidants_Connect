@@ -120,3 +120,11 @@ section[aria-labelledby="actions-rapides-referent-title"] .fr-tile__detail {
   width: 100%;
   text-align: left;
 }
+
+.otp-qr-code {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+}

@@ -12,8 +12,8 @@ DSFR component - Search bar label is hidden by default, so we need to pick it up
 <div class="fr-col-6 fr-input-group {% if form.siret.errors %}fr-input-group--error{% endif %}">
   <label class="fr-label fr-mb-2v" for="id_siret">
     Renseignez le numéro Siret de votre structure
+    <span class="fr-hint-text fr-mb-2v">Format attendu : 14 chiffres</span>
   </label>
-  <p class="fr-hint-text fr-mb-2v">Format attendu : 14 chiffres</p>
   <div class="fr-search-bar fr-search-bar--sm fr-mb-2v" role="search" data-search-target="searchBar" data-controller="siret-formatter">
     <input
       class="fr-input"

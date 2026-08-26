@@ -8,6 +8,7 @@ from django.forms import (
     BooleanField,
     CharField,
     ChoiceField,
+    EmailInput,
     FileField,
     HiddenInput,
     Media,
@@ -144,6 +145,16 @@ class AddressValidatableForm(DsfrBaseForm):
         )
 
 
+# The user describes themselves here, so the fields advertise their autocomplete
+# token. Forms about a third party (aidants) must not.
+PERSONAL_DATA_WIDGETS = {
+    "first_name": TextInput(attrs={"autocomplete": "given-name"}),
+    "last_name": TextInput(attrs={"autocomplete": "family-name"}),
+    "profession": TextInput(attrs={"autocomplete": "organization-title"}),
+    "email": EmailInput(attrs={"autocomplete": "email"}),
+}
+
+
 class IssuerForm(ModelForm, CleanEmailMixin, DsfrBaseForm):
     template_name = "aidants_connect_habilitation/forms/issuer.html"
 
@@ -152,6 +163,7 @@ class IssuerForm(ModelForm, CleanEmailMixin, DsfrBaseForm):
     class Meta:
         model = models.Issuer
         exclude = ["issuer_id", "email_verified"]
+        widgets = PERSONAL_DATA_WIDGETS
 
 
 class OrganisationSiretVerificationRequestForm(DsfrBaseForm):
@@ -342,7 +354,9 @@ class ReferentForm(ModelForm, CleanEmailMixin, DsfrBaseForm):
     phone = AcPhoneNumberField(
         initial="",
         label=mark_safe("Numéro de téléphone <strong>mobile</strong>"),
+        help_text="Format attendu : 06 00 00 00 00 ou +33 06 00 00 00 00",
         required=True,
+        widget=AcPhoneNumberField.widget(attrs={"autocomplete": "tel"}),
     )
 
     @property
@@ -391,6 +405,7 @@ class ReferentForm(ModelForm, CleanEmailMixin, DsfrBaseForm):
     class Meta:
         model = Manager
         fields = ["first_name", "last_name", "email", "phone", "profession"]
+        widgets = PERSONAL_DATA_WIDGETS
 
 
 class EmailOrganisationValidationError(ValidationError):
@@ -506,6 +521,10 @@ class AidantRequestForm(
 
 class BaseAidantRequestFormSet(BaseModelFormSet):
     template_name = "aidants_connect_habilitation/forms/add-aidants-formset.html"
+
+    # Index of the form the browser must focus on load. The formset template only
+    # receives the formset itself, so the view can't pass this through the context.
+    autofocus_form_index = None
 
     default_error_messages = {
         "too_few_forms": (

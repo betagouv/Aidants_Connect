@@ -28,12 +28,15 @@
               <a
                 class="fr-btn fr-btn--tertiary"
                 href="{% url 'habilitation_modify_organisation' issuer_id=organisation.issuer.issuer_id uuid=organisation.uuid %}"
+                role="button"
               >
                 Revenir à l’étape précédente
               </a>
             </li>
             <li>
-              <input type="submit" class="fr-btn" value="Passer à l’étape suivante">
+              <button type="submit" class="fr-btn habilitation-primary-action">
+                Passer à l’étape suivante
+              </button>
             </li>
           </ul>
         </form>

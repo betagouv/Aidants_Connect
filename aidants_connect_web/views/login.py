@@ -17,6 +17,7 @@ from magicauth.otp_forms import OTPForm
 
 from aidants_connect_common.utils import render_email
 from aidants_connect_web.forms import (
+    LOGIN_GENERIC_ERROR_MESSAGE,
     DsfrOtpForm,
     LoginEmailForm,
     ManagerFirstLoginForm,
@@ -83,7 +84,16 @@ class LoginView(ACSendEMailForTokenMixin, magicauth_views.LoginView):
             sender=self.__class__, user=otp_form.user, request=self.request
         )
 
-        return super().otp_form_invalid(form, otp_form)
+        # magicauth copies the OTP errors verbatim onto the email field. Always
+        # reporting the same generic message instead keeps this response
+        # identical to the one returned for an unknown email, whatever the
+        # reason the OTP was rejected: otherwise, submitting an empty or
+        # malformed OTP would tell whether an account exists for that email.
+        form.add_error("email", LOGIN_GENERIC_ERROR_MESSAGE)
+
+        return self.render_to_response(
+            self.get_context_data(form=form, OTP_form=otp_form)
+        )
 
     def render_email(self, context):
         return render_email(self.html_template, context)

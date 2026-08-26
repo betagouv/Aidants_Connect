@@ -15,12 +15,12 @@ class AidantRequestForm extends BaseController {
   }
 
   onManagerIsAidant(event) {
-    const fieldset = event.target
-      .closest(".fr-accordion")
-      .querySelector(".fr-fieldset");
+    // Search within the accordion (not a fieldset): text fields are no longer
+    // wrapped in a fieldset; only the conseiller numérique radios are.
+    const container = event.target.closest(".fr-accordion");
 
     Object.keys(this.managerData).forEach((key) => {
-      const field = fieldset.querySelector(`[name$='${key}']`);
+      const field = container.querySelector(`[name$='${key}']`);
       if (field) field.value = this.managerData[key];
     });
   }

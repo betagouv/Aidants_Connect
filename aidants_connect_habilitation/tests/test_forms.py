@@ -2,6 +2,7 @@ from django.conf import settings
 from django.test import TestCase
 
 from aidants_connect_common.constants import (
+    EMAIL_FORMAT_ERROR_MESSAGE,
     RequestOriginConstants,
     RequestStatusConstants,
 )
@@ -383,3 +384,30 @@ class TestAidantRequestFormSet(TestCase):
             [[error_message], [error_message]],
             [subform.errors["email"] for subform in form.forms],
         )
+
+
+class TestEmailErrorMessages(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = OrganisationRequestFactory()
+
+    def forms_with_an_email_field(self, **data):
+        return {
+            "IssuerForm": IssuerForm(data=data),
+            "ReferentForm": ReferentForm(organisation=self.organisation, data=data),
+            "AidantRequestForm": AidantRequestForm(
+                organisation=self.organisation, data=data
+            ),
+        }
+
+    def test_invalid_email_includes_a_real_format_example(self):
+        for name, form in self.forms_with_an_email_field(email="not-an-email").items():
+            with self.subTest(name):
+                self.assertFalse(form.is_valid())
+                self.assertEqual([EMAIL_FORMAT_ERROR_MESSAGE], form.errors["email"])
+
+    def test_missing_email_includes_a_real_format_example(self):
+        for name, form in self.forms_with_an_email_field().items():
+            with self.subTest(name):
+                self.assertFalse(form.is_valid())
+                self.assertEqual([EMAIL_FORMAT_ERROR_MESSAGE], form.errors["email"])

@@ -22,11 +22,13 @@
       <td>{{ mandats.first_creation_date|date:"d F Y" }}</td>
     {% endif %}
     <td>
-      <div class="fr-tags-group">
+      <ul class="fr-tags-group">
         {% for autorisation in mandats.unique_permissions %}
-          <p class="fr-tag fr-tag--blue fr-text--xs">{{ autorisation|capfirst }}</p>
+          <li>
+            <p class="fr-tag fr-tag--blue fr-text--xs">{{ autorisation|capfirst }}</p>
+          </li>
         {% endfor %}
-      </div>
+      </ul>
     </td>
     <td>
       <a class="fr-btn fr-btn--secondary fr-text--sm" href="{{ usager.renew_mandate_url }}">

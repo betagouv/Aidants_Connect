@@ -17,6 +17,7 @@ from django.utils.timezone import now
 from phonenumber_field.modelfields import PhoneNumberField
 
 from aidants_connect_common.constants import (
+    EMAIL_FORMAT_ERROR_MESSAGE,
     MessageStakeholders,
     RequestOriginConstants,
     RequestStatusConstants,
@@ -53,6 +54,17 @@ class PersonEmailField(models.EmailField):
         kwargs["verbose_name"] = "Adresse e-mail"
         kwargs["help_text"] = "Format attendu : prenom-nom@exemple.fr"
         super().__init__(**kwargs)
+
+    def formfield(self, **kwargs):
+        return super().formfield(
+            **{
+                "error_messages": {
+                    "invalid": EMAIL_FORMAT_ERROR_MESSAGE,
+                    "required": EMAIL_FORMAT_ERROR_MESSAGE,
+                },
+                **kwargs,
+            }
+        )
 
 
 class Person(models.Model):

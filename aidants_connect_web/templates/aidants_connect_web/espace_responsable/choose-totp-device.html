@@ -1,7 +1,7 @@
 {% extends 'aidants_connect_web/espace_responsable/layout/main.html' %}
 {% load ac_common ac_extras static %}
 
-{% block title %}Choisir un type de carte TOTP- Aidants Connect{% endblock %}
+{% block title %}Lier un moyen de connexion - Aidants Connect{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/espace-aidant.css' %}" rel="stylesheet">
@@ -12,14 +12,14 @@
     {% include "layouts/_messages.html" %}
 
     <div class="fr-grid-row fr-grid-row--gutters">
-      <div class="fr-col-12 fr-col-md-8">
+      <div class="fr-col-12 fr-col-md-9">
         <p class="fr-text-mention--grey fr-text--xl fr-mb-0">RÉFÉRENTS</p>
         <h1>Lier un moyen de connexion</h1>
         <p class="fr-text--xl">
           Affectez un moyen de connexion à {{ aidant.get_full_name }} en suivant les étapes ci-dessous.
         </p>
         <div class="fr-grid-row flex-between fr-grid-row--middle fr-mb-3w">
-          <div><strong>Sélectionnez le moyen de connexion que vous souhaitez lier à {{ aidant.get_full_name }} :</strong></div>
+          <p class="fr-mb-0"><strong>Sélectionnez le moyen de connexion que vous souhaitez lier à {{ aidant.get_full_name }} :</strong></p>
           <details>
             <summary>
               <div class="fr-btn fr-btn--secondary">Guides</div>
@@ -50,48 +50,50 @@
             class="fr-col-12 fr-col-md-6{% if not physical_option_available %} disabled{% endif %}"
             {% if not physical_option_available %}title="{{ physical_option_unavailable_text }}"{% endif %}
           >
-            <div class="fr-card fr-pt-4w">
+            <div class="fr-card">
               <div class="fr-card__body">
-                <p>Une carte physique génératrice de code de connexion à la pression d’un bouton.</p>
-                <div class="fr-grid-row fr-grid-row--center">
-                  <img src="{% static 'images/carte-totp.png' %}" alt="" aria-hidden="true" />
+                <div class="fr-card__content">
+                  <p>Une carte physique génératrice de code de connexion à la pression d’un bouton.</p>
+                  <div class="fr-grid-row fr-grid-row--center">
+                    <img src="{% static 'images/carte-totp.png' %}" alt="" aria-hidden="true" />
+                  </div>
                 </div>
-              </div>
-              <div class="fr-card__footer fr-grid-row fr-grid-row--center">
-                {% if aidant.has_a_carte_totp %}
-                  {# We always want to be able to unlink a card #}
-                  <ul class="fr-btns-group">
-                    <li>
-                      <a
-                        id="remove-totp-card-from-aidant-{{ aidant.id }}"
-                        href="{% url "espace_referent:aidant_remove_card" aidant_id=aidant.id %}"
-                        class="fr-btn"
-                      >
-                        Délier la carte physique
-                      </a>
-                    </li>
-                    {% if aidant.is_active and not aidant.carte_totp.totp_device.confirmed %}
+                <div class="fr-card__footer fr-grid-row fr-grid-row--center">
+                  {% if aidant.has_a_carte_totp %}
+                    {# We always want to be able to unlink a card #}
+                    <ul class="fr-btns-group">
                       <li>
                         <a
-                          id="validate-totp-card-for-aidant-{{ aidant.id }}"
-                          href="{% url "espace_referent:validate_totp" aidant_id=aidant.id %}"
+                          id="remove-totp-card-from-aidant-{{ aidant.id }}"
+                          href="{% url "espace_referent:aidant_remove_card" aidant_id=aidant.id %}"
                           class="fr-btn"
                         >
-                          Valider la carte physique
+                          Délier la carte physique
                         </a>
                       </li>
-                    {% endif %}
-                  </ul>
-                {% else %}
-                  {# By default, we display that button, just disabled if the user is inactive #}
-                  <a
-                    id="add-totp-card-to-aidant-{{ aidant.id }}"
-                    {% if physical_option_available %}href="{% url "espace_referent:associate_totp" aidant_id=aidant.id %}"{% endif %}
-                    class="fr-btn"
-                  >
-                    Utiliser une carte physique
-                  </a>
-                {% endif %}
+                      {% if aidant.is_active and not aidant.carte_totp.totp_device.confirmed %}
+                        <li>
+                          <a
+                            id="validate-totp-card-for-aidant-{{ aidant.id }}"
+                            href="{% url "espace_referent:validate_totp" aidant_id=aidant.id %}"
+                            class="fr-btn"
+                          >
+                            Valider la carte physique
+                          </a>
+                        </li>
+                      {% endif %}
+                    </ul>
+                  {% else %}
+                    {# By default, we display that button, just disabled if the user is inactive #}
+                    <a
+                      id="add-totp-card-to-aidant-{{ aidant.id }}"
+                      {% if physical_option_available %}href="{% url "espace_referent:associate_totp" aidant_id=aidant.id %}"{% endif %}
+                      class="fr-btn"
+                    >
+                      Utiliser une carte physique
+                    </a>
+                  {% endif %}
+                </div>
               </div>
             </div>
           </li>
@@ -99,34 +101,36 @@
             class="fr-col-12 fr-col-md-6{% if not digital_option_available %} disabled{% endif %}"
             {% if not digital_option_available %}title="{{ digital_option_unavailable_text }}"{% endif %}
           >
-            <div class="fr-card fr-pt-4w">
+            <div class="fr-card">
               <div class="fr-card__body">
-                <p>
-                  Une application d'authentification qui génère un code à intervalles réguliers.
-                  Vous avez besoin du téléphone utilisé par l’aidant pour configurer cette option.
-                </p>
-                <div class="fr-grid-row fr-grid-row--center">
-                  <img src="{% static 'images/application-totp.png' %}" alt="" aria-hidden="true" />
+                <div class="fr-card__content">
+                  <p>
+                    Une application d'authentification qui génère un code à intervalles réguliers.
+                    Vous avez besoin du téléphone utilisé par l’aidant pour configurer cette option.
+                  </p>
+                  <div class="fr-grid-row fr-grid-row--center">
+                    <img src="{% static 'images/application-totp.png' %}" alt="" aria-hidden="true" />
+                  </div>
                 </div>
-              </div>
                 <div class="fr-card__footer fr-grid-row fr-grid-row--center">
-                {% if aidant.has_otp_app %}
-                  <a
-                    id="add-otp-app-to-aidant-{{ aidant.id }}"
-                    href="{% url 'espace_referent:aidant_remove_app_otp' aidant_id=aidant.id %}"
-                    class="fr-btn"
-                  >
-                    Délier une application d'authentification
-                  </a>
-                {% else %}
-                  <a
-                    id="add-otp-app-to-aidant-{{ aidant.id }}"
-                    {% if digital_option_available %}href="{% url 'espace_referent:aidant_add_app_otp' aidant_id=aidant.id %}"{% endif %}
-                    class="fr-btn"
-                  >
-                    Utiliser une application d'authentification
-                  </a>
-                {% endif %}
+                  {% if aidant.has_otp_app %}
+                    <a
+                      id="add-otp-app-to-aidant-{{ aidant.id }}"
+                      href="{% url 'espace_referent:aidant_remove_app_otp' aidant_id=aidant.id %}"
+                      class="fr-btn"
+                    >
+                      Délier une application d'authentification
+                    </a>
+                  {% else %}
+                    <a
+                      id="add-otp-app-to-aidant-{{ aidant.id }}"
+                      {% if digital_option_available %}href="{% url 'espace_referent:aidant_add_app_otp' aidant_id=aidant.id %}"{% endif %}
+                      class="fr-btn"
+                    >
+                      Utiliser une application d'authentification
+                    </a>
+                  {% endif %}
+                </div>
               </div>
             </div>
           </li>

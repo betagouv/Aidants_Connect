@@ -18,18 +18,11 @@
         <div class="fr-container fr-background-alt--grey fr-px-md-0 fr-py-10v fr-py-md-14v">
           <div class="fr-grid-row fr-grid-row-gutters fr-grid-row--center">
             <div class="fr-col-12 fr-col-md-9 fr-col-lg-8">
-              <form id="login-1760" method="post">
+              {# novalidate: browser native messages are replaced by DSFR error messages, which state the expected format #}
+              <form id="login-1760" method="post" novalidate>
                 {% csrf_token %}
-
-                <fieldset
-                  class="fr-fieldset fr-py-0 fr-my-0"
-                  id="login-1760-fieldset"
-                  aria-labelledby="login-1760-fieldset-legend"
-                >
-                <legend id="login-1760-fieldset-legend">
-                  <h1 class="fr-h3 fr-m-0 fr-p-0">Première connexion référent</h1>
-                </legend>
-                <div class="fr-fieldset__element fr-my-6v">
+                <h1 class="fr-h3 fr-m-0 fr-p-0">Première connexion référent</h1>
+                <div class="fr-my-6v">
                   <p class="fr-text--sm">
                     Renseignez votre adresse e-mail
                     et votre numéro de téléphone mobile. Un code vous
@@ -37,29 +30,18 @@
                     Sauf mention contraire, tous les champs sont obligatoires.
                   </p>
                 </div>
-
-                  <div class="fr-fieldset__element fr-my-6v">
-                    <fieldset class="fr-fieldset fr-my-0" id="credentials">
-                      <div class="fr-fieldset__element">
-                        {% aidantc_dsfr_form_field_no_asterisk form.email %}
-                      </div>
-                      <div class="fr-fieldset__element">
-                        {% aidantc_dsfr_form_field_no_asterisk form.mobile %}
-                      </div>
-
-                    </fieldset>
-                    {{ form.non_field_errors }}
-                  </div>
-                  <div class="fr-fieldset__element fr-my-0">
-                    <ul class="fr-btns-group">
-                      <li>
-                        <button type="submit" class="fr-btn">Se connecter</button>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="fr-messages-group" id="login-1760-fieldset-messages" aria-live="assertive">
-                  </div>
-                </fieldset>
+                <div class="fr-my-6v">
+                  {% aidantc_dsfr_form_field_no_asterisk form.email %}
+                </div>
+                <div class="fr-my-6v">
+                  {% aidantc_dsfr_form_field_no_asterisk form.mobile %}
+                </div>
+                {{ form.non_field_errors }}
+                <div class="fr-my-0">
+                  <button type="submit" class="fr-btn">Se connecter</button>
+                </div>
+                <div class="fr-messages-group" id="login-1760-messages" aria-live="assertive">
+                </div>
               </form>
 
 
