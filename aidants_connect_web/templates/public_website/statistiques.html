@@ -56,16 +56,20 @@
                       <h1 id="fr-transcription-modal-title-mandats-chart-transcription" class="fr-modal__title">Transcription du graphique par type de démarche</h1>
                       <table>
                         <caption>Répartition du nombre de démarches par type</caption>
-                        <tr>
-                          <th scope="col">Type de démarche</th>
-                          <th scope="col">Nombre de démarches</th>
-                        </tr>
-                        {% for demarche in demarches_transcription %}
+                        <thead>
                           <tr>
-                            <th scope="row">{{ demarche.title }}</th>
-                            <td>{{ demarche.value }}</td>
+                            <th scope="col">Type de démarche</th>
+                            <th scope="col">Nombre de démarches</th>
                           </tr>
-                        {% endfor %}
+                        </thead>
+                        <tbody>
+                          {% for demarche in demarches_transcription %}
+                            <tr>
+                              <th scope="row">{{ demarche.title }}</th>
+                              <td>{{ demarche.value }}</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
                       </table>
                     </div>
                   </div>
