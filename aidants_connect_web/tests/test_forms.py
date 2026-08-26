@@ -619,6 +619,21 @@ class AddAidantEmailErrorMessagesTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual([EMAIL_FORMAT_ERROR_MESSAGE], form.errors["new_email"])
 
+    def test_structure_change_email_will_change_required_when_displayed(self):
+        trained = AidantFactory(organisation=OrganisationFactory())
+        form = StructureChangeRequestForm(
+            referent=self.referent,
+            data={
+                "email": trained.email,
+                "email_lookup_done": True,
+            },
+        )
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            ["Au moins une option doit être cochée"],
+            form.errors["email_will_change"],
+        )
+
 
 @tag("forms")
 class AddAidantProfileChoiceFormTests(TestCase):

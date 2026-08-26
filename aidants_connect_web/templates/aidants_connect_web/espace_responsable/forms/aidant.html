@@ -9,29 +9,47 @@
   {{ field }}
 {% endfor %}
 
-<fieldset class="fr-fieldset">
-    <div class="fr-fieldset__element fr-mt-4v fr-fieldset__element--inline fr-col-12 fr-col-md-6">
-      {% aidantc_dsfr_form_field_no_asterisk form.first_name %}
-    </div>
-    <div class="fr-fieldset__element fr-mt-4v fr-fieldset__element--inline fr-col-12 fr-col-md-6">
-      {% aidantc_dsfr_form_field_no_asterisk form.last_name %}
-    </div>
-</fieldset>
+<div class="fr-grid-row fr-grid-row--gutters">
+  <div class="fr-col-12 fr-col-md-6 fr-my-4v">
+    {% aidantc_dsfr_form_field_no_asterisk form.first_name %}
+  </div>
+  <div class="fr-col-12 fr-col-md-6 fr-my-4v">
+    {% aidantc_dsfr_form_field_no_asterisk form.last_name %}
+  </div>
+</div>
 
-<fieldset class="fr-fieldset">
-    <div class="fr-fieldset__element fr-mt-4v fr-fieldset__element--inline fr-col-12 fr-col-md-6">
-      {% aidantc_dsfr_form_field_no_asterisk form.profession %}
-    </div>
-    <div class="fr-fieldset__element fr-mt-4v fr-fieldset__element--inline fr-col-12 fr-col-md-6">
-      {% aidantc_dsfr_form_field_no_asterisk form.organisation %}
-    </div>
-</fieldset>
-<fieldset class="fr-fieldset">
-  <div class="fr-fieldset__element fr-mt-4v">
-    {% aidantc_dsfr_form_field_no_asterisk form.conseiller_numerique|dsfr_inline %}
+<div class="fr-grid-row fr-grid-row--gutters">
+  <div class="fr-col-12 fr-col-md-6 fr-my-4v">
+    {% aidantc_dsfr_form_field_no_asterisk form.profession %}
   </div>
-  <div class="fr-fieldset__element fr-mb-4v">
-    {% aidantc_dsfr_form_field_no_asterisk form.email %}
-    {% dsfr_alert type="warning" extra_classes="fr-alert--sm" content="Attention : l'adresses e-mail doivent être une adresse nominative (de type prenom-nom@exemple.fr)" %}
+  <div class="fr-col-12 fr-col-md-6 fr-my-4v">
+    {% aidantc_dsfr_form_field_no_asterisk form.organisation %}
   </div>
-</fieldset>
+</div>
+
+{% with field=form.conseiller_numerique|dsfr_inline|dsfr_input_class_attr %}
+  <fieldset
+    class="fr-fieldset fr-mt-4v{% if field.errors %} fr-fieldset--error{% endif %}"
+    id="radio-{{ field.auto_id }}"
+    {% if field.errors %}aria-describedby="{{ field.auto_id }}-desc-error"{% endif %}
+  >
+    <legend class="fr-fieldset__legend fr-fieldset__legend--regular" id="{{ field.auto_id }}-legend">
+      {{ field.label }}
+    </legend>
+    {% for subwidget in field.subwidgets %}
+      <div class="fr-fieldset__element fr-fieldset__element--inline">
+        {{ subwidget }}
+      </div>
+    {% endfor %}
+    {% if field.errors %}
+      <div class="fr-messages-group" id="{{ field.auto_id }}-desc-error" aria-live="assertive">
+        {{ field.errors }}
+      </div>
+    {% endif %}
+  </fieldset>
+{% endwith %}
+
+<div class="fr-mb-4v">
+  {% aidantc_dsfr_form_field_no_asterisk form.email %}
+  {% dsfr_alert type="warning" extra_classes="fr-alert--sm" content="Attention : l'adresses e-mail doivent être une adresse nominative (de type prenom-nom@exemple.fr)" %}
+</div>
