@@ -858,6 +858,9 @@ class StructureChangeRequestForm(forms.ModelForm, DsfrBaseForm):
         widget=RadioSelect,
         required=False,
         empty_value=None,
+        error_messages={
+            "required": "Au moins une option doit être cochée",
+        },
     )
     new_email = forms.EmailField(
         label="Nouvelle adresse e-mail",
@@ -974,7 +977,14 @@ class StructureChangeRequestForm(forms.ModelForm, DsfrBaseForm):
         # On the first POST email_lookup_done is False, so we skip validation
         # and let the view re-render the form with contextual messages.
         if self.email_lookup_case == self.EMAIL_LOOKUP_OTHER_ORG and email_lookup_done:
-            if (
+            if data.get("email_will_change") is None:
+                self.add_error(
+                    "email_will_change",
+                    ValidationError(
+                        self.fields["email_will_change"].error_messages["required"]
+                    ),
+                )
+            elif (
                 data.get("email_will_change")
                 and not data.get("new_email")
                 and not self.errors.get("new_email")
