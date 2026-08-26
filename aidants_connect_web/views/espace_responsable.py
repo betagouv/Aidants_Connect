@@ -1275,10 +1275,20 @@ class AddAidantTrainedView(AddAidantWizardMixin, TemplateView):
             total = int(data.get(f"{prefix}-TOTAL_FORMS", 1))
             data[f"{prefix}-TOTAL_FORMS"] = str(total + 1)
             formset = self._get_structure_change_formset(data=data)
+            # Run validation so email_lookup_case is set & success alerts stay visible.
+            formset.is_valid()
             return self.render_to_response(self.get_context_data(formset=formset))
 
         formset = self._get_structure_change_formset(data=request.POST)
-        if not formset.is_valid():
+        is_valid = formset.is_valid()
+
+        # "Vérifier l'e-mail" must only refresh lookup results, never past the step.
+        # Without this, verifying an empty extra row while others are already looked up
+        # would skip needs_lookup_display and redirect to confirmation.
+        if request.POST.get("verify-trained-email"):
+            return self.render_to_response(self.get_context_data(formset=formset))
+
+        if not is_valid:
             return self.render_to_response(self.get_context_data(formset=formset))
 
         needs_lookup_display = any(

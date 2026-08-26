@@ -1101,6 +1101,49 @@ class AlreadyTrainedStructureChangeRequestTests(TestCase):
         formset_after = response.context["formset"]
         self.assertEqual(2, len(formset_after.forms))
 
+    def test_verify_email_with_multiple_forms_does_not_advance(self):
+        """Clicking "Vérifier l'e-mail" must stay on step 2 even when another
+        row is already looked up (empty extra form must not skip to confirmation)."""
+        self.client.force_login(self.responsable)
+        self._start_already_trained_wizard()
+
+        # Lookup first aidant
+        entries = [
+            {
+                "email": self.trained_aidant.email,
+                "email_will_change": False,
+            }
+        ]
+        post_data = self._build_trained_post_data(entries)
+        post_data["verify-trained-email"] = "1"
+        response = self.client.post(self.add_aidant_trained_url, data=post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(
+            response,
+            "aidants_connect_web/espace_responsable/add-aidant-wizard-step2-trained.html",  # noqa: E501
+        )
+
+        # Add a second empty form while keeping the first lookup done
+        post_data = self._build_trained_post_data(
+            entries, total_forms=1, with_lookup_done=True
+        )
+        post_data["partial-add-trained"] = "1"
+        response = self.client.post(self.add_aidant_trained_url, data=post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(2, len(response.context["formset"].forms))
+
+        # Click verify on the page with the empty second form — must not advance
+        post_data = self._build_trained_post_data(
+            entries, total_forms=2, with_lookup_done=True
+        )
+        post_data["verify-trained-email"] = "1"
+        response = self.client.post(self.add_aidant_trained_url, data=post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(
+            response,
+            "aidants_connect_web/espace_responsable/add-aidant-wizard-step2-trained.html",  # noqa: E501
+        )
+
     def test_all_trained_back_navigation_preserves_data(self):
         self.client.force_login(self.responsable)
         self._start_already_trained_wizard()
