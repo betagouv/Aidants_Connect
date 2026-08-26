@@ -9,6 +9,7 @@ from django.test.client import Client
 from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
+from aidants_connect_common.constants import EMAIL_FORMAT_ERROR_MESSAGE
 from aidants_connect_web.constants import (
     OTP_APP_DEVICE_NAME,
     AddAidantProfileChoice,
@@ -21,12 +22,14 @@ from aidants_connect_web.forms import (
     AidantCreationForm,
     DsfrOtpForm,
     HabilitationRequestCreationForm,
+    HabilitationRequestCreationFormationTypeForm,
     LoginEmailForm,
     ManagerFirstLoginForm,
     ManagerFirstLoginWithCodeForm,
     MandatForm,
     MassEmailActionForm,
     RecapMandatForm,
+    StructureChangeRequestForm,
     get_choices_for_remote_method,
 )
 from aidants_connect_web.models import Aidant
@@ -452,7 +455,10 @@ class MassEmailHabilitatonFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["email_list"],
-            ["Erreur : veuillez saisir uniquement des adresses e-mail valides."],
+            [
+                "Erreur : veuillez saisir uniquement des adresses e-mail valides. "
+                "Exemple : prenom-nom@exemple.fr"
+            ],
         )
 
     def test_reject_invalid_emails(self):
@@ -465,7 +471,10 @@ class MassEmailHabilitatonFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["email_list"],
-            ["Erreur : veuillez saisir uniquement des adresses e-mail valides."],
+            [
+                "Erreur : veuillez saisir uniquement des adresses e-mail valides. "
+                "Exemple : prenom-nom@exemple.fr"
+            ],
         )
 
 
@@ -551,6 +560,64 @@ class HabilitationRequestCreationFormTests(TestCase):
     def test_filter_queryset_organisation(self):
         form = HabilitationRequestCreationForm(referent=self.referent)
         self.assertEqual(1, form.fields["organisation"].queryset.count())
+
+    def test_invalid_email_includes_a_real_format_example(self):
+        form = HabilitationRequestCreationForm(
+            referent=self.referent,
+            data={
+                "email": "not-an-email",
+                "first_name": "Alice",
+                "last_name": "Martin",
+                "profession": "Médiatrice",
+                "organisation": self.organisation.pk,
+                "conseiller_numerique": False,
+            },
+        )
+        self.assertFalse(form.is_valid())
+        self.assertEqual([EMAIL_FORMAT_ERROR_MESSAGE], form.errors["email"])
+
+
+@tag("forms")
+class AddAidantEmailErrorMessagesTests(TestCase):
+    """Step 2 add-aidant forms: email format errors must include a real example."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = OrganisationFactory()
+        cls.referent = AidantFactory(organisation=cls.organisation)
+        cls.referent.responsable_de.add(cls.organisation)
+
+    def test_email_formateur_invalid_includes_example(self):
+        form = HabilitationRequestCreationFormationTypeForm(
+            data={
+                "type": str(HabilitationRequestCreationFormationTypeForm.Type.P2P),
+                "email_formateur": "not-an-email",
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertEqual([EMAIL_FORMAT_ERROR_MESSAGE], form.errors["email_formateur"])
+
+    def test_structure_change_email_invalid_includes_example(self):
+        form = StructureChangeRequestForm(
+            referent=self.referent,
+            data={"email": "not-an-email", "email_will_change": False},
+        )
+        self.assertFalse(form.is_valid())
+        self.assertEqual([EMAIL_FORMAT_ERROR_MESSAGE], form.errors["email"])
+
+    def test_structure_change_new_email_invalid_includes_example(self):
+        trained = AidantFactory(organisation=OrganisationFactory())
+        form = StructureChangeRequestForm(
+            referent=self.referent,
+            data={
+                "email": trained.email,
+                "email_will_change": True,
+                "new_email": "not-an-email",
+                "email_lookup_done": True,
+            },
+        )
+        self.assertFalse(form.is_valid())
+        self.assertEqual([EMAIL_FORMAT_ERROR_MESSAGE], form.errors["new_email"])
 
 
 @tag("forms")

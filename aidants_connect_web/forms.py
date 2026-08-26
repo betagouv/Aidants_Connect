@@ -70,7 +70,11 @@ class AidantCreationForm(forms.ModelForm):
         help_text=password_validation.password_validators_help_text_html(),
     )
     first_name = forms.CharField(label="Prénom")
-    email = forms.EmailField(label="Email", widget=forms.EmailInput())
+    email = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(),
+        error_messages={"invalid": EMAIL_FORMAT_ERROR_MESSAGE},
+    )
     username = forms.CharField(required=False)
     last_name = forms.CharField(label="Nom de famille")
     profession = forms.CharField(label="Profession")
@@ -625,13 +629,17 @@ class HabilitationRequestCreationForm(
         }
 
         error_messages = {
+            "email": {
+                "invalid": EMAIL_FORMAT_ERROR_MESSAGE,
+                "required": EMAIL_FORMAT_ERROR_MESSAGE,
+            },
             NON_FIELD_ERRORS: {
                 "unique_together": (
                     "Erreur : une demande d'habilitation est déjà en cours "
                     "pour cette adresse e-mail. "
                     "Vous n'avez pas besoin d'en déposer une nouvelle."
                 ),
-            }
+            },
         }
 
 
@@ -740,6 +748,7 @@ class HabilitationRequestCreationFormationTypeForm(DsfrBaseForm, AsHiddenMixin):
         label="Adresse e-mail de l'aidant formateur",
         help_text="Exemple : prenom-nom@exemple.fr",
         required=False,
+        error_messages={"invalid": EMAIL_FORMAT_ERROR_MESSAGE},
     )
 
     @property
@@ -854,6 +863,7 @@ class StructureChangeRequestForm(forms.ModelForm, DsfrBaseForm):
         label="Nouvelle adresse e-mail",
         required=False,
         help_text="Exemple : prenom-nom@exemple.fr",
+        error_messages={"invalid": EMAIL_FORMAT_ERROR_MESSAGE},
     )
     # Hidden flag injected by the template after the first successful lookup.
     # Prevents the form from proceeding to the next wizard step before the
@@ -964,7 +974,11 @@ class StructureChangeRequestForm(forms.ModelForm, DsfrBaseForm):
         # On the first POST email_lookup_done is False, so we skip validation
         # and let the view re-render the form with contextual messages.
         if self.email_lookup_case == self.EMAIL_LOOKUP_OTHER_ORG and email_lookup_done:
-            if data.get("email_will_change") and not data.get("new_email"):
+            if (
+                data.get("email_will_change")
+                and not data.get("new_email")
+                and not self.errors.get("new_email")
+            ):
                 self.add_error(
                     "new_email",
                     ValidationError(
@@ -1040,6 +1054,12 @@ class StructureChangeRequestForm(forms.ModelForm, DsfrBaseForm):
         help_texts = {
             "email": "Exemple : prenom-nom@exemple.fr",
         }
+        error_messages = {
+            "email": {
+                "invalid": EMAIL_FORMAT_ERROR_MESSAGE,
+                "required": EMAIL_FORMAT_ERROR_MESSAGE,
+            },
+        }
 
 
 class BaseStructureChangeRequestFormSet(forms.BaseModelFormSet):
@@ -1104,7 +1124,10 @@ class MassEmailActionForm(forms.Form):
     def clean_email_list(self):
         email_list = self.cleaned_data.get("email_list")
         validate_email = EmailValidator(
-            message="Erreur : veuillez saisir uniquement des adresses e-mail valides."
+            message=(
+                "Erreur : veuillez saisir uniquement des adresses e-mail valides. "
+                "Exemple : prenom-nom@exemple.fr"
+            )
         )
 
         def is_email_valid(value):
