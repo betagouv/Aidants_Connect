@@ -45,7 +45,7 @@
 
               {% if form.email_lookup_case == "referent_of_other_org" %}
                 <input type="hidden" name="{{ form.prefix }}-email_lookup_done" value="on">
-                <div class="fr-alert fr-alert--success fr-mb-4v">
+                <div class="fr-alert fr-alert--success fr-mb-4v" role="status">
                   <p>
                     Succès : l'aidant est déjà habilité pour l'organisation
                     {{ form.email_lookup_data.other_org_names }}, dont vous êtes référent.
@@ -54,7 +54,7 @@
                 </div>
               {% elif form.email_lookup_case == "other_org" %}
                 <input type="hidden" name="{{ form.prefix }}-email_lookup_done" value="on">
-                <div class="fr-alert fr-alert--success fr-mb-4v">
+                <div class="fr-alert fr-alert--success fr-mb-4v" role="status">
                   <p>L'aidant est habilité Aidants Connect.</p>
                 </div>
                 <div class="fr-alert fr-alert--info fr-mb-4v">
