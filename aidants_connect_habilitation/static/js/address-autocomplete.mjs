@@ -57,13 +57,17 @@ class AddressAutoComplete extends BaseController {
             searchEngine: (_, record) => record,
             resultsList: {
                 element: (list, data) => {
+                    list.setAttribute("aria-label", "Adresses suggérées");
                     if (!data.results.length) {
                         list.insertAdjacentHTML("afterbegin", this.formatQueryTpl(data.query));
                     }
                 },
                 noResults: true,
             },
-            resultItem: {highlight: true},
+            resultItem: {
+                highlight: true,
+                selected: "autoComplete_selected",
+            },
             events: {
                 input: {
                     selection: event => this.autocomplete(event.detail.selection.value)
@@ -71,12 +75,52 @@ class AddressAutoComplete extends BaseController {
             }
         });
 
+        this.fixAriaAttributes();
         this.initSpinner();
 
         this.addresses = {};
         this.labels = [];
 
         super.initialize();
+    }
+
+    /**
+     * Align ARIA markup with the WAI-ARIA APG combobox pattern:
+     * role/aria-expanded on the textarea, no aria-owns/aria-haspopup,
+     * accessible name on the listbox.
+     * @see https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/
+     */
+    fixAriaAttributes () {
+        const input = this.autcompleteInputTarget;
+        const wrapper = this.autocompleteWidget.wrapper;
+        const list = this.autocompleteWidget.list;
+
+        if (wrapper) {
+            wrapper.removeAttribute("role");
+            wrapper.removeAttribute("aria-owns");
+            wrapper.removeAttribute("aria-haspopup");
+            wrapper.removeAttribute("aria-expanded");
+        }
+
+        input.setAttribute("role", "combobox");
+        input.setAttribute("aria-expanded", "false");
+        input.setAttribute("aria-autocomplete", "list");
+        input.removeAttribute("aria-owns");
+        input.removeAttribute("aria-haspopup");
+
+        if (list) {
+            list.setAttribute("aria-label", "Adresses suggérées");
+        }
+
+        // Library toggles aria-expanded on the wrapper; keep it on the textarea instead
+        const syncExpanded = (expanded) => {
+            input.setAttribute("aria-expanded", expanded);
+            if (wrapper) {
+                wrapper.removeAttribute("aria-expanded");
+            }
+        };
+        input.addEventListener("open", () => syncExpanded("true"));
+        input.addEventListener("close", () => syncExpanded("false"));
     }
 
 
