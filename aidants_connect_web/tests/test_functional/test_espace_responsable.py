@@ -303,7 +303,11 @@ class NewHabilitationRequestTests(FunctionalTestCase):
     ):
         prefix = f"id_form-{idx}"
         will_change_idx = 0 if email_will_change else 1
-        self.js_click(By.ID, f"{prefix}-email_will_change_{will_change_idx}")
+        radio_id = f"{prefix}-email_will_change_{will_change_idx}"
+        self.wait.until(
+            expected_conditions.presence_of_element_located((By.ID, radio_id))
+        )
+        self.js_click(By.ID, radio_id)
         if email_will_change and new_email:
             self.wait.until(
                 expected_conditions.visibility_of_element_located(
@@ -475,16 +479,28 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self.selenium.find_element(By.ID, "partial-submit").click()
         self.wait.until(self.document_loaded())
 
+        # Wait until error text is visible (accordion/DSFR may not expose .text yet
+        # right after document_loaded).
         prefix = "id_multiform-habilitation_requests-0"
+        first_name_error = (By.ID, f"{prefix}-first_name-desc-error")
+        self.wait.until(
+            expected_conditions.visibility_of_element_located(first_name_error)
+        )
+        self.wait.until(
+            lambda driver: "Ce champ est obligatoire."
+            in driver.find_element(*first_name_error).text
+        )
         self.assertIn(
             "Ce champ est obligatoire.",
-            self.selenium.find_element(By.ID, f"{prefix}-first_name-desc-error").text,
+            self.selenium.find_element(*first_name_error).text,
+        )
+        conseiller_error = (By.ID, f"{prefix}-conseiller_numerique-desc-error")
+        self.wait.until(
+            expected_conditions.visibility_of_element_located(conseiller_error)
         )
         self.assertIn(
             "Au moins une option doit être cochée",
-            self.selenium.find_element(
-                By.ID, f"{prefix}-conseiller_numerique-desc-error"
-            ).text,
+            self.selenium.find_element(*conseiller_error).text,
         )
 
         self.assertFalse(HabilitationRequest.objects.exists())
@@ -544,6 +560,8 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self._submit_trained_form_next()
         self.wait.until(self.document_loaded())
 
+        # OTHER_ORG lookup requires an explicit Oui/Non before advancing.
+        self._fill_trained_aidant_email_change(0, email_will_change=False)
         self._submit_trained_form_next()
 
         self._confirm_wizard(
@@ -622,6 +640,9 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self._submit_trained_form_next()
         self.wait.until(self.document_loaded())
 
+        # OTHER_ORG lookup requires an explicit Oui/Non before advancing.
+        self._fill_trained_aidant_email_change(0, email_will_change=False)
+        self._fill_trained_aidant_email_change(1, email_will_change=False)
         self._submit_trained_form_next()
 
         self._confirm_wizard(
