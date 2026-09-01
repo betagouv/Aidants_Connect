@@ -85,17 +85,19 @@ class MainModal extends BaseController {
      * @param {String} [title] Modal title
      * @param {String} content Modal body. Must be valid HTML
      * @param {ButtonGroupDefinition} [buttons]
+     * @param {HTMLElement|String} [opener] Opening control element or its id
      */
-    show({ title = "", content, buttons = undefined }) {
+    show({ title = "", content, buttons = undefined, opener = undefined }) {
         const normalizedTitle = title.trim().length > 0 ? title.trim() : this.constructor.DEFAULT_TITLE
         this.titleValue = normalizedTitle
         this.contentTarget.innerHTML = content
         this.__setFooter(buttons)
+        this.__setOpener(opener)
         this.stateValue = this.STATES.VISIBLE
     }
 
-    showLoader() {
-        this.show({ content: this.loaderTplTarget.innerHTML })
+    showLoader(title = "", opener = undefined) {
+        this.show({ title, content: this.loaderTplTarget.innerHTML, opener })
     }
 
     showError() {
@@ -109,17 +111,31 @@ class MainModal extends BaseController {
     /**
      * @private
      * @param {Number} value New value
+     * @param {Number} [previousValue]
      */
-    stateValueChanged(value) {
+    stateValueChanged(value, previousValue) {
         if (value === this.STATES.VISIBLE) {
             this.showElement(this.element)
             dsfr(this.dialogTarget).modal.disclose()
-        } else {
-            dsfr(this.dialogTarget).modal.conceal()
-            this.contentTarget.innerHTML = ""
-            this.titleValue = ""
-            this.__setFooter(undefined)
+            return
+        }
+
+        // Initial Stimulus callback: previousValue is undefined — don't touch DSFR yet
+        if (previousValue === undefined) {
             this.hideElement(this.element)
+            return
+        }
+
+        try {
+            dsfr(this.dialogTarget).modal.conceal()
+        } catch { /* Modal instance may already be closed */ }
+        this.contentTarget.innerHTML = ""
+        this.titleValue = ""
+        this.__setFooter(undefined)
+        this.hideElement(this.element)
+        // Only restore when a real open cycle set an opener (skip controller init)
+        if (this.openerId !== undefined) {
+            this.__restoreFocus()
         }
     }
 
@@ -146,6 +162,42 @@ class MainModal extends BaseController {
     /** @private */
     onConceal() {
         this.stateValue = this.STATES.HIDDEN
+    }
+
+    /**
+     * @private
+     * @param {HTMLElement|String} [opener]
+     */
+    __setOpener(opener) {
+        if (opener === undefined || opener === null) {
+            return
+        }
+        this.openerId = typeof opener === "string" ? opener : opener.id
+    }
+
+    /**
+     * @private
+     * Restore focus to the control that opened the modal, or a page fallback.
+     * Deferred so it runs after DSFR's own focus handling on conceal.
+     */
+    __restoreFocus() {
+        const openerId = this.openerId
+        this.openerId = undefined
+        const focusTarget = () => {
+            const opener = openerId ? document.getElementById(openerId) : null
+            const fallback = document.getElementById("add-aidants-btn")
+                || document.getElementById("aidants-a-habiliter-et-a-former")
+            const target = opener || fallback
+            if (!target) {
+                return
+            }
+            try {
+                target.focus({ focusVisible: true })
+            } catch {
+                target.focus()
+            }
+        }
+        setTimeout(focusTarget, 0)
     }
 
     /**
@@ -189,8 +241,8 @@ class MainModal extends BaseController {
 const AidantsConnectApplication = new Application();
 /** @type {Promise<Application>} */
 const aidantsConnectApplicationReady = Promise.all([AidantsConnectApplication.start(), window.dsfrReady]).then(() => {
-    AidantsConnectApplication.register("main-modal", MainModal)
     document.documentElement.dataset.appReady = "true"
+    AidantsConnectApplication.register("main-modal", MainModal)
     return AidantsConnectApplication
 })
 export { AidantsConnectApplication, aidantsConnectApplicationReady, BaseController, MainModal }
