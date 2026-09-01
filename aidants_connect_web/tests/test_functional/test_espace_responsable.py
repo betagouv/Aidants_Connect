@@ -3,7 +3,6 @@ from django.urls import reverse
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.select import Select
 
 from aidants_connect_common.tests.testcases import FunctionalTestCase
 from aidants_connect_web.constants import AddAidantProfileChoice
@@ -266,59 +265,68 @@ class NewHabilitationRequestTests(FunctionalTestCase):
     def _select_course_type_classic(self):
         self.js_click(By.ID, "id_multiform-course_type-type_0")
 
-    def _ensure_untrained_aidant_accordion_open(self, idx):
-        """Open the aidant accordion if DSFR collapsed it (common flake on CI)."""
-        prefix = f"multiform-habilitation_requests-{idx}"
-        collapse = self.selenium.find_element(By.ID, f"accordion-{prefix}")
-        if "fr-collapse--expanded" in (collapse.get_attribute("class") or ""):
-            return
+    def _expand_untrained_aidant_accordion(self, idx):
+        """Ensure aidant fields are reachable in headless Firefox (DSFR accordion)."""
+        form_prefix = f"multiform-habilitation_requests-{idx}"
+        collapse_id = f"accordion-{form_prefix}"
+        self.wait.until(
+            expected_conditions.presence_of_element_located((By.ID, collapse_id))
+        )
+        collapse = self.selenium.find_element(By.ID, collapse_id)
         btn = self.selenium.find_element(
-            By.CSS_SELECTOR, f'[aria-controls="accordion-{prefix}"]'
+            By.CSS_SELECTOR, f'[aria-controls="{collapse_id}"]'
         )
         self.selenium.execute_script(
-            "arguments[0].scrollIntoView({block: 'center'});", btn
+            """
+            arguments[0].classList.add('fr-collapse--expanded');
+            arguments[0].style.height = 'auto';
+            arguments[1].setAttribute('aria-expanded', 'true');
+            """,
+            collapse,
+            btn,
         )
-        self.js_click(By.CSS_SELECTOR, f'[aria-controls="accordion-{prefix}"]')
-        self.wait.until(
-            lambda driver: "fr-collapse--expanded"
-            in (
-                driver.find_element(By.ID, f"accordion-{prefix}").get_attribute("class")
-                or ""
-            )
+
+    def _set_input_value(self, element_id, value):
+        elt = self.wait.until(
+            expected_conditions.presence_of_element_located((By.ID, element_id))
+        )
+        self.selenium.execute_script(
+            """
+            arguments[0].scrollIntoView({block: 'center'});
+            arguments[0].value = arguments[1];
+            arguments[0].dispatchEvent(new Event('input', {bubbles: true}));
+            arguments[0].dispatchEvent(new Event('change', {bubbles: true}));
+            """,
+            elt,
+            value,
+        )
+
+    def _set_select_value(self, element_id, value):
+        elt = self.wait.until(
+            expected_conditions.presence_of_element_located((By.ID, element_id))
+        )
+        self.selenium.execute_script(
+            """
+            arguments[0].scrollIntoView({block: 'center'});
+            arguments[0].value = arguments[1];
+            arguments[0].dispatchEvent(new Event('change', {bubbles: true}));
+            """,
+            elt,
+            value,
         )
 
     def _fill_untrained_aidant(self, idx, email, first_name, last_name, profession):
+        self._expand_untrained_aidant_accordion(idx)
         prefix = f"id_multiform-habilitation_requests-{idx}"
-        self._ensure_untrained_aidant_accordion_open(idx)
-        # Fill in template order (name fields above email) and scroll each field
-        # into view: filling email first then jumping up made Firefox on CI fail
-        # with ElementNotInteractableException ("could not be scrolled into view").
-        self.wait.until(
-            expected_conditions.visibility_of_element_located(
-                (By.ID, f"{prefix}-first_name")
-            )
-        )
+        # Fill top-to-bottom to avoid scroll jumps that flake on CI Firefox.
         for field_name, value in [
             ("first_name", first_name),
             ("last_name", last_name),
             ("profession", profession),
             ("email", email),
         ]:
-            locator = (By.ID, f"{prefix}-{field_name}")
-            self.wait.until(expected_conditions.visibility_of_element_located(locator))
-            elt = self.selenium.find_element(*locator)
-            self.selenium.execute_script(
-                "arguments[0].scrollIntoView({block: 'center'});", elt
-            )
-            self.wait.until(expected_conditions.element_to_be_clickable(locator))
-            elt = self.selenium.find_element(*locator)
-            elt.clear()
-            elt.send_keys(value)
-        org_elt = self.selenium.find_element(By.ID, f"{prefix}-organisation")
-        self.selenium.execute_script(
-            "arguments[0].scrollIntoView({block: 'center'});", org_elt
-        )
-        Select(org_elt).select_by_value(str(self.organisation.pk))
+            self._set_input_value(f"{prefix}-{field_name}", value)
+        self._set_select_value(f"{prefix}-organisation", str(self.organisation.pk))
         self.js_click(By.ID, f"{prefix}-conseiller_numerique_1")
 
     def _fill_trained_aidant_email(self, idx, email):
@@ -513,28 +521,31 @@ class NewHabilitationRequestTests(FunctionalTestCase):
         self.selenium.find_element(By.ID, "partial-submit").click()
         self.wait.until(self.document_loaded())
 
-        # Wait until error text is visible (accordion/DSFR may not expose .text yet
-        # right after document_loaded).
+        # textContent works even when DSFR keeps error nodes out of Selenium's
+        # "visible" viewport on headless CI.
         prefix = "id_multiform-habilitation_requests-0"
         first_name_error = (By.ID, f"{prefix}-first_name-desc-error")
         self.wait.until(
-            expected_conditions.visibility_of_element_located(first_name_error)
+            expected_conditions.presence_of_element_located(first_name_error)
         )
         self.wait.until(
             lambda driver: "Ce champ est obligatoire."
-            in driver.find_element(*first_name_error).text
+            in (
+                driver.find_element(*first_name_error).get_attribute("textContent")
+                or ""
+            )
         )
         self.assertIn(
             "Ce champ est obligatoire.",
-            self.selenium.find_element(*first_name_error).text,
+            self.selenium.find_element(*first_name_error).get_attribute("textContent"),
         )
         conseiller_error = (By.ID, f"{prefix}-conseiller_numerique-desc-error")
         self.wait.until(
-            expected_conditions.visibility_of_element_located(conseiller_error)
+            expected_conditions.presence_of_element_located(conseiller_error)
         )
         self.assertIn(
             "Au moins une option doit être cochée",
-            self.selenium.find_element(*conseiller_error).text,
+            self.selenium.find_element(*conseiller_error).get_attribute("textContent"),
         )
 
         self.assertFalse(HabilitationRequest.objects.exists())
