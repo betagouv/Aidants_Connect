@@ -45,7 +45,7 @@
 
               {% if form.email_lookup_case == "referent_of_other_org" %}
                 <input type="hidden" name="{{ form.prefix }}-email_lookup_done" value="on">
-                <div class="fr-alert fr-alert--success fr-mb-4v">
+                <div class="fr-alert fr-alert--success fr-mb-4v" role="status">
                   <p>
                     Succès : l'aidant est déjà habilité pour l'organisation
                     {{ form.email_lookup_data.other_org_names }}, dont vous êtes référent.
@@ -54,7 +54,7 @@
                 </div>
               {% elif form.email_lookup_case == "other_org" %}
                 <input type="hidden" name="{{ form.prefix }}-email_lookup_done" value="on">
-                <div class="fr-alert fr-alert--success fr-mb-4v">
+                <div class="fr-alert fr-alert--success fr-mb-4v" role="status">
                   <p>L'aidant est habilité Aidants Connect.</p>
                 </div>
                 <div class="fr-alert fr-alert--info fr-mb-4v">
@@ -66,9 +66,28 @@
                     <a href="mailto:support@aidantsconnect.beta.gouv.fr" class="fr-link">contactez le support</a>.
                   </p>
                 </div>
-                <div class="fr-mb-4v" data-action="change->new-email-toggle#toggle">
-                  {% aidantc_dsfr_form_field_no_asterisk form.email_will_change|dsfr_inline %}
-                </div>
+                {% with field=form.email_will_change|dsfr_inline|dsfr_input_class_attr %}
+                  <fieldset
+                    class="fr-fieldset fr-mb-4v{% if field.errors %} fr-fieldset--error{% endif %}"
+                    id="radio-{{ field.auto_id }}"
+                    data-action="change->new-email-toggle#toggle"
+                    {% if field.errors %}aria-describedby="{{ field.auto_id }}-desc-error"{% endif %}
+                  >
+                    <legend class="fr-fieldset__legend fr-fieldset__legend--regular" id="{{ field.auto_id }}-legend">
+                      {{ field.label }}
+                    </legend>
+                    {% for subwidget in field.subwidgets %}
+                      <div class="fr-fieldset__element fr-fieldset__element--inline">
+                        {{ subwidget }}
+                      </div>
+                    {% endfor %}
+                    {% if field.errors %}
+                      <div class="fr-messages-group" id="{{ field.auto_id }}-desc-error" aria-live="assertive">
+                        {{ field.errors }}
+                      </div>
+                    {% endif %}
+                  </fieldset>
+                {% endwith %}
                 <div class="fr-mb-4v new-email-field" data-new-email-toggle-target="wrapper" hidden>
                   {% aidantc_dsfr_form_field_no_asterisk form.new_email %}
                   <div class="fr-alert fr-alert--warning fr-mt-2v fr-alert--sm">

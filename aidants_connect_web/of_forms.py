@@ -5,6 +5,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
 
+from aidants_connect_common.constants import EMAIL_FORMAT_ERROR_MESSAGE
 from aidants_connect_web.models import Aidant
 
 
@@ -21,7 +22,11 @@ class OFAidantCreationForm(forms.ModelForm):
         help_text=password_validation.password_validators_help_text_html(),
     )
     first_name = forms.CharField(label="Prénom")
-    email = forms.EmailField(label="Email", widget=forms.EmailInput())
+    email = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(),
+        error_messages={"invalid": EMAIL_FORMAT_ERROR_MESSAGE},
+    )
 
     last_name = forms.CharField(label="Nom de famille")
 

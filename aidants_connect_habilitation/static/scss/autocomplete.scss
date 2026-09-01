@@ -35,10 +35,16 @@
       text-overflow: ellipsis;
       transition: all .2s ease;
 
-      &:hover {
+      &:hover,
+      &.autoComplete_selected,
+      &[aria-selected="true"] {
         cursor: pointer;
         background-color: var(--blue-france-sun-113-625);
         color: white;
+
+        mark {
+          color: white;
+        }
       }
 
       mark {
