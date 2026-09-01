@@ -266,25 +266,59 @@ class NewHabilitationRequestTests(FunctionalTestCase):
     def _select_course_type_classic(self):
         self.js_click(By.ID, "id_multiform-course_type-type_0")
 
+    def _ensure_untrained_aidant_accordion_open(self, idx):
+        """Open the aidant accordion if DSFR collapsed it (common flake on CI)."""
+        prefix = f"multiform-habilitation_requests-{idx}"
+        collapse = self.selenium.find_element(By.ID, f"accordion-{prefix}")
+        if "fr-collapse--expanded" in (collapse.get_attribute("class") or ""):
+            return
+        btn = self.selenium.find_element(
+            By.CSS_SELECTOR, f'[aria-controls="accordion-{prefix}"]'
+        )
+        self.selenium.execute_script(
+            "arguments[0].scrollIntoView({block: 'center'});", btn
+        )
+        self.js_click(By.CSS_SELECTOR, f'[aria-controls="accordion-{prefix}"]')
+        self.wait.until(
+            lambda driver: "fr-collapse--expanded"
+            in (
+                driver.find_element(By.ID, f"accordion-{prefix}").get_attribute("class")
+                or ""
+            )
+        )
+
     def _fill_untrained_aidant(self, idx, email, first_name, last_name, profession):
         prefix = f"id_multiform-habilitation_requests-{idx}"
+        self._ensure_untrained_aidant_accordion_open(idx)
+        # Fill in template order (name fields above email) and scroll each field
+        # into view: filling email first then jumping up made Firefox on CI fail
+        # with ElementNotInteractableException ("could not be scrolled into view").
         self.wait.until(
             expected_conditions.visibility_of_element_located(
-                (By.ID, f"{prefix}-email")
+                (By.ID, f"{prefix}-first_name")
             )
         )
         for field_name, value in [
-            ("email", email),
             ("first_name", first_name),
             ("last_name", last_name),
             ("profession", profession),
+            ("email", email),
         ]:
-            elt = self.selenium.find_element(By.ID, f"{prefix}-{field_name}")
+            locator = (By.ID, f"{prefix}-{field_name}")
+            self.wait.until(expected_conditions.visibility_of_element_located(locator))
+            elt = self.selenium.find_element(*locator)
+            self.selenium.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", elt
+            )
+            self.wait.until(expected_conditions.element_to_be_clickable(locator))
+            elt = self.selenium.find_element(*locator)
             elt.clear()
             elt.send_keys(value)
-        Select(
-            self.selenium.find_element(By.ID, f"{prefix}-organisation")
-        ).select_by_value(str(self.organisation.pk))
+        org_elt = self.selenium.find_element(By.ID, f"{prefix}-organisation")
+        self.selenium.execute_script(
+            "arguments[0].scrollIntoView({block: 'center'});", org_elt
+        )
+        Select(org_elt).select_by_value(str(self.organisation.pk))
         self.js_click(By.ID, f"{prefix}-conseiller_numerique_1")
 
     def _fill_trained_aidant_email(self, idx, email):
