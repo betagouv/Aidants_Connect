@@ -2,6 +2,7 @@ from django.test import tag
 from django.urls import reverse
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
 
 from aidants_connect_common.constants import RequestStatusConstants
@@ -40,6 +41,27 @@ class ValidationRequestFormViewTests(FunctionalTestCase):
         # Modify thrice
         self._fill_form_with_correct_email_and_assert(
             self.request.aidant_requests.last()
+        )
+
+    def test_modal_has_accessible_title_and_restores_focus_on_escape(self):
+        self.open_live_url(self.url)
+
+        aidant: AidantRequest = self.request.aidant_requests.first()
+        expected_title = f"Aidant à habiliter : {aidant.get_full_name()}"
+        edit_button_id = f"edit-button-{aidant.pk}"
+
+        self._try_open_modal(By.ID, edit_button_id)
+
+        title = self.selenium.find_element(By.CSS_SELECTOR, "h1#fr-modal-title")
+        self.assertEqual(expected_title, title.text)
+
+        self.selenium.switch_to.active_element.send_keys(Keys.ESCAPE)
+        self.wait.until(self._modal_closed())
+
+        self.wait.until(
+            lambda driver: driver.switch_to.active_element.get_attribute("id")
+            == edit_button_id,
+            "Focus was not restored to the edit button after closing the modal",
         )
 
     def test_handle_errors(self):
@@ -263,6 +285,9 @@ class ReadonlyRequestView(ValidationRequestFormViewTests):
 
     def test_I_can_modify_aidant(self):
         super().test_I_can_modify_aidant()
+
+    def test_modal_has_accessible_title_and_restores_focus_on_escape(self):
+        super().test_modal_has_accessible_title_and_restores_focus_on_escape()
 
     def test_handle_errors(self):
         super().test_handle_errors()
