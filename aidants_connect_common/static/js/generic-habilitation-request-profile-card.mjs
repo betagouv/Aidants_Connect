@@ -3,9 +3,10 @@ import {aidantsConnectApplicationReady, BaseController} from "AidantsConnectAppl
 /**
  * @property {String} idValue
  * @property {String} enpointValue
+ * @property {String} fullNameValue
  */
 class ProfileEditCard extends BaseController {
-    static values = {id: String, enpoint: String}
+    static values = {id: String, enpoint: String, fullName: String}
 
     buttons = {
         "profile-edit-suppress": {
@@ -20,6 +21,14 @@ class ProfileEditCard extends BaseController {
             callbackParams: {id: this.idValue},
             callback: this.validate
         }
+    }
+
+    get modalTitle() {
+        return `Aidant à habiliter : ${this.fullNameValue}`
+    }
+
+    get openerButton() {
+        return this.element.querySelector(`#edit-button-${this.idValue}`)
     }
 
     initialize () {
@@ -42,8 +51,10 @@ class ProfileEditCard extends BaseController {
     async onEdit () {
         const additionnalData = this.additionnalData()
         const urlParams = additionnalData !== undefined ? `?${additionnalData}` : ""
+        const opener = this.openerButton
+        const title = this.modalTitle
 
-        this.modalController.showLoader()
+        this.modalController.showLoader(title, opener)
         try {
             const response = await fetch(`${this.enpointValue}${urlParams}`)
 
@@ -53,7 +64,9 @@ class ProfileEditCard extends BaseController {
             }
 
             this.modalController.show({
+                title,
                 content: await response.text(),
+                opener,
                 buttons: {
                     groupClasses: "fr-btns-group--right fr-btns-group--inline-lg fr-btns-group--icon-left",
                     buttons: Object.keys(this.buttons).map(k => Object.assign({id: k}, this.buttons[k]))

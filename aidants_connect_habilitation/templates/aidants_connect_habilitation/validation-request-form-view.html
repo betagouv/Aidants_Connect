@@ -33,7 +33,7 @@
           {% include "aidants_connect_habilitation/_manager_card.html" with organisation=organisation %}
         </section>
         <section class="fr-mt-6w" aria-labelledby="aidants-a-habiliter-et-a-former">
-          <h2 id="aidants-a-habiliter-et-a-former" class="fr-h4">Aidants à habiliter et à former</h2>
+          <h2 id="aidants-a-habiliter-et-a-former" class="fr-h4" tabindex="-1">Aidants à habiliter et à former</h2>
             {% if organisation.status == organisation.Status.VALIDATED %}
                 <div class="fr-alert fr-alert--info fr-alert--sm fr-my-4w">
                   <p class="fr-text--md fr-mb-2w">Information : pour l’inscription des aidants, merci de vous rendre sur votre espace référent depuis la <a href="/accounts/login/" class="fr-link">page suivante</a>.</p>
@@ -94,3 +94,7 @@
   </div>
   <script type="module" src="{% static 'js/generic-habilitation-request-profile-card.mjs' %}"></script>
 {% endblock content %}
+
+{% block main_modal %}
+  {% include "layouts/_main-modal.html" %}
+{% endblock main_modal %}
