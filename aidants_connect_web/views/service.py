@@ -20,8 +20,12 @@ from aidants_connect_web.statistics import (
     DEMARCHES_EVOLUTION_MONTHS,
     MANDATS_EVOLUTION_MONTHS,
     OPERATIONAL_AIDANTS_EVOLUTION_MONTHS,
+    PERSONNES_ACCOMPAGNEES_EVOLUTION_MONTHS,
+    STRUCTURES_HABILITEES_EVOLUTION_MONTHS,
     get_monthly_series,
     get_operational_aidants_monthly_series,
+    get_personnes_accompagnees_monthly_series,
+    get_structures_habilitees_monthly_series,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -195,11 +199,11 @@ class StatistiquesView(TemplateView):
         mandat_count = Mandat.objects.exclude(
             organisation__name=settings.STAFF_ORGANISATION_NAME
         ).count()
-        active_mandat_count = (
-            Mandat.objects.exclude(organisation__name=settings.STAFF_ORGANISATION_NAME)
-            .active()
-            .count()
-        )
+        # active_mandat_count = (
+        #     Mandat.objects.exclude(organisation__name=settings.STAFF_ORGANISATION_NAME)
+        #     .active()
+        #     .count()
+        # )
 
         organisations_accredited_count = (
             Organisation.objects.accredited()
@@ -236,11 +240,26 @@ class StatistiquesView(TemplateView):
         demarches_evolution_transcription = _build_evolution_transcription(
             demarches_evolution_data
         )
+        personnes_accompagnees_evolution_data = (
+            get_personnes_accompagnees_monthly_series(
+                self.autorisation_use_qs,
+                months=PERSONNES_ACCOMPAGNEES_EVOLUTION_MONTHS,
+            )
+        )
+        personnes_accompagnees_evolution_transcription = _build_evolution_transcription(
+            personnes_accompagnees_evolution_data
+        )
         operational_aidants_evolution_data = get_operational_aidants_monthly_series(
             months=OPERATIONAL_AIDANTS_EVOLUTION_MONTHS
         )
         operational_aidants_evolution_transcription = _build_evolution_transcription(
             operational_aidants_evolution_data
+        )
+        structures_habilitees_evolution_data = get_structures_habilitees_monthly_series(
+            months=STRUCTURES_HABILITEES_EVOLUTION_MONTHS
+        )
+        structures_habilitees_evolution_transcription = _build_evolution_transcription(
+            structures_habilitees_evolution_data
         )
         demarches_realisees_since_date = (
             self.autorisation_use_qs.order_by("creation_date")
@@ -252,11 +271,10 @@ class StatistiquesView(TemplateView):
             **kwargs,
             usage_section={
                 "Démarches réalisées": data_total,
-                "Mandats créés": mandat_count,
-                "Mandats actifs": active_mandat_count,
+                "Personnes accompagnées": usagers_helped_count,
+                "Mandats": mandat_count,
                 "Aidants habilités": aidants_count,
                 "Structures habilitées": organisations_accredited_count,
-                "Personnes accompagnées": usagers_helped_count,
             },
             data=data,
             demarches_chart=_dsfr_bar_chart_props(
@@ -287,6 +305,14 @@ class StatistiquesView(TemplateView):
                 name_line="Démarches réalisées",
             ),
             demarches_evolution_transcription=demarches_evolution_transcription,
+            personnes_accompagnees_evolution_data=personnes_accompagnees_evolution_data,
+            personnes_accompagnees_evolution_chart=_dsfr_bar_line_chart_props(
+                personnes_accompagnees_evolution_data,
+                name_line="Personnes accompagnées",
+            ),
+            personnes_accompagnees_evolution_transcription=(
+                personnes_accompagnees_evolution_transcription
+            ),
             operational_aidants_evolution_data=operational_aidants_evolution_data,
             operational_aidants_evolution_chart=_dsfr_bar_line_chart_props(
                 operational_aidants_evolution_data,
@@ -294,6 +320,14 @@ class StatistiquesView(TemplateView):
             ),
             operational_aidants_evolution_transcription=(
                 operational_aidants_evolution_transcription
+            ),
+            structures_habilitees_evolution_data=structures_habilitees_evolution_data,
+            structures_habilitees_evolution_chart=_dsfr_bar_line_chart_props(
+                structures_habilitees_evolution_data,
+                name_line="Structures habilitées",
+            ),
+            structures_habilitees_evolution_transcription=(
+                structures_habilitees_evolution_transcription
             ),
             demarches_realisees_since_date=demarches_realisees_since_date,
             dsfr_chart_css_url=settings.DSFR_CHART_CSS_URL,
