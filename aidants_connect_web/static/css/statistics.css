@@ -36,7 +36,9 @@
 }
 
 #mandats-chart {
-  height: 32rem;
+  display: block;
+  width: 100%;
+  min-height: 20rem;
 }
 
 #fr-transcription-modal-mandats-chart-transcription table tr th {

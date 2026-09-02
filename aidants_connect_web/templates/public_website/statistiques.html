@@ -6,6 +6,7 @@
 
 {% block extracss %}
   <link href="{% static 'css/statistics.css' %}" rel="stylesheet">
+  <link href="{{ DSFR_CHART_BAR_CSS_URL }}" rel="stylesheet">
 {% endblock extracss %}
 
 {% block content %}
@@ -34,7 +35,15 @@
     <section>
       <h2 class="fr-title-icon-left fr-icon-statistics-type-demarche">Par type de démarche</h2>
       <div class="stats-container">
-        <canvas id="mandats-chart" aria-label="Répartition du nombre de démarches par type" role="img"></canvas>
+        <bar-chart
+          id="mandats-chart"
+          x="{{ demarches_chart.x }}"
+          y="{{ demarches_chart.y }}"
+          name="{{ demarches_chart.name }}"
+          unit-tooltip="démarches"
+          selected-palette="default"
+          aspect-ratio="3"
+        ></bar-chart>
       </div>
       <div class="fr-transcription fr-mb-4w" id="mandats-chart-transcription">
         <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-chart-transcription">Transcription</button>
@@ -98,6 +107,5 @@
 {% endblock content %}
 
 {% block extrajs %}
-  {{ data|json_script:"data" }}
-  <script type="module" src="{% static 'js/statistiques.js' %}"></script>
+  <script type="module" src="{{ DSFR_CHART_BAR_JS_URL }}"></script>
 {% endblock extrajs %}

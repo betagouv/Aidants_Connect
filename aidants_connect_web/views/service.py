@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Tuple
 
@@ -78,7 +79,7 @@ class StatistiquesView(TemplateView):
         )
 
     def get_demarches_stats(self) -> Tuple[dict[str, list], int]:
-        data = {"icons": [], "titles": [], "values": []}
+        data = {"titles": [], "values": []}
 
         qs = (
             self.autorisation_use_qs.values("demarche")
@@ -93,7 +94,6 @@ class StatistiquesView(TemplateView):
             demarche = settings.DEMARCHES[entry["demarche"]]
             count = entry["total"]
             demarches_met.append(entry["demarche"])
-            data["icons"].append(demarche["icon"])
             data["titles"].append(demarche["titre_court"])
             data["values"].append(count)
             data_total += count
@@ -102,7 +102,6 @@ class StatistiquesView(TemplateView):
         for k, v in settings.DEMARCHES.items():
             if k in demarches_met:
                 continue
-            data["icons"].append(v["icon"])
             data["titles"].append(v["titre_court"])
             data["values"].append(0)
 
@@ -152,7 +151,14 @@ class StatistiquesView(TemplateView):
                 "Mandats créés": mandat_count,
             },
             data=data,
+            demarches_chart={
+                "x": json.dumps([data["titles"]], ensure_ascii=False),
+                "y": json.dumps([data["values"]]),
+                "name": json.dumps(["Nombre de démarches"], ensure_ascii=False),
+            },
             demarches_transcription=demarches_transcription,
+            DSFR_CHART_BAR_JS_URL=settings.DSFR_CHART_BAR_JS_URL,
+            DSFR_CHART_BAR_CSS_URL=settings.DSFR_CHART_BAR_CSS_URL,
             deployment_section=(
                 {
                     "Aidants habilités": aidants_count,
