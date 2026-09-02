@@ -18,88 +18,33 @@
     </p>
 
     <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-use">Utilisation</h2>
-
-      <div class="stats-container">
-        <ul class="fr-grid-row fr-grid-row--gutters fr-raw-list">
-        {% for label, count in usage_section.items %}
-          <li class="stat-col fr-col-12 fr-col-md-4 fr-m-0">
-            <span class="stat-number">{{ count }}</span>
-            <span class="stat-label-with-info">
-              <span>{{ label }}</span><br>
-              {% if label == "Démarches réalisées" %}
-                {% include "public_website/_stat_info_tooltip.html" with tooltip_id="demarches-realisees-usage-info" sr_only_label="Informations sur les démarches réalisées" tooltip_content="Connexions réalisées via Aidants Connect - pour suivre et réaliser une ou plusieurs démarches administratives" %}
-              {% elif label == "Personnes accompagnées" %}
-                {% include "public_website/_stat_info_tooltip.html" with tooltip_id="personnes-accompagnees-usage-info" sr_only_label="Informations sur les personnes accompagnées" tooltip_content="Nombre de personnes pour qui au moins une démarche a été réalisée via Aidants Connect" %}
-              {% endif %}
-            </span>
-          </li>
-        {% endfor %}
-        </ul>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-evolution">Évolution des mandats créés</h2>
-      <p class="fr-text--sm">
-        Total cumulé de mandats créés via Aidants Connect (courbe) et nombre créé chaque mois (barres), sur les 24 derniers mois complets.
-      </p>
-      <div class="stats-container">
-        {% include "public_website/_dsfr_bar_line_chart.html" with chart=mandats_evolution_chart aria_label="Évolution mensuelle du nombre de mandats créés" %}
-      </div>
-      <div class="fr-transcription fr-mb-4w" id="mandats-evolution-chart-transcription">
-        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-evolution-chart-transcription">Transcription</button>
-        <div class="fr-collapse" id="fr-transcription-collapse-mandats-evolution-chart-transcription">
-          <div class="fr-transcription__footer">
-            <div class="fr-transcription__actions-group">
-              <button aria-controls="fr-transcription-modal-mandats-evolution-chart-transcription" data-fr-opened="false" type="button" class="fr-btn--fullscreen fr-btn">Agrandir</button>
-            </div>
-          </div>
-          <dialog id="fr-transcription-modal-mandats-evolution-chart-transcription" class="fr-modal" aria-labelledby="fr-transcription-modal-title-mandats-evolution-chart-transcription">
-            <div class="fr-container fr-container--fluid fr-container-md">
-              <div class="fr-grid-row fr-grid-row--center">
-                <div class="fr-col-12 fr-col-md-10 fr-col-lg-8">
-                  <div class="fr-modal__body">
-                    <div class="fr-modal__header">
-                      <button aria-controls="fr-transcription-modal-mandats-evolution-chart-transcription" title="Fermer" type="button" class="fr-btn--close fr-btn">Fermer</button>
-                    </div>
-                    <div class="fr-modal__content">
-                      <h1 id="fr-transcription-modal-title-mandats-evolution-chart-transcription" class="fr-modal__title">Transcription du graphique d’évolution des mandats créés</h1>
-                      <table>
-                        <caption>Évolution mensuelle du nombre de mandats créés</caption>
-                        <tr>
-                          <th scope="col">Mois</th>
-                          <th scope="col">Mandats créés dans le mois</th>
-                          <th scope="col">Total cumulé</th>
-                        </tr>
-                        {% for entry in mandats_evolution_transcription %}
-                          <tr>
-                            <th scope="row">{{ entry.month }}</th>
-                            <td>{{ entry.monthly }}</td>
-                            <td>{{ entry.cumulative }}</td>
-                          </tr>
-                        {% endfor %}
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </dialog>
-        </div>
-      </div>
+      <ul class="fr-grid-row fr-grid-row--gutters fr-raw-list">
+      {% for label, count in usage_section.items %}
+        <li class="stat-col fr-col-md">
+          <span class="stat-number">{{ count }}</span>
+          <span class="stat-label-with-info">
+            <span>{{ label }}</span><br>
+            {% if label == "Démarches réalisées" %}
+              {% include "public_website/_stat_info_tooltip.html" with tooltip_id="demarches-realisees-usage-info" sr_only_label="Informations sur les démarches réalisées" tooltip_content="Connexions réalisées via Aidants Connect - pour suivre et réaliser une ou plusieurs démarches administratives" %}
+            {% elif label == "Personnes accompagnées" %}
+              {% include "public_website/_stat_info_tooltip.html" with tooltip_id="personnes-accompagnees-usage-info" sr_only_label="Informations sur les personnes accompagnées" tooltip_content="Nombre de personnes pour qui au moins une démarche a été réalisée via Aidants Connect" %}
+            {% endif %}
+          </span>
+        </li>
+      {% endfor %}
+      </ul>
     </section>
 
     <section>
       <h2 class="fr-title-icon-left fr-icon-statistics-evolution stat-title-with-info">
-        Évolution des démarches réalisées
+        Démarches réalisées
         {% include "public_website/_stat_info_tooltip.html" with tooltip_id="demarches-evolution-info" sr_only_label="Informations sur l'évolution des démarches réalisées" tooltip_content="Connexions réalisées via Aidants Connect - pour suivre et réaliser une ou plusieurs démarches administratives sur les 24 derniers mois complets" %}
       </h2>
       <p class="fr-text--sm">
         Total cumulé de démarches réalisées via Aidants Connect (courbe) et nombre réalisé chaque mois (barres), sur les 24 derniers mois complets.
       </p>
       <div class="stats-container">
-        {% include "public_website/_dsfr_bar_line_chart.html" with chart=demarches_evolution_chart aria_label="Évolution mensuelle du nombre de démarches réalisées" %}
+        {% include "public_website/_dsfr_bar_line_chart.html" with chart=demarches_evolution_chart aria_label="Évolution mensuelle du nombre de démarches réalisées" bar_color="#B4C5FB" %}
       </div>
       <div class="fr-transcription fr-mb-4w" id="demarches-evolution-chart-transcription">
         <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-demarches-evolution-chart-transcription">Transcription</button>
@@ -145,12 +90,173 @@
     </section>
 
     <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-evolution">Évolution des aidants habilités</h2>
+      <h2 class="fr-title-icon-left fr-icon-statistics-type-demarche stat-title-with-info">
+        <span>Répartition par type de démarche</span>
+        {% include "public_website/_stat_info_tooltip.html" with tooltip_id="demarche-type-info" sr_only_label="Informations sur le type de démarche" tooltip_content="Domaine déclaré par l'aidant à l'utilisation du mandat" %}
+      </h2>
+      <div class="stats-container">
+        <bar-chart
+          x="{{ demarches_chart.x }}"
+          y="{{ demarches_chart.y }}"
+          name="{{ demarches_chart.name }}"
+          aspect-ratio="{{ demarches_chart.aspect_ratio|escape }}"
+          selected-palette="default"
+          aria-label="Répartition du nombre de démarches par type"
+        ></bar-chart>
+      </div>
+      <div class="fr-transcription fr-mb-4w" id="mandats-chart-transcription">
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-chart-transcription">Transcription</button>
+        <div class="fr-collapse" id="fr-transcription-collapse-mandats-chart-transcription">
+          <div class="fr-transcription__footer">
+            <div class="fr-transcription__actions-group">
+              <button aria-controls="fr-transcription-modal-mandats-chart-transcription" data-fr-opened="false" type="button" class="fr-btn--fullscreen fr-btn">Agrandir</button>
+            </div>
+          </div>
+          <dialog id="fr-transcription-modal-mandats-chart-transcription" class="fr-modal" aria-labelledby="fr-transcription-modal-title-mandats-chart-transcription">
+            <div class="fr-container fr-container--fluid fr-container-md">
+              <div class="fr-grid-row fr-grid-row--center">
+                <div class="fr-col-12 fr-col-md-10 fr-col-lg-8">
+                  <div class="fr-modal__body">
+                    <div class="fr-modal__header">
+                      <button aria-controls="fr-transcription-modal-mandats-chart-transcription" title="Fermer" type="button" id="button-19" class="fr-btn--close fr-btn">Fermer</button>
+                    </div>
+                    <div class="fr-modal__content">
+                      <h1 id="fr-transcription-modal-title-mandats-chart-transcription" class="fr-modal__title">Transcription du graphique par type de démarche</h1>
+                      <table>
+                        <caption>Répartition du nombre de démarches par type</caption>
+                        <tr>
+                          <th scope="col">Type de démarche</th>
+                          <th scope="col">Nombre de démarches</th>
+                        </tr>
+                        {% for demarche in demarches_transcription %}
+                          <tr>
+                            <th scope="row">{{ demarche.title }}</th>
+                            <td>{{ demarche.value }}</td>
+                          </tr>
+                        {% endfor %}
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </dialog>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="fr-title-icon-left fr-icon-statistics-evolution stat-title-with-info">
+        Personnes accompagnées
+        {% include "public_website/_stat_info_tooltip.html" with tooltip_id="personnes-accompagnees-evolution-info" sr_only_label="Informations sur l'évolution des personnes accompagnées" tooltip_content="Nombre de personnes pour qui au moins une démarche a été réalisée via Aidants Connect, sur les 24 derniers mois complets" %}
+      </h2>
+      <p class="fr-text--sm">
+        Total cumulé de personnes accompagnées via Aidants Connect (courbe) et nouvelles personnes chaque mois (barres), sur les 24 derniers mois complets.
+      </p>
+      <div class="stats-container">
+        {% include "public_website/_dsfr_bar_line_chart.html" with chart=personnes_accompagnees_evolution_chart aria_label="Évolution mensuelle du nombre de personnes accompagnées" bar_color="#FCC0B4" %}
+      </div>
+      <div class="fr-transcription fr-mb-4w" id="personnes-accompagnees-evolution-chart-transcription">
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-personnes-accompagnees-evolution-chart-transcription">Transcription</button>
+        <div class="fr-collapse" id="fr-transcription-collapse-personnes-accompagnees-evolution-chart-transcription">
+          <div class="fr-transcription__footer">
+            <div class="fr-transcription__actions-group">
+              <button aria-controls="fr-transcription-modal-personnes-accompagnees-evolution-chart-transcription" data-fr-opened="false" type="button" class="fr-btn--fullscreen fr-btn">Agrandir</button>
+            </div>
+          </div>
+          <dialog id="fr-transcription-modal-personnes-accompagnees-evolution-chart-transcription" class="fr-modal" aria-labelledby="fr-transcription-modal-title-personnes-accompagnees-evolution-chart-transcription">
+            <div class="fr-container fr-container--fluid fr-container-md">
+              <div class="fr-grid-row fr-grid-row--center">
+                <div class="fr-col-12 fr-col-md-10 fr-col-lg-8">
+                  <div class="fr-modal__body">
+                    <div class="fr-modal__header">
+                      <button aria-controls="fr-transcription-modal-personnes-accompagnees-evolution-chart-transcription" title="Fermer" type="button" class="fr-btn--close fr-btn">Fermer</button>
+                    </div>
+                    <div class="fr-modal__content">
+                      <h1 id="fr-transcription-modal-title-personnes-accompagnees-evolution-chart-transcription" class="fr-modal__title">Transcription du graphique d’évolution des personnes accompagnées</h1>
+                      <table>
+                        <caption>Évolution mensuelle du nombre de personnes accompagnées</caption>
+                        <tr>
+                          <th scope="col">Mois</th>
+                          <th scope="col">Nouvelles personnes dans le mois</th>
+                          <th scope="col">Total cumulé</th>
+                        </tr>
+                        {% for entry in personnes_accompagnees_evolution_transcription %}
+                          <tr>
+                            <th scope="row">{{ entry.month }}</th>
+                            <td>{{ entry.monthly }}</td>
+                            <td>{{ entry.cumulative }}</td>
+                          </tr>
+                        {% endfor %}
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </dialog>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="fr-title-icon-left fr-icon-statistics-evolution">Mandats</h2>
+      <p class="fr-text--sm">
+        Total cumulé de mandats créés via Aidants Connect (courbe) et nombre créé chaque mois (barres), sur les 24 derniers mois complets.
+      </p>
+      <div class="stats-container">
+        {% include "public_website/_dsfr_bar_line_chart.html" with chart=mandats_evolution_chart aria_label="Évolution mensuelle du nombre de mandats créés" bar_color="#62BFB1" %}
+      </div>
+      <div class="fr-transcription fr-mb-4w" id="mandats-evolution-chart-transcription">
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-evolution-chart-transcription">Transcription</button>
+        <div class="fr-collapse" id="fr-transcription-collapse-mandats-evolution-chart-transcription">
+          <div class="fr-transcription__footer">
+            <div class="fr-transcription__actions-group">
+              <button aria-controls="fr-transcription-modal-mandats-evolution-chart-transcription" data-fr-opened="false" type="button" class="fr-btn--fullscreen fr-btn">Agrandir</button>
+            </div>
+          </div>
+          <dialog id="fr-transcription-modal-mandats-evolution-chart-transcription" class="fr-modal" aria-labelledby="fr-transcription-modal-title-mandats-evolution-chart-transcription">
+            <div class="fr-container fr-container--fluid fr-container-md">
+              <div class="fr-grid-row fr-grid-row--center">
+                <div class="fr-col-12 fr-col-md-10 fr-col-lg-8">
+                  <div class="fr-modal__body">
+                    <div class="fr-modal__header">
+                      <button aria-controls="fr-transcription-modal-mandats-evolution-chart-transcription" title="Fermer" type="button" class="fr-btn--close fr-btn">Fermer</button>
+                    </div>
+                    <div class="fr-modal__content">
+                      <h1 id="fr-transcription-modal-title-mandats-evolution-chart-transcription" class="fr-modal__title">Transcription du graphique d’évolution des mandats créés</h1>
+                      <table>
+                        <caption>Évolution mensuelle du nombre de mandats créés</caption>
+                        <tr>
+                          <th scope="col">Mois</th>
+                          <th scope="col">Mandats créés dans le mois</th>
+                          <th scope="col">Total cumulé</th>
+                        </tr>
+                        {% for entry in mandats_evolution_transcription %}
+                          <tr>
+                            <th scope="row">{{ entry.month }}</th>
+                            <td>{{ entry.monthly }}</td>
+                            <td>{{ entry.cumulative }}</td>
+                          </tr>
+                        {% endfor %}
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </dialog>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="fr-title-icon-left fr-icon-statistics-evolution">Aidants habilités</h2>
       <p class="fr-text--sm">
         Total cumulé d’aidants habilités (courbe) et évolution chaque mois (barres), sur les 24 derniers mois complets.
       </p>
       <div class="stats-container">
-        {% include "public_website/_dsfr_bar_line_chart.html" with chart=operational_aidants_evolution_chart aria_label="Évolution mensuelle du nombre d’aidants habilités" %}
+        {% include "public_website/_dsfr_bar_line_chart.html" with chart=operational_aidants_evolution_chart aria_label="Évolution mensuelle du nombre d’aidants habilités" bar_color="#FDE39C" %}
       </div>
       <div class="fr-transcription fr-mb-4w" id="operational-aidants-evolution-chart-transcription">
         <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-operational-aidants-evolution-chart-transcription">Transcription</button>
@@ -196,48 +302,43 @@
     </section>
 
     <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-type-demarche stat-title-with-info">
-        <span>Par type de démarche</span>
-        {% include "public_website/_stat_info_tooltip.html" with tooltip_id="demarche-type-info" sr_only_label="Informations sur le type de démarche" tooltip_content="Domaine déclaré par l'aidant à l'utilisation du mandat" %}
-      </h2>
+      <h2 class="fr-title-icon-left fr-icon-statistics-evolution">Structures habilitées</h2>
+      <p class="fr-text--sm">
+        Total cumulé de structures habilitées (courbe) et évolution chaque mois (barres), sur les 24 derniers mois complets.
+      </p>
       <div class="stats-container">
-        <bar-chart
-          x="{{ demarches_chart.x }}"
-          y="{{ demarches_chart.y }}"
-          name="{{ demarches_chart.name }}"
-          aspect-ratio="{{ demarches_chart.aspect_ratio|escape }}"
-          selected-palette="default"
-          aria-label="Répartition du nombre de démarches par type"
-        ></bar-chart>
+        {% include "public_website/_dsfr_bar_line_chart.html" with chart=structures_habilitees_evolution_chart aria_label="Évolution mensuelle du nombre de structures habilitées" bar_color="#EAC7AD" %}
       </div>
-      <div class="fr-transcription fr-mb-4w" id="mandats-chart-transcription">
-        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-chart-transcription">Transcription</button>
-        <div class="fr-collapse" id="fr-transcription-collapse-mandats-chart-transcription">
+      <div class="fr-transcription fr-mb-4w" id="structures-habilitees-evolution-chart-transcription">
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-structures-habilitees-evolution-chart-transcription">Transcription</button>
+        <div class="fr-collapse" id="fr-transcription-collapse-structures-habilitees-evolution-chart-transcription">
           <div class="fr-transcription__footer">
             <div class="fr-transcription__actions-group">
-              <button aria-controls="fr-transcription-modal-mandats-chart-transcription" data-fr-opened="false" type="button" class="fr-btn--fullscreen fr-btn">Agrandir</button>
+              <button aria-controls="fr-transcription-modal-structures-habilitees-evolution-chart-transcription" data-fr-opened="false" type="button" class="fr-btn--fullscreen fr-btn">Agrandir</button>
             </div>
           </div>
-          <dialog id="fr-transcription-modal-mandats-chart-transcription" class="fr-modal" aria-labelledby="fr-transcription-modal-title-mandats-chart-transcription">
+          <dialog id="fr-transcription-modal-structures-habilitees-evolution-chart-transcription" class="fr-modal" aria-labelledby="fr-transcription-modal-title-structures-habilitees-evolution-chart-transcription">
             <div class="fr-container fr-container--fluid fr-container-md">
               <div class="fr-grid-row fr-grid-row--center">
                 <div class="fr-col-12 fr-col-md-10 fr-col-lg-8">
                   <div class="fr-modal__body">
                     <div class="fr-modal__header">
-                      <button aria-controls="fr-transcription-modal-mandats-chart-transcription" title="Fermer" type="button" id="button-19" class="fr-btn--close fr-btn">Fermer</button>
+                      <button aria-controls="fr-transcription-modal-structures-habilitees-evolution-chart-transcription" title="Fermer" type="button" class="fr-btn--close fr-btn">Fermer</button>
                     </div>
                     <div class="fr-modal__content">
-                      <h1 id="fr-transcription-modal-title-mandats-chart-transcription" class="fr-modal__title">Transcription du graphique par type de démarche</h1>
+                      <h1 id="fr-transcription-modal-title-structures-habilitees-evolution-chart-transcription" class="fr-modal__title">Transcription du graphique d’évolution des structures habilitées</h1>
                       <table>
-                        <caption>Répartition du nombre de démarches par type</caption>
+                        <caption>Évolution mensuelle du nombre de structures habilitées</caption>
                         <tr>
-                          <th scope="col">Type de démarche</th>
-                          <th scope="col">Nombre de démarches</th>
+                          <th scope="col">Mois</th>
+                          <th scope="col">Évolution sur le mois</th>
+                          <th scope="col">Total</th>
                         </tr>
-                        {% for demarche in demarches_transcription %}
+                        {% for entry in structures_habilitees_evolution_transcription %}
                           <tr>
-                            <th scope="row">{{ demarche.title }}</th>
-                            <td>{{ demarche.value }}</td>
+                            <th scope="row">{{ entry.month }}</th>
+                            <td>{{ entry.monthly }}</td>
+                            <td>{{ entry.cumulative }}</td>
                           </tr>
                         {% endfor %}
                       </table>
@@ -309,4 +410,5 @@
 
 {% block extrajs %}
   <script type="module" src="{{ dsfr_chart_js_url }}"></script>
+  <script type="module" src="{% static 'js/statistiques.js' %}"></script>
 {% endblock extrajs %}

@@ -20,7 +20,11 @@ from aidants_connect_web.models import (
     Journal,
     Mandat,
 )
-from aidants_connect_web.statistics import compute_statistics, get_monthly_series
+from aidants_connect_web.statistics import (
+    compute_statistics,
+    get_monthly_series,
+    get_personnes_accompagnees_monthly_series,
+)
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AttestationJournalFactory,
@@ -493,3 +497,62 @@ class DemarchesEvolutionStatisticsTests(TestCase):
         self.assertEqual(series["values"][14], 1)
         self.assertEqual(series["values"][-1], 1)
         self.assertEqual(sum(series["values"]), 3)
+
+
+@tag("statistics")
+class PersonnesAccompagneesEvolutionStatisticsTests(TestCase):
+    @freeze_time("2024-03-15 12:00:00")
+    def test_counts_unique_usagers_on_first_demarche_month(self):
+        orga = OrganisationFactory()
+        aidant = AidantFactory(organisation=orga)
+        usager_one = UsagerFactory()
+        usager_two = UsagerFactory()
+        usager_three = UsagerFactory()
+
+        # First accompaniment for usager_one before the 24-month window
+        JournalFactory(
+            organisation=orga,
+            aidant=aidant,
+            usager=usager_one,
+            action=JournalActionKeywords.USE_AUTORISATION,
+            creation_date=datetime(2021, 1, 1, tzinfo=timezone.utc),
+        )
+        # Later démarches for the same usager must not create a new "personne"
+        JournalFactory(
+            organisation=orga,
+            aidant=aidant,
+            usager=usager_one,
+            action=JournalActionKeywords.USE_AUTORISATION,
+            creation_date=datetime(2023, 5, 1, tzinfo=timezone.utc),
+        )
+        # New people during the window
+        JournalFactory(
+            organisation=orga,
+            aidant=aidant,
+            usager=usager_two,
+            action=JournalActionKeywords.USE_AUTORISATION,
+            creation_date=datetime(2023, 4, 1, tzinfo=timezone.utc),
+        )
+        JournalFactory(
+            organisation=orga,
+            aidant=aidant,
+            usager=usager_three,
+            action=JournalActionKeywords.USE_AUTORISATION,
+            creation_date=datetime(2024, 2, 1, tzinfo=timezone.utc),
+        )
+
+        series = get_personnes_accompagnees_monthly_series(
+            Journal.objects.filter(action=JournalActionKeywords.USE_AUTORISATION),
+            months=24,
+        )
+
+        self.assertEqual(len(series["labels"]), 24)
+        self.assertEqual(series["labels"][0], "03/2022")
+        self.assertEqual(series["labels"][-1], "02/2024")
+        # Baseline includes usager_one; monthly only counts new people
+        self.assertEqual(series["monthly"][13], 1)  # 04/2023 -> usager_two
+        self.assertEqual(series["monthly"][14], 0)  # 05/2023 -> no new people
+        self.assertEqual(series["monthly"][-1], 1)  # 02/2024 -> usager_three
+        self.assertEqual(sum(series["monthly"]), 2)
+        self.assertEqual(series["cumulative"][0], 1)
+        self.assertEqual(series["cumulative"][-1], 3)

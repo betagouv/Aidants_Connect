@@ -10,18 +10,6 @@
   mask-image: url(/static/images/icons/statistiques-utilisation.svg);
 }
 
-.stats-container {
-  border: solid 1px var(--border-default-grey);
-  padding: 2rem;
-  margin: 0 0 1.5rem 0;
-}
-
-@media (max-width: 991px) {
-  .stats-container {
-    padding: 0.5rem;
-  }
-}
-
 .stat-col {
   font-size: 1.25rem;
   line-height: 1.75rem;
@@ -38,6 +26,8 @@
 #fr-transcription-modal-mandats-chart-transcription table tr th,
 #fr-transcription-modal-mandats-durees-chart-transcription table tr th,
 #fr-transcription-modal-mandats-evolution-chart-transcription table tr th,
-#fr-transcription-modal-demarches-evolution-chart-transcription table tr th {
+#fr-transcription-modal-demarches-evolution-chart-transcription table tr th,
+#fr-transcription-modal-personnes-accompagnees-evolution-chart-transcription table tr th,
+#fr-transcription-modal-structures-habilitees-evolution-chart-transcription table tr th {
   padding: 0.5rem 1rem;
 }

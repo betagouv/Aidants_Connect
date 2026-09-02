@@ -2,7 +2,7 @@ from datetime import date, datetime
 from typing import Union
 
 from django.conf import settings
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Count, Min, Q, QuerySet
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 
@@ -29,7 +29,9 @@ from ..models import (
 
 MANDATS_EVOLUTION_MONTHS = 24
 DEMARCHES_EVOLUTION_MONTHS = 24
+PERSONNES_ACCOMPAGNEES_EVOLUTION_MONTHS = 24
 OPERATIONAL_AIDANTS_EVOLUTION_MONTHS = 24
+STRUCTURES_HABILITEES_EVOLUTION_MONTHS = 24
 
 
 def _month_key(value: date | datetime) -> tuple[int, int]:
@@ -59,6 +61,63 @@ def _cumulate(values: list[int], baseline: int = 0) -> list[int]:
         running += value
         cumulative.append(running)
     return cumulative
+
+
+def _get_snapshot_monthly_series(field_name: str, months: int) -> dict[str, list]:
+    """Build a monthly stock series from ``AidantStatistiques`` snapshots.
+
+    For each of the last ``months`` complete months we keep the latest snapshot
+    value for ``field_name``, then forward-fill months without a snapshot with
+    the previous known value. Monthly bars are the month-over-month delta.
+    """
+    tz = timezone.get_current_timezone()
+    current_month = timezone.localdate().replace(day=1)
+    end_month = current_month - relativedelta(months=1)
+    start_month = end_month - relativedelta(months=months - 1)
+
+    baseline = (
+        AidantStatistiques.objects.filter(created_at__date__lt=start_month)
+        .order_by("created_at")
+        .values_list(field_name, flat=True)
+        .last()
+    ) or 0
+
+    snapshots = (
+        AidantStatistiques.objects.filter(
+            created_at__date__gte=start_month,
+            created_at__date__lt=current_month,
+        )
+        .annotate(month=TruncMonth("created_at", tzinfo=tz))
+        .values("month", field_name, "created_at")
+        .order_by("month", "created_at")
+    )
+
+    value_by_month: dict[tuple[int, int], int] = {}
+    for entry in snapshots:
+        if entry["month"] is None:
+            continue
+        value_by_month[_month_key(entry["month"])] = entry[field_name]
+
+    month_keys = _month_keys_between(start_month, end_month)
+    level: list[int] = []
+    last_value = baseline
+    for key in month_keys:
+        if key in value_by_month:
+            last_value = value_by_month[key]
+        level.append(last_value)
+
+    monthly: list[int] = []
+    previous = baseline
+    for value in level:
+        monthly.append(value - previous)
+        previous = value
+
+    return {
+        "labels": [_format_month(year, month) for year, month in month_keys],
+        "values": level,
+        "monthly": monthly,
+        "cumulative": level,
+    }
 
 
 def get_monthly_series(
@@ -122,6 +181,46 @@ def get_monthly_series(
     }
 
 
+def get_personnes_accompagnees_monthly_series(
+    qs: QuerySet,
+    months: int = PERSONNES_ACCOMPAGNEES_EVOLUTION_MONTHS,
+) -> dict[str, list]:
+    """Build a monthly series of newly accompanied people.
+
+    A person is counted the month of their first ``use_autorisation`` entry,
+    matching the public "Personnes accompagnées" counter (distinct usagers
+    with at least one démarche). Monthly bars are new people that month;
+    the line is the running total of unique people accompanied.
+    """
+    current_month = timezone.localdate().replace(day=1)
+    end_month = current_month - relativedelta(months=1)
+    start_month = end_month - relativedelta(months=months - 1)
+    month_keys = _month_keys_between(start_month, end_month)
+    start_key = (start_month.year, start_month.month)
+    current_key = (current_month.year, current_month.month)
+
+    first_occurrences = qs.values("usager").annotate(first=Min("creation_date"))
+    baseline = 0
+    counts_by_month: dict[tuple[int, int], int] = {}
+    for entry in first_occurrences:
+        first = entry["first"]
+        if first is None:
+            continue
+        key = _month_key(first)
+        if key < start_key:
+            baseline += 1
+        elif key < current_key:
+            counts_by_month[key] = counts_by_month.get(key, 0) + 1
+
+    monthly = [counts_by_month.get(key, 0) for key in month_keys]
+    return {
+        "labels": [_format_month(year, month) for year, month in month_keys],
+        "values": monthly,
+        "monthly": monthly,
+        "cumulative": _cumulate(monthly, baseline),
+    }
+
+
 def get_operational_aidants_monthly_series(
     months: int = OPERATIONAL_AIDANTS_EVOLUTION_MONTHS,
 ) -> dict[str, list]:
@@ -130,64 +229,23 @@ def get_operational_aidants_monthly_series(
     Uses the same metric as the public "Aidants habilités" counter
     (``number_aidant_can_create_mandat``). This is a state metric (not a dated
     event), so it cannot be rebuilt with ``get_monthly_series``. Instead we rely
-    on the periodic ``AidantStatistiques`` snapshots: for each of the last
-    ``months`` complete months we keep the latest snapshot value, then
-    forward-fill months without a snapshot with the previous known value.
+    on the periodic ``AidantStatistiques`` snapshots.
     """
-    tz = timezone.get_current_timezone()
-    current_month = timezone.localdate().replace(day=1)
-    end_month = current_month - relativedelta(months=1)
-    start_month = end_month - relativedelta(months=months - 1)
+    return _get_snapshot_monthly_series("number_aidant_can_create_mandat", months)
 
-    # Level just before the window, used both to forward-fill the first months
-    # and to compute the first month-over-month delta.
-    baseline = (
-        AidantStatistiques.objects.filter(created_at__date__lt=start_month)
-        .order_by("created_at")
-        .values_list("number_aidant_can_create_mandat", flat=True)
-        .last()
-    ) or 0
 
-    snapshots = (
-        AidantStatistiques.objects.filter(
-            created_at__date__gte=start_month,
-            created_at__date__lt=current_month,
-        )
-        .annotate(month=TruncMonth("created_at", tzinfo=tz))
-        .values("month", "number_aidant_can_create_mandat", "created_at")
-        .order_by("month", "created_at")
+def get_structures_habilitees_monthly_series(
+    months: int = STRUCTURES_HABILITEES_EVOLUTION_MONTHS,
+) -> dict[str, list]:
+    """Build a monthly series of accredited organisations from stored snapshots.
+
+    Uses the same metric as the public "Structures habilitées" counter
+    (``number_organisation_with_accredited_aidants``), i.e. structures with at
+    least one operational aidant.
+    """
+    return _get_snapshot_monthly_series(
+        "number_organisation_with_accredited_aidants", months
     )
-
-    value_by_month: dict[tuple[int, int], int] = {}
-    for entry in snapshots:
-        if entry["month"] is None:
-            continue
-        value_by_month[_month_key(entry["month"])] = entry[
-            "number_aidant_can_create_mandat"
-        ]
-
-    month_keys = _month_keys_between(start_month, end_month)
-    # ``level`` is already a cumulative stock (the snapshot value at each month);
-    # ``monthly`` is the month-over-month increase derived from it.
-    level: list[int] = []
-    last_value = baseline
-    for key in month_keys:
-        if key in value_by_month:
-            last_value = value_by_month[key]
-        level.append(last_value)
-
-    monthly: list[int] = []
-    previous = baseline
-    for value in level:
-        monthly.append(value - previous)
-        previous = value
-
-    return {
-        "labels": [_format_month(year, month) for year, month in month_keys],
-        "values": level,
-        "monthly": monthly,
-        "cumulative": level,
-    }
 
 
 def compute_all_statistics():

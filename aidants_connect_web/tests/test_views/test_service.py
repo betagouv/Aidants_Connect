@@ -294,7 +294,15 @@ class StatistiquesTests(TestCase):
             24,
         )
         self.assertEqual(
+            len(response.context["personnes_accompagnees_evolution_data"]["labels"]),
+            24,
+        )
+        self.assertEqual(
             len(response.context["operational_aidants_evolution_data"]["labels"]),
+            24,
+        )
+        self.assertEqual(
+            len(response.context["structures_habilitees_evolution_data"]["labels"]),
             24,
         )
 
@@ -330,6 +338,39 @@ class StatistiquesTests(TestCase):
         self.assertEqual(data["monthly"][-3], 0)
 
     @freeze_time("2026-06-15")
+    def test_structures_habilitees_evolution_uses_snapshots(self):
+        with freeze_time("2026-04-10"):
+            AidantStatistiques.objects.create(
+                number_organisation_with_accredited_aidants=2
+            )
+        with freeze_time("2026-05-05"):
+            AidantStatistiques.objects.create(
+                number_organisation_with_accredited_aidants=4
+            )
+        with freeze_time("2026-05-20"):
+            AidantStatistiques.objects.create(
+                number_organisation_with_accredited_aidants=6
+            )
+
+        response = self.client.get(reverse("statistiques"))
+        data = response.context["structures_habilitees_evolution_data"]
+
+        self.assertEqual(len(data["labels"]), 24)
+        self.assertEqual(data["labels"][-1], "05/2026")
+        self.assertEqual(data["values"][-1], 6)
+        self.assertEqual(data["labels"][-2], "04/2026")
+        self.assertEqual(data["values"][-2], 2)
+        self.assertEqual(data["labels"][-3], "03/2026")
+        self.assertEqual(data["values"][-3], 0)
+        self.assertEqual(data["cumulative"], data["values"])
+        self.assertEqual(data["monthly"][-1], 4)
+        self.assertEqual(data["monthly"][-2], 2)
+        self.assertEqual(data["monthly"][-3], 0)
+        self.assertContains(
+            response, "structures-habilitees-evolution-chart-transcription"
+        )
+
+    @freeze_time("2026-06-15")
     def test_mandats_evolution_exposes_monthly_and_cumulative(self):
         orga = OrganisationFactory()
         # Two mandats before the 24-month window feed the cumulative baseline
@@ -357,6 +398,60 @@ class StatistiquesTests(TestCase):
         self.assertGreaterEqual(data["cumulative"][0], 2)
         # Cumulative is monotonically non-decreasing
         self.assertEqual(data["cumulative"], sorted(data["cumulative"]))
+
+    @freeze_time("2026-06-15")
+    def test_personnes_accompagnees_evolution_counts_first_demarche_only(self):
+        orga = OrganisationFactory()
+        aidant = AidantFactory(organisation=orga)
+        usager_existing = UsagerFactory()
+        usager_new = UsagerFactory()
+
+        # Already accompanied before the window -> baseline only
+        Journal.objects.create(
+            aidant=aidant,
+            organisation=orga,
+            usager=usager_existing,
+            action="use_autorisation",
+            demarche="argent",
+            creation_date=datetime(2020, 1, 1, tzinfo=timezone.utc),
+        )
+        Journal.objects.filter(usager=usager_existing).update(
+            creation_date=datetime(2020, 1, 1, tzinfo=timezone.utc)
+        )
+        # Same person again in-window must not increase monthly count
+        Journal.objects.create(
+            aidant=aidant,
+            organisation=orga,
+            usager=usager_existing,
+            action="use_autorisation",
+            demarche="famille",
+        )
+        Journal.objects.filter(usager=usager_existing, demarche="famille").update(
+            creation_date=datetime(2026, 5, 10, tzinfo=timezone.utc)
+        )
+        # New person during last complete month
+        Journal.objects.create(
+            aidant=aidant,
+            organisation=orga,
+            usager=usager_new,
+            action="use_autorisation",
+            demarche="logement",
+        )
+        Journal.objects.filter(usager=usager_new).update(
+            creation_date=datetime(2026, 5, 12, tzinfo=timezone.utc)
+        )
+
+        response = self.client.get(reverse("statistiques"))
+        data = response.context["personnes_accompagnees_evolution_data"]
+
+        self.assertEqual(data["labels"][-1], "05/2026")
+        self.assertEqual(data["monthly"][-1], 1)
+        self.assertGreaterEqual(data["cumulative"][0], 1)
+        self.assertEqual(data["cumulative"][-1], data["cumulative"][-2] + 1)
+        self.assertContains(response, "Personnes accompagnées")
+        self.assertContains(
+            response, "personnes-accompagnees-evolution-chart-transcription"
+        )
 
     def test_usager_helped_a_long_time_ago_not_counted_as_recent(self):
         # "statistiques_demarches": demarches_aggregation,

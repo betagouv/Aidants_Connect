@@ -8,4 +8,5 @@
   y-line-min="0"
   aspect-ratio="{{ chart.aspect_ratio|escape }}"
   aria-label="{{ aria_label|escape }}"
+  {% if bar_color %}data-bar-color="{{ bar_color|escape }}"{% endif %}
 ></bar-line-chart>
