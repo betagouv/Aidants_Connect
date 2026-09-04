@@ -4,7 +4,7 @@ from django.conf import settings
 from django.urls import include, path
 
 from aidants_connect import views
-from aidants_connect.admin import admin_of_site
+from aidants_connect.admin import admin_cdd_site, admin_of_site
 from aidants_connect_common.tests import third_party_service_mocks
 from aidants_connect_web.admin import admin_site
 
@@ -13,6 +13,7 @@ urlpatterns = [
     path("robots.txt", views.robots_txt),
     path(settings.ADMIN_URL, admin_site.urls),
     path(settings.ADMIN_OF_URL, admin_of_site.urls),
+    path(settings.ADMIN_OF_CDD, admin_cdd_site.urls),
     path("", include("aidants_connect_common.urls")),
     path("", include("aidants_connect_web.urls")),
     path("habilitation/", include("aidants_connect_habilitation.urls")),
