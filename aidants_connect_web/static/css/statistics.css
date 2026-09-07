@@ -31,3 +31,86 @@
 #fr-transcription-modal-structures-habilitees-evolution-chart-transcription table tr th {
   padding: 0.5rem 1rem;
 }
+
+.mandat-durees {
+  margin: 0 0 1.5rem 0;
+}
+
+.mandat-durees__bar {
+  display: flex;
+  width: 100%;
+  height: 2.75rem;
+  overflow: hidden;
+}
+
+.mandat-durees__segment {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.mandat-durees__segment--short,
+.mandat-durees__swatch--short {
+  background-color: #008C7A;
+}
+
+.mandat-durees__segment--month,
+.mandat-durees__swatch--month {
+  background-color: #000091;
+}
+
+.mandat-durees__segment--long,
+.mandat-durees__swatch--long {
+  background-color: #7BA8F5;
+}
+
+.mandat-durees__segment--semester,
+.mandat-durees__swatch--semester {
+  background-color: #FF9B73;
+}
+
+.mandat-durees__segment--other,
+.mandat-durees__swatch--other {
+  background-color: #FFE0C4;
+}
+
+.mandat-durees__segment--labelled {
+  padding-left: 0.75rem;
+  padding-right: 0.5rem;
+}
+
+.mandat-durees__segment-label {
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mandat-durees__segment-label--on-light {
+  color: var(--text-title-grey);
+}
+
+.mandat-durees__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  margin-top: 1rem;
+}
+
+.mandat-durees__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.mandat-durees__swatch {
+  display: inline-block;
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}

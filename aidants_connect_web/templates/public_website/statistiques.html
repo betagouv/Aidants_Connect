@@ -353,17 +353,45 @@
     </section>
 
     <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-type-demarche">Par durée de mandat</h2>
-      <div class="stats-container">
-        <bar-chart
-          x="{{ mandat_durees_chart.x }}"
-          y="{{ mandat_durees_chart.y }}"
-          name="{{ mandat_durees_chart.name }}"
-          horizontal="true"
-          aspect-ratio="{{ mandat_durees_chart.aspect_ratio|escape }}"
-          selected-palette="sequentialDescending"
-          aria-label="Répartition du nombre de mandats par durée"
-        ></bar-chart>
+      <h2 class="fr-title-icon-left fr-icon-statistics-type-demarche">Répartition par durée de mandat</h2>
+      <style nonce="{{ request.csp_nonce }}">
+        {% for segment in mandat_durees_data.segments %}
+          {% if segment.percent > 0 %}
+            .mandat-durees__w-{{ segment.key }} { width: {{ segment.percent }}%; }
+          {% endif %}
+        {% endfor %}
+      </style>
+      <div
+        class="mandat-durees"
+        role="img"
+        aria-label="Répartition du nombre de mandats par durée"
+      >
+        <div class="mandat-durees__bar" aria-hidden="true">
+          {% for segment in mandat_durees_data.segments %}
+            {% if segment.percent > 0 %}
+              <div
+                class="mandat-durees__segment mandat-durees__segment--{{ segment.key }} mandat-durees__w-{{ segment.key }}{% if segment.show_label %} mandat-durees__segment--labelled{% endif %}"
+                title="{{ segment.label }} · {{ segment.percent }} %"
+              >
+                {% if segment.show_label %}
+                  <span class="mandat-durees__segment-label{% if not segment.label_on_dark %} mandat-durees__segment-label--on-light{% endif %}">{{ segment.label }} · {{ segment.percent }}&nbsp;%</span>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% if mandat_durees_data.has_legend %}
+          <ul class="mandat-durees__legend fr-raw-list">
+            {% for segment in mandat_durees_data.segments %}
+              {% if not segment.show_label and segment.value > 0 %}
+                <li class="mandat-durees__legend-item">
+                  <span class="mandat-durees__swatch mandat-durees__swatch--{{ segment.key }}" aria-hidden="true"></span>
+                  <span>{{ segment.label }} · {{ segment.percent }}&nbsp;%</span>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        {% endif %}
       </div>
       <div class="fr-transcription fr-mb-4w" id="mandats-durees-chart-transcription">
         <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-durees-chart-transcription">Transcription</button>
@@ -388,11 +416,13 @@
                         <tr>
                           <th scope="col">Durée de mandat</th>
                           <th scope="col">Nombre de mandats</th>
+                          <th scope="col">Pourcentage</th>
                         </tr>
-                        {% for entry in mandat_durees_transcription %}
+                        {% for segment in mandat_durees_data.segments %}
                           <tr>
-                            <th scope="row">{{ entry.title }}</th>
-                            <td>{{ entry.value }}</td>
+                            <th scope="row">{{ segment.label }}</th>
+                            <td>{{ segment.value }}</td>
+                            <td>{{ segment.percent }}&nbsp;%</td>
                           </tr>
                         {% endfor %}
                       </table>

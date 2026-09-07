@@ -10,7 +10,6 @@ from django.utils import timezone
 
 from freezegun import freeze_time
 
-from aidants_connect_common.constants import AuthorizationDurationChoices
 from aidants_connect_web.models import AidantStatistiques, Journal, Organisation
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -468,15 +467,20 @@ class StatistiquesTests(TestCase):
     def test_stats_show_mandat_durees_distribution(self):
         response = self.client.get(reverse("statistiques"))
         mandat_durees_data = response.context["mandat_durees_data"]
-        self.assertEqual(
-            mandat_durees_data["titles"][0],
-            AuthorizationDurationChoices.SHORT.label,
-        )
+        self.assertEqual(mandat_durees_data["titles"][0], "1 jour")
         self.assertEqual(mandat_durees_data["values"][0], 2)
         self.assertEqual(
             sum(mandat_durees_data["values"]),
-            response.context["usage_section"]["Mandats créés"],
+            response.context["usage_section"]["Mandats"],
         )
+        self.assertEqual(sum(s["percent"] for s in mandat_durees_data["segments"]), 100)
+        self.assertContains(response, "Répartition par durée de mandat")
+        self.assertContains(response, "mandat-durees__bar")
+        for segment in mandat_durees_data["segments"]:
+            self.assertEqual(
+                segment["show_label"],
+                service._mandat_duree_label_fits(segment["label"], segment["percent"]),
+            )
 
     def test_stats_page_includes_demarches_realisees_info(self):
         response = self.client.get(reverse("statistiques"))
