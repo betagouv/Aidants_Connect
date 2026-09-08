@@ -114,3 +114,24 @@
   height: 0.875rem;
   flex-shrink: 0;
 }
+
+/* Legend dots: avoid inline styles (CSP); match data-bar-color */
+bar-line-chart[data-bar-color="#B4C5FB"] .chart_legend > div:first-child .legend_dot {
+  background-color: #B4C5FB !important;
+}
+
+bar-line-chart[data-bar-color="#FCC0B4"] .chart_legend > div:first-child .legend_dot {
+  background-color: #FCC0B4 !important;
+}
+
+bar-line-chart[data-bar-color="#62BFB1"] .chart_legend > div:first-child .legend_dot {
+  background-color: #62BFB1 !important;
+}
+
+bar-line-chart[data-bar-color="#FDE39C"] .chart_legend > div:first-child .legend_dot {
+  background-color: #FDE39C !important;
+}
+
+bar-line-chart[data-bar-color="#EAC7AD"] .chart_legend > div:first-child .legend_dot {
+  background-color: #EAC7AD !important;
+}

@@ -1,69 +1,93 @@
 /**
- * Apply custom bar colors on DSFR <bar-line-chart> components.
- * DSFR Chart only exposes named palettes, so we tint bars after mount.
+ * DSFR Chart has no custom hex API. Setting dataset colors is not enough:
+ * Chart.js keeps resolved element options, so bars stay on the palette until
+ * hover (which reads hoverBackgroundColor). Tint both datasets and elements.
  */
+function tintBars (chart, color) {
+  chart.data.datasets.forEach((dataset, index) => {
+    if (dataset.type !== "bar") {
+      return
+    }
+    dataset.backgroundColor = color
+    dataset.hoverBackgroundColor = color
+    dataset.borderColor = color
+    dataset.hoverBorderColor = color
+
+    const meta = chart.getDatasetMeta(index)
+    for (const element of meta.data) {
+      if (!element?.options) {
+        continue
+      }
+      element.options.backgroundColor = color
+      element.options.borderColor = color
+    }
+  })
+}
+
 function applyBarColor (el) {
   const color = el.getAttribute("data-bar-color")
   if (!color) {
     return true
   }
 
-  const instance = el._instance
-  const chart = instance?.proxy?.chart
-  const data = instance?.data
-  if (!chart || !data) {
+  const proxy = el._instance?.proxy
+  const chart = proxy?.chart
+  if (!proxy || !chart?.data?.datasets) {
     return false
   }
 
-  data.colorBarParse = [color]
-  data.colorBarHover = [color]
+  if (!proxy._acBarColorPatched) {
+    proxy._acBarColorPatched = true
 
-  for (const dataset of chart.data.datasets) {
-    if (dataset.type !== "bar") {
-      continue
+    const originalLoadColors = proxy.loadColors.bind(proxy)
+    proxy.loadColors = function () {
+      originalLoadColors()
+      const next = el.getAttribute("data-bar-color")
+      if (next) {
+        this.colorBarParse = [next]
+        this.colorBarHover = [next]
+      }
     }
-    dataset.backgroundColor = color
-    dataset.hoverBackgroundColor = color
-    dataset.borderColor = color
+
+    const plugins = chart.config.plugins || (chart.config.plugins = [])
+    plugins.push({
+      id: "acBarColor",
+      beforeDatasetsDraw (instance) {
+        const next = el.getAttribute("data-bar-color")
+        if (next) {
+          tintBars(instance, next)
+        }
+      },
+    })
   }
 
-  const barLegendDot = el.querySelector(".legend_dot")
-  if (barLegendDot) {
-    barLegendDot.style.backgroundColor = color
-  }
-
-  chart.update("none")
+  proxy.colorBarParse = [color]
+  proxy.colorBarHover = [color]
+  tintBars(chart, color)
+  chart.draw()
   return true
 }
 
-function applyAllBarColors () {
-  const charts = document.querySelectorAll("bar-line-chart[data-bar-color]")
-  let pending = 0
-  charts.forEach((el) => {
-    if (!applyBarColor(el)) {
-      pending += 1
-    }
-  })
-  return pending === 0
+function applyAll () {
+  return [...document.querySelectorAll("bar-line-chart[data-bar-color]")].every(applyBarColor)
 }
 
-function watchBarColors () {
-  if (applyAllBarColors()) {
-    return
-  }
-
-  let attempts = 0
-  const maxAttempts = 40
+function start () {
+  applyAll()
+  document.documentElement.addEventListener("dsfr.theme", () => {
+    window.setTimeout(applyAll, 0)
+  })
+  let n = 0
   const timer = window.setInterval(() => {
-    attempts += 1
-    if (applyAllBarColors() || attempts >= maxAttempts) {
+    n += 1
+    if (applyAll() || n >= 50) {
       window.clearInterval(timer)
     }
   }, 100)
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", watchBarColors)
+  document.addEventListener("DOMContentLoaded", start)
 } else {
-  watchBarColors()
+  start()
 }
