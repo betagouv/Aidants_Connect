@@ -56,6 +56,13 @@ class UsagersTest(FunctionalTestCase):
         self.login_aidant(self.aidant)
 
         self.wait.until(self.dsfr_ready())
+        # DSFR tabs briefly set aria-selected=false during init; wait for final state
+        self.wait.until(
+            lambda driver: driver.find_element(By.ID, "tab-1").get_attribute(
+                "aria-selected"
+            )
+            == "true"
+        )
 
         user_with_valid_mandate = self.selenium.find_elements(
             By.CSS_SELECTOR, "table.with-valid-mandate tbody tr"
