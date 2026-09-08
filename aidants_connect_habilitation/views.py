@@ -475,6 +475,9 @@ class PersonnelRequestFormView(LateStageRequestView, HabilitationStepMixin, Form
             form_kwargs["data"] = data
 
             new_form = self.form_class(**form_kwargs)
+            # The added form is rendered above the button that created it: move the
+            # focus to it so its existence isn't missed.
+            new_form.autofocus_form_index = total_forms
             return self.render_to_response(self.get_context_data(form=new_form))
         else:
             form.save()

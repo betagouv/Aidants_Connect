@@ -14,25 +14,29 @@
     </button>
   </section>
 
-  <fieldset class="fr-fieldset">
-    <div class="fr-fieldset__element fr-my-4v fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+  <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="fr-col-12 fr-col-md-6 fr-my-4v">
       {% aidantc_dsfr_form_field_no_asterisk form.last_name %}
     </div>
-    <div class="fr-fieldset__element fr-my-4v fr-fieldset__element--inline fr-fieldset__element--inline-grow">
+    <div class="fr-col-12 fr-col-md-6 fr-my-4v">
       {% aidantc_dsfr_form_field_no_asterisk form.first_name %}
     </div>
-    <div class="fr-fieldset__element fr-my-4v">{% aidantc_dsfr_form_field_no_asterisk form.profession %}</div>
+  </div>
+  <div class="fr-my-4v">{% aidantc_dsfr_form_field_no_asterisk form.profession %}</div>
 
-    <div class="fr-fieldset__element fr-my-4v">
-      {% aidantc_dsfr_form_field_no_asterisk form.email %}
-      {% dsfr_alert type="warning" extra_classes="fr-alert--sm" content="Toutes les adresses e-mail renseignées dans la demande doivent être nominatives (de type prenom-nom@exemple.fr)" %}
+  <div class="fr-my-4v">
+    {% aidantc_dsfr_form_field_no_asterisk form.email %}
+    <div class="fr-alert fr-alert--warning fr-alert--sm">
+      <h3 class="fr-alert__title fr-mb-0">
+        Toutes les adresses e-mail renseignées dans la demande doivent être nominatives (de type prenom-nom@exemple.fr)
+      </h3>
     </div>
+  </div>
 
-    <div class="fr-fieldset__element fr-my-4v fr-col-sm-6">{% aidantc_dsfr_form_field_no_asterisk form.phone %}</div>
-    <div class="fr-fieldset__element">
-      <p class="fr-info-text fr-mb-4v fr-mt-n2v">Lors de la première connexion à Aidants Connect, un code à usage unique doit être envoyé par SMS au référent.&nbsp;<a href="/faq/utiliser-aidants-connect/">Voir plus</a></p>
-    </div>
-  </fieldset>
+  <div class="fr-my-4v fr-col-sm-6">{% aidantc_dsfr_form_field_no_asterisk form.phone %}</div>
+  <div>
+    <p class="fr-info-text fr-mb-4v fr-mt-n2v">Lors de la première connexion à Aidants Connect, un code à usage unique doit être envoyé par SMS au référent.&nbsp;<a href="/faq/utiliser-aidants-connect/">Voir plus</a></p>
+  </div>
 
   {{ issuer_data|json_script:"issuer-data" }}
 </div>

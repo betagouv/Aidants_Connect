@@ -13,6 +13,7 @@
 
 {% block content %}
   <div class="fr-container--fluid">
+    <h1 class="fr-sr-only">Connectez-vous</h1>
     <div class="fr-grid-row">
       <div class="fr-col-12 fr-col-md-6 fr-background-alt--blue-france fr-p-4w fr-p-md-8w">
         <div class="fr-container--fluid">
@@ -71,58 +72,39 @@
         <div class="fr-container--fluid fr-background-default--grey fr-p-4w fr-py-md-8w fr-px-md-10w fr-px-lg-12w">
           <div class="fr-grid-row fr-grid-row-gutters fr-grid-row--center">
             <div class="fr-col-12">
-              <form id="login-1760" method="post">
+              {# novalidate: browser native messages are replaced by DSFR error messages, which state the expected format #}
+              <form id="login-1760" method="post" novalidate>
                 {% csrf_token %}
-                <fieldset
-                  class="fr-fieldset fr-py-0 fr-my-0"
-                  id="login-1760-fieldset"
-                  aria-labelledby="login-1760-fieldset-legend"
-                >
-                  <legend id="login-1760-fieldset-legend">
-                    <h1 class="fr-h3 fr-m-0 fr-p-0">Vous êtes habilité Aidants Connect ? Connectez-vous !</h1>
-                  </legend>
-                  <div class="fr-fieldset__element fr-my-6v">
-                    <p class="fr-text--sm">Sauf mention contraire, tous les champs sont obligatoires.</p>
-                  </div>
-                  <div class="fr-fieldset__element fr-my-6v">
-                    <fieldset class="fr-fieldset fr-my-0" id="credentials">
-                      <div class="fr-fieldset__element">
-                        {% aidantc_dsfr_form_field_no_asterisk form.email %}
-                      </div>
-                      <div class="fr-fieldset__element">
-                        {% aidantc_dsfr_form_field_no_asterisk OTP_form.otp_token %}
-                      </div>
-                    </fieldset>
-                  </div>
-                  <div class="fr-fieldset__element fr-my-0 fr-mb-3w">
-                    <ul class="fr-btns-group">
-                      <li>
-                        <button type="submit" class="fr-btn">Se connecter</button>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="fr-fieldset__element fr-my-0">
-                    <p class="fr-m-0 fr-text--sm fr-mb-6w">
-                      <a href="{% url 'faq_public_generale' %}" class="fr-link"> Je n’arrive pas à me connecter → </a>
-                    </p>
-                    <hr>
-                  </div>
-                  <div class="fr-messages-group" id="login-1760-fieldset-messages" aria-live="assertive">
-                  </div>
-                </fieldset>
+                <h2 class="fr-h3 fr-m-0 fr-p-0">Vous êtes habilité Aidants Connect ? Connectez-vous !</h2>
+                <div class="fr-my-6v">
+                  <p class="fr-text--sm">Sauf mention contraire, tous les champs sont obligatoires.</p>
+                </div>
+                <div class="fr-my-6v">
+                  {% aidantc_dsfr_form_field_no_asterisk form.email %}
+                </div>
+                <div class="fr-my-6v">
+                  {% aidantc_dsfr_form_field_no_asterisk OTP_form.otp_token %}
+                </div>
+                <div class="fr-my-0 fr-mb-3w">
+                  <button type="submit" class="fr-btn">Se connecter</button>
+                </div>
+                <div class="fr-my-0">
+                  <p class="fr-m-0 fr-text--sm fr-mb-6w">
+                    <a href="{% url 'faq_public_generale' %}" class="fr-link"> Je n’arrive pas à me connecter → </a>
+                  </p>
+                  <hr>
+                </div>
+                <div class="fr-messages-group" id="login-1760-messages" aria-live="assertive">
+                </div>
               </form>
               <h2 class="fr-h4 fr-m-0 fr-p-0 fr-mt-3w">Vous êtes référent Aidants Connect ?</h2>
               <p class="fr-text--sm fr-mt-2w">
                 Si vous êtes référent Aidants Connect et qu’il s’agit de votre première connexion, un code dédié doit vous être envoyé par SMS.
               </p>
               <div>
-                <ul class="fr-btns-group">
-                  <li>
-                    <a class="fr-btn fr-btn--secondary"  href="{% url 'manager_first_login' %}">
-                      Obtenir un code de première connexion
-                    </a>
-                  </li>
-                </ul>
+                <a class="fr-btn fr-btn--secondary" href="{% url 'manager_first_login' %}">
+                  Obtenir un code de première connexion
+                </a>
               </div>
             </div>
           </div>

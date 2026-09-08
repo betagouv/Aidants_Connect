@@ -18,7 +18,7 @@
 
     <div class="fr-grid-row">
       <div class="fr-col-12 fr-col-md-4">
-        <nav class="fr-sidemenu fr-sidemenu--sticky" aria-labelledby="fr-sidemenu-title">
+        <nav class="fr-sidemenu fr-sidemenu--sticky" aria-labelledby="fr-sidemenu-title" role="navigation">
           <div class="fr-sidemenu__inner">
             <h2 class="fr-sr-only" id="fr-sidemenu-title">Menu de la FAQ</h2>
             <button
@@ -28,7 +28,7 @@
             >
               Menu
             </button>
-            <div class="fr-collapse" id="fr-sidemenu-wrapper">
+            <div class="fr-collapse fr-pb-1v" id="fr-sidemenu-wrapper">
               <ul class="fr-sidemenu__list">
                 {% for category in categories %}
                   <li class="fr-sidemenu__item">

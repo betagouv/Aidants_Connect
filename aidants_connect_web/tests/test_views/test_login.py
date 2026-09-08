@@ -75,6 +75,73 @@ class LoginTests(TestCase):
         self.assertNotContains(response, "est pas valide")
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_login_form_disables_native_browser_validation(self):
+        response = self.client.get(reverse("login"))
+        self.assertContains(response, 'id="login-1760" method="post" novalidate')
+
+    def test_empty_submission_displays_format_examples(self):
+        response = self.client.post(reverse("login"), {"email": "", "otp_token": ""})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "Veuillez saisir une adresse e-mail valide. "
+            "Exemple : prenom-nom@exemple.fr",
+        )
+        self.assertContains(
+            response, "Veuillez saisir un code à 6 chiffres. Exemple : 123456"
+        )
+        # Django's default messages don't mention the expected format
+        self.assertNotContains(response, "Ce champ est obligatoire.")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_malformed_email_displays_a_format_example(self):
+        response = self.client.post(
+            reverse("login"), {"email": "not-an-email", "otp_token": "123456"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "Veuillez saisir une adresse e-mail valide. "
+            "Exemple : prenom-nom@exemple.fr",
+        )
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_unknown_email_and_rejected_otp_are_indistinguishable(self):
+        """A known and an unknown email must return the same errors, otherwise
+        submitting any OTP tells an attacker whether an account exists."""
+
+        def errors_for(email, otp_token):
+            response = self.client.post(
+                reverse("login"), {"email": email, "otp_token": otp_token}
+            )
+            return [
+                {field: list(errors) for field, errors in form.errors.items()}
+                for form in (
+                    response.context_data["form"],
+                    response.context_data["OTP_form"],
+                )
+            ]
+
+        # An empty or malformed OTP is rejected before any account lookup, a
+        # well-formed one after: all of them must stay indistinguishable.
+        for otp_token in ("", "12A4", "000000"):
+            with self.subTest(otp_token=otp_token):
+                self.assertEqual(
+                    errors_for("unknown@example.com", otp_token),
+                    errors_for(self.aidant_with_totp_card.email, otp_token),
+                )
+
+    def test_malformed_otp_token_displays_a_format_example(self):
+        response = self.client.post(
+            reverse("login"),
+            {"email": self.aidant_with_totp_card.email, "otp_token": "12A4"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response, "Veuillez saisir un code à 6 chiffres. Exemple : 123456"
+        )
+        self.assertEqual(len(mail.outbox), 0)
+
     def test_magicauth_login_redirects(self):
         response = self.client.get(f"/{magicauth_settings.LOGIN_URL}")
         self.assertRedirects(response, reverse("login"), status_code=301)

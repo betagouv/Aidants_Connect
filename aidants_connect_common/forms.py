@@ -39,6 +39,7 @@ from phonenumber_field.phonenumber import to_python
 from phonenumbers.phonenumber import PhoneNumber
 
 from aidants_connect.utils import strtobool
+from aidants_connect_common.constants import EMAIL_FORMAT_ERROR_MESSAGE
 from aidants_connect_common.models import Formation, FormationAttendant
 from aidants_connect_common.presenters import GenericHabilitationRequestPresenter
 
@@ -159,7 +160,10 @@ class FormationRegistrationForm(DsfrBaseForm):
 
 class FollowMyHabilitationRequesrForm(DsfrBaseForm):
     email = forms.EmailField(
-        label="Adresse e-mail", help_text="Format attendu : prenom-nom@exemple.fr"
+        label="Adresse e-mail",
+        help_text="Format attendu : prenom-nom@exemple.fr",
+        error_messages={"invalid": EMAIL_FORMAT_ERROR_MESSAGE},
+        widget=forms.EmailInput(attrs={"autocomplete": "email"}),
     )
 
     def clean_email(self):
@@ -192,6 +196,9 @@ class ConseillerNumerique(Form):
         choices=((True, "Oui"), (False, "Non")),
         coerce=lambda value: bool(strtobool(value)),
         widget=RadioSelect,
+        error_messages={
+            "required": "Au moins une option doit être cochée",
+        },
     )
 
     def clean(self):
@@ -640,14 +647,12 @@ class BaseHabilitationRequestFormSet(BaseModelFormSet, abc.ABC):
 
 
 class AdminValidateorDisableForm(PatchedForm):
-
     def __init__(self, f_attendant, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.f_attendant = f_attendant
 
 
 class AdminChangeFormationForm(PatchedForm, forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # self.f_attendant = f_attendant

@@ -116,6 +116,12 @@ def aidantc_dsfr_form_field_no_asterisk(field, hide_group_label=None):
     }
 
 
+@register.inclusion_tag("forms/aidantc-dsfr-checkbox-snippet-no-asterisk.html")
+def aidantc_dsfr_checkbox_field_no_asterisk(field):
+    """Template tag DSFR pour une case à cocher unique, sans astérisque"""
+    return {"field": field}
+
+
 @register.simple_tag
 def format_siret(value: int):
     """Format SIRET number: 44951429800024 -> 449 514 298 00024"""
