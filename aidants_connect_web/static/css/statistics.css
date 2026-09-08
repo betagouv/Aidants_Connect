@@ -39,6 +39,11 @@
   height: 32rem;
 }
 
+/* Keep closed transcription modal out of the tab order (DSFR uses visibility only). */
+#fr-transcription-modal-mandats-chart-transcription:not(.fr-modal--opened) {
+  display: none;
+}
+
 #fr-transcription-modal-mandats-chart-transcription table tr th {
   padding: 0.5rem 1rem;
 }

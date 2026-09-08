@@ -17,8 +17,8 @@
              <div class="fr-alert fr-alert--warning fr-mt-6v">
                 <p>
                   Attention : Aidants Connect ne fournit plus de cartes pour les nouveaux aidants, l’application d’authentification est le moyen de connexion par défaut. Pour plus d’informations,
-                  <a href="https://docs.numerique.gouv.fr/docs/c11214cb-cc9a-4781-a695-381f61ec1cd8/" class="fr-link" target="_blank">
-                      consultez notre guide
+                  <a href="https://docs.numerique.gouv.fr/docs/c11214cb-cc9a-4781-a695-381f61ec1cd8/" class="fr-link" target="_blank" rel="noopener noreferrer">
+                      consultez notre guide<span class="fr-sr-only"> - Ouverture dans une nouvelle fenêtre</span>
                   </a>.
                 </p>
               </div>
@@ -40,7 +40,7 @@
               <section class="course-type fr-mt-6v"
                        data-controller="formation-type"
                        data-formation-type-p2p-value-value="{{ form.course_type.Type.P2P }}">
-                <h2 class="fr-h5 fr-mt-8v">Modalité de formation</h2>
+                <h3 class="fr-h5 fr-mt-8v">Modalité de formation</h3>
                   <fieldset
                     class="fr-fieldset{% if form.course_type.type.errors and not is_partial_submit %} fr-fieldset--error{% endif %}"
                     id="radio-inline"
