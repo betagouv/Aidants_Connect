@@ -2,7 +2,7 @@
   x="{{ chart.x }}"
   y-bar="{{ chart.y_bar }}"
   y-line="{{ chart.y_line }}"
-  name-bar="Évolution du mois"
+  name-bar="{{ chart.name_bar|escape }}"
   name-line="{{ chart.name_line|escape }}"
   y-bar-min="0"
   y-line-min="0"

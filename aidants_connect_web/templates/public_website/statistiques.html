@@ -1,6 +1,6 @@
 {% extends 'public_website/layout/main.html' %}
 
-{% load static %}
+{% load humanize static %}
 
 {% block title %}Statistiques - Aidants Connect{% endblock %}
 
@@ -13,41 +13,50 @@
   <div class="fr-container">
     <h1>Statistiques</h1>
     <p>
-      Nous sommes ravis de constater l’utilisation grandissante d’Aidants Connect ! Vous pouvez consulter ici toutes
-      les statistiques concernant le projet, mises à jour en temps réel.
+      Nous sommes ravis de constater l’utilisation grandissante d’Aidants Connect !<br>
+      Vous pouvez consulter ici toutes les statistiques concernant le projet, mises à jour en temps réel.
     </p>
 
-    <section>
-      <ul class="fr-grid-row fr-grid-row--gutters fr-raw-list">
-      {% for label, count in usage_section.items %}
-        <li class="stat-col fr-col-md">
-          <span class="stat-number">{{ count }}</span>
-          <span class="stat-label-with-info">
-            <span>{{ label }}</span><br>
-            {% if label == "Démarches réalisées" %}
-              {% include "public_website/_stat_info_tooltip.html" with tooltip_id="demarches-realisees-usage-info" sr_only_label="Informations sur les démarches réalisées" tooltip_content="Connexions réalisées via Aidants Connect - pour suivre et réaliser une ou plusieurs démarches administratives" %}
-            {% elif label == "Personnes accompagnées" %}
-              {% include "public_website/_stat_info_tooltip.html" with tooltip_id="personnes-accompagnees-usage-info" sr_only_label="Informations sur les personnes accompagnées" tooltip_content="Nombre de personnes pour qui au moins une démarche a été réalisée via Aidants Connect" %}
+    <section class="stats-summary" aria-label="Chiffres clés">
+      <ul class="stats-summary__list fr-raw-list">
+        {% for stat in usage_stats %}
+          <li class="stat-col stats-summary__item stats-summary__item--{{ stat.modifier }}">
+            <a href="#{{ stat.anchor }}" class="stats-summary__link">
+              <span class="stats-summary__icon fr-icon--lg {{ stat.icon }}" aria-hidden="true"></span>
+              <span class="stat-number">{{ stat.count|intcomma }}</span>
+              <span class="stats-summary__link-label">
+                {{ stat.label }}
+                <span class="fr-sr-only">, voir le graphique</span>
+              </span>
+            </a>
+            {% if stat.tooltip_id %}
+              <span class="stats-summary__tooltip">
+                {% include "public_website/_stat_info_tooltip.html" with tooltip_id=stat.tooltip_id sr_only_label=stat.tooltip_sr_label tooltip_content=stat.tooltip_content %}
+              </span>
             {% endif %}
-          </span>
-        </li>
-      {% endfor %}
+          </li>
+        {% endfor %}
       </ul>
     </section>
 
-    <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-evolution stat-title-with-info">
+    <section id="statistiques-demarches" class="stats-section stats-section--demarches" tabindex="-1">
+      <h2 class="fr-title-icon-left fr-icon-file-text-line stats-section-title stat-title-with-info">
         Démarches réalisées
         {% include "public_website/_stat_info_tooltip.html" with tooltip_id="demarches-evolution-info" sr_only_label="Informations sur l'évolution des démarches réalisées" tooltip_content="Connexions réalisées via Aidants Connect - pour suivre et réaliser une ou plusieurs démarches administratives sur les 24 derniers mois complets" %}
       </h2>
       <p class="fr-text--sm">
-        Total cumulé de démarches réalisées via Aidants Connect (courbe) et nombre réalisé chaque mois (barres), sur les 24 derniers mois complets.
+        Les démarches administratives menées à leur terme via Aidants Connect.
       </p>
-      <div class="stats-container">
+      <hr>
+      <h3>Évolution dans le temps</h3>
+      <p class="fr-text--sm">
+        Sur les 24 derniers mois complets.
+      </p>
+      <div class="stats-container fr-mb-4w">
         {% include "public_website/_dsfr_bar_line_chart.html" with chart=demarches_evolution_chart aria_label="Évolution mensuelle du nombre de démarches réalisées" bar_color="#B4C5FB" %}
       </div>
       <div class="fr-transcription fr-mb-4w" id="demarches-evolution-chart-transcription">
-        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-demarches-evolution-chart-transcription">Transcription</button>
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-demarches-evolution-chart-transcription">Transcription (tableau des données)</button>
         <div class="fr-collapse" id="fr-transcription-collapse-demarches-evolution-chart-transcription">
           <div class="fr-transcription__footer">
             <div class="fr-transcription__actions-group">
@@ -89,12 +98,15 @@
       </div>
     </section>
 
-    <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-type-demarche stat-title-with-info">
+    <section class="stats-section stats-section--demarches">
+      <h2 class="fr-title-icon-left fr-icon-file-text-line stats-section-title stat-title-with-info">
         <span>Répartition par type de démarche</span>
         {% include "public_website/_stat_info_tooltip.html" with tooltip_id="demarche-type-info" sr_only_label="Informations sur le type de démarche" tooltip_content="Domaine déclaré par l'aidant à l'utilisation du mandat" %}
       </h2>
-      <div class="stats-container">
+      <p class="fr-text--sm">
+        Répartition des démarches réalisées par thématique.
+      </p>
+      <div class="stats-container fr-mb-4w">
         <bar-chart
           x="{{ demarches_chart.x }}"
           y="{{ demarches_chart.y }}"
@@ -105,7 +117,7 @@
         ></bar-chart>
       </div>
       <div class="fr-transcription fr-mb-4w" id="mandats-chart-transcription">
-        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-chart-transcription">Transcription</button>
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-chart-transcription">Transcription (tableau des données)</button>
         <div class="fr-collapse" id="fr-transcription-collapse-mandats-chart-transcription">
           <div class="fr-transcription__footer">
             <div class="fr-transcription__actions-group">
@@ -145,19 +157,24 @@
       </div>
     </section>
 
-    <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-evolution stat-title-with-info">
+    <section id="statistiques-personnes" class="stats-section stats-section--personnes" tabindex="-1">
+      <h2 class="fr-title-icon-left fr-icon-group-line stats-section-title stat-title-with-info">
         Personnes accompagnées
         {% include "public_website/_stat_info_tooltip.html" with tooltip_id="personnes-accompagnees-evolution-info" sr_only_label="Informations sur l'évolution des personnes accompagnées" tooltip_content="Nombre de personnes pour qui au moins une démarche a été réalisée via Aidants Connect, sur les 24 derniers mois complets" %}
       </h2>
       <p class="fr-text--sm">
-        Total cumulé de personnes accompagnées via Aidants Connect (courbe) et nouvelles personnes chaque mois (barres), sur les 24 derniers mois complets.
+        Les usagers accompagnés par un aidant habilité dans leurs démarches administratives.
       </p>
-      <div class="stats-container">
+      <hr>
+      <h3 class="fr-h4">Évolution dans le temps</h3>
+      <p class="fr-text--sm">
+        Sur les 24 derniers mois complets.
+      </p>
+      <div class="stats-container fr-mb-4w">
         {% include "public_website/_dsfr_bar_line_chart.html" with chart=personnes_accompagnees_evolution_chart aria_label="Évolution mensuelle du nombre de personnes accompagnées" bar_color="#FCC0B4" %}
       </div>
       <div class="fr-transcription fr-mb-4w" id="personnes-accompagnees-evolution-chart-transcription">
-        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-personnes-accompagnees-evolution-chart-transcription">Transcription</button>
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-personnes-accompagnees-evolution-chart-transcription">Transcription (tableau des données)</button>
         <div class="fr-collapse" id="fr-transcription-collapse-personnes-accompagnees-evolution-chart-transcription">
           <div class="fr-transcription__footer">
             <div class="fr-transcription__actions-group">
@@ -199,16 +216,21 @@
       </div>
     </section>
 
-    <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-evolution">Mandats</h2>
+    <section id="statistiques-mandats" class="stats-section stats-section--mandats" tabindex="-1">
+      <h2 class="fr-title-icon-left fr-icon-pass-valid-line stats-section-title">Mandats</h2>
       <p class="fr-text--sm">
-        Total cumulé de mandats créés via Aidants Connect (courbe) et nombre créé chaque mois (barres), sur les 24 derniers mois complets.
+        L’autorisation par laquelle un usager confie à un aidant habilité la réalisation de ses démarches en son nom.
       </p>
-      <div class="stats-container">
+      <hr>
+      <h3 class="fr-h4">Évolution dans le temps</h3>
+      <p class="fr-text--sm">
+        Sur les 24 derniers mois complets.
+      </p>
+      <div class="stats-container fr-mb-2w">
         {% include "public_website/_dsfr_bar_line_chart.html" with chart=mandats_evolution_chart aria_label="Évolution mensuelle du nombre de mandats créés" bar_color="#62BFB1" %}
       </div>
       <div class="fr-transcription fr-mb-4w" id="mandats-evolution-chart-transcription">
-        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-evolution-chart-transcription">Transcription</button>
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-evolution-chart-transcription">Transcription (tableau des données)</button>
         <div class="fr-collapse" id="fr-transcription-collapse-mandats-evolution-chart-transcription">
           <div class="fr-transcription__footer">
             <div class="fr-transcription__actions-group">
@@ -248,10 +270,7 @@
           </dialog>
         </div>
       </div>
-    </section>
-
-    <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-type-demarche">Répartition par durée de mandat</h2>
+      <h3 class="fr-h4">Répartition par durée de mandat</h3>
       <style nonce="{{ request.csp_nonce }}">
         {% for segment in mandat_durees_data.segments %}
           {% if segment.percent > 0 %}
@@ -292,7 +311,7 @@
         {% endif %}
       </div>
       <div class="fr-transcription fr-mb-4w" id="mandats-durees-chart-transcription">
-        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-durees-chart-transcription">Transcription</button>
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-durees-chart-transcription">Transcription (tableau des données)</button>
         <div class="fr-collapse" id="fr-transcription-collapse-mandats-durees-chart-transcription">
           <div class="fr-transcription__footer">
             <div class="fr-transcription__actions-group">
@@ -334,16 +353,21 @@
       </div>
     </section>
 
-    <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-evolution">Aidants habilités</h2>
+    <section id="statistiques-aidants" class="stats-section stats-section--aidants" tabindex="-1">
+      <h2 class="fr-title-icon-left fr-icon-user-star-line stats-section-title">Aidants habilités</h2>
       <p class="fr-text--sm">
-        Total cumulé d’aidants habilités (courbe) et évolution chaque mois (barres), sur les 24 derniers mois complets.
+        Les professionnels formés et habilités par leur structure pour accompagner les usagers.
       </p>
-      <div class="stats-container">
+      <hr>
+      <h3 class="fr-h4">Évolution dans le temps</h3>
+      <p class="fr-text--sm">
+        Sur les 24 derniers mois complets.
+      </p>
+      <div class="stats-container fr-mb-4w">
         {% include "public_website/_dsfr_bar_line_chart.html" with chart=operational_aidants_evolution_chart aria_label="Évolution mensuelle du nombre d’aidants habilités" bar_color="#FDE39C" %}
       </div>
       <div class="fr-transcription fr-mb-4w" id="operational-aidants-evolution-chart-transcription">
-        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-operational-aidants-evolution-chart-transcription">Transcription</button>
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-operational-aidants-evolution-chart-transcription">Transcription (tableau des données)</button>
         <div class="fr-collapse" id="fr-transcription-collapse-operational-aidants-evolution-chart-transcription">
           <div class="fr-transcription__footer">
             <div class="fr-transcription__actions-group">
@@ -385,16 +409,21 @@
       </div>
     </section>
 
-    <section>
-      <h2 class="fr-title-icon-left fr-icon-statistics-evolution">Structures habilitées</h2>
+    <section id="statistiques-structures" class="stats-section stats-section--structures" tabindex="-1">
+      <h2 class="fr-title-icon-left fr-icon-building-line stats-section-title">Structures habilitées</h2>
       <p class="fr-text--sm">
-        Total cumulé de structures habilitées (courbe) et évolution chaque mois (barres), sur les 24 derniers mois complets.
+        Les structures qui emploient des aidants habilités et portent le dispositif.
       </p>
-      <div class="stats-container">
+      <hr>
+      <h3 class="fr-h4">Évolution dans le temps</h3>
+      <p class="fr-text--sm">
+        Sur les 24 derniers mois complets.
+      </p>
+      <div class="stats-container fr-mb-4w">
         {% include "public_website/_dsfr_bar_line_chart.html" with chart=structures_habilitees_evolution_chart aria_label="Évolution mensuelle du nombre de structures habilitées" bar_color="#EAC7AD" %}
       </div>
       <div class="fr-transcription fr-mb-4w" id="structures-habilitees-evolution-chart-transcription">
-        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-structures-habilitees-evolution-chart-transcription">Transcription</button>
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-structures-habilitees-evolution-chart-transcription">Transcription (tableau des données)</button>
         <div class="fr-collapse" id="fr-transcription-collapse-structures-habilitees-evolution-chart-transcription">
           <div class="fr-transcription__footer">
             <div class="fr-transcription__actions-group">
