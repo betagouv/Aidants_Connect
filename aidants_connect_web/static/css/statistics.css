@@ -10,17 +10,161 @@
   mask-image: url(/static/images/icons/statistiques-utilisation.svg);
 }
 
-.stat-col {
-  font-size: 1.25rem;
-  line-height: 1.75rem;
+.stats-summary {
+  margin: 2rem 0 3rem;
+}
+
+.stats-summary__list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.stats-summary__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.5rem 1rem;
   text-align: center;
+  border: 1px solid #dddddd;
+}
+
+.stats-summary__item::before {
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  left: -1px;
+  height: 0.25rem;
+  background-color: var(--stat-accent, var(--border-default-grey));
+}
+
+.stats-summary__item--demarches,
+.stats-section--demarches {
+  --stat-accent: #465fff;
+}
+
+.stats-summary__item--personnes,
+.stats-section--personnes {
+  --stat-accent: #fc836e;
+}
+
+.stats-summary__item--mandats,
+.stats-section--mandats {
+  --stat-accent: #009081;
+}
+
+.stats-summary__item--aidants,
+.stats-section--aidants {
+  --stat-accent: #e0b84a;
+}
+
+.stats-summary__item--structures,
+.stats-section--structures {
+  --stat-accent: #c9956c;
+}
+
+.stats-summary__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  color: inherit;
+  text-decoration: none;
+  background-image: none;
+}
+
+.stats-summary__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.stats-summary__link:hover .stat-number,
+.stats-summary__link:focus-visible .stat-number {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.stats-summary__link:focus-visible {
+  outline: none;
+}
+
+.stats-summary__link:focus-visible::after {
+  outline: 2px solid var(--text-title-grey);
+  outline-offset: 0.25rem;
+}
+
+.stats-summary__icon {
+  color: var(--stat-accent);
+  margin-bottom: 0.25rem;
 }
 
 .stat-col .stat-number {
   display: block;
-  color: var(--artwork-minor-blue-france);
-  font-size: 3rem;
-  line-height: 3.5rem;
+  color: var(--text-title-grey);
+  font-size: 2.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stats-summary__link-label {
+  max-width: 100%;
+  padding-inline: 1.25rem;
+  color: var(--text-mention-grey);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.stats-summary__tooltip {
+  position: absolute;
+  z-index: 1;
+  right: 0.15rem;
+  bottom: 0.65rem;
+}
+
+.stats-summary__tooltip .stat-info-tooltip {
+  min-height: auto;
+  padding: 0;
+}
+
+.stats-section {
+  scroll-margin-top: 2rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border: 1px solid #dddddd;
+}
+
+.stats-section:focus {
+  outline: none;
+}
+
+.stats-section:focus-visible {
+  outline: 2px solid var(--border-plain-blue-france);
+  outline-offset: 0.5rem;
+}
+
+.stats-section-title[class*="fr-icon-"]::before {
+  color: var(--stat-accent);
+}
+
+@media (max-width: 62em) {
+  .stats-summary__list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 36em) {
+  .stats-summary__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stat-col .stat-number {
+    font-size: 2rem;
+  }
 }
 
 #fr-transcription-modal-mandats-chart-transcription table tr th,

@@ -69,14 +69,15 @@ def _dsfr_bar_chart_props(
 def _dsfr_bar_line_chart_props(
     series: dict[str, list],
     *,
-    name_line: str,
+    name_bar: str,
     aspect_ratio: str = "2.5",
 ) -> dict[str, str]:
     return {
         "x": json.dumps(series["labels"], ensure_ascii=False),
         "y_bar": json.dumps(series["monthly"], ensure_ascii=False),
         "y_line": json.dumps(series["cumulative"], ensure_ascii=False),
-        "name_line": f"{name_line} (total cumulé)",
+        "name_bar": name_bar,
+        "name_line": "Total cumulé (courbe, axe de gauche)",
         "aspect_ratio": aspect_ratio,
     }
 
@@ -323,15 +324,67 @@ class StatistiquesView(TemplateView):
             .first()
         )
 
+        usage_section = {
+            "Démarches réalisées": data_total,
+            "Personnes accompagnées": usagers_helped_count,
+            "Mandats": mandat_count,
+            "Aidants habilités": aidants_count,
+            "Structures habilitées": organisations_accredited_count,
+        }
+        usage_stats = [
+            {
+                "label": "Démarches réalisées",
+                "count": data_total,
+                "modifier": "demarches",
+                "icon": "fr-icon-file-text-line",
+                "anchor": "statistiques-demarches",
+                "tooltip_id": "demarches-realisees-usage-info",
+                "tooltip_sr_label": "Informations sur les démarches réalisées",
+                "tooltip_content": (
+                    "Connexions réalisées via Aidants Connect - pour suivre et "
+                    "réaliser une ou plusieurs démarches administratives"
+                ),
+            },
+            {
+                "label": "Personnes accompagnées",
+                "count": usagers_helped_count,
+                "modifier": "personnes",
+                "icon": "fr-icon-group-line",
+                "anchor": "statistiques-personnes",
+                "tooltip_id": "personnes-accompagnees-usage-info",
+                "tooltip_sr_label": "Informations sur les personnes accompagnées",
+                "tooltip_content": (
+                    "Nombre de personnes pour qui au moins une démarche a été "
+                    "réalisée via Aidants Connect"
+                ),
+            },
+            {
+                "label": "Mandats",
+                "count": mandat_count,
+                "modifier": "mandats",
+                "icon": "fr-icon-pass-valid-line",
+                "anchor": "statistiques-mandats",
+            },
+            {
+                "label": "Aidants habilités",
+                "count": aidants_count,
+                "modifier": "aidants",
+                "icon": "fr-icon-user-star-line",
+                "anchor": "statistiques-aidants",
+            },
+            {
+                "label": "Structures habilitées",
+                "count": organisations_accredited_count,
+                "modifier": "structures",
+                "icon": "fr-icon-building-line",
+                "anchor": "statistiques-structures",
+            },
+        ]
+
         return super().get_context_data(
             **kwargs,
-            usage_section={
-                "Démarches réalisées": data_total,
-                "Personnes accompagnées": usagers_helped_count,
-                "Mandats": mandat_count,
-                "Aidants habilités": aidants_count,
-                "Structures habilitées": organisations_accredited_count,
-            },
+            usage_section=usage_section,
+            usage_stats=usage_stats,
             data=data,
             demarches_chart=_dsfr_bar_chart_props(
                 data["titles"],
@@ -344,19 +397,19 @@ class StatistiquesView(TemplateView):
             mandats_evolution_data=mandats_evolution_data,
             mandats_evolution_chart=_dsfr_bar_line_chart_props(
                 mandats_evolution_data,
-                name_line="Mandats créés",
+                name_bar="Créés dans le mois (barres, axe de droite)",
             ),
             mandats_evolution_transcription=mandats_evolution_transcription,
             demarches_evolution_data=demarches_evolution_data,
             demarches_evolution_chart=_dsfr_bar_line_chart_props(
                 demarches_evolution_data,
-                name_line="Démarches réalisées",
+                name_bar="Réalisées dans le mois (barres, axe de droite)",
             ),
             demarches_evolution_transcription=demarches_evolution_transcription,
             personnes_accompagnees_evolution_data=personnes_accompagnees_evolution_data,
             personnes_accompagnees_evolution_chart=_dsfr_bar_line_chart_props(
                 personnes_accompagnees_evolution_data,
-                name_line="Personnes accompagnées",
+                name_bar="Accompagnées dans le mois (barres, axe de droite)",
             ),
             personnes_accompagnees_evolution_transcription=(
                 personnes_accompagnees_evolution_transcription
@@ -364,7 +417,7 @@ class StatistiquesView(TemplateView):
             operational_aidants_evolution_data=operational_aidants_evolution_data,
             operational_aidants_evolution_chart=_dsfr_bar_line_chart_props(
                 operational_aidants_evolution_data,
-                name_line="Aidants habilités",
+                name_bar="Nouveaux dans le mois (barres, axe de droite)",
             ),
             operational_aidants_evolution_transcription=(
                 operational_aidants_evolution_transcription
@@ -372,7 +425,7 @@ class StatistiquesView(TemplateView):
             structures_habilitees_evolution_data=structures_habilitees_evolution_data,
             structures_habilitees_evolution_chart=_dsfr_bar_line_chart_props(
                 structures_habilitees_evolution_data,
-                name_line="Structures habilitées",
+                name_bar="Nouveaux dans le mois (barres, axe de droite)",
             ),
             structures_habilitees_evolution_transcription=(
                 structures_habilitees_evolution_transcription
