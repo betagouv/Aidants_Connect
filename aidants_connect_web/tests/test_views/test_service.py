@@ -280,10 +280,9 @@ class StatistiquesTests(TestCase):
         )
 
     def test_stats_show_the_correct_number_of_mandats_non_staff_organisation(self):
-        # mandats should be non-staff_organisation and active
+        # mandats should be non-staff_organisation (active and expired/revoked)
         response = self.client.get(reverse("statistiques"))
-        self.assertEqual(response.context["usage_section"]["Mandats créés"], 2)
-        self.assertEqual(response.context["usage_section"]["Mandats actifs"], 1)
+        self.assertEqual(response.context["usage_section"]["Mandats"], 2)
         self.assertEqual(
             len(response.context["mandats_evolution_data"]["labels"]),
             24,
