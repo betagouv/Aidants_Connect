@@ -40,15 +40,8 @@
     </section>
 
     <section id="statistiques-demarches" class="stats-section stats-section--demarches" tabindex="-1">
-      <h2 class="fr-title-icon-left fr-icon-file-text-line stats-section-title stat-title-with-info">
-        Démarches réalisées
-        {% include "public_website/_stat_info_tooltip.html" with tooltip_id="demarches-evolution-info" sr_only_label="Informations sur l'évolution des démarches réalisées" tooltip_content="Connexions réalisées via Aidants Connect - pour suivre et réaliser une ou plusieurs démarches administratives sur les 24 derniers mois complets" %}
-      </h2>
-      <p class="fr-text--sm">
-        Les démarches administratives menées à leur terme via Aidants Connect.
-      </p>
-      <hr>
-      <h3>Évolution dans le temps</h3>
+      {% include "public_website/_stats_section_header.html" with title="Démarches réalisées" icon="fr-icon-file-text-line" description="Les démarches administratives menées à leur terme via Aidants Connect." count=usage_stats.0.count tooltip_id="demarches-evolution-info" tooltip_sr_label="Informations sur l'évolution des démarches réalisées" tooltip_content="Connexions réalisées via Aidants Connect - pour suivre et réaliser une ou plusieurs démarches administratives sur les 24 derniers mois complets" only %}
+      <h3 class="fr-h4 fr-mb-0">Évolution dans le temps</h3>
       <p class="fr-text--sm">
         Sur les 24 derniers mois complets.
       </p>
@@ -158,15 +151,8 @@
     </section>
 
     <section id="statistiques-personnes" class="stats-section stats-section--personnes" tabindex="-1">
-      <h2 class="fr-title-icon-left fr-icon-group-line stats-section-title stat-title-with-info">
-        Personnes accompagnées
-        {% include "public_website/_stat_info_tooltip.html" with tooltip_id="personnes-accompagnees-evolution-info" sr_only_label="Informations sur l'évolution des personnes accompagnées" tooltip_content="Nombre de personnes pour qui au moins une démarche a été réalisée via Aidants Connect, sur les 24 derniers mois complets" %}
-      </h2>
-      <p class="fr-text--sm">
-        Les usagers accompagnés par un aidant habilité dans leurs démarches administratives.
-      </p>
-      <hr>
-      <h3 class="fr-h4">Évolution dans le temps</h3>
+      {% include "public_website/_stats_section_header.html" with title="Personnes accompagnées" icon="fr-icon-group-line" description="Les usagers accompagnés par un aidant habilité dans leurs démarches administratives." count=usage_stats.1.count tooltip_id="personnes-accompagnees-evolution-info" tooltip_sr_label="Informations sur l'évolution des personnes accompagnées" tooltip_content="Nombre de personnes pour qui au moins une démarche a été réalisée via Aidants Connect, sur les 24 derniers mois complets" only %}
+      <h3 class="fr-h4 fr-mb-0">Évolution dans le temps</h3>
       <p class="fr-text--sm">
         Sur les 24 derniers mois complets.
       </p>
@@ -217,12 +203,8 @@
     </section>
 
     <section id="statistiques-mandats" class="stats-section stats-section--mandats" tabindex="-1">
-      <h2 class="fr-title-icon-left fr-icon-pass-valid-line stats-section-title">Mandats</h2>
-      <p class="fr-text--sm">
-        L’autorisation par laquelle un usager confie à un aidant habilité la réalisation de ses démarches en son nom.
-      </p>
-      <hr>
-      <h3 class="fr-h4">Évolution dans le temps</h3>
+      {% include "public_website/_stats_section_header.html" with title="Mandats" icon="fr-icon-pass-valid-line" description="L’autorisation par laquelle un usager confie à un aidant habilité la réalisation de ses démarches en son nom." count=usage_stats.2.count only %}
+      <h3 class="fr-h4 fr-mb-0">Évolution dans le temps</h3>
       <p class="fr-text--sm">
         Sur les 24 derniers mois complets.
       </p>
@@ -354,12 +336,8 @@
     </section>
 
     <section id="statistiques-aidants" class="stats-section stats-section--aidants" tabindex="-1">
-      <h2 class="fr-title-icon-left fr-icon-user-star-line stats-section-title">Aidants habilités</h2>
-      <p class="fr-text--sm">
-        Les professionnels formés et habilités par leur structure pour accompagner les usagers.
-      </p>
-      <hr>
-      <h3 class="fr-h4">Évolution dans le temps</h3>
+      {% include "public_website/_stats_section_header.html" with title="Aidants habilités" icon="fr-icon-user-star-line" description="Les professionnels formés et habilités par leur structure pour accompagner les usagers." count=usage_stats.3.count only %}
+      <h3 class="fr-h4 fr-mb-0">Évolution dans le temps</h3>
       <p class="fr-text--sm">
         Sur les 24 derniers mois complets.
       </p>
@@ -410,12 +388,8 @@
     </section>
 
     <section id="statistiques-structures" class="stats-section stats-section--structures" tabindex="-1">
-      <h2 class="fr-title-icon-left fr-icon-building-line stats-section-title">Structures habilitées</h2>
-      <p class="fr-text--sm">
-        Les structures qui emploient des aidants habilités et portent le dispositif.
-      </p>
-      <hr>
-      <h3 class="fr-h4">Évolution dans le temps</h3>
+      {% include "public_website/_stats_section_header.html" with title="Structures habilitées" icon="fr-icon-building-line" description="Les structures qui emploient des aidants habilités et portent le dispositif." count=usage_stats.4.count only %}
+      <h3 class="fr-h4 fr-mb-0">Évolution dans le temps</h3>
       <p class="fr-text--sm">
         Sur les 24 derniers mois complets.
       </p>
