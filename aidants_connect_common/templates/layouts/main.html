@@ -9,6 +9,10 @@
 
   <title>{% block title %}Aidants Connect{% endblock %}</title>
 
+  {% if not ALLOW_SEARCH_ENGINE_INDEXING %}
+    <meta name="robots" content="noindex, nofollow">
+  {% endif %}
+
   {# Importmap; see https://github.com/christophehenry/dj-importmap for documentation #}
   {% importmap nonce=request.csp_nonce %}
 

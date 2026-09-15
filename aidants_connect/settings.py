@@ -177,6 +177,7 @@ MIDDLEWARE = [
     "django_referrer_policy.middleware.ReferrerPolicyMiddleware",
     "csp.middleware.CSPMiddleware",
     "django_otp.middleware.OTPMiddleware",
+    "aidants_connect_common.middleware.SearchEngineIndexingMiddleware",
 ]
 
 # Add debug toolbar
@@ -575,6 +576,11 @@ CELERY_TASK_SERIALIZER = JSON_SERIALIZER
 CELERY_ACCEPT_CONTENT = [JSON_CONTENT_TYPE]
 
 SITE_DESCRIPTION = "Accompagnez vos usagers en toute sécurité"
+
+# Search engine indexing: enable only on production.
+# When False (default), responses get X-Robots-Tag: noindex, nofollow
+# and HTML pages include a meta robots noindex tag.
+ALLOW_SEARCH_ENGINE_INDEXING = getenv_bool("ALLOW_SEARCH_ENGINE_INDEXING", False)
 
 # COVID-19 changes
 ETAT_URGENCE_2020_LAST_DAY = datetime.strptime(
