@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.core.cache import caches
 from django.db.models import Count
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect, render
@@ -255,6 +256,22 @@ class StatistiquesView(TemplateView):
         return floors
 
     def get_context_data(self, **kwargs):
+        timeout = settings.STATISTIQUES_CACHE_TIMEOUT
+        if timeout <= 0:
+            context = self._build_statistiques_context()
+        else:
+            try:
+                context = caches[settings.STATISTIQUES_CACHE_ALIAS].get_or_set(
+                    settings.STATISTIQUES_CACHE_KEY,
+                    self._build_statistiques_context,
+                    timeout,
+                )
+            except Exception:
+                log.exception("Statistiques cache unavailable; computing fresh")
+                context = self._build_statistiques_context()
+        return super().get_context_data(**kwargs, **context)
+
+    def _build_statistiques_context(self) -> dict:
         usagers_helped_count = (
             self.autorisation_use_qs.values("usager").distinct().count()
         )
@@ -262,11 +279,6 @@ class StatistiquesView(TemplateView):
         mandat_count = Mandat.objects.exclude(
             organisation__name=settings.STAFF_ORGANISATION_NAME
         ).count()
-        # active_mandat_count = (
-        #     Mandat.objects.exclude(organisation__name=settings.STAFF_ORGANISATION_NAME)
-        #     .active()
-        #     .count()
-        # )
 
         organisations_accredited_count = (
             Organisation.objects.accredited()
@@ -381,59 +393,60 @@ class StatistiquesView(TemplateView):
             },
         ]
 
-        return super().get_context_data(
-            **kwargs,
-            usage_section=usage_section,
-            usage_stats=usage_stats,
-            data=data,
-            demarches_chart=_dsfr_bar_chart_props(
+        return {
+            "usage_section": usage_section,
+            "usage_stats": usage_stats,
+            "data": data,
+            "demarches_chart": _dsfr_bar_chart_props(
                 data["titles"],
                 data["values"],
                 "Nombre de démarches",
                 aspect_ratio="3",
             ),
-            demarches_transcription=demarches_transcription,
-            mandat_durees_data=mandat_durees_data,
-            mandats_evolution_data=mandats_evolution_data,
-            mandats_evolution_chart=_dsfr_bar_line_chart_props(
+            "demarches_transcription": demarches_transcription,
+            "mandat_durees_data": mandat_durees_data,
+            "mandats_evolution_data": mandats_evolution_data,
+            "mandats_evolution_chart": _dsfr_bar_line_chart_props(
                 mandats_evolution_data,
                 name_bar="Créés dans le mois (barres, axe de droite)",
             ),
-            mandats_evolution_transcription=mandats_evolution_transcription,
-            demarches_evolution_data=demarches_evolution_data,
-            demarches_evolution_chart=_dsfr_bar_line_chart_props(
+            "mandats_evolution_transcription": mandats_evolution_transcription,
+            "demarches_evolution_data": demarches_evolution_data,
+            "demarches_evolution_chart": _dsfr_bar_line_chart_props(
                 demarches_evolution_data,
                 name_bar="Réalisées dans le mois (barres, axe de droite)",
             ),
-            demarches_evolution_transcription=demarches_evolution_transcription,
-            personnes_accompagnees_evolution_data=personnes_accompagnees_evolution_data,
-            personnes_accompagnees_evolution_chart=_dsfr_bar_line_chart_props(
+            "demarches_evolution_transcription": demarches_evolution_transcription,
+            "personnes_accompagnees_evolution_data": (
+                personnes_accompagnees_evolution_data
+            ),
+            "personnes_accompagnees_evolution_chart": _dsfr_bar_line_chart_props(
                 personnes_accompagnees_evolution_data,
                 name_bar="Accompagnées dans le mois (barres, axe de droite)",
             ),
-            personnes_accompagnees_evolution_transcription=(
+            "personnes_accompagnees_evolution_transcription": (
                 personnes_accompagnees_evolution_transcription
             ),
-            operational_aidants_evolution_data=operational_aidants_evolution_data,
-            operational_aidants_evolution_chart=_dsfr_bar_line_chart_props(
+            "operational_aidants_evolution_data": operational_aidants_evolution_data,
+            "operational_aidants_evolution_chart": _dsfr_bar_line_chart_props(
                 operational_aidants_evolution_data,
                 name_bar="Nouveaux dans le mois (barres, axe de droite)",
             ),
-            operational_aidants_evolution_transcription=(
+            "operational_aidants_evolution_transcription": (
                 operational_aidants_evolution_transcription
             ),
-            structures_habilitees_evolution_data=structures_habilitees_evolution_data,
-            structures_habilitees_evolution_chart=_dsfr_bar_line_chart_props(
+            "structures_habilitees_evolution_data": structures_habilitees_evolution_data,  # noqa: E501
+            "structures_habilitees_evolution_chart": _dsfr_bar_line_chart_props(
                 structures_habilitees_evolution_data,
                 name_bar="Nouveaux dans le mois (barres, axe de droite)",
             ),
-            structures_habilitees_evolution_transcription=(
+            "structures_habilitees_evolution_transcription": (
                 structures_habilitees_evolution_transcription
             ),
-            demarches_realisees_since_date=demarches_realisees_since_date,
-            dsfr_chart_css_url=settings.DSFR_CHART_CSS_URL,
-            dsfr_chart_js_url=settings.DSFR_CHART_JS_URL,
-        )
+            "demarches_realisees_since_date": demarches_realisees_since_date,
+            "dsfr_chart_css_url": settings.DSFR_CHART_CSS_URL,
+            "dsfr_chart_js_url": settings.DSFR_CHART_JS_URL,
+        }
 
 
 def _mandat_duree_label_fits(label: str, percent: int) -> bool:

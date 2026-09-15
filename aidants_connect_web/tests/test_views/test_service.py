@@ -151,6 +151,13 @@ class EnvironmentVariablesTests(TestCase):
 
 @tag("service")
 class StatistiquesTests(TestCase):
+    def setUp(self):
+        from django.core.cache import caches
+
+        caches[settings.STATISTIQUES_CACHE_ALIAS].delete(
+            settings.STATISTIQUES_CACHE_KEY
+        )
+
     @classmethod
     def setUpTestData(cls):
         mairie_de_houlbec = OrganisationFactory()
@@ -497,6 +504,38 @@ class StatistiquesTests(TestCase):
             response,
             "Domaine déclaré par l'aidant à l'utilisation du mandat",
         )
+
+    def test_stats_context_is_cached(self):
+        from django.core.cache import caches
+
+        stats_cache = caches[settings.STATISTIQUES_CACHE_ALIAS]
+        with self.settings(STATISTIQUES_CACHE_TIMEOUT=600):
+            stats_cache.delete(settings.STATISTIQUES_CACHE_KEY)
+            first = self.client.get(reverse("statistiques"))
+            self.assertEqual(first.status_code, 200)
+            self.assertIsNotNone(stats_cache.get(settings.STATISTIQUES_CACHE_KEY))
+
+            cached_mandats = first.context["usage_section"]["Mandats"]
+            MandatFactory()  # would change the count if context were recomputed
+            second = self.client.get(reverse("statistiques"))
+            self.assertEqual(
+                second.context["usage_section"]["Mandats"],
+                cached_mandats,
+            )
+
+    def test_stats_page_works_when_cache_is_unavailable(self):
+        from unittest.mock import MagicMock, patch
+
+        mock_cache = MagicMock()
+        mock_cache.get_or_set.side_effect = ConnectionError("redis down")
+
+        with self.settings(STATISTIQUES_CACHE_TIMEOUT=600):
+            with patch("aidants_connect_web.views.service.caches") as mock_caches:
+                mock_caches.__getitem__.return_value = mock_cache
+                response = self.client.get(reverse("statistiques"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("usage_section", response.context)
 
 
 @tag("service")
