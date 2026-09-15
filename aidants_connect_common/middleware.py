@@ -8,6 +8,19 @@ from redis import Redis
 from redis.exceptions import ConnectionError as RedisConnectionError
 
 
+class SearchEngineIndexingMiddleware:
+    """Prevent search engines from indexing non-production environments."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if not settings.ALLOW_SEARCH_ENGINE_INDEXING:
+            response["X-Robots-Tag"] = "noindex, nofollow"
+        return response
+
+
 class BlocklistMiddleware2(BlocklistMiddleware):
     def __call__(self, request):
         if request.path.startswith(f"/{settings.STATIC_URL.lstrip('/')}"):

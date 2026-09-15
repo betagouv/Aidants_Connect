@@ -10,6 +10,7 @@ from aidants_connect_web.admin import admin_site
 
 urlpatterns = [
     path("favicon.ico", views.favicon),
+    path("robots.txt", views.robots_txt),
     path(settings.ADMIN_URL, admin_site.urls),
     path(settings.ADMIN_OF_URL, admin_of_site.urls),
     path("", include("aidants_connect_common.urls")),
