@@ -448,8 +448,15 @@ COOKIE_BANNER_SERVICES_URL = (
 AUTOCOMPLETE_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"  # noqa
 MATOMO_INSTANCE_URL = os.getenv("MATOMO_INSTANCE_URL", "https://stats.beta.gouv.fr")
 MATOMO_INSTANCE_SITE_ID = os.getenv("MATOMO_INSTANCE_SITE_ID")
-CHARTS_JS_URL = "https://cdn.jsdelivr.net/npm/chart.js@3.0.0/dist/chart.min.js"
-CHARTS_JS_DATALABEL_URL = "https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"
+DSFR_CHART_VERSION = "2.1.1"
+DSFR_CHART_JS_URL = (
+    f"https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@{DSFR_CHART_VERSION}"
+    "/dist/DSFRChart/DSFRChart.js"
+)
+DSFR_CHART_CSS_URL = (
+    f"https://cdn.jsdelivr.net/npm/@gouvfr/dsfr-chart@{DSFR_CHART_VERSION}"
+    "/dist/DSFRChart/DSFRChart.css"
+)
 
 if "test" in sys.argv:
     GOUV_ADDRESS_SEARCH_API_DISABLED = True
@@ -478,8 +485,7 @@ CSP_IMG_SRC = (
 CSP_SCRIPT_SRC = (
     "'self'",
     STIMULUS_JS_URL,
-    CHARTS_JS_URL,
-    CHARTS_JS_DATALABEL_URL,
+    DSFR_CHART_JS_URL,
     MD_EDITOR_JS_URL,
     SARBACANE_SCRIPT_URL,
     COOKIE_BANNER_JS_URL,
@@ -493,6 +499,7 @@ CSP_SCRIPT_SRC = (
 CSP_STYLE_SRC = (
     "'self'",
     MD_EDITOR_CSS_URL,
+    DSFR_CHART_CSS_URL,
 )
 
 CSP_STYLE_SRC_ATTR = (
@@ -574,6 +581,31 @@ CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_RESULT_SERIALIZER = JSON_SERIALIZER
 CELERY_TASK_SERIALIZER = JSON_SERIALIZER
 CELERY_ACCEPT_CONTENT = [JSON_CONTENT_TYPE]
+
+# Public stats page context cache (0 disables caching).
+# Dedicated Redis alias — LocMem only during tests (CI has no Redis).
+# Django's default cache stays LocMem (no side effects elsewhere).
+STATISTIQUES_CACHE_KEY = "public_website:statistiques:v1"
+STATISTIQUES_CACHE_ALIAS = "statistiques"
+STATISTIQUES_CACHE_TIMEOUT = int(os.getenv("STATISTIQUES_CACHE_TIMEOUT", 60 * 10))
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    },
+    STATISTIQUES_CACHE_ALIAS: (
+        {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "aidants-connect-statistiques",
+        }
+        if "test" in sys.argv
+        else {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+            "KEY_PREFIX": "aidants_connect_statistiques",
+        }
+    ),
+}
 
 SITE_DESCRIPTION = "Accompagnez vos usagers en toute sécurité"
 

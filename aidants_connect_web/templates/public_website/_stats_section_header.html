@@ -1,0 +1,18 @@
+{% load humanize %}
+<header class="stats-section__header">
+  <div class="stats-section__intro">
+    <h2 class="fr-title-icon-left {{ icon }} stats-section-title{% if tooltip_id %} stat-title-with-info{% endif %}">
+      {{ title }}
+      {% if tooltip_id %}
+        {% include "public_website/_stat_info_tooltip.html" with tooltip_id=tooltip_id sr_only_label=tooltip_sr_label tooltip_content=tooltip_content %}
+      {% endif %}
+    </h2>
+    {% if description %}
+      <p class="fr-text--sm stats-section__description">{{ description }}</p>
+    {% endif %}
+  </div>
+  <p class="stats-section__total">
+    <span class="stats-section__total-value">{{ count|intcomma }}</span>
+    <span class="stats-section__total-label">Depuis le lancement</span>
+  </p>
+</header>
