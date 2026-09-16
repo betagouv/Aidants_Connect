@@ -583,7 +583,8 @@ CELERY_TASK_SERIALIZER = JSON_SERIALIZER
 CELERY_ACCEPT_CONTENT = [JSON_CONTENT_TYPE]
 
 # Public stats page context cache (0 disables caching).
-# Dedicated Redis alias — Django's default cache stays LocMem (no side effects).
+# Dedicated Redis alias — LocMem only during tests (CI has no Redis).
+# Django's default cache stays LocMem (no side effects elsewhere).
 STATISTIQUES_CACHE_KEY = "public_website:statistiques:v1"
 STATISTIQUES_CACHE_ALIAS = "statistiques"
 STATISTIQUES_CACHE_TIMEOUT = int(os.getenv("STATISTIQUES_CACHE_TIMEOUT", 60 * 10))
@@ -592,11 +593,18 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     },
-    STATISTIQUES_CACHE_ALIAS: {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": REDIS_URL,
-        "KEY_PREFIX": "aidants_connect_statistiques",
-    },
+    STATISTIQUES_CACHE_ALIAS: (
+        {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "aidants-connect-statistiques",
+        }
+        if "test" in sys.argv
+        else {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+            "KEY_PREFIX": "aidants_connect_statistiques",
+        }
+    ),
 }
 
 SITE_DESCRIPTION = "Accompagnez vos usagers en toute sécurité"
