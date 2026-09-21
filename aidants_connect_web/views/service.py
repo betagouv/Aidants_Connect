@@ -353,8 +353,8 @@ class StatistiquesView(TemplateView):
                 "tooltip_id": "demarches-realisees-usage-info",
                 "tooltip_sr_label": "Informations sur les démarches réalisées",
                 "tooltip_content": (
-                    "Connexions réalisées via Aidants Connect - pour suivre et "
-                    "réaliser une ou plusieurs démarches administratives"
+                    "Nombre de connexions réalisées via Aidants Connect pour suivre "
+                    "ou réaliser une démarche en ligne depuis 2020"
                 ),
             },
             {
@@ -367,7 +367,7 @@ class StatistiquesView(TemplateView):
                 "tooltip_sr_label": "Informations sur les personnes accompagnées",
                 "tooltip_content": (
                     "Nombre de personnes pour qui au moins une démarche a été "
-                    "réalisée via Aidants Connect"
+                    "réalisée via Aidants Connect depuis 2020"
                 ),
             },
             {
@@ -376,6 +376,11 @@ class StatistiquesView(TemplateView):
                 "modifier": "mandats",
                 "icon": "fr-icon-pass-valid-line",
                 "anchor": "statistiques-mandats",
+                "tooltip_id": "mandats-usage-info",
+                "tooltip_sr_label": "Informations sur les mandats",
+                "tooltip_content": (
+                    "Nombre de mandats réalisés via Aidants Connect depuis 2020"
+                ),
             },
             {
                 "label": "Aidants habilités",
@@ -383,6 +388,11 @@ class StatistiquesView(TemplateView):
                 "modifier": "aidants",
                 "icon": "fr-icon-user-star-line",
                 "anchor": "statistiques-aidants",
+                "tooltip_id": "aidants-usage-info",
+                "tooltip_sr_label": "Informations sur les aidants habilités",
+                "tooltip_content": (
+                    "Nombre d'aidants actuellement habilités à Aidants Connect"
+                ),
             },
             {
                 "label": "Structures habilitées",
@@ -390,6 +400,11 @@ class StatistiquesView(TemplateView):
                 "modifier": "structures",
                 "icon": "fr-icon-building-line",
                 "anchor": "statistiques-structures",
+                "tooltip_id": "structures-usage-info",
+                "tooltip_sr_label": "Informations sur les structures habilitées",
+                "tooltip_content": (
+                    "Nombre de structures avec au moins un aidant actuellement habilité"
+                ),
             },
         ]
 

@@ -13,6 +13,6 @@
   </div>
   <p class="stats-section__total">
     <span class="stats-section__total-value">{{ count|intcomma }}</span>
-    <span class="stats-section__total-label">Depuis le lancement</span>
+    <span class="stats-section__total-label">{% if total_label %}{{ total_label }}{% else %}Depuis 2020{% endif %}</span>
   </p>
 </header>
