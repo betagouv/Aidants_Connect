@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.test import TestCase, tag
 from django.utils import timezone
@@ -5,6 +7,7 @@ from django.utils.timezone import now
 
 from dateutil.relativedelta import relativedelta
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from freezegun import freeze_time
 
 from aidants_connect_common.constants import JournalActionKeywords
 from aidants_connect_common.models import Commune, Department, Region
@@ -14,15 +17,24 @@ from aidants_connect_web.models import (
     AidantStatistiques,
     AidantStatistiquesbyDepartment,
     AidantStatistiquesbyRegion,
+    Journal,
+    Mandat,
 )
-from aidants_connect_web.statistics import compute_statistics
+from aidants_connect_web.statistics import (
+    compute_statistics,
+    get_monthly_series,
+    get_personnes_accompagnees_monthly_series,
+)
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AttestationJournalFactory,
+    AutorisationFactory,
     CarteTOTPFactory,
     HabilitationRequestFactory,
     JournalFactory,
+    MandatFactory,
     OrganisationFactory,
+    UsagerFactory,
 )
 
 
@@ -266,6 +278,7 @@ class AllStatisticsTests(TestCase):
         self.assertEqual(stats.number_old_aidants_warned, 2)
 
         self.assertEqual(stats.number_aidants_with_otp_app, 1)
+        self.assertEqual(stats.number_active_mandats, 0)
 
     def test_by_department_computing_new_statistics(self):
         stats = compute_statistics(
@@ -344,3 +357,202 @@ class AllStatisticsTests(TestCase):
 
         self.assertEqual(stats.number_orgas_in_zrr, 0)
         self.assertEqual(stats.number_aidants_in_zrr, 0)
+
+
+@tag("statistics")
+class ActiveMandatsStatisticsTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.orga = OrganisationFactory()
+        cls.staff_orga = OrganisationFactory(name=settings.STAFF_ORGANISATION_NAME)
+        cls.usager = UsagerFactory()
+
+        cls.active_mandat = MandatFactory(organisation=cls.orga, usager=cls.usager)
+        AutorisationFactory(mandat=cls.active_mandat)
+
+        cls.expired_mandat = MandatFactory(
+            organisation=cls.orga,
+            usager=UsagerFactory(),
+            expiration_date=datetime(year=2000, month=1, day=1, tzinfo=timezone.utc),
+        )
+        AutorisationFactory(mandat=cls.expired_mandat)
+
+        cls.staff_mandat = MandatFactory(
+            organisation=cls.staff_orga, usager=UsagerFactory()
+        )
+        AutorisationFactory(mandat=cls.staff_mandat)
+
+    def test_global_active_mandats_count_includes_staff_mandats(self):
+        stats = compute_statistics(AidantStatistiques())
+        self.assertEqual(stats.number_active_mandats, 2)
+
+    def test_department_active_mandats_count_excludes_other_departments(self):
+        region, _ = Region.objects.get_or_create(
+            insee_code="99", defaults={"name": "Région test stats"}
+        )
+        dep, _ = Department.objects.get_or_create(
+            insee_code="990",
+            defaults={
+                "region": region,
+                "name": "Département test stats",
+                "zipcode": "99000",
+            },
+        )
+        self.orga.department_insee_code = dep.insee_code
+        self.orga.save()
+
+        stats = compute_statistics(AidantStatistiquesbyDepartment(departement=dep))
+        self.assertEqual(stats.number_active_mandats, 1)
+
+
+@tag("statistics")
+class MandatsEvolutionStatisticsTests(TestCase):
+    def test_monthly_series_counts_mandats_by_creation_month(self):
+        orga = OrganisationFactory()
+        usager_one = UsagerFactory()
+        usager_two = UsagerFactory()
+
+        MandatFactory(
+            organisation=orga,
+            usager=usager_one,
+            creation_date=datetime(2024, 1, 15, tzinfo=timezone.utc),
+        )
+        MandatFactory(
+            organisation=orga,
+            usager=usager_two,
+            creation_date=datetime(2024, 2, 10, tzinfo=timezone.utc),
+        )
+
+        series = get_monthly_series(
+            Mandat.objects.filter(organisation=orga), "creation_date"
+        )
+
+        self.assertEqual(series["labels"], ["01/2024", "02/2024"])
+        self.assertEqual(series["values"], [1, 1])
+
+    @freeze_time("2024-03-15 12:00:00")
+    def test_monthly_series_limits_to_last_twenty_four_months(self):
+        orga = OrganisationFactory()
+        MandatFactory(
+            organisation=orga,
+            usager=UsagerFactory(),
+            creation_date=datetime(2023, 3, 1, tzinfo=timezone.utc),
+        )
+        MandatFactory(
+            organisation=orga,
+            usager=UsagerFactory(),
+            creation_date=datetime(2023, 4, 1, tzinfo=timezone.utc),
+        )
+        MandatFactory(
+            organisation=orga,
+            usager=UsagerFactory(),
+            creation_date=datetime(2024, 2, 1, tzinfo=timezone.utc),
+        )
+
+        series = get_monthly_series(
+            Mandat.objects.filter(organisation=orga),
+            "creation_date",
+            months=24,
+        )
+
+        self.assertEqual(len(series["labels"]), 24)
+        self.assertEqual(series["labels"][0], "03/2022")
+        self.assertEqual(series["labels"][-1], "02/2024")
+        self.assertEqual(series["values"][12], 1)
+        self.assertEqual(series["values"][13], 1)
+        self.assertEqual(series["values"][-1], 1)
+        self.assertEqual(sum(series["values"]), 3)
+
+
+@tag("statistics")
+class DemarchesEvolutionStatisticsTests(TestCase):
+    @freeze_time("2024-03-15 12:00:00")
+    def test_monthly_series_counts_demarches_by_creation_month(self):
+        orga = OrganisationFactory()
+        aidant = AidantFactory(organisation=orga)
+        for month in (4, 5):
+            JournalFactory(
+                organisation=orga,
+                aidant=aidant,
+                action=JournalActionKeywords.USE_AUTORISATION,
+                creation_date=datetime(2023, month, 1, tzinfo=timezone.utc),
+            )
+        JournalFactory(
+            organisation=orga,
+            aidant=aidant,
+            action=JournalActionKeywords.USE_AUTORISATION,
+            creation_date=datetime(2024, 2, 1, tzinfo=timezone.utc),
+        )
+
+        series = get_monthly_series(
+            Journal.objects.filter(action=JournalActionKeywords.USE_AUTORISATION),
+            "creation_date",
+            months=24,
+        )
+
+        self.assertEqual(len(series["labels"]), 24)
+        self.assertEqual(series["labels"][0], "03/2022")
+        self.assertEqual(series["labels"][-1], "02/2024")
+        self.assertEqual(series["values"][13], 1)
+        self.assertEqual(series["values"][14], 1)
+        self.assertEqual(series["values"][-1], 1)
+        self.assertEqual(sum(series["values"]), 3)
+
+
+@tag("statistics")
+class PersonnesAccompagneesEvolutionStatisticsTests(TestCase):
+    @freeze_time("2024-03-15 12:00:00")
+    def test_counts_unique_usagers_on_first_demarche_month(self):
+        orga = OrganisationFactory()
+        aidant = AidantFactory(organisation=orga)
+        usager_one = UsagerFactory()
+        usager_two = UsagerFactory()
+        usager_three = UsagerFactory()
+
+        # First accompaniment for usager_one before the 24-month window
+        JournalFactory(
+            organisation=orga,
+            aidant=aidant,
+            usager=usager_one,
+            action=JournalActionKeywords.USE_AUTORISATION,
+            creation_date=datetime(2021, 1, 1, tzinfo=timezone.utc),
+        )
+        # Later démarches for the same usager must not create a new "personne"
+        JournalFactory(
+            organisation=orga,
+            aidant=aidant,
+            usager=usager_one,
+            action=JournalActionKeywords.USE_AUTORISATION,
+            creation_date=datetime(2023, 5, 1, tzinfo=timezone.utc),
+        )
+        # New people during the window
+        JournalFactory(
+            organisation=orga,
+            aidant=aidant,
+            usager=usager_two,
+            action=JournalActionKeywords.USE_AUTORISATION,
+            creation_date=datetime(2023, 4, 1, tzinfo=timezone.utc),
+        )
+        JournalFactory(
+            organisation=orga,
+            aidant=aidant,
+            usager=usager_three,
+            action=JournalActionKeywords.USE_AUTORISATION,
+            creation_date=datetime(2024, 2, 1, tzinfo=timezone.utc),
+        )
+
+        series = get_personnes_accompagnees_monthly_series(
+            Journal.objects.filter(action=JournalActionKeywords.USE_AUTORISATION),
+            months=24,
+        )
+
+        self.assertEqual(len(series["labels"]), 24)
+        self.assertEqual(series["labels"][0], "03/2022")
+        self.assertEqual(series["labels"][-1], "02/2024")
+        # Baseline includes usager_one; monthly only counts new people
+        self.assertEqual(series["monthly"][13], 1)  # 04/2023 -> usager_two
+        self.assertEqual(series["monthly"][14], 0)  # 05/2023 -> no new people
+        self.assertEqual(series["monthly"][-1], 1)  # 02/2024 -> usager_three
+        self.assertEqual(sum(series["monthly"]), 2)
+        self.assertEqual(series["cumulative"][0], 1)
+        self.assertEqual(series["cumulative"][-1], 3)

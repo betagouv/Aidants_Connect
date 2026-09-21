@@ -10,14 +10,13 @@ from django.utils import timezone
 
 from freezegun import freeze_time
 
-from aidants_connect_web.models import Journal, Organisation
+from aidants_connect_web.models import AidantStatistiques, Journal, Organisation
 from aidants_connect_web.tests.factories import (
     AidantFactory,
     AutorisationFactory,
     CarteTOTPFactory,
     MandatFactory,
     OrganisationFactory,
-    TOTPDeviceFactory,
     UsagerFactory,
 )
 from aidants_connect_web.views import service
@@ -152,6 +151,13 @@ class EnvironmentVariablesTests(TestCase):
 
 @tag("service")
 class StatistiquesTests(TestCase):
+    def setUp(self):
+        from django.core.cache import caches
+
+        caches[settings.STATISTIQUES_CACHE_ALIAS].delete(
+            settings.STATISTIQUES_CACHE_KEY
+        )
+
     @classmethod
     def setUpTestData(cls):
         mairie_de_houlbec = OrganisationFactory()
@@ -270,39 +276,192 @@ class StatistiquesTests(TestCase):
         # aidants should be non-staff_organisation
         response = self.client.get(reverse("statistiques"))
         self.assertEqual(
-            response.context["deployment_section"][0]["Aidants habilités"],
+            response.context["usage_section"]["Aidants habilités"],
             1,
             "Should count aidant_thierry alone",
         )
-
-    def test_stats_show_the_correct_number_of_aidants_totp_device_only(self):
-        # aidants should be non-staff_organisation
-
-        aidant_totp = AidantFactory(
-            can_create_mandats=True,
-            last_name="Dupont",
-            is_active=True,
-        )
-        TOTPDeviceFactory(user=aidant_totp)
-
-        response = self.client.get(reverse("statistiques"))
         self.assertEqual(
-            response.context["deployment_section"][0]["Aidants habilités"],
-            2,
-            "Should count aidant_thierry and aidant_totp",
+            response.context["usage_section"]["Structures habilitées"],
+            1,
+            "Should count aidant_thierry's organisation alone",
         )
 
     def test_stats_show_the_correct_number_of_mandats_non_staff_organisation(self):
-        # mandats should be non-staff_organisation and active
+        # mandats should be non-staff_organisation (active and expired/revoked)
         response = self.client.get(reverse("statistiques"))
-        self.assertEqual(response.context["usage_section"]["Mandats créés"], 2)
+        self.assertEqual(response.context["usage_section"]["Mandats"], 2)
+        self.assertEqual(
+            len(response.context["mandats_evolution_data"]["labels"]),
+            24,
+        )
+        self.assertEqual(
+            len(response.context["demarches_evolution_data"]["labels"]),
+            24,
+        )
+        self.assertEqual(
+            len(response.context["personnes_accompagnees_evolution_data"]["labels"]),
+            24,
+        )
+        self.assertEqual(
+            len(response.context["operational_aidants_evolution_data"]["labels"]),
+            24,
+        )
+        self.assertEqual(
+            len(response.context["structures_habilitees_evolution_data"]["labels"]),
+            24,
+        )
+
+    @freeze_time("2026-06-15")
+    def test_operational_aidants_evolution_uses_snapshots(self):
+        # One snapshot in 2026-04
+        with freeze_time("2026-04-10"):
+            AidantStatistiques.objects.create(number_aidant_can_create_mandat=3)
+        # Two snapshots in 2026-05: the latest of the month must win
+        with freeze_time("2026-05-05"):
+            AidantStatistiques.objects.create(number_aidant_can_create_mandat=5)
+        with freeze_time("2026-05-20"):
+            AidantStatistiques.objects.create(number_aidant_can_create_mandat=7)
+
+        response = self.client.get(reverse("statistiques"))
+        data = response.context["operational_aidants_evolution_data"]
+
+        self.assertEqual(len(data["labels"]), 24)
+        # Last complete month is 2026-05 (current month excluded)
+        self.assertEqual(data["labels"][-1], "05/2026")
+        self.assertEqual(data["values"][-1], 7)
+        # 2026-04 keeps its own snapshot value
+        self.assertEqual(data["labels"][-2], "04/2026")
+        self.assertEqual(data["values"][-2], 3)
+        # 2026-03 has no earlier snapshot to forward-fill from
+        self.assertEqual(data["labels"][-3], "03/2026")
+        self.assertEqual(data["values"][-3], 0)
+        # The line is the cumulative stock (same as the snapshot level)
+        self.assertEqual(data["cumulative"], data["values"])
+        # The bars are the month-over-month increase derived from the level
+        self.assertEqual(data["monthly"][-1], 4)
+        self.assertEqual(data["monthly"][-2], 3)
+        self.assertEqual(data["monthly"][-3], 0)
+
+    @freeze_time("2026-06-15")
+    def test_structures_habilitees_evolution_uses_snapshots(self):
+        with freeze_time("2026-04-10"):
+            AidantStatistiques.objects.create(
+                number_organisation_with_accredited_aidants=2
+            )
+        with freeze_time("2026-05-05"):
+            AidantStatistiques.objects.create(
+                number_organisation_with_accredited_aidants=4
+            )
+        with freeze_time("2026-05-20"):
+            AidantStatistiques.objects.create(
+                number_organisation_with_accredited_aidants=6
+            )
+
+        response = self.client.get(reverse("statistiques"))
+        data = response.context["structures_habilitees_evolution_data"]
+
+        self.assertEqual(len(data["labels"]), 24)
+        self.assertEqual(data["labels"][-1], "05/2026")
+        self.assertEqual(data["values"][-1], 6)
+        self.assertEqual(data["labels"][-2], "04/2026")
+        self.assertEqual(data["values"][-2], 2)
+        self.assertEqual(data["labels"][-3], "03/2026")
+        self.assertEqual(data["values"][-3], 0)
+        self.assertEqual(data["cumulative"], data["values"])
+        self.assertEqual(data["monthly"][-1], 4)
+        self.assertEqual(data["monthly"][-2], 2)
+        self.assertEqual(data["monthly"][-3], 0)
+        self.assertContains(
+            response, "structures-habilitees-evolution-chart-transcription"
+        )
+
+    @freeze_time("2026-06-15")
+    def test_mandats_evolution_exposes_monthly_and_cumulative(self):
+        orga = OrganisationFactory()
+        # Two mandats before the 24-month window feed the cumulative baseline
+        for _ in range(2):
+            MandatFactory(
+                organisation=orga,
+                usager=UsagerFactory(),
+                creation_date=datetime(2020, 1, 1, tzinfo=timezone.utc),
+            )
+        # One mandat during the last complete month (2026-05)
+        MandatFactory(
+            organisation=orga,
+            usager=UsagerFactory(),
+            creation_date=datetime(2026, 5, 10, tzinfo=timezone.utc),
+        )
+
+        response = self.client.get(reverse("statistiques"))
+        data = response.context["mandats_evolution_data"]
+
+        self.assertEqual(data["labels"][-1], "05/2026")
+        # Monthly flow only counts the event of that month
+        self.assertEqual(data["monthly"][-1], 1)
+        # Cumulative includes the two pre-window mandats as a baseline
+        self.assertEqual(data["cumulative"][-1], data["cumulative"][-2] + 1)
+        self.assertGreaterEqual(data["cumulative"][0], 2)
+        # Cumulative is monotonically non-decreasing
+        self.assertEqual(data["cumulative"], sorted(data["cumulative"]))
+
+    @freeze_time("2026-06-15")
+    def test_personnes_accompagnees_evolution_counts_first_demarche_only(self):
+        orga = OrganisationFactory()
+        aidant = AidantFactory(organisation=orga)
+        usager_existing = UsagerFactory()
+        usager_new = UsagerFactory()
+
+        # Already accompanied before the window -> baseline only
+        Journal.objects.create(
+            aidant=aidant,
+            organisation=orga,
+            usager=usager_existing,
+            action="use_autorisation",
+            demarche="argent",
+            creation_date=datetime(2020, 1, 1, tzinfo=timezone.utc),
+        )
+        Journal.objects.filter(usager=usager_existing).update(
+            creation_date=datetime(2020, 1, 1, tzinfo=timezone.utc)
+        )
+        # Same person again in-window must not increase monthly count
+        Journal.objects.create(
+            aidant=aidant,
+            organisation=orga,
+            usager=usager_existing,
+            action="use_autorisation",
+            demarche="famille",
+        )
+        Journal.objects.filter(usager=usager_existing, demarche="famille").update(
+            creation_date=datetime(2026, 5, 10, tzinfo=timezone.utc)
+        )
+        # New person during last complete month
+        Journal.objects.create(
+            aidant=aidant,
+            organisation=orga,
+            usager=usager_new,
+            action="use_autorisation",
+            demarche="logement",
+        )
+        Journal.objects.filter(usager=usager_new).update(
+            creation_date=datetime(2026, 5, 12, tzinfo=timezone.utc)
+        )
+
+        response = self.client.get(reverse("statistiques"))
+        data = response.context["personnes_accompagnees_evolution_data"]
+
+        self.assertEqual(data["labels"][-1], "05/2026")
+        self.assertEqual(data["monthly"][-1], 1)
+        self.assertGreaterEqual(data["cumulative"][0], 1)
+        self.assertEqual(data["cumulative"][-1], data["cumulative"][-2] + 1)
+        self.assertContains(response, "Personnes accompagnées")
+        self.assertContains(
+            response, "personnes-accompagnees-evolution-chart-transcription"
+        )
 
     def test_usager_helped_a_long_time_ago_not_counted_as_recent(self):
         # "statistiques_demarches": demarches_aggregation,
         response = self.client.get(reverse("statistiques"))
-        self.assertEqual(
-            response.context["usage_section"]["Démarches administratives réalisées"], 3
-        )
+        self.assertEqual(response.context["usage_section"]["Démarches réalisées"], 3)
         self.assertEqual(response.context["usage_section"]["Personnes accompagnées"], 2)
 
     def test_all_help_is_counted_for_demarche_stat_except_staff_organisation(self):
@@ -310,6 +469,73 @@ class StatistiquesTests(TestCase):
         response = self.client.get(reverse("statistiques"))
         self.assertEqual(response.context["data"]["values"][0], 3)
         self.assertEqual(response.context["data"]["values"][1], 0)
+
+    def test_stats_show_mandat_durees_distribution(self):
+        response = self.client.get(reverse("statistiques"))
+        mandat_durees_data = response.context["mandat_durees_data"]
+        self.assertEqual(mandat_durees_data["titles"][0], "1 jour")
+        self.assertEqual(mandat_durees_data["values"][0], 2)
+        self.assertEqual(
+            sum(mandat_durees_data["values"]),
+            response.context["usage_section"]["Mandats"],
+        )
+        self.assertEqual(sum(s["percent"] for s in mandat_durees_data["segments"]), 100)
+        self.assertContains(response, "Répartition par durée de mandat")
+        self.assertContains(response, "mandat-durees__bar")
+        for segment in mandat_durees_data["segments"]:
+            self.assertEqual(
+                segment["show_label"],
+                service._mandat_duree_label_fits(segment["label"], segment["percent"]),
+            )
+
+    def test_stats_page_includes_demarches_realisees_info(self):
+        response = self.client.get(reverse("statistiques"))
+        self.assertIsNotNone(response.context["demarches_realisees_since_date"])
+        self.assertContains(response, "demarches-realisees-usage-info")
+        self.assertContains(
+            response,
+            "Connexions réalisées via Aidants Connect - pour suivre et réaliser une ou plusieurs démarches administratives",  # noqa: E501
+        )
+
+    def test_stats_page_includes_demarche_type_info(self):
+        response = self.client.get(reverse("statistiques"))
+        self.assertContains(response, "demarche-type-info")
+        self.assertContains(
+            response,
+            "Domaine déclaré par l'aidant à l'utilisation du mandat",
+        )
+
+    def test_stats_context_is_cached(self):
+        from django.core.cache import caches
+
+        stats_cache = caches[settings.STATISTIQUES_CACHE_ALIAS]
+        with self.settings(STATISTIQUES_CACHE_TIMEOUT=600):
+            stats_cache.delete(settings.STATISTIQUES_CACHE_KEY)
+            first = self.client.get(reverse("statistiques"))
+            self.assertEqual(first.status_code, 200)
+            self.assertIsNotNone(stats_cache.get(settings.STATISTIQUES_CACHE_KEY))
+
+            cached_mandats = first.context["usage_section"]["Mandats"]
+            MandatFactory()  # would change the count if context were recomputed
+            second = self.client.get(reverse("statistiques"))
+            self.assertEqual(
+                second.context["usage_section"]["Mandats"],
+                cached_mandats,
+            )
+
+    def test_stats_page_works_when_cache_is_unavailable(self):
+        from unittest.mock import MagicMock, patch
+
+        mock_cache = MagicMock()
+        mock_cache.get_or_set.side_effect = ConnectionError("redis down")
+
+        with self.settings(STATISTIQUES_CACHE_TIMEOUT=600):
+            with patch("aidants_connect_web.views.service.caches") as mock_caches:
+                mock_caches.__getitem__.return_value = mock_cache
+                response = self.client.get(reverse("statistiques"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("usage_section", response.context)
 
 
 @tag("service")

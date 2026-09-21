@@ -1,7 +1,12 @@
+from datetime import date, datetime
 from typing import Union
 
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Count, Min, Q, QuerySet
+from django.db.models.functions import TruncMonth
+from django.utils import timezone
+
+from dateutil.relativedelta import relativedelta
 
 from aidants_connect_common.constants import (
     JournalActionKeywords,
@@ -21,6 +26,226 @@ from ..models import (
     Mandat,
     Organisation,
 )
+
+MANDATS_EVOLUTION_MONTHS = 24
+DEMARCHES_EVOLUTION_MONTHS = 24
+PERSONNES_ACCOMPAGNEES_EVOLUTION_MONTHS = 24
+OPERATIONAL_AIDANTS_EVOLUTION_MONTHS = 24
+STRUCTURES_HABILITEES_EVOLUTION_MONTHS = 24
+
+
+def _month_key(value: date | datetime) -> tuple[int, int]:
+    if isinstance(value, datetime):
+        value = timezone.localdate(value)
+    return value.year, value.month
+
+
+def _format_month(year: int, month: int) -> str:
+    return f"{month:02d}/{year}"
+
+
+def _month_keys_between(start: date, end: date) -> list[tuple[int, int]]:
+    keys: list[tuple[int, int]] = []
+    cursor = start.replace(day=1)
+    end = end.replace(day=1)
+    while cursor <= end:
+        keys.append((cursor.year, cursor.month))
+        cursor += relativedelta(months=1)
+    return keys
+
+
+def _cumulate(values: list[int], baseline: int = 0) -> list[int]:
+    cumulative: list[int] = []
+    running = baseline
+    for value in values:
+        running += value
+        cumulative.append(running)
+    return cumulative
+
+
+def _get_snapshot_monthly_series(field_name: str, months: int) -> dict[str, list]:
+    """Build a monthly stock series from ``AidantStatistiques`` snapshots.
+
+    For each of the last ``months`` complete months we keep the latest snapshot
+    value for ``field_name``, then forward-fill months without a snapshot with
+    the previous known value. Monthly bars are the month-over-month delta.
+    """
+    tz = timezone.get_current_timezone()
+    current_month = timezone.localdate().replace(day=1)
+    end_month = current_month - relativedelta(months=1)
+    start_month = end_month - relativedelta(months=months - 1)
+
+    baseline = (
+        AidantStatistiques.objects.filter(created_at__date__lt=start_month)
+        .order_by("created_at")
+        .values_list(field_name, flat=True)
+        .last()
+    ) or 0
+
+    snapshots = (
+        AidantStatistiques.objects.filter(
+            created_at__date__gte=start_month,
+            created_at__date__lt=current_month,
+        )
+        .annotate(month=TruncMonth("created_at", tzinfo=tz))
+        .values("month", field_name, "created_at")
+        .order_by("month", "created_at")
+    )
+
+    value_by_month: dict[tuple[int, int], int] = {}
+    for entry in snapshots:
+        if entry["month"] is None:
+            continue
+        value_by_month[_month_key(entry["month"])] = entry[field_name]
+
+    month_keys = _month_keys_between(start_month, end_month)
+    level: list[int] = []
+    last_value = baseline
+    for key in month_keys:
+        if key in value_by_month:
+            last_value = value_by_month[key]
+        level.append(last_value)
+
+    monthly: list[int] = []
+    previous = baseline
+    for value in level:
+        monthly.append(value - previous)
+        previous = value
+
+    return {
+        "labels": [_format_month(year, month) for year, month in month_keys],
+        "values": level,
+        "monthly": monthly,
+        "cumulative": level,
+    }
+
+
+def get_monthly_series(
+    qs: QuerySet, date_field: str, months: int | None = None
+) -> dict[str, list]:
+    """Build a monthly series for a dated-event queryset.
+
+    Returns, per month:
+    - ``values``: the per-month flow (new events that month);
+    - ``cumulative``: the running total (line), seeded with everything that
+      happened before the window so the curve reflects real all-time totals.
+    """
+    tz = timezone.get_current_timezone()
+    month_keys: list[tuple[int, int]] | None = None
+    baseline = 0
+
+    if months is not None:
+        current_month = timezone.localdate().replace(day=1)
+        end_month = current_month - relativedelta(months=1)
+        start_month = end_month - relativedelta(months=months - 1)
+        baseline = qs.filter(**{f"{date_field}__date__lt": start_month}).count()
+        qs = qs.filter(
+            **{
+                f"{date_field}__date__gte": start_month,
+                f"{date_field}__date__lt": current_month,
+            }
+        )
+        month_keys = _month_keys_between(start_month, end_month)
+
+    monthly_counts = (
+        qs.annotate(month=TruncMonth(date_field, tzinfo=tz))
+        .values("month")
+        .annotate(count=Count("pk"))
+        .order_by("month")
+    )
+    counts_by_month = {
+        _month_key(entry["month"]): entry["count"]
+        for entry in monthly_counts
+        if entry["month"] is not None
+    }
+
+    if month_keys is not None:
+        monthly = [counts_by_month.get(key, 0) for key in month_keys]
+        return {
+            "labels": [_format_month(year, month) for year, month in month_keys],
+            "values": monthly,
+            "monthly": monthly,
+            "cumulative": _cumulate(monthly, baseline),
+        }
+
+    labels: list[str] = []
+    values: list[int] = []
+    for year, month in sorted(counts_by_month):
+        labels.append(_format_month(year, month))
+        values.append(counts_by_month[(year, month)])
+    return {
+        "labels": labels,
+        "values": values,
+        "monthly": values,
+        "cumulative": _cumulate(values),
+    }
+
+
+def get_personnes_accompagnees_monthly_series(
+    qs: QuerySet,
+    months: int = PERSONNES_ACCOMPAGNEES_EVOLUTION_MONTHS,
+) -> dict[str, list]:
+    """Build a monthly series of newly accompanied people.
+
+    A person is counted the month of their first ``use_autorisation`` entry,
+    matching the public "Personnes accompagnées" counter (distinct usagers
+    with at least one démarche). Monthly bars are new people that month;
+    the line is the running total of unique people accompanied.
+    """
+    current_month = timezone.localdate().replace(day=1)
+    end_month = current_month - relativedelta(months=1)
+    start_month = end_month - relativedelta(months=months - 1)
+    month_keys = _month_keys_between(start_month, end_month)
+    start_key = (start_month.year, start_month.month)
+    current_key = (current_month.year, current_month.month)
+
+    first_occurrences = qs.values("usager").annotate(first=Min("creation_date"))
+    baseline = 0
+    counts_by_month: dict[tuple[int, int], int] = {}
+    for entry in first_occurrences:
+        first = entry["first"]
+        if first is None:
+            continue
+        key = _month_key(first)
+        if key < start_key:
+            baseline += 1
+        elif key < current_key:
+            counts_by_month[key] = counts_by_month.get(key, 0) + 1
+
+    monthly = [counts_by_month.get(key, 0) for key in month_keys]
+    return {
+        "labels": [_format_month(year, month) for year, month in month_keys],
+        "values": monthly,
+        "monthly": monthly,
+        "cumulative": _cumulate(monthly, baseline),
+    }
+
+
+def get_operational_aidants_monthly_series(
+    months: int = OPERATIONAL_AIDANTS_EVOLUTION_MONTHS,
+) -> dict[str, list]:
+    """Build a monthly series of accredited aidants from stored snapshots.
+
+    Uses the same metric as the public "Aidants habilités" counter
+    (``number_aidant_can_create_mandat``). This is a state metric (not a dated
+    event), so it cannot be rebuilt with ``get_monthly_series``. Instead we rely
+    on the periodic ``AidantStatistiques`` snapshots.
+    """
+    return _get_snapshot_monthly_series("number_aidant_can_create_mandat", months)
+
+
+def get_structures_habilitees_monthly_series(
+    months: int = STRUCTURES_HABILITEES_EVOLUTION_MONTHS,
+) -> dict[str, list]:
+    """Build a monthly series of accredited organisations from stored snapshots.
+
+    Uses the same metric as the public "Structures habilitées" counter
+    (``number_organisation_with_accredited_aidants``), i.e. structures with at
+    least one operational aidant.
+    """
+    return _get_snapshot_monthly_series(
+        "number_organisation_with_accredited_aidants", months
+    )
 
 
 def compute_all_statistics():
@@ -245,6 +470,7 @@ def compute_statistics(
     ostat.number_old_inactive_aidants_warned = number_old_inactive_aidants_warned
     ostat.number_aidants_with_otp_app = number_aidants_with_otp_app
     ostat.revoked_mandats = mandats.seperatly_revoked().count()
+    ostat.number_active_mandats = mandats.active().count()
     ostat.save()
 
     return ostat
