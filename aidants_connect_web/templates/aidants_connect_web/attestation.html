@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}Impression du mandat - Aidants Connect{% endblock %}
+{% block title %}Impression du {% if final %}mandat final{% else %}projet de mandat{% endif %} - Aidants Connect{% endblock %}
 
 {% block extracss %}
   <link href="{% static 'css/attestation.css' %}" rel="stylesheet">
@@ -16,7 +16,7 @@
     <div class="fr-grid-row fr-grid-row--gutters">
     {% if final %}
       <div class="fr-col-md-8 fr-col-12">
-        <h1 class="no-print">Mandat final</h1>
+        <p class="fr-badge fr-badge--success fr-mb-3w no-print">Mandat final</p>
     {% endif %}
     <div class="attestation-content">
       <header class="navbar fr-grid-row fr-grid-row--gutters">
