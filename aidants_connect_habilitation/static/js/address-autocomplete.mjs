@@ -76,6 +76,7 @@ class AddressAutoComplete extends BaseController {
         });
 
         this.fixAriaAttributes();
+        this.preserveValueOnEscape();
         this.initSpinner();
 
         this.addresses = {};
@@ -121,6 +122,29 @@ class AddressAutoComplete extends BaseController {
         };
         input.addEventListener("open", () => syncExpanded("true"));
         input.addEventListener("close", () => syncExpanded("false"));
+    }
+
+    /**
+     * autoComplete.js v10 clears the input on Escape. Intercept Escape in the
+     * capture phase so the list closes without wiping the typed address.
+     * @see https://www.w3.org/WAI/ARIA/apg/patterns/combobox/
+     */
+    preserveValueOnEscape () {
+        this.autcompleteInputTarget.addEventListener(
+            "keydown",
+            (event) => {
+                if (event.key !== "Escape" && event.keyCode !== 27) {
+                    return;
+                }
+                if (!this.autocompleteWidget.isOpen) {
+                    return;
+                }
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                this.autocompleteWidget.close();
+            },
+            true,
+        );
     }
 
 
