@@ -22,7 +22,8 @@
           </h2>
           <div class="fr-stepper__steps" data-fr-current-step="{{ wizard_step }}" data-fr-steps="{{ wizard_total_steps }}"></div>
         </div>
-        <form method="post" action="{% url 'espace_referent:aidant_new_trained' %}" class="fr-mt-4w" id="structure-change-formset-form">
+        {# novalidate: browser native messages are replaced by DSFR error messages, which state the expected format #}
+        <form method="post" action="{% url 'espace_referent:aidant_new_trained' %}" class="fr-mt-4w" id="structure-change-formset-form" novalidate>
           {% csrf_token %}
           {{ formset.management_form }}
 

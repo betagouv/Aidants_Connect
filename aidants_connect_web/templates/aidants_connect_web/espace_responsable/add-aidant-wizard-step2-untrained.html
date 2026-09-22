@@ -22,10 +22,12 @@
             </h2>
             <div class="fr-stepper__steps" data-fr-current-step="{{ wizard_step }}" data-fr-steps="{{ wizard_total_steps }}"></div>
           </div>
+          {# novalidate: browser native messages are replaced by DSFR error messages, which state the expected format #}
           <form
             id="new-habilitation-request-form"
             method="post"
             action="{% url 'espace_referent:aidant_new_untrained' %}"
+            novalidate
           >
             {% csrf_token %}
 

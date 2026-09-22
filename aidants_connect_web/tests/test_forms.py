@@ -597,6 +597,22 @@ class AddAidantEmailErrorMessagesTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual([EMAIL_FORMAT_ERROR_MESSAGE], form.errors["email_formateur"])
 
+    def test_email_formateur_required_for_p2p_includes_example(self):
+        form = HabilitationRequestCreationFormationTypeForm(
+            data={
+                "type": str(HabilitationRequestCreationFormationTypeForm.Type.P2P),
+                "email_formateur": "",
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            [
+                "L'email du formateur est obligatoire pour une formation entre pairs. "
+                "Exemple : prenom-nom@exemple.fr"
+            ],
+            form.errors["email_formateur"],
+        )
+
     def test_structure_change_email_invalid_includes_example(self):
         form = StructureChangeRequestForm(
             referent=self.referent,

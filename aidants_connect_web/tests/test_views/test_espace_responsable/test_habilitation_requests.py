@@ -612,6 +612,60 @@ class HabilitationRequestsTests(TestCase):
             ],
         )
 
+    def test_untrained_form_disables_native_browser_validation(self):
+        self.client.force_login(self.responsable_tom)
+        self.client.post(
+            self.add_aidant_url,
+            data={"profile": AddAidantProfileChoice.NOT_YET_TRAINED},
+        )
+        response = self.client.get(self.add_aidant_untrained_url)
+        self.assertContains(
+            response,
+            'id="new-habilitation-request-form"',
+        )
+        self.assertContains(response, "novalidate")
+
+    def test_untrained_malformed_emails_display_format_example(self):
+        self.client.force_login(self.responsable_tom)
+        self.client.post(
+            self.add_aidant_url,
+            data={"profile": AddAidantProfileChoice.NOT_YET_TRAINED},
+        )
+        response = self.client.post(
+            self.add_aidant_untrained_url,
+            data={
+                f"{self.prefix}-TOTAL_FORMS": "1",
+                f"{self.prefix}-INITIAL_FORMS": "0",
+                f"{self.prefix}-MIN_NUM_FORMS": "0",
+                f"{self.prefix}-MAX_NUM_FORMS": "1000",
+                f"{self.prefix}-0-id": "",
+                f"{self.prefix}-0-email": "not-an-email",
+                f"{self.prefix}-0-first_name": "Alice",
+                f"{self.prefix}-0-last_name": "Martin",
+                f"{self.prefix}-0-profession": "Médiatrice",
+                f"{self.prefix}-0-organisation": f"{self.org_a.id}",
+                f"{self.prefix}-0-conseiller_numerique": "False",
+                "multiform-course_type-type": "2",
+                "multiform-course_type-email_formateur": "also-invalid",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        expected = (
+            "Veuillez saisir une adresse e-mail valide. "
+            "Exemple : prenom-nom@exemple.fr"
+        )
+        self.assertContains(response, expected)
+        self.assertFormError(
+            response.context_data["form"]["habilitation_requests"].extra_forms[0],
+            "email",
+            errors=[expected],
+        )
+        self.assertFormError(
+            response.context_data["form"]["course_type"],
+            "email_formateur",
+            errors=[expected],
+        )
+
     def test_avoid_oracle_for_other_organisations_requests(self):
         self.client.force_login(self.responsable_tom)
 
@@ -896,6 +950,35 @@ class AlreadyTrainedStructureChangeRequestTests(TestCase):
         self.assertTemplateUsed(
             response,
             "aidants_connect_web/espace_responsable/add-aidant-wizard-step2-trained.html",  # noqa: E501
+        )
+        self.assertEqual(0, StructureChangeRequest.objects.count())
+
+    def test_trained_form_disables_native_browser_validation(self):
+        self.client.force_login(self.responsable)
+        self._start_already_trained_wizard()
+        response = self.client.get(self.add_aidant_trained_url)
+        self.assertContains(
+            response,
+            'id="structure-change-formset-form" novalidate',
+        )
+
+    def test_trained_malformed_email_displays_format_example(self):
+        self.client.force_login(self.responsable)
+        self._start_already_trained_wizard()
+        post_data = self._build_trained_post_data(
+            [
+                {
+                    "email": "not-an-email",
+                    "email_will_change": False,
+                }
+            ]
+        )
+        response = self.client.post(self.add_aidant_trained_url, data=post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertContains(
+            response,
+            "Veuillez saisir une adresse e-mail valide. "
+            "Exemple : prenom-nom@exemple.fr",
         )
         self.assertEqual(0, StructureChangeRequest.objects.count())
 
