@@ -18,7 +18,7 @@
                     </div>
                     <div class="fr-col">
                         <p class="fr-text--sm">
-                            {{ organisation.type }}
+                            {{ organisation.type|default:"Information non communiquée" }}
                         </p>
                     </div>
                 </li>
@@ -29,12 +29,16 @@
                         </p>
                     </div>
                     <div class="fr-col">
-                        <div class="fr-text--sm fr-mb-0">
-                            {{ organisation.address }}
-                        </div>
-                        <div class="fr-text--sm fr-mt-0">
-                            {{ organisation.zipcode }} {{ organisation.city }}
-                        </div>
+                        {% if organisation.address or organisation.zipcode or organisation.city %}
+                          <div class="fr-text--sm fr-mb-0">
+                              {{ organisation.address }}
+                          </div>
+                          <div class="fr-text--sm fr-mt-0">
+                              {{ organisation.zipcode }} {{ organisation.city }}
+                          </div>
+                        {% else %}
+                          <p class="fr-text--sm">Information non communiquée</p>
+                        {% endif %}
                     </div>
                 </li>
                 <li class="fr-grid-row fr-mb-2w">
@@ -45,7 +49,11 @@
                     </div>
                     <div class="fr-col">
                         <p class="fr-text--sm">
-                            {% format_siret organisation.siret %}
+                            {% if organisation.siret %}
+                              {% format_siret organisation.siret %}
+                            {% else %}
+                              Information non communiquée
+                            {% endif %}
                         </p>
                     </div>
                 </li>
@@ -61,7 +69,7 @@
                     </div>
                     <div class="fr-col">
                         <p class="fr-text--sm">
-                            {{ organisation.web_site }}
+                            {{ organisation.web_site|default:"Information non communiquée" }}
                         </p>
                     </div>
                 </li>
@@ -82,7 +90,7 @@
                         Missions
                     </p>
                     <p class="fr-text--sm fr-my-1v">
-                        {{ organisation.mission_description }}
+                        {{ organisation.mission_description|default:"Information non communiquée" }}
                     </p>
                 </li>
             </ul>

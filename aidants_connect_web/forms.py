@@ -186,8 +186,7 @@ LOGIN_GENERIC_ERROR_MESSAGE = (
 # incorrectly formatted value know what is expected (RGAA 11.10).
 OTP_FORMAT_ERROR_MESSAGE = "Veuillez saisir un code à 6 chiffres. Exemple : 123456"
 MOBILE_FORMAT_ERROR_MESSAGE = (
-    "Veuillez saisir un numéro de téléphone mobile à 10 chiffres. "
-    "Exemple : 0607080910"
+    "Veuillez saisir un numéro de téléphone mobile à 10 chiffres. Exemple : 0607080910"
 )
 
 
@@ -761,11 +760,12 @@ class HabilitationRequestCreationFormationTypeForm(DsfrBaseForm, AsHiddenMixin):
         email_formateur = self.cleaned_data.get("email_formateur")
         type_formation = self.cleaned_data.get("type")
 
-        if type_formation == str(self.Type.P2P) and not email_formateur:
-            raise ValidationError(
-                "L'email du formateur est obligatoire pour une formation entre pairs."
-            )
-        if type_formation == str(self.Type.P2P) and email_formateur:
+        if type_formation == str(self.Type.P2P):
+            if not email_formateur:
+                raise ValidationError(
+                    "L'email du formateur est obligatoire pour une formation entre "
+                    "pairs. Exemple : prenom-nom@exemple.fr"
+                )
             if not Aidant.objects.filter(email__iexact=email_formateur).exists():
                 raise ValidationError(
                     "Cette adresse mail n'est pas connue du service Aidants Connect. "

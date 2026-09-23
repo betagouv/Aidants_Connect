@@ -25,10 +25,9 @@
 
       {% for mandat in mandats %}
         <section class="fr-p-6v fr-mb-4v fr-bordered {{ group|slugify }}">
-          <div class="flex fr-mb-4v">
+          <div class="mandat-header fr-mb-4v">
             <h3 class="fr-m-0">Mandat du {{ mandat.creation_date|date:"d F Y" }}</h3>
-            <div class="spacer"></div>
-            <ul class="fr-btns-group fr-btns-group--inline fr-mb-n4v fr-btns-group--icon-left">
+            <ul class="fr-btns-group fr-btns-group--inline-md fr-mb-n4v fr-btns-group--icon-left">
               <li>
                 <a
                   id="view-mandat-attestation-{{ mandat.pk }}"
@@ -58,12 +57,14 @@
                   </a>
                 </li>
               {% elif mandat.was_explicitly_revoked %}
-                <a
-                  class="fr-btn fr-btn--icon-left fr-btn--sm auth-revocation-attestation"
-                  href="{% url 'espace_aidant:mandat_cancellation_attestation' mandat_id=mandat.pk %}"
-                >
-                  Voir la révocation
-                </a>
+                <li>
+                  <a
+                    class="fr-btn fr-btn--icon-left fr-btn--sm auth-revocation-attestation"
+                    href="{% url 'espace_aidant:mandat_cancellation_attestation' mandat_id=mandat.pk %}"
+                  >
+                    Voir la révocation
+                  </a>
+                </li>
               {% endif %}
             </ul>
           </div>
