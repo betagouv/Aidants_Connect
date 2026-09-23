@@ -109,24 +109,24 @@
           aria-label="Répartition du nombre de démarches par type"
         ></bar-chart>
       </div>
-      <div class="fr-transcription fr-mb-4w" id="mandats-chart-transcription">
-        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-mandats-chart-transcription">Transcription (tableau des données)</button>
-        <div class="fr-collapse" id="fr-transcription-collapse-mandats-chart-transcription">
+      <div class="fr-transcription fr-mb-4w" id="demarches-type-chart-transcription">
+        <button type="button" class="fr-transcription__btn" aria-expanded="false" aria-controls="fr-transcription-collapse-demarches-type-chart-transcription">Transcription (tableau des données)</button>
+        <div class="fr-collapse" id="fr-transcription-collapse-demarches-type-chart-transcription">
           <div class="fr-transcription__footer">
             <div class="fr-transcription__actions-group">
-              <button aria-controls="fr-transcription-modal-mandats-chart-transcription" data-fr-opened="false" type="button" class="fr-btn--fullscreen fr-btn">Agrandir</button>
+              <button aria-controls="fr-transcription-modal-demarches-type-chart-transcription" data-fr-opened="false" type="button" class="fr-btn--fullscreen fr-btn">Agrandir</button>
             </div>
           </div>
-          <dialog id="fr-transcription-modal-mandats-chart-transcription" class="fr-modal" aria-labelledby="fr-transcription-modal-title-mandats-chart-transcription">
+          <dialog id="fr-transcription-modal-demarches-type-chart-transcription" class="fr-modal" aria-labelledby="fr-transcription-modal-title-demarches-type-chart-transcription">
             <div class="fr-container fr-container--fluid fr-container-md">
               <div class="fr-grid-row fr-grid-row--center">
                 <div class="fr-col-12 fr-col-md-10 fr-col-lg-8">
                   <div class="fr-modal__body">
                     <div class="fr-modal__header">
-                      <button aria-controls="fr-transcription-modal-mandats-chart-transcription" title="Fermer" type="button" id="button-19" class="fr-btn--close fr-btn">Fermer</button>
+                      <button aria-controls="fr-transcription-modal-demarches-type-chart-transcription" title="Fermer" type="button" class="fr-btn--close fr-btn">Fermer</button>
                     </div>
                     <div class="fr-modal__content">
-                      <h1 id="fr-transcription-modal-title-mandats-chart-transcription" class="fr-modal__title">Transcription du graphique par type de démarche</h1>
+                      <h1 id="fr-transcription-modal-title-demarches-type-chart-transcription" class="fr-modal__title">Transcription du graphique par type de démarche</h1>
                       <table>
                         <caption>Répartition du nombre de démarches par type</caption>
                         <tr>
@@ -415,21 +415,19 @@
                     <div class="fr-modal__content">
                       <h1 id="fr-transcription-modal-title-structures-habilitees-evolution-chart-transcription" class="fr-modal__title">Transcription du graphique d’évolution des structures habilitées</h1>
                       <table>
-                        <caption>Répartition du nombre de démarches par type</caption>
-                        <thead>
+                        <caption>Évolution mensuelle du nombre de structures habilitées</caption>
+                        <tr>
+                          <th scope="col">Mois</th>
+                          <th scope="col">Évolution sur le mois</th>
+                          <th scope="col">Total</th>
+                        </tr>
+                        {% for entry in structures_habilitees_evolution_transcription %}
                           <tr>
-                            <th scope="col">Type de démarche</th>
-                            <th scope="col">Nombre de démarches</th>
+                            <th scope="row">{{ entry.month }}</th>
+                            <td>{{ entry.monthly }}</td>
+                            <td>{{ entry.cumulative }}</td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {% for demarche in demarches_transcription %}
-                            <tr>
-                              <th scope="row">{{ demarche.title }}</th>
-                              <td>{{ demarche.value }}</td>
-                            </tr>
-                          {% endfor %}
-                        </tbody>
+                        {% endfor %}
                       </table>
                     </div>
                   </div>
