@@ -45,7 +45,9 @@ class NewAttestationFinalAccessibilityTests(AccessibilityTestCase):
     @async_test
     async def test_title_is_correct(self):
         await self.lazy_loading(self._open_url)
-        await expect(self.page).to_have_title("Impression du mandat - Aidants Connect")
+        await expect(self.page).to_have_title(
+            "Impression du mandat final - Aidants Connect"
+        )
 
     @async_test
     async def test_skiplinks_are_valid(self):

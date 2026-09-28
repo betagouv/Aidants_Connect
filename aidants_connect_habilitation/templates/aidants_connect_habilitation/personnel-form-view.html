@@ -16,7 +16,8 @@
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-8 fr-col-sm-6">
         {% include "layouts/_breadcrumbs.html" %}
-        <form method="post" class="fr-col-12">
+        {# novalidate: browser native messages are replaced by DSFR error messages, which state the expected format #}
+        <form method="post" class="fr-col-12" novalidate>
           {% csrf_token %}
           {{ form }}
           {{ manager_data|json_script:"manager-data" }}

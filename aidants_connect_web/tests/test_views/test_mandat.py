@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime, timedelta
 from textwrap import dedent
 from uuid import uuid4
@@ -985,6 +986,20 @@ class AttestationFinalTests(TestCase):
                     got: {response.context[key]}"""
                 ),
             )
+
+    def test_renders_a_single_h1(self):
+        self.client.force_login(self.aidant_1)
+
+        response = self.client.get(
+            reverse("espace_aidant:new_attestation_final", args=(self.mandat.pk,))
+        )
+
+        self.assertEqual(
+            1,
+            len(re.findall(r"<h1[\s>]", response.content.decode())),
+            "Mandate templates already provide the page h1: it can't be edited "
+            "since their bytes are hashed to seal issued mandates",
+        )
 
 
 @override_settings(FF_ACTIVATE_SMS_CONSENT=True)
