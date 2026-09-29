@@ -181,6 +181,10 @@ class Aidant(AbstractUser):
         "Est un utilisateur Organisme de Formation", default=False
     )
 
+    is_cdd_user = models.BooleanField(
+        "Est un utilisateur Caisse des dépots", default=False
+    )
+
     is_of_admin = models.BooleanField(
         "Est un administrateur Organisme de Formation", default=False
     )

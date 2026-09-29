@@ -42,6 +42,10 @@ class FormationAttendantResource(ModelResource):
         column_name="Note Test PIX", attribute="attendant__pix_score"
     )
 
+    start_formation = Field(
+        column_name="Date début formation", attribute="formation__start_datetime"
+    )
+
     class Meta:
         model = FormationAttendant
         fields = (
@@ -59,6 +63,7 @@ class FormationAttendantResource(ModelResource):
             "id",
             "test_pix_passed",
             "test_pix_score",
+            "start_formation",
         )
 
     def dehydrate_state(self, f_attendant):

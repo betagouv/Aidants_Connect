@@ -376,6 +376,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
         "created_at",
         "is_staff",
         "is_of_user",
+        "is_cdd_user",
         "is_admin_metier",
         "is_superuser",
         "totp_card_drift",
@@ -464,6 +465,7 @@ class AidantAdmin(ImportExportMixin, VisibleToAdminMetier, DjangoUserAdmin):
                 "fields": (
                     "is_active",
                     "is_of_user",
+                    "is_cdd_user",
                     "is_of_admin",
                     "is_admin_metier",
                     "can_create_mandats",

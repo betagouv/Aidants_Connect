@@ -17,6 +17,7 @@ from magicauth.models import MagicToken
 from aidants_connect_common.lookups import IsNullOrBlank
 
 admin_of_site = django_admin.AdminSite(name="adminof")
+admin_cdd_site = django_admin.AdminSite(name="admincdd")
 admin_site = OTPAdminSite(OTPAdminSite.name)
 admin_site.login_template = "aidants_connect_web/admin/login.html"
 
@@ -50,6 +51,26 @@ class VisibleToOFAdmin:
                 return True
             else:
                 return False
+
+
+class VisibleToCDDUser:
+
+    def has_module_permission(self, request):
+        return (
+            request.user.is_staff and request.user.is_cdd_user
+        ) or request.user.is_superuser
+
+    def has_view_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return self.has_module_permission(request)
 
 
 class VisibleToOFUser:
