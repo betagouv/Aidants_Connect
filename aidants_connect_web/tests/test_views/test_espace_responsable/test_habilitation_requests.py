@@ -34,7 +34,7 @@ class HabilitationRequestsTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         # Tom is référent of organisations A and B
-        cls.responsable_tom = AidantFactory()
+        cls.responsable_tom = AidantFactory(can_create_mandats=False)
         cls.org_a = cls.responsable_tom.organisation
         cls.org_b = OrganisationFactory(name="B")
         cls.responsable_tom.responsable_de.add(cls.org_a)
@@ -505,6 +505,31 @@ class HabilitationRequestsTests(TestCase):
         self.assertEqual(
             HabilitationRequest.objects.first().email, "angela.dubois@doe.du"
         )
+
+    def test_check_p2p_trainer_is_a_can_create_mandats_aidant(self):
+        self.client.force_login(self.responsable_tom)
+        fake_trainer = AidantFactory(
+            email="fake_trainer@example.com", can_create_mandats=False
+        )
+
+        data = {
+            f"{self.prefix}-TOTAL_FORMS": "1",
+            f"{self.prefix}-INITIAL_FORMS": "0",
+            f"{self.prefix}-MIN_NUM_FORMS": "0",
+            f"{self.prefix}-MAX_NUM_FORMS": "1000",
+            f"{self.prefix}-0-id": "",
+            f"{self.prefix}-0-email": "angela.dubois@doe.du",
+            f"{self.prefix}-0-first_name": "Angela",
+            f"{self.prefix}-0-last_name": "Dubois",
+            f"{self.prefix}-0-profession": "Assistante sociale",
+            f"{self.prefix}-0-organisation": f"{self.org_a.id}",
+            f"{self.prefix}-0-conseiller_numerique": "False",
+            "multiform-course_type-type": "2",
+            "multiform-course_type-email_formateur": fake_trainer.email,
+        }
+
+        self._wizard_post_none_trained_flow(data)
+        self.assertEqual(HabilitationRequest.objects.count(), 0)
 
     def test_fail_if_p2p_trainer_is_not_a_real_aidant(self):
         self.client.force_login(self.responsable_tom)
