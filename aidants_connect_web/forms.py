@@ -766,7 +766,9 @@ class HabilitationRequestCreationFormationTypeForm(DsfrBaseForm, AsHiddenMixin):
                     "L'email du formateur est obligatoire pour une formation entre "
                     "pairs. Exemple : prenom-nom@exemple.fr"
                 )
-            if not Aidant.objects.filter(email__iexact=email_formateur).exists():
+            if not Aidant.objects.filter(
+                email__iexact=email_formateur, can_create_mandats=True
+            ).exists():
                 raise ValidationError(
                     "Cette adresse mail n'est pas connue du service Aidants Connect. "
                     "Veuillez renseigner l'adresse d'un aidant déjà habilité."
