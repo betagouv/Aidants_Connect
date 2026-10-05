@@ -2571,6 +2571,20 @@ class TestNotification(TestCase):
             set(Notification.objects.get_displayable_for_user(self.aidant)),
         )
 
+    def test_get_displayable_for_user_aidant_null_noitification(self):
+        with transaction.atomic():
+            self.notif_1 = Notification.objects.create(
+                type=self.notification_type,
+                must_ack=False,
+                auto_ack_date=date.today() + timedelta(days=10),
+                was_ack=False,
+            )
+
+        self.assertEqual(
+            {self.notif_1},
+            set(Notification.objects.get_displayable_for_user(self.aidant)),
+        )
+
 
 class CoReferentNonAidantRequestTests(TestCase):
     def test_create_referent_non_aidant(self):
