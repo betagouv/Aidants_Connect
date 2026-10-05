@@ -17,13 +17,18 @@ logger = logging.getLogger()
 
 class NotificationQuerySet(models.QuerySet):
     def get_displayable_for_user(self, aidant: Aidant) -> Self:
-        return self.filter(
+        for_specific_aidant_ids = self.filter(
             (
                 (Q(must_ack=True) & Q(was_ack=False))
                 | Q(auto_ack_date__gt=timezone.now())
             ),
             aidant=aidant,
-        )
+        ).values_list("id", flat=True)
+        all_aidants_ids = self.filter(
+            Q(auto_ack_date__gt=timezone.now()),
+            aidant__isnull=True,
+        ).values_list("id", flat=True)
+        return self.filter(id__in=for_specific_aidant_ids | all_aidants_ids)
 
 
 class Notification(MarkdownContentMixin):
@@ -31,7 +36,11 @@ class Notification(MarkdownContentMixin):
 
     type = models.CharField(choices=NotificationType.choices)
     aidant = models.ForeignKey(
-        Aidant, on_delete=models.CASCADE, related_name="notifications"
+        Aidant,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        null=True,
+        blank=True,
     )
     date = models.DateField(auto_now_add=True)
     must_ack = models.BooleanField("Doit être acquité pour disparaître", default=True)
