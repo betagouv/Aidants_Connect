@@ -361,7 +361,7 @@
       "sort_order": 3,
       "slug": "comment-se-connecter-a-aidants-connect",
       "question": "Comment se connecter à Aidants Connect ?",
-      "body": "Retrouvez toutes les étapes pour se connecter à la plateforme Aidants Connect dans le guide [“S’authentifier sur la plateforme Aidants Connect”](https://aidantsconnect.beta.gouv.fr/static/guides_aidants_connect/AC_Guide_Sauthentifier.pdf).",
+      "body": "Retrouvez toutes les étapes pour se connecter à la plateforme Aidants Connect dans le guide [“S’authentifier sur la plateforme Aidants Connect”](https://docs.numerique.gouv.fr/docs/8d7f0880-e20a-4733-ae97-7e23b87e5f80/) (documentation en ligne).",
       "category": 3,
       "subcategory": 4
     }
@@ -706,7 +706,7 @@
       "sort_order": 2,
       "slug": "comment-realiser-une-demarche-administrative-",
       "question": "Comment réaliser une démarche administrative pour le compte d’un usager avec Aidants Connect ?",
-      "body": "Rendez-vous sur le site de la démarche à effectuer puis suivez les étapes décrites dans [le guide “Réaliser la démarche demandée par l’usager”.](https://aidantsconnect.beta.gouv.fr/static/guides_aidants_connect/AC_Guide_RealiserLaDemarche.pdf)",
+      "body": "Rendez-vous sur le site de la démarche à effectuer puis suivez les étapes décrites dans [le guide “Réaliser la démarche demandée par l’usager”.](https://docs.numerique.gouv.fr/docs/a0921792-6726-4bbd-b4da-c715725bb4ea/) (documentation en ligne)",
       "category": 3,
       "subcategory": 6
     }
@@ -796,7 +796,7 @@
       "sort_order": 2,
       "slug": "comment-creer-un-mandat-pour-un-usager",
       "question": "Comment créer un mandat pour un usager ?",
-      "body": "Pour créer un mandat, l’aidant professionnel doit d’abord [s’authentifier sur la plateforme Aidants Connect.](https://aidantsconnect.beta.gouv.fr/accounts/login/) Une fois connecté, il doit cliquer sur “Mon espace aidant” en haut à droite et accéder à la rubrique “Créer un mandat”. \\r\\n\\r\\nRetrouvez ensuite toutes les étapes de création d’un mandat dans[ le guide “Créer un mandat avec un usager”.](https://aidantsconnect.beta.gouv.fr/static/guides_aidants_connect/AC_Guide_CreerUnMandat.pdf)",
+      "body": "Pour créer un mandat, l’aidant professionnel doit d’abord [s’authentifier sur la plateforme Aidants Connect.](https://aidantsconnect.beta.gouv.fr/accounts/login/) Une fois connecté, il doit cliquer sur “Mon espace aidant” en haut à droite et accéder à la rubrique “Créer un mandat”. \\r\\n\\r\\nRetrouvez ensuite toutes les étapes de création d’un mandat dans[ le guide “Créer un mandat avec un usager”.](https://docs.numerique.gouv.fr/docs/42cbb087-5512-47ef-9eef-113c504e3352/) (documentation en ligne)",
       "category": 3,
       "subcategory": 5
     }
@@ -1111,7 +1111,7 @@
       "sort_order": 2,
       "slug": "comment-lier-une-carte-a-un-compte",
       "question": "Comment lier une carte à un compte ?",
-      "body": "Pour se connecter à son espace Aidants Connect, une carte physique ou numérique est nécessaire. Le référent Aidants Connect doit attribuer une carte à son propre compte, ainsi qu’à chaque compte aidant. Chaque aidant et référent habilités doit disposer d’une carte physique ou numérique personnelle pour se connecter à son espace. \\r\\n\\r\\nRetrouvez toutes les étapes pour lier une carte à un compte dans le guide [“Lier une carte”](https://aidantsconnect.beta.gouv.fr/static/guides_aidants_connect/AC_Guide_LierUneCarte.pdf).",
+      "body": "Pour se connecter à son espace Aidants Connect, une carte physique ou numérique est nécessaire. Le référent Aidants Connect doit attribuer une carte à son propre compte, ainsi qu’à chaque compte aidant. Chaque aidant et référent habilités doit disposer d’une carte physique ou numérique personnelle pour se connecter à son espace. \\r\\n\\r\\nRetrouvez toutes les étapes pour lier une carte à un compte dans le guide [“Lier une carte”](https://docs.numerique.gouv.fr/docs/ac5c5eea-2108-4b0f-9055-666d04ac784e/) (documentation en ligne).",
       "category": 3,
       "subcategory": 4
     }
