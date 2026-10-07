@@ -248,11 +248,6 @@ class Mandat(models.Model):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        if (
-            self.remote_constent_method == RemoteConsentMethodChoices.SMS
-            and not self.usager.phone
-        ):
-            raise IntegrityError("User phone must be set when remote consent is SMS")
         super().save(force_insert, force_update, using, update_fields)
 
     @classmethod
@@ -335,18 +330,6 @@ class Mandat(models.Model):
                 ),
                 name="mandat_remote_mandate_method_set",
             ),
-            # fmt: off
-            models.CheckConstraint(
-                check=(
-                    ~Q(remote_constent_method__in=RemoteConsentMethodChoices.blocked_methods())  # noqa: E501
-                    | (
-                        Q(remote_constent_method__in=RemoteConsentMethodChoices.blocked_methods())  # noqa: E501
-                        & ~Q(consent_request_id="")
-                    )
-                ),
-                name="mandat_consent_request_id_set",
-            ),
-            # fmt: on
         ]
 
 
@@ -576,27 +559,6 @@ class Connection(models.Model):
                     | (Q(mandat_is_remote=True) & ~Q(remote_constent_method=""))
                 ),
                 name="connection_remote_mandate_method_set",
-            ),
-            # fmt: off
-            models.CheckConstraint(
-                check=(
-                    ~Q(remote_constent_method=RemoteConsentMethodChoices.SMS.name)
-                    | (
-                        Q(remote_constent_method=RemoteConsentMethodChoices.SMS.name)  # noqa: E501
-                        & ~Q(user_phone="")
-                    )
-                ),
-                name="connection_user_phone_set",
-            ),
-            models.CheckConstraint(
-                check=(
-                    ~Q(remote_constent_method__in=RemoteConsentMethodChoices.blocked_methods())  # noqa: E501
-                    | (
-                        Q(remote_constent_method__in=RemoteConsentMethodChoices.blocked_methods())  # noqa: E501
-                        & ~Q(consent_request_id="")
-                    )
-                ),
-                name="connection_consent_request_id_set",
             ),
         ]
         verbose_name = "connexion"

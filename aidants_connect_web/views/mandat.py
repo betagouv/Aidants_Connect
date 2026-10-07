@@ -1,9 +1,7 @@
 import logging
-import re
 from datetime import date
 from io import BytesIO
 from typing import Callable, List
-from uuid import uuid4
 
 from django.conf import settings
 from django.contrib import messages as django_messages
@@ -11,24 +9,16 @@ from django.contrib.staticfiles import finders
 from django.db import IntegrityError
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils import formats, timezone
-from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView, TemplateView, View
 
 import qrcode
-from phonenumbers import PhoneNumber
 
-from aidants_connect_common.constants import (
-    AuthorizationDurationChoices,
-    AuthorizationDurations,
-)
-from aidants_connect_common.templatetags.ac_common import mailto
+from aidants_connect_common.constants import AuthorizationDurations
 from aidants_connect_common.utils import render_markdown
-from aidants_connect_common.utils.sms_api import SmsApi
 from aidants_connect_common.views import RequireConnectionMixin, RequireConnectionView
 from aidants_connect_pico_cms.models import MandateTranslation
 from aidants_connect_pico_cms.utils import is_lang_rtl
@@ -139,153 +129,6 @@ class RemoteMandateMixin:
             self, f"_process_{method}_consent_validation", self._process_unknown
         )
         return process(connection)
-
-    def _process_sms_first_step(
-        self, aidant: Aidant, organisation: Organisation, form: MandatForm
-    ) -> None | HttpResponse:
-        data = form.cleaned_data
-        user_phone: PhoneNumber = data["user_phone"]
-
-        self.consent_request_id = str(uuid4())
-
-        # Try to choose another UUID if there's already one
-        # associated with this number in DB.
-        while Journal.objects.find_sms_consent_requests(
-            user_phone, self.consent_request_id
-        ).exists():
-            self.consent_request_id = str(uuid4())
-
-        message = render_to_string(
-            "aidants_connect_web/sms/pre-consent-recap.txt",
-            context={
-                "aidant": aidant,
-                "organisation": organisation,
-                "demarches": [
-                    settings.DEMARCHES[demarche]["titre"].capitalize()
-                    for demarche in sorted(form.cleaned_data["demarche"])
-                ],
-                "duree_text": AuthorizationDurationChoices(
-                    form.cleaned_data["duree"]
-                ).label,
-            },
-        )
-
-        # Strip the traling spaces
-        message = re.sub(r"(^\s*)|(\s*$)", "", message)
-
-        try:
-            SmsApi().send_sms(user_phone, self.consent_request_id, message)
-        except SmsApi.HttpRequestExpection:
-            log.exception(
-                "An error happend while trying to send the mandate recap by SMS"
-            )
-            error_datetime = timezone.now()
-            email_body = render_to_string(
-                "aidants_connect_web/sms/support_email_send_failure_body.txt",
-                context={
-                    "datetime": error_datetime,
-                    "number": str(user_phone),
-                    "consent_request_id": self.consent_request_id,
-                },
-            )
-            django_messages.error(
-                self.request,
-                format_html(
-                    "Une erreur est survenue pendant l'envoi du SMS "
-                    "récapitulatif. Merci de réessayer plus tard. Si l'erreur "
-                    "persiste, merci de nous la signaler {}.",
-                    mailto(
-                        link_text="en suivant ce lien pour nous envoyer un email",
-                        recipient=settings.SMS_SUPPORT_EMAIL,
-                        subject=settings.SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET,
-                        body=email_body,
-                    ),
-                ),
-            )
-            return redirect("espace_aidant:home")
-
-        Journal.log_user_mandate_recap_sms_sent(
-            aidant=aidant,
-            demarche=data["demarche"],
-            duree=data["duree"],
-            remote_constent_method=data["remote_constent_method"],
-            user_phone=user_phone,
-            consent_request_id=self.consent_request_id,
-            message=message,
-        )
-
-    def _process_sms_second_step(self, connection: Connection):
-        if not Journal.objects.find_sms_consent_recap(
-            connection.user_phone, connection.consent_request_id
-        ).exists():
-            # First step not performed
-            django_messages.error(
-                self.request,
-                "Erreur : le récapitulatif de mandat n'a pas été envoyé. "
-                "Veuillez réitérer l'opération de création de mandat.",
-            )
-            return redirect(self.mandat_form_path)
-
-        message = render_to_string(
-            "aidants_connect_web/sms/consent_request.txt",
-            context={"sms_response_consent": settings.SMS_RESPONSE_CONSENT},
-        )
-        message = re.sub(r"(^\s*)|(\s*$)", "", message)
-
-        try:
-            SmsApi().send_sms(
-                connection.user_phone, connection.consent_request_id, message
-            )
-        except SmsApi.HttpRequestExpection:
-            log.exception(
-                "An error happend while trying to send an SMS consent request"
-            )
-            error_datetime = timezone.now()
-            email_body = render_to_string(
-                "aidants_connect_web/sms/support_email_send_failure_body.txt",
-                context={
-                    "datetime": error_datetime,
-                    "number": str(connection.user_phone),
-                    "consent_request_id": connection.consent_request_id,
-                },
-            )
-            django_messages.error(
-                self.request,
-                format_html(
-                    "Une erreur est survenue pendant l'envoi du SMS de "
-                    "consentement. Merci de réessayer plus tard. Si l'erreur persiste, "
-                    "merci de nous la signaler {}.",
-                    mailto(
-                        link_text="en suivant ce lien pour nous envoyer un email",
-                        recipient=settings.SMS_SUPPORT_EMAIL,
-                        subject=settings.SMS_SUPPORT_EMAIL_SEND_FAILURE_SUBJET,
-                        body=email_body,
-                    ),
-                ),
-            )
-            return redirect("espace_aidant:home")
-
-        Journal.log_user_consent_request_sms_sent(
-            aidant=connection.aidant,
-            demarche=connection.demarche,
-            duree=AuthorizationDurations.duration(connection.duree_keyword),
-            remote_constent_method=connection.remote_constent_method,
-            user_phone=connection.user_phone,
-            consent_request_id=connection.consent_request_id,
-            message=message,
-        )
-
-    def _process_sms_consent_validation(self, connection: Connection):
-        if not Journal.objects.find_sms_user_consent(
-            connection.user_phone, connection.consent_request_id
-        ).exists():
-            django_messages.warning(
-                self.request,
-                "Attention : la personne accompagnée n'a pas encore donné "
-                "son consentement pour la création du mandat.",
-            )
-
-            return redirect(self.waiting_room_path)
 
     def _process_unknown_first_step(
         self,
