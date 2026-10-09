@@ -8,15 +8,16 @@
       <mj-text>
         <p>Bonjour,</p>
         <p>
-          L’équipe Aidants Connect vous confirme avoir refusé l'ajout de l'aidant ou l'aidante
-          {{ aidant.first_name }} {{ aidant.last_name }} {% mailto aidant.email %}.
-          En général, cela signifie que l’adresse mail de la personne à ajouter ne correspond pas aux pré-requis de
-          l’outil : l’adresse mail doit être nominative et accessible par une seule personne.
+          Nous n'avons pas pu valider l'ajout de l'aidant {{ aidant.first_name }} {{ aidant.last_name }} {% mailto aidant.email %}.
         </p>
         <p>
-          Pour plus d'information, n’hésitez pas à nous envoyer un mail à notre support à l'adresse
-          {% mailto "contact@aidantsconnect.beta.gouv.fr" %}.
+          <strong>Motif :</strong> Cela est certainement dû à l'adresse e-mail indiquée. Pour rappel, chaque aidant doit disposer d’une adresse e-mail professionnelle, nominative et individuelle au format : prenom.nom@xxx.fr ou p.nom@xxx.fr
         </p>
+        <mj-text>
+        L’équipe Aidants Connect<br>
+        Accompagnez vos usagers en toute sécurité<br>
+        Pour toute demande : <a href="mailto:contact@aidantsconnect.beta.gouv.fr">contact@aidantsconnect.beta.gouv.fr</a>
+        </mj-text>
       </mj-text>
     </mj-column>
   </mj-section>
