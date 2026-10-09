@@ -2,21 +2,24 @@ Bienvenue sur Aidants Connect !
 
 La demande d’habilitation n° {{ organisation.data_pass_id }} concernant la structure {{ organisation.name }} a été validée par notre équipe.
 
-En tant que référent de votre structure, vous pouvez dès à présent activer votre compte. Cette étape est indispensable pour inscrire en formation les aidants de votre structure.
+En tant que référent de votre structure, vous devez dès à présent activer votre compte. Cette étape est indispensable pour inscrire en formation les aidants de votre structure.
 
 Comment activer mon compte ?
 
 👉 Connectez-vous depuis la page "Première connexion référent" (https://aidantsconnect.beta.gouv.fr/accounts/manager_first_login/) et renseignez les informations demandées. Un code de première connexion vous sera alors envoyé par SMS.
 
-👉 Une fois connecté à votre espace, vous devrez activer la double authentification par application mobile en suivant les étapes décrites dans cette vidéo : https://tube.numerique.gouv.fr/w/pkamuvHJtg1LdcEtGV32a3
+👉 Une fois connecté à votre espace, vous devez activer la double-authentification par application mobile.
 
-Tout savoir sur le rôle de référent :
+Le tutoriel vidéo : https://tube.numerique.gouv.fr/w/pkamuvHJtg1LdcEtGV32a3
 
-Pour mieux comprendre le rôle de référent et assister à une démonstration de l'espace référent, participez au webinaire dédié. Plusieurs créneaux sont disponibles, inscrivez-vous via ce formulaire (https://rdv.anct.gouv.fr/org/roFEEt/aidants-connect).
+La procédure étape par étape : https://docs.numerique.gouv.fr/docs/d6be0614-4a87-41c8-8867-e59c88aeba36/
 
-Nous contacter :
-
-Si vous rencontrez un problème pour activer votre compte, envoyez un e-mail à : contact@aidantsconnect.beta.gouv.fr en précisant votre numéro d’habilitation.
-
+Pour mieux comprendre votre nouveau rôle et assister à une démonstration de l'espace référent, participez au webinaire dédié. Plusieurs créneaux sont disponibles, inscrivez-vous via ce formulaire (https://rdv.anct.gouv.fr/org/roFEEt/aidants-connect).
 
 Nous vous remercions de votre implication sur le dispositif et nous tenons à disposition pour toute demande.
+
+À bientôt sur Aidants Connect !
+
+L’équipe Aidants Connect
+Accompagnez vos usagers en toute sécurité
+Pour toute demande : contact@aidantsconnect.beta.gouv.fr
