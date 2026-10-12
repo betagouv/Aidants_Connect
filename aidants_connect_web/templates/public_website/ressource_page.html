@@ -10,26 +10,28 @@
 
 {% block body %}
   <div class="fr-container">
-    <div id="ressource_demarrer" class="fr-mb-8w">
-      {% include "public_website/_ressource_demarrer.html" %}
-    </div>
-    <section id="fiches_pratiques" class="fr-mb-8w" aria-labelledby="fiches-pratiques">
-      <h2 id="fiches-pratiques" class="fr-h3 fr-mb-1w">Fiches pratiques</h2>
+    <section id="utiliser" class="fr-mb-8w" aria-labelledby="utiliser-aidants-connect">
+      <h2 id="utiliser-aidants-connect" class="fr-h3 fr-mb-1w">Utiliser Aidants Connect</h2>
       <p class="fr-text--lg fr-text-mention--grey fr-mb-4w">
-        Pour vous aider dans l’accompagnement
+        Les pas-à-pas et tutoriels
       </p>
-      {% include "aidants_connect_web/common/resources-block.html" %}
+      {% include "public_website/_ressource_demarrer.html" %}
     </section>
-    <section id="video" class="fr-mb-4w" aria-labelledby="videos">
-      <h2 id="videos" class="fr-h3">Vidéos</h2>
-      <p class="fr-text--lg fr-text-mention--grey fr-mb-3w">
-        Comprendre Aidants Connect en quelques minutes
+
+    <section id="comprendre" class="fr-mb-8w" aria-labelledby="comprendre-aidants-connect">
+      <h2 id="comprendre-aidants-connect" class="fr-h3 fr-mb-1w">Comprendre Aidants Connect et ses enjeux</h2>
+      <p class="fr-text--lg fr-text-mention--grey fr-mb-4w">
+        Les vidéos, les chartes, les guides d'explication et le guide juridique
       </p>
-      {% include 'public_website/_ressource_video.html' %}
+      {% include "public_website/_ressource_comprendre.html" %}
     </section>
+
     <section id="externe" class="fr-mb-4w" aria-labelledby="ressources-externes">
-       <h2 id="ressources-externes" class="fr-h3">Ressources externes</h2>
-      {% include 'public_website/_ressource_externe.html' %}
+      <h2 id="ressources-externes" class="fr-h3 fr-mb-1w">Faire le lien avec d'autres ressources et outils utiles</h2>
+      <p class="fr-text--lg fr-text-mention--grey fr-mb-4w">
+        Des ressources complémentaires pour accompagner vos usagers
+      </p>
+      {% include "public_website/_ressource_externe.html" %}
     </section>
   </div>
 {% endblock body %}
