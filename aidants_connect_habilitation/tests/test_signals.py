@@ -23,7 +23,7 @@ class UtilsSignalFormationEmailSendingTests(TestCase):
         text_message, html_message = get_email_messages_for_inscription_validation(
             self.hr_not_conum, self.formation, "str_emails_contact"
         )
-        self.assertTrue("ce simulateur" in text_message)
+        self.assertTrue("Pour toute demande complémentaire," in text_message)
         self.assertTrue(
             'https://tally.so/r/mO0Xkg">ce simulateur</a> pour' in html_message
         )
