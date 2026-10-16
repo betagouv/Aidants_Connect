@@ -1,14 +1,14 @@
-Bienvenue sur Aidants Connect,
+Bonjour {{ user.get_full_name }},
 
-Votre compte vient d’être créé. Pour y accéder, le ou la référente Aidants Connect de votre structure ({{ str_referents }}) doit associer un moyen de connexion à votre compte (application d’authentification ou carte physique). Un e-mail lui a été envoyé en ce sens. Vous pourrez ensuite créer vos premiers mandats et accompagner les usagers dans la réalisation de leurs démarches en ligne.
+🎉 Votre formation est validée et votre compte Aidants Connect vient d’être créé.
 
-📚 En attendant, voici quelques ressources à votre disposition :
+Une dernière étape est nécessaire avant que vous puissiez vous connecter.
 
-- Guides de prise en main et tutoriel interactif : {{ tuto_url }}
-- Fiches tangibles Etsijaccompagnais : {{ etsijaccompagnais_url }}
-- Foire aux questions : {{ faq_url }}
+Le référent Aidants Connect de votre structure ({{ str_referents }}) doit associer votre application d’authentification à votre compte. Un e-mail lui a été envoyé pour lui indiquer la marche à suivre.
 
-⚙️ Si vous rencontrez des difficultés de connexion ou pour toute autre question, contactez-nous à l’adresse suivante : {{ AC_CONTACT_EMAIL }}
+Vous devrez réaliser cette opération avec votre référent et avoir votre téléphone à disposition.
+
+📚 Suivez les étapes du guide ensemble : https://docs.numerique.gouv.fr/docs/ac5c5eea-2108-4b0f-9055-666d04ac784e/
 
 À bientôt sur Aidants Connect !
 
