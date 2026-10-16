@@ -8,7 +8,7 @@
     <mj-text>Bonjour,</mj-text>
     <mj-text>
       Vous avez été identifié par {{ REFERENT_FULL_NAME }} pour assurer la
-      formation Aidants Connect auprès d’un ou plusieurs de vos collègues.
+      formation Aidants Connect auprès d’un ou plusieurs de vos collègues ou homologues.
       Merci pour votre implication !
     </mj-text>
     <mj-text>
