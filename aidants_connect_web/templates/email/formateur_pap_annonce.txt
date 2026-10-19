@@ -3,7 +3,7 @@
 
 Bonjour,
 
-Vous avez été identifié par {{ REFERENT_FULL_NAME }} pour assurer la formation Aidants Connect auprès d’un ou plusieurs de vos collègues. Merci pour votre implication !
+Vous avez été identifié par {{ REFERENT_FULL_NAME }} pour assurer la formation Aidants Connect auprès d’un ou plusieurs de vos collègues ou homologues. Merci pour votre implication !
 
 Dès que l’éligibilité des aidants aura été validée par notre équipe, nous vous transmettrons le guide ainsi que toutes les informations nécessaires pour mener la formation dans les meilleures conditions.
 
