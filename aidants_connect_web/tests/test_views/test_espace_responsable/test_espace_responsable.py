@@ -179,6 +179,18 @@ class EspaceResponsableOrganisationPage(TestCase):
         self.assertTrue(response.context["has_coreferent"])
         self.assertNotContains(response, "À configurer")
 
+    def test_home_hides_coreferent_in_referents_lists(self):
+        self._configure_demarches()
+        CoReferentNonAidantRequestFactory(
+            organisation=self.responsable_tom.organisation,
+            status=ReferentRequestStatuses.STATUS_NEW,
+            first_name="DONTSHOWTHIS",
+            last_name="DONTSHOWTHIS",
+        )
+        self.client.force_login(self.responsable_tom)
+        response = self.client.get(reverse("espace_referent:home"))
+        self.assertNotContains(response, "DONTSHOWTHIS")
+
     def test_home_shows_coreferent_label_when_request_already_validated(self):
         self._configure_demarches()
         # A validated request is materialized as a responsable, so on its own it
