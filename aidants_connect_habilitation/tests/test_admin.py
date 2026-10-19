@@ -90,7 +90,7 @@ class OrganisationRequestAdminTests(TestCase):
             acceptance_message.body,
         )
         self.assertIn(
-            "Pour mieux comprendre le rôle de référent et assister à une démonstration",
+            "La procédure étape par étape : https://docs.numerique.gouv.fr",
             acceptance_message.body,
         )
 
