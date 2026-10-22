@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.urls import include, path, re_path
+from django.urls import include, path
 from django.views.generic.base import RedirectView
 
 from magicauth import settings as magicauth_settings
@@ -19,7 +19,6 @@ from aidants_connect_web.views import (
     others,
     sandbox,
     service,
-    sms,
 )
 
 urlpatterns = [
@@ -115,9 +114,6 @@ urlpatterns = [
     path("habilitation/", service.habilitation, name="habilitation_faq_habilitation"),
     path("ressources/", service.ressources, name="ressources"),
     path("accessibilite/", service.AccessibiliteView.as_view(), name="accessibilite"),
-    # # SMS
-    # SMS provider may misconfigure the trailing slash so we need to respond on both
-    re_path(r"sms/callback/?$", sms.Callback.as_view(), name="sms_callback"),
     # # Bac à sable
     path(
         "bac-a-sable/presentation",
