@@ -1,20 +1,20 @@
 {% load ac_common %}
 
-Bonjour, {{ user.get_full_name }}
+Bonjour {{ user.get_full_name }},
 
-Vous avez participé au programme de formation Aidants Connect, néanmoins cela fait plus de 5 mois que votre compte Aidants Connect n’a enregistré aucune activité.
+Votre compte Aidants Connect n’a pas été utilisé depuis plus de 5 mois.
 
-Vous souhaitez garder votre compte actif et ne rencontrez pas de difficultés particulière à l'utilisation ? Il vous suffit de vous connecter à votre espace personnel dans un délai de 30 jours pour conserver vos accès.
+Conformément à nos [CGU]({{ cgu_url }}), il sera désactivé dans 30 jours pour des raisons de sécurité.
 
-Vous avez besoin de reprendre en main l'outil ? Vous trouverez sur votre espace personnel un accès au site bac à sable pour vous entraîner à la prise en main de l’outil, qui correspond à une copie du site officiel, ainsi qu'à un tutoriel interactif.
+🔹 Pour conserver votre compte :
+Il vous suffit de vous connecter une fois à votre [espace personnel]({{ espace_aidant_url }}) avant le {{ deactivation_date }}.
 
-Nous vous proposons également de visionner un replay de notre webinaire "La parole aux aidants" afin de bien comprendre l'usage qui est fait d'Aidants Connect par d'autres aidants. Il est disponible à ce lien : {{ webinaire_sub_form }}.
+---
+📚 Besoin de vous remettre à niveau ?
 
-La plateforme ne vous est finalement pas utile et vous ne souhaitez pas garder votre compte actif ? Merci de nous renvoyer votre carte Aidants Connect à l’adresse suivante :
+- Accédez au [bac à sable]({{ https://sandbox.aidantsconnect.beta.gouv.fr/ }}) pour vous entraîner.
+- Consultez le [tutoriel interactif]({{ https://www.figma.com/proto/nLpomUha2sNgBYk1ysMP0C/INTERACTIF---Tutoriel-Aidants-Connect?scaling=scale-down&starting-point-node-id=2608%3A155&node-id=2608-155 }}).
 
-         ANCT, 20 avenue de Ségur, Paris 75007 A l’attention de Estelle Patat (en indiquant vos coordonnées sur le dos de l’enveloppe.)
-
-Merci pour votre compréhension et votre réactivité.
 
 À bientôt sur Aidants Connect !
 
