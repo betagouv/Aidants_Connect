@@ -186,7 +186,7 @@ class StatistiquesView(TemplateView):
         }
         # CSS class keys (colors live in statistics.css; widths use a nonce'd <style>)
         segment_meta = {
-            "1 jour": {"key": "short", "color": "#008C7A", "label_on_dark": True},
+            "1 jour": {"key": "short", "color": "#007F6E", "label_on_dark": True},
             "1 mois": {"key": "month", "color": "#000091", "label_on_dark": True},
             "1 an": {"key": "long", "color": "#7BA8F5", "label_on_dark": False},
             "6 mois": {"key": "semester", "color": "#FF9B73", "label_on_dark": False},
