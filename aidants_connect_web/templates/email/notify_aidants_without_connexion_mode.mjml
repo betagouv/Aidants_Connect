@@ -1,0 +1,51 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% load ac_common %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>
+      <p>Bonjour {{ referent.get_full_name }},</p>
+      <p>
+        Un ou plusieurs aidants de votre structure ont terminé leur formation mais ne
+        peuvent pas encore utiliser Aidants Connect, car leur moyen de connexion n’a pas
+        été associé :
+      </p>
+      <ul>
+        {% for aidant in aidants %}
+          <li>{{ aidant.get_full_name }} — {{ aidant.email }}</li>
+        {% endfor %}
+      </ul>
+      <p><strong>Que devez-vous faire ?</strong></p>
+      <p>
+        Depuis votre espace référent, vous devez associer à chaque aidant son application
+        d'authentification (OTP) avant de pouvoir utiliser Aidants Connect.
+      </p>
+    </mj-text>
+    <mj-button href="{{ espace_referent_url }}">Accéder à votre espace référent</mj-button>
+    <mj-text>
+      <p>
+        📚 Suivez les
+        <a href="https://docs.numerique.gouv.fr/docs/ac5c5eea-2108-4b0f-9055-666d04ac784e/">
+          étapes du guide.
+        </a>
+      </p>
+      <p>
+        L’aidant devra avoir son téléphone à disposition pour réaliser cette opération
+        avec vous.
+      </p>
+      <p>
+        Une fois cette opération terminée, son accès à Aidants Connect sera immédiatement
+        opérationnel.
+      </p>
+      <p>
+        Une difficulté ? Contactez-nous à
+        <a href="mailto:contact@aidantsconnect.beta.gouv.fr">
+          contact@aidantsconnect.beta.gouv.fr
+        </a>.
+      </p>
+    </mj-text>
+  </mj-column>
+</mj-section>
+{% endblock email_body %}

@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
+from io import StringIO
 from unittest.mock import patch
 
 from django.core import mail
@@ -19,6 +20,7 @@ from aidants_connect_overrides.management.commands.createsuperuser import (
     ORGANISATION_NAME_ARG,
     ORGANISATION_NAME_ENV,
 )
+from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
 from aidants_connect_web.models import Aidant, Connection, HabilitationRequest
 from aidants_connect_web.tests.factories import (
     AidantFactory,
@@ -327,43 +329,166 @@ class NotifySoonExpiredMandatesTests(TestCase):
 
 
 @tag("commands")
-class NotifyNoTotpWorkersTests(TestCase):
+class NotifyAidantsWithoutConnexionModeTests(TestCase):
     def test_no_mail_sent_if_no_need(self):
-        call_command("notify_no_totp_workers")
+        with freeze_time("2026-10-20 12:00:00"):
+            call_command("notify_aidants_without_connexion_mode")
         self.assertEqual(len(mail.outbox), 0)
 
-    def test_mail_is_sent_to_the_manager(self):
-        aidant = AidantFactory(first_name="Henri", last_name="Tournelle")
-        responsable = AidantFactory(
-            first_name="Hervé", last_name="Gétal", organisation=aidant.organisation
-        )
-        responsable.responsable_de.add(aidant.organisation)
-        call_command("notify_no_totp_workers")
+    def test_dry_run_prints_the_summary_without_sending_email(self):
+        with freeze_time("2026-10-13 12:00:00"):
+            aidant = AidantFactory(first_name="Henri", last_name="Tournelle")
+            referent = AidantFactory(
+                first_name="Hervé", last_name="Gétal", organisation=aidant.organisation
+            )
+            referent.responsable_de.add(aidant.organisation)
+
+        with freeze_time("2026-10-28 12:00:00"):  # J+15
+            out = StringIO()
+            call_command(
+                "notify_aidants_without_connexion_mode", "--dry-run", stdout=out
+            )
+
+        self.assertEqual(len(mail.outbox), 0)
+        output = out.getvalue()
+        self.assertIn(f"[DRY RUN] Would notify {referent.email}", output)
+        self.assertIn("Henri Tournelle", output)
+
+    def test_no_mail_if_aidant_activated_less_than_15_days_ago(self):
+        with freeze_time("2026-10-15 12:00:00"):
+            aidant = AidantFactory()
+            referent = AidantFactory(organisation=aidant.organisation)
+            referent.responsable_de.add(aidant.organisation)
+
+        with freeze_time("2026-10-28 12:00:00"):  # J+13
+            call_command("notify_aidants_without_connexion_mode")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_mail_is_sent_to_the_referent_at_j15(self):
+        with freeze_time("2026-10-13 12:00:00"):
+            aidant = AidantFactory(first_name="Henri", last_name="Tournelle")
+            referent = AidantFactory(
+                first_name="Hervé", last_name="Gétal", organisation=aidant.organisation
+            )
+            referent.responsable_de.add(aidant.organisation)
+
+        with freeze_time("2026-10-28 12:00:00"):  # J+15
+            call_command("notify_aidants_without_connexion_mode")
+
         self.assertEqual(len(mail.outbox), 1)
         message = mail.outbox[0]
-        self.assertIn(f"{aidant}", message.body)
-        self.assertIn("vous-même", message.body)
-        self.assertIn(responsable.email, message.recipients())
-
-    def test_aidant_with_carte_totp_does_not_appear_in_email(self):
-        responsable = AidantFactory(first_name="Arès", last_name="Ponsable")
-        responsable.responsable_de.add(responsable.organisation)
-        CarteTOTPFactory(aidant=responsable)
-        aidant_with_carte = AidantFactory(
-            first_name="Gaetan",
-            last_name="Carté",
-            organisation=responsable.organisation,
+        self.assertEqual(
+            message.subject,
+            settings.AIDANTS_NO_CONNEXION_MODE_EMAIL_SUBJECT,
         )
-        CarteTOTPFactory(aidant=aidant_with_carte)
-        aidant_without_carte = AidantFactory(
-            first_name="Roberto",
-            last_name="Bogan",
-            organisation=responsable.organisation,
-        )
+        self.assertIn("Henri Tournelle", message.body)
+        # The referent, also without a connexion mode, is listed as well
+        self.assertIn("Hervé Gétal", message.body)
+        self.assertIn(referent.email, message.recipients())
 
-        call_command("notify_no_totp_workers")
+    def test_mail_is_sent_to_every_active_referent_of_the_organisation(self):
+        with freeze_time("2026-10-13 12:00:00"):
+            aidant = AidantFactory()
+            referent_1 = AidantFactory(organisation=aidant.organisation)
+            referent_1.responsable_de.add(aidant.organisation)
+            referent_2 = AidantFactory(organisation=aidant.organisation)
+            referent_2.responsable_de.add(aidant.organisation)
+            inactive_referent = AidantFactory(
+                organisation=aidant.organisation, is_active=False
+            )
+            inactive_referent.responsable_de.add(aidant.organisation)
+
+        with freeze_time("2026-10-28 12:00:00"):  # J+15
+            call_command("notify_aidants_without_connexion_mode")
+
+        self.assertEqual(len(mail.outbox), 2)
+        recipients = [message.recipients() for message in mail.outbox]
+        self.assertIn([referent_1.email], recipients)
+        self.assertIn([referent_2.email], recipients)
+        self.assertNotIn([inactive_referent.email], recipients)
+        for message in mail.outbox:
+            self.assertIn("Bonjour", message.body)
+            self.assertIn(aidant.email, message.body)
+
+    def test_aidant_with_connexion_mode_does_not_appear_in_email(self):
+        with freeze_time("2026-10-13 12:00:00"):
+            referent = AidantFactory(first_name="Arès", last_name="Ponsable")
+            referent.responsable_de.add(referent.organisation)
+            CarteTOTPFactory(aidant=referent)
+
+            aidant_with_carte = AidantFactory(
+                first_name="Gaetan",
+                last_name="Carté",
+                organisation=referent.organisation,
+            )
+            CarteTOTPFactory(aidant=aidant_with_carte)
+
+            aidant_with_otp_app = AidantFactory(
+                first_name="Océane",
+                last_name="Appliquée",
+                organisation=referent.organisation,
+            )
+            TOTPDevice.objects.create(
+                user=aidant_with_otp_app,
+                name=OTP_APP_DEVICE_NAME % aidant_with_otp_app.pk,
+                confirmed=True,
+            )
+
+            aidant_without_mode = AidantFactory(
+                first_name="Roberto",
+                last_name="Bogan",
+                organisation=referent.organisation,
+            )
+
+        with freeze_time("2026-10-28 12:00:00"):  # J+15
+            call_command("notify_aidants_without_connexion_mode")
+
         self.assertEqual(len(mail.outbox), 1)
         message = mail.outbox[0]
-        self.assertIn(f"{aidant_without_carte}", message.body)
-        self.assertNotIn(f"{aidant_with_carte}", message.body)
-        self.assertNotIn("vous-même", message.body)
+        self.assertIn(f"{aidant_without_mode} —", message.body)
+        self.assertNotIn(f"{aidant_with_carte} —", message.body)
+        self.assertNotIn(f"{aidant_with_otp_app} —", message.body)
+        # The referent, who has a connexion mode, only appears in the greeting
+        self.assertIn(f"Bonjour {referent},", message.body)
+        self.assertNotIn(f"{referent} —", message.body)
+
+    def test_monthly_reminder_is_sent_on_the_20th(self):
+        with freeze_time("2026-10-28 12:00:00"):
+            aidant = AidantFactory(first_name="Anna", last_name="Noldu")
+            referent = AidantFactory(organisation=aidant.organisation)
+            referent.responsable_de.add(aidant.organisation)
+            CarteTOTPFactory(aidant=referent)
+
+        with freeze_time("2026-11-20 12:00:00"):  # the 20th, J+23
+            call_command("notify_aidants_without_connexion_mode")
+
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn("Anna Noldu", message.body)
+        self.assertIn(referent.email, message.recipients())
+
+    def test_monthly_flag_forces_the_monthly_reminder(self):
+        with freeze_time("2026-10-01 12:00:00"):
+            aidant = AidantFactory()
+            referent = AidantFactory(organisation=aidant.organisation)
+            referent.responsable_de.add(aidant.organisation)
+            CarteTOTPFactory(aidant=referent)
+
+        with freeze_time("2026-11-05 12:00:00"):  # not the 20th, J+35
+            call_command("notify_aidants_without_connexion_mode", "--monthly")
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(aidant.email, mail.outbox[0].body)
+
+    def test_no_monthly_flag_forces_the_j15_notification(self):
+        with freeze_time("2026-11-05 12:00:00"):
+            aidant = AidantFactory()
+            referent = AidantFactory(organisation=aidant.organisation)
+            referent.responsable_de.add(aidant.organisation)
+            CarteTOTPFactory(aidant=referent)
+
+        with freeze_time("2026-11-20 12:00:00"):  # the 20th, J+15
+            call_command("notify_aidants_without_connexion_mode", "--no-monthly")
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(aidant.email, mail.outbox[0].body)
