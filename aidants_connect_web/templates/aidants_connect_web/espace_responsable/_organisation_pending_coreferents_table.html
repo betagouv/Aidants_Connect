@@ -1,0 +1,40 @@
+<div class="fr-table--lg fr-table fr-table">
+  <div class="fr-table__wrapper">
+    <div class="fr-table__container">
+      <div class="fr-table__content">
+        <table>
+          <caption class="sr-only">Table des demandes d'habilitation de co-référent</caption>
+          <thead>
+            <tr>
+              <th scope="col" class="fr-col-2 fr-text--md">Nom du co-référent</th>
+              <th scope="col" class="fr-col-3 fr-text--md">Statut de la demande</th>
+
+              <th scope="col" class="fr-col-3 fr-text--md">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for coreferent_request in coreferent_requests %}
+              <tr>
+                <td class="fr-text--md">
+                  {{ coreferent_request.get_full_name }}
+                </td>
+                <td class="fr-text--md">
+                  {% if coreferent_request.status == "refused" %}
+                    <p class="fr-badge fr-badge--error">{{ coreferent_request.status_label }}</p>
+                  {% elif "cancelled" in coreferent_request.status %}
+                    <p class="fr-badge fr-badge--warning">{{ coreferent_request.status_label }}</p>
+                  {% else %}
+                    <p class="fr-badge fr-badge--info">En cours de traitement</p>
+                  {% endif %}
+
+                </td>
+                <td>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
