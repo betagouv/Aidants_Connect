@@ -26,6 +26,7 @@ from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 from aidants_connect_common.constants import JournalActionKeywords
 from aidants_connect_common.models import Commune, Department
 from aidants_connect_common.utils import build_url, model_fields, render_email
+from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
 from aidants_connect_web.models import (
     Aidant,
     Connection,
@@ -214,60 +215,100 @@ def notify_new_habilitation_requests(*, logger=None):
 
 
 @shared_task()
-def notify_no_totp_workers():
-    def none_if_blank(value):
-        return (
-            None
-            if value is None or isinstance(value, str) and len(value.strip()) == 0
-            else value
-        )
+def notify_aidants_without_connexion_mode(*, monthly=None, dry_run=False, logger=None):
+    logger: Logger = logger or get_task_logger(__name__)
 
-    workers_without_totp = (
-        Aidant.objects.filter(email__isnull_or_blank=False, carte_totp__isnull=True)
-        .order_by("organisation__responsables__email")
-        .values("organisation__responsables__email", "email", "first_name", "last_name")
+    today = timezone.localdate()
+
+    if monthly is None:
+        monthly = today.day == settings.AIDANTS_NO_CONNEXION_MODE_MONTHLY_DAY
+
+    activation_cutoff = today - timedelta(
+        days=settings.AIDANTS_NO_CONNEXION_MODE_ACTIVATION_DELAY_DAYS
     )
 
-    workers_without_totp_dict = {}
+    # On the monthly reminder day, notify for every aidant activated for
+    # more than 15 days; otherwise, only for those activated exactly
+    # 15 days ago.
+    date_joined_filter = (
+        {"date_joined__date__lte": activation_cutoff}
+        if monthly
+        else {"date_joined__date": activation_cutoff}
+    )
 
-    for item in workers_without_totp:
-        manager_email = item.pop("organisation__responsables__email")
+    aidants = (
+        Aidant.objects.filter(
+            is_active=True,
+            email__isnull_or_blank=False,
+            carte_totp__isnull=True,
+            **date_joined_filter,
+        )
+        .exclude(totpdevice__name__startswith=OTP_APP_DEVICE_NAME % "")
+        .select_related("organisation")
+        .order_by("organisation_id", "last_name", "first_name")
+    )
 
-        if manager_email not in workers_without_totp_dict:
-            workers_without_totp_dict[manager_email] = {
-                "users": [],
-                "notify_self": False,
-                "espace_responsable_url": (
-                    f"{settings.HOST}{reverse('espace_referent:organisation')}"
-                ),
-            }
+    aidants_per_organisation = defaultdict(list)
+    for aidant in aidants:
+        aidants_per_organisation[aidant.organisation].append(aidant)
 
-        if item["email"] == manager_email:
-            workers_without_totp_dict[manager_email]["notify_self"] = True
-        else:
-            first_name = none_if_blank(item.pop("first_name", None))
-            last_name = none_if_blank(item.pop("last_name", None))
+    summary: List[str] = []
 
-            item["full_name"] = (
-                f"{first_name} {last_name}"
-                if first_name is not None and last_name is not None
-                else None
+    for organisation, aidants_without_mode in aidants_per_organisation.items():
+        referents = list(
+            organisation.responsables_is_active.filter(email__isnull_or_blank=False)
+        )
+
+        if len(referents) == 0:
+            msg = (
+                f"Organisation “{organisation.name}” has no active referent with an "
+                f"email address. No notification could be sent for "
+                f"{len(aidants_without_mode)} aidant(s) without a connexion mode."
+            )
+            logger.warning(msg)
+            summary.append(msg)
+            continue
+
+        aidants_names = ", ".join(
+            aidant.get_full_name() for aidant in aidants_without_mode
+        )
+
+        for referent in referents:
+            if dry_run:
+                summary.append(
+                    f"[DRY RUN] Would notify {referent.email} "
+                    f"({organisation.name}) about: {aidants_names}"
+                )
+                continue
+
+            text_message, html_message = render_email(
+                "email/notify_aidants_without_connexion_mode.mjml",
+                {
+                    "referent": referent,
+                    "aidants": aidants_without_mode,
+                    "espace_referent_url": build_url(reverse("espace_referent:home")),
+                },
             )
 
-            workers_without_totp_dict[manager_email]["users"].append(item)
+            send_mail(
+                from_email=settings.AIDANTS_NO_CONNEXION_MODE_EMAIL_FROM,
+                recipient_list=[referent.email],
+                subject=settings.AIDANTS_NO_CONNEXION_MODE_EMAIL_SUBJECT,
+                message=text_message,
+                html_message=html_message,
+            )
+            summary.append(
+                f"Notified {referent.email} ({organisation.name}) "
+                f"about: {aidants_names}"
+            )
 
-    for manager_email, context in workers_without_totp_dict.items():
-        text_message, html_message = render_email(
-            "email/notify_no_totp_workers.mjml", context
-        )
+    logger.info(
+        f"Notified referents of {len(aidants)} aidant(s) without a connexion mode "
+        f"({'monthly' if monthly else 'J+15'} run, "
+        f"{'dry run' if dry_run else 'emails sent'})"
+    )
 
-        send_mail(
-            from_email=settings.WORKERS_NO_TOTP_NOTIFY_EMAIL_FROM,
-            recipient_list=[manager_email],
-            subject=settings.WORKERS_NO_TOTP_NOTIFY_EMAIL_SUBJECT,
-            message=text_message,
-            html_message=html_message,
-        )
+    return summary
 
 
 @shared_task
