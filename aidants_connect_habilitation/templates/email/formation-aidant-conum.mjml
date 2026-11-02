@@ -12,10 +12,7 @@
         <p>
          Pour toute demande complémentaire, merci de vous rapprocher de l’organisme de formation à cette adresse :  {{ formation_contacts }}
         </p>
-        <p>Financée dans le cadre du Plan France Relance jusqu’en 2023, la formation à Aidants Connect est dorénavant
-        financée selon différentes modalités. Pour les conseillers numériques, la formation est financée dans
-        le cadre du dispositif Conseiller numérique, si elle fait partie des 2 modules thématiques choisis par le conseiller
-         lors de la formation initiale ou qu’elle correspond au module annuel choisi dans le cadre de la formation continue.
+        <p>Pour les Conseillers numériques, la formation peut être financée via le  dispositif si elle correspond au module annuel choisi dans le cadre de la formation continue.
          </p>
       </mj-text>
     <mj-text>
