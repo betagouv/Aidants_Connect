@@ -1,0 +1,26 @@
+Bonjour {{ referent.get_full_name }},
+
+Un ou plusieurs aidants de votre structure ont terminé leur formation mais ne peuvent pas encore utiliser Aidants Connect, car leur moyen de connexion n’a pas été associé :
+
+{% for aidant in aidants %}
+- {{ aidant.get_full_name }} — {{ aidant.email }}
+{% endfor %}
+
+Que devez-vous faire ?
+
+Depuis votre espace référent, vous devez associer à chaque aidant son application d'authentification (OTP) avant de pouvoir utiliser Aidants Connect : {{ espace_referent_url }}
+
+📚 Suivez les étapes du guide : https://docs.numerique.gouv.fr/docs/ac5c5eea-2108-4b0f-9055-666d04ac784e/
+
+L’aidant devra avoir son téléphone à disposition pour réaliser cette opération avec vous.
+
+Une fois cette opération terminée, son accès à Aidants Connect sera immédiatement opérationnel.
+
+Une difficulté ? Contactez-nous à contact@aidantsconnect.beta.gouv.fr.
+
+
+À bientôt sur Aidants Connect !
+
+L’équipe Aidants Connect
+Accompagnez vos usagers en toute sécurité
+Pour toute demande : contact@aidantsconnect.beta.gouv.fr
