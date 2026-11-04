@@ -455,6 +455,10 @@ class CoReferentNonAidantRequest(models.Model):
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
 
+    @property
+    def status_label(self):
+        return ReferentRequestStatuses(self.status).label
+
     def create_referent_non_aidant(self):
         if ReferentRequestStatuses(self.status) in [
             ReferentRequestStatuses.STATUS_REFUSED,
