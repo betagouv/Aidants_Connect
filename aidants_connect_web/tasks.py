@@ -13,6 +13,7 @@ from django.db.models import Count, Q
 from django.db.models.constants import LOOKUP_SEP
 from django.db.models.functions import Lower, Trim
 from django.template.defaultfilters import pluralize
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.timezone import now
@@ -26,6 +27,10 @@ from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 from aidants_connect_common.constants import JournalActionKeywords
 from aidants_connect_common.models import Commune, Department
 from aidants_connect_common.utils import build_url, model_fields, render_email
+from aidants_connect_web.constants import (
+    HabilitationRequestCourseType,
+    ReferentRequestStatuses,
+)
 from aidants_connect_web.models import (
     Aidant,
     Connection,
@@ -268,6 +273,118 @@ def notify_no_totp_workers():
             message=text_message,
             html_message=html_message,
         )
+
+
+@shared_task()
+def notify_referents_pap_formation_reminder(*, dry_run=False, logger=None):
+    """Relance au 30ème jour auprès des référents dont les aidants inscrits en
+    formation pair-à-pair n'ont toujours pas de compte activé. Destinée à
+    tourner tous les jours : ne relance que les demandes dont le mail de
+    validation a été envoyé exactement J+30 (updated_at est positionné au
+    moment de l'envoi de ce mail)."""
+    logger: Logger = logger or get_task_logger(__name__)
+
+    reminder_date = timezone.localdate() - timedelta(
+        days=settings.PAP_FORMATION_REMIND_DELAY_DAYS
+    )
+
+    active_aidant_emails = (
+        Aidant.objects.filter(is_active=True)
+        .annotate(email_lower=Lower("email"))
+        .values("email_lower")
+    )
+
+    habilitation_requests = (
+        HabilitationRequest.objects.filter(
+            organisation__isnull=False,
+            course_type=HabilitationRequestCourseType.P2P,
+            email_hr_validated_pap_send=True,
+            updated_at__date=reminder_date,
+        )
+        .exclude(
+            status__in=[
+                ReferentRequestStatuses.STATUS_CANCELLED,
+                ReferentRequestStatuses.STATUS_CANCELLED_BY_RESPONSABLE,
+                ReferentRequestStatuses.STATUS_REFUSED,
+            ]
+        )
+        .annotate(email_lower=Lower("email"))
+        .exclude(email_lower__in=active_aidant_emails)
+        .select_related("organisation")
+        .order_by("organisation_id", "last_name", "first_name")
+    )
+
+    requests_per_organisation = defaultdict(list)
+    for h_request in habilitation_requests:
+        requests_per_organisation[h_request.organisation].append(h_request)
+
+    summary: List[str] = []
+
+    for organisation, pending_requests in requests_per_organisation.items():
+        referents = list(
+            organisation.responsables_is_active.filter(email__isnull_or_blank=False)
+        )
+
+        if len(referents) == 0:
+            msg = (
+                f"Organisation “{organisation.name}” has no active referent with an "
+                f"email address. No reminder could be sent for "
+                f"{len(pending_requests)} habilitation request(s)."
+            )
+            logger.warning(msg)
+            summary.append(msg)
+            continue
+
+        aidants_names = ", ".join(
+            h_request.get_full_name() for h_request in pending_requests
+        )
+
+        for referent in referents:
+            if dry_run:
+                summary.append(
+                    f"[DRY RUN] Would remind {referent.email} "
+                    f"({organisation.name}) about: {aidants_names}"
+                )
+                continue
+
+            text_message, html_message = render_email(
+                "email/relance_formation_pap_referent.mjml",
+                {
+                    "AC_CONTACT_EMAIL": settings.AC_CONTACT_EMAIL,
+                    "referent": referent,
+                    "aidants": pending_requests,
+                    "espace_referent_aidants_url": build_url(
+                        reverse("espace_referent:aidants")
+                    ),
+                    "guide_formation_url": build_url(
+                        static(
+                            "guides_aidants_connect/"
+                            "AidantsConnect_support_de_formation.pdf"
+                        )
+                    ),
+                },
+            )
+
+            send_mail(
+                from_email=settings.PAP_FORMATION_REMIND_EMAIL_FROM,
+                recipient_list=[referent.email],
+                subject=settings.PAP_FORMATION_REMIND_EMAIL_SUBJECT,
+                message=text_message,
+                html_message=html_message,
+            )
+            summary.append(
+                f"Reminded {referent.email} ({organisation.name}) "
+                f"about: {aidants_names}"
+            )
+
+    logger.info(
+        f"Reminded referents of {len(habilitation_requests)} habilitation request(s) "
+        f"waiting for pair-à-pair formation and account activation "
+        f"(daily run, exact J+{settings.PAP_FORMATION_REMIND_DELAY_DAYS}, "
+        f"{'dry run' if dry_run else 'emails sent'})"
+    )
+
+    return summary
 
 
 @shared_task

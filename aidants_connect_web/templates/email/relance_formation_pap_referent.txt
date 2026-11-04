@@ -1,0 +1,29 @@
+{% load ac_common %}
+Bonjour,
+
+Vous avez inscrit une ou plusieurs personnes de votre structure à la formation pair-à-pair il y a 1 mois mais le test Pix n’a pas encore été réalisé. Sans ce test, leur compte ne peut pas être activé.
+
+{% for aidant in aidants %}* {{ aidant.get_full_name }} ({{ aidant.email }})
+{% endfor %}
+🤝 Qu’est-ce que la formation pair-à-pair ?
+
+La formation pair-à-pair est une modalité de formation gratuite et flexible dispensée par des aidants déjà formés et utilisateurs de l'outil à l'aide d'un guide mis à disposition.
+
+⚠️ Prochaines étapes à réaliser :
+
+* La formation n'a pas encore eu lieu : mobilisez votre aidant-formateur pour la mettre en place rapidement.
+* La formation a eu lieu :
+  * assurez-vous que le test Pix a bien été réalisé
+  * assurez-vous que l'adresse e-mail utilisée pour le test correspond à celle enregistrée dans la demande d'habilitation.
+
+Vous souhaitez annuler la demande ? : rendez-vous sur votre espace référent > "Gérer les comptes aidants" > "Demandes en cours" : {{ espace_referent_aidants_url }}
+
+💡 Besoin d'aide ?
+
+Consultez le guide de formation PDF : {{ guide_formation_url }} ou contactez notre support : {% mailto AC_CONTACT_EMAIL %}.
+
+À bientôt sur Aidants Connect !
+
+L’équipe Aidants Connect
+Accompagnez vos usagers en toute sécurité
+Pour toute demande : {% mailto AC_CONTACT_EMAIL %}

@@ -5,6 +5,7 @@ from unittest.mock import patch
 from django.core import mail
 from django.core.management import CommandError, call_command
 from django.test import TestCase, tag
+from django.utils import timezone as django_timezone
 
 from django_otp.plugins.otp_static.lib import add_static_token
 from django_otp.plugins.otp_static.models import StaticToken
@@ -18,6 +19,10 @@ from aidants_connect_overrides.management.commands.createsuperuser import (
     ORGANISATION_ID_ENV,
     ORGANISATION_NAME_ARG,
     ORGANISATION_NAME_ENV,
+)
+from aidants_connect_web.constants import (
+    HabilitationRequestCourseType,
+    ReferentRequestStatuses,
 )
 from aidants_connect_web.models import Aidant, Connection, HabilitationRequest
 from aidants_connect_web.tests.factories import (
@@ -367,3 +372,106 @@ class NotifyNoTotpWorkersTests(TestCase):
         self.assertIn(f"{aidant_without_carte}", message.body)
         self.assertNotIn(f"{aidant_with_carte}", message.body)
         self.assertNotIn("vous-même", message.body)
+
+
+@tag("commands")
+class NotifyReferentsPapFormationReminderTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = OrganisationFactory()
+        cls.referent = AidantFactory(organisation=cls.organisation)
+        cls.referent.responsable_de.add(cls.organisation)
+
+    def make_p2p_request(
+        self, *, email="jean.dupont@example.com", validated_days_ago=30, **kwargs
+    ):
+        kwargs.setdefault("course_type", HabilitationRequestCourseType.P2P)
+        kwargs.setdefault("status", ReferentRequestStatuses.STATUS_PROCESSING_P2P)
+        h_request = HabilitationRequestFactory(
+            organisation=self.organisation,
+            email=email,
+            email_hr_validated_pap_send=True,
+            **kwargs,
+        )
+        # updated_at est positionné au moment de l'envoi du mail de validation ;
+        # on le fige à J-n (à midi heure locale pour éviter tout effet de fuseau)
+        reminder_day = django_timezone.localdate() - timedelta(days=validated_days_ago)
+        HabilitationRequest.objects.filter(pk=h_request.pk).update(
+            updated_at=django_timezone.make_aware(
+                datetime(reminder_day.year, reminder_day.month, reminder_day.day, 12, 0)
+            )
+        )
+        h_request.refresh_from_db()
+        return h_request
+
+    def test_no_mail_sent_if_no_pending_request(self):
+        call_command("notify_referents_pap_formation_reminder")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_no_mail_sent_before_j_plus_30(self):
+        self.make_p2p_request(validated_days_ago=29)
+        call_command("notify_referents_pap_formation_reminder")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_no_mail_sent_after_j_plus_30(self):
+        # la relance a lieu au 30ème jour pile, pas au-delà
+        self.make_p2p_request(validated_days_ago=31)
+        call_command("notify_referents_pap_formation_reminder")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_no_mail_sent_when_validation_email_not_sent(self):
+        HabilitationRequestFactory(
+            organisation=self.organisation,
+            course_type=HabilitationRequestCourseType.P2P,
+            status=ReferentRequestStatuses.STATUS_PROCESSING_P2P,
+        )
+        call_command("notify_referents_pap_formation_reminder")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_no_mail_sent_for_classic_course(self):
+        self.make_p2p_request(
+            course_type=HabilitationRequestCourseType.CLASSIC,
+            status=ReferentRequestStatuses.STATUS_PROCESSING,
+        )
+        call_command("notify_referents_pap_formation_reminder")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_no_mail_sent_for_cancelled_request(self):
+        self.make_p2p_request(status=ReferentRequestStatuses.STATUS_CANCELLED)
+        call_command("notify_referents_pap_formation_reminder")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_no_mail_sent_when_aidant_account_is_active(self):
+        h_request = self.make_p2p_request()
+        AidantFactory(email=h_request.email, organisation=self.organisation)
+        call_command("notify_referents_pap_formation_reminder")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_mail_sent_to_referent_at_j_plus_30(self):
+        h_request = self.make_p2p_request(first_name="Jean", last_name="Dupont")
+        call_command("notify_referents_pap_formation_reminder")
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertEqual(message.subject, settings.PAP_FORMATION_REMIND_EMAIL_SUBJECT)
+        self.assertEqual(message.recipients(), [self.referent.email])
+        self.assertIn("Jean Dupont", message.body)
+        self.assertIn(h_request.email, message.body)
+        self.assertIn("formation pair-à-pair", message.body)
+
+    def test_one_mail_per_organisation_listing_all_pending_aidants(self):
+        self.make_p2p_request(
+            first_name="Jean", last_name="Dupont", email="jean.dupont@example.com"
+        )
+        self.make_p2p_request(
+            first_name="Marie", last_name="Martin", email="marie.martin@example.com"
+        )
+        call_command("notify_referents_pap_formation_reminder")
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn("Jean Dupont", message.body)
+        self.assertIn("Marie Martin", message.body)
+
+    def test_dry_run_sends_nothing(self):
+        self.make_p2p_request()
+        call_command("notify_referents_pap_formation_reminder", dry_run=True)
+        self.assertEqual(len(mail.outbox), 0)

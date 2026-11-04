@@ -651,6 +651,18 @@ WORKERS_NO_TOTP_NOTIFY_EMAIL_FROM = os.getenv(
     "WORKERS_NO_TOTP_NOTIFY_EMAIL_FROM", SUPPORT_EMAIL
 )
 
+PAP_FORMATION_REMIND_EMAIL_SUBJECT = os.getenv(
+    "PAP_FORMATION_REMIND_EMAIL_SUBJECT",
+    "Rappel : des aidants sont en attente de leur formation pair-à-pair "
+    "et de l'activation de leur compte",
+)
+PAP_FORMATION_REMIND_EMAIL_FROM = os.getenv(
+    "PAP_FORMATION_REMIND_EMAIL_FROM", SUPPORT_EMAIL
+)
+PAP_FORMATION_REMIND_DELAY_DAYS = int(
+    os.getenv("PAP_FORMATION_REMIND_DELAY_DAYS", "30")
+)
+
 PHONENUMBER_DEFAULT_REGION = os.getenv("PHONENUMBER_DEFAULT_REGION", "FR")
 FRENCH_REGION_CODES = ("FR", "GP", "GF", "MQ", "RE", "KM", "PM")
 
