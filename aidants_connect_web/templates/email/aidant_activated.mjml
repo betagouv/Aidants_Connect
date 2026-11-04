@@ -17,7 +17,7 @@
       L'aidant devra avoir son téléphone à disposition pour réaliser cette opération avec vous.
       </p>
       <p>
-      👉 Retrouvez la procédure étape par étape : {{EMAIL_AIDANT_ACTIVATED_CARD_ASSOCIATION_GUIDE}}
+       👉 Retrouvez la procédure étape par étape : {{ EMAIL_AIDANT_ACTIVATED_CARD_ASSOCIATION_GUIDE }}
       </p>
     </mj-text>
     <mj-text>
