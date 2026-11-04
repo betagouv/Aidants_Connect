@@ -6,28 +6,30 @@
 <mj-section>
   <mj-column>
     <mj-text>
-      <p>Bienvenue sur Aidants Connect !</p>
+      <p>Bonjour {{ user.get_full_name }},</p>
       <p>
-        Votre carte vient d’être activée par le référent Aidants Connect de votre structure. Vous pouvez dès maintenant
-        accéder à votre compte et créer vos premiers mandats pour accompagner les usagers dans la réalisation de leurs
-        démarches.
+        🎉 Votre accès Aidants Connect est maintenant opérationnel.
       </p>
-      <p>Voici quelques ressources à disposition :</p>
-      <ul>
-        <li><a href="{{ EMAIL_WELCOME_AIDANT_GUIDE_URL }}">Guide de prise en main de l’outil</a></li>
-        <li><a href="{{ EMAIL_WELCOME_AIDANT_RESSOURCES_URL }}">Page ressources du site Aidants Connect</a></li>
-        <li><a href="{{ EMAIL_WELCOME_AIDANT_FAQ_URL }}">Page FAQ du site Aidants Connect</a></li>
-        <li><a href="{{ EMAIL_WELCOME_AIDANT_FICHES_TANGIBLES }}">Fiches tangibles etsijaccompagnais.fr</a></li>
-        <li><a href="{{ EMAIL_WELCOME_AIDANT_TUTORIEL_INTERACTIF }}">Tutoriel interactif Aidants Connect</a></li>
-      </ul>
+      <p>Votre application d’authentification est associée à votre compte. Vous pouvez dès maintenant vous connecter à Aidants Connect et accompagner vos premiers usagers.</p>
       <p>
-        Chaque mois, une newsletter avec des informations et nouveautés sur le dispositif est envoyée.
-        N’hésitez pas <a href="https://aidantsconnect.beta.gouv.fr/">à vous inscrire 👉 ici</a> pour la recevoir !
+        Avant de réaliser une démarche pour un usager, vous devez créer avec lui un mandat Aidants Connect.
       </p>
       <p>
-        ⚙️ Si vous rencontrez des difficultés de connexion, ou pour toute autre question, nous vous invitons à nous
-        contacter à l’adresse suivante {% mailto EMAIL_WELCOME_AIDANT_CONTACT_URL %}
+        Le mandat doit être <strong>signé par les deux parties</strong>, imprimé et conservé par votre structure pendant 6 ans. Un exemplaire est remis à l’usager.
       </p>
+    </mj-text>
+    <mj-text>
+      Les ressources utiles :
+        <ul>
+          <li><a href="https://docs.numerique.gouv.fr/docs/56f0ea3c-89b9-4194-9490-94dcb5726c9f/">📚 Le guide d'utilisation</a></li>
+          <li><a href="https://rdv.anct.gouv.fr/prendre_rdv?departement=&public_link_organisation_id=3819">🎤 Les trois webinaires mensuels (informations générales, référent, juridique)</a></li>
+          <li><a href="https://aidantsconnect.beta.gouv.fr/ressources/">Le centre de ressources</a></li>
+        </ul>
+    </mj-text>
+    <mj-text>
+      L’équipe Aidants Connect<br>
+      Accompagnez vos usagers en toute sécurité<br>
+      Pour toute demande : <a href="mailto:contact@aidantsconnect.beta.gouv.fr">contact@aidantsconnect.beta.gouv.fr</a>
     </mj-text>
   </mj-column>
 </mj-section>

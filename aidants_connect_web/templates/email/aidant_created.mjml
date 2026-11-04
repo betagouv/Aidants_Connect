@@ -5,31 +5,27 @@
 {% block email_body %}
 <mj-section>
   <mj-column>
-    <mj-text>Bienvenue sur Aidants Connect,</mj-text>
+    <mj-text>Bonjour {{ user.get_full_name }},</mj-text>
     <mj-text>
-      Votre compte vient d’être créé. Pour y accéder, le ou la référente Aidants Connect de votre structure
-      ({{ str_referents }})
-      doit associer un moyen de connexion à votre compte (application d’authentification ou carte physique).
-      Un e-mail lui a été envoyé en ce sens. Vous pourrez ensuite créer vos premiers mandats et accompagner
-      les usagers dans la réalisation de leurs démarches en ligne.
+      <p>
+      🎉 Votre formation est validée et votre compte Aidants Connect vient d’être créé.
+      </p>
+      <p>
+      Une dernière étape est nécessaire avant que vous puissiez vous connecter.
+      </p>
     </mj-text>
     <mj-text>
-      <p>📚 En attendant, voici quelques ressources à votre disposition :</p>
-      <ul>
-        <li>
-          <a href="{{ tuto_url }}">Guides de prise en main et tutoriel interactif</a>
-        </li>
-        <li>
-          <a href="{{ etsijaccompagnais_url }}">Fiches tangibles Etsijaccompagnais</a>
-        </li>
-        <li>
-          <a href="{{ faq_url }}">Foire aux questions</a>
-        </li>
-      </ul>
+      <p>Le référent Aidants Connect de votre structure ({{ str_referents }}) doit associer votre application d’authentification à votre compte.
+      Un e-mail lui a été envoyé pour lui indiquer la marche à suivre.</p>
+      <p>Vous devrez réaliser cette opération avec votre référent et avoir votre téléphone à disposition.</p>
     </mj-text>
     <mj-text>
-      ⚙️ Si vous rencontrez des difficultés de connexion ou pour toute autre question, contactez-nous à l’adresse
-      suivante : {% mailto AC_CONTACT_EMAIL %}.
+    Suivez les <a href="https://docs.numerique.gouv.fr/docs/ac5c5eea-2108-4b0f-9055-666d04ac784e/">étapes du guide</a> ensemble
+    </mj-text>
+    <mj-text>
+      L’équipe Aidants Connect<br>
+      Accompagnez vos usagers en toute sécurité<br>
+      Pour toute demande : {% mailto AC_CONTACT_EMAIL %}.
     </mj-text>
   </mj-column>
 </mj-section>

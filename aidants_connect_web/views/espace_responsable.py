@@ -2,7 +2,6 @@ import base64
 import logging
 from gettext import ngettext as _
 from io import BytesIO
-from itertools import chain
 
 from django.contrib import messages as django_messages
 from django.db import transaction
@@ -242,26 +241,36 @@ class ReferentsView(DetailView, FormView):
             return redirect("espace_aidant:home")
         return self.organisation
 
+    def get_organisation_active_referents(self, referents_qs):
+        return [
+            self.referent,
+            *sorted(
+                referents_qs.filter(is_active=True).order_by("last_name", "first_name"),
+                key=lambda item: item.get_full_name().casefold(),
+            ),
+            # *sorted(
+            #     chain(
+            #         referents_qs.filter(is_active=True).order_by(
+            #             "last_name", "first_name"
+            #         ),
+            #         CoReferentNonAidantRequest.objects.filter(
+            #             organisation=self.organisation
+            #         ).exclude(status=ReferentRequestStatuses.STATUS_VALIDATED),
+            #     ),
+            #     key=lambda item: item.get_full_name().casefold(),
+            # ),
+        ]
+
     def get_context_data(self, **kwargs):
         referents_qs = (
             self.object.responsables.exclude(pk=self.referent.pk)
             .order_by("last_name")
             .prefetch_related("carte_totp")
         )
-        organisation_active_referents = [
-            self.referent,
-            *sorted(
-                chain(
-                    referents_qs.filter(is_active=True).order_by(
-                        "last_name", "first_name"
-                    ),
-                    CoReferentNonAidantRequest.objects.filter(
-                        organisation=self.organisation
-                    ).exclude(status=ReferentRequestStatuses.STATUS_VALIDATED),
-                ),
-                key=lambda item: item.get_full_name().casefold(),
-            ),
-        ]
+        organisation_active_referents = self.get_organisation_active_referents(
+            referents_qs
+        )
+
         organisation_inactive_referents = referents_qs.filter(is_active=False)
 
         return {

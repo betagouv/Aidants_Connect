@@ -28,8 +28,7 @@ participez au webinaire dédié. Plusieurs créneaux sont disponibles, inscrivez
         envoyez un e-mail à {% mailto AC_CONTACT_EMAIL %} en précisant votre numéro d’habilitation. </p>
 
         <p>Nous vous remercions de votre implication sur le dispositif et nous tenons à disposition pour toute demande.</p>
-
-
+    </mj-text>
   </mj-column>
 </mj-section>
 {% endblock email_body %}

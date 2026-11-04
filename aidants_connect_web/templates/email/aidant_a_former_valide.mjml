@@ -7,22 +7,21 @@
   <mj-column>
     <mj-text>Bonjour,</mj-text>
     <mj-text>
-      Nous venons de valider lʼéligibilité de lʼaidante ou lʼaidant {{ aidant.first_name }} {{ aidant.last_name }}
-      {% mailto aidant.email %} à former ajoutée depuis votre espace.
+      Nous venons de valider lʼéligibilité de lʼaidant {{ aidant.first_name }} {{ aidant.last_name }}
+      {% mailto aidant.email %}.
     </mj-text>
     <mj-text>
-      Attention, selon votre profil et votre structure, les modalités de formation et de prise en charge diffèrent.
+      Prochaine étape : la formation
+    </mj-text>
+    <mj-text>
+      Vous pouvez dès à présent l’inscrire à une session de formation depuis l'onglet “Gérer les comptes aidants” de votre espace référent.
+    </mj-text>
+    <mj-button href="{{ espace_referent_url }}">Accéder à mon espace référent</mj-button>
+    <mj-text>
       <a href="{{ formation_url }}">Retrouvez toutes les informations sur la formation Aidants Connect et ses
         modalités de financement.
       </a>
     </mj-text>
-    <mj-text>
-      Rendez-vous sur votre espace référent , dans la section <em>Aidants > Demandes</em>
-      d’habilitation en cours, cliquez sur « Inscrire à une formation » en bas de page et choisissez une date de
-      formation pour chaque aidant de votre structure. Vous serez ensuite contactés par l’organisme de formation pour
-      valider l’inscription.
-    </mj-text>
-    <mj-button href="{{ espace_referent_url }}">Accéder à mon espace référent</mj-button>
     <mj-text>
       Si le bouton ci-dessus ne fonctionne pas, vous pouvez copier l'adresse suivante dans votre navigateur :
       <a href="{{ espace_referent_url }}">{{ espace_referent_url }}</a>
