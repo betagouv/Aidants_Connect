@@ -33,6 +33,6 @@ class UtilsSignalFormationEmailSendingTests(TestCase):
             self.hr_conum, self.formation, "str_emails_contact"
         )
         self.assertTrue("Pour les Conseillers numériques" in text_message)
-        self.assertTrue("Pour les conseillers numériques" in html_message)
+        self.assertTrue("Pour les Conseillers numériques" in html_message)
         self.assertTrue("str_emails_contact" in text_message)
         self.assertTrue("str_emails_contact" in html_message)
