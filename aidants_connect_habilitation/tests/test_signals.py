@@ -24,9 +24,7 @@ class UtilsSignalFormationEmailSendingTests(TestCase):
             self.hr_not_conum, self.formation, "str_emails_contact"
         )
         self.assertTrue("Pour toute demande complémentaire," in text_message)
-        self.assertTrue(
-            'https://tally.so/r/mO0Xkg">ce simulateur</a> pour' in html_message
-        )
+        self.assertTrue("rapprocher de l’organisme de formation" in html_message)
         self.assertTrue("str_emails_contact" in html_message)
         self.assertTrue("str_emails_contact" in text_message)
 
