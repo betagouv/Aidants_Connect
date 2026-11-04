@@ -30,6 +30,7 @@ from aidants_connect_web.constants import OTP_APP_DEVICE_NAME
 from aidants_connect_web.models import (
     Aidant,
     Connection,
+    CoReferentNonAidantRequest,
     ExportRequest,
     HabilitationRequest,
     Journal,
@@ -847,6 +848,49 @@ def email_co_rerefent_creation(aidants_ids: List[int], *, logger=None):
         )
 
     logger.info(f"Emailed {len(aidants)} aidants about co-referent status accepted")
+
+
+@shared_task
+def email_co_referent_validated_to_referent(
+    co_referent_request_id: int, *, logger=None
+):
+    logger: Logger = logger or get_task_logger(__name__)
+
+    co_referent_request = CoReferentNonAidantRequest.objects.select_related(
+        "created_by", "organisation"
+    ).get(pk=co_referent_request_id)
+
+    referent = co_referent_request.created_by
+    if referent is None or not (referent.email or "").strip():
+        logger.warning(
+            f"Co-referent request {co_referent_request_id} has no referent at the "
+            f"origin of the request (or the referent has no email address). "
+            f"No validation notification could be sent."
+        )
+        return
+
+    text_message, html_message = render_email(
+        "email/co_referent_validated.mjml",
+        {
+            "email_title": settings.EMAIL_CO_REFERENT_VALIDATED_SUBJECT,
+            "referent": referent,
+            "co_referent": co_referent_request,
+            "organisation": co_referent_request.organisation,
+        },
+    )
+
+    send_mail(
+        from_email=settings.EMAIL_CO_REFERENT_VALIDATED_FROM,
+        recipient_list=[referent.email],
+        subject=settings.EMAIL_CO_REFERENT_VALIDATED_SUBJECT,
+        message=text_message,
+        html_message=html_message,
+    )
+
+    logger.info(
+        f"Emailed {referent.email} that co-referent "
+        f"{co_referent_request.get_full_name()} has been validated"
+    )
 
 
 @shared_task
