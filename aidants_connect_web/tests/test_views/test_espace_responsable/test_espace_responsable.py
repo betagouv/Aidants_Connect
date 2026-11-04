@@ -872,3 +872,6 @@ class DesignationOfAnotherResponsable(TestCase):
             expected_data,
             CoReferentNonAidantRequest.objects.values(*data.keys()).first(),
         )
+        self.assertEqual(
+            self.respo, CoReferentNonAidantRequest.objects.get().created_by
+        )

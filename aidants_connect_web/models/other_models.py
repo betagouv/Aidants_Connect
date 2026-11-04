@@ -442,6 +442,14 @@ class CoReferentNonAidantRequest(models.Model):
         on_delete=models.CASCADE,
         related_name="co_referent_validation_requests",
     )
+    created_by = models.ForeignKey(
+        Aidant,
+        verbose_name="Référent à l’origine de la demande",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="co_referent_non_aidant_requests",
+    )
     status = models.CharField(
         "État",
         max_length=150,
@@ -477,7 +485,14 @@ class CoReferentNonAidantRequest(models.Model):
             self.organisation.responsables.add(instance)
             self.status = ReferentRequestStatuses.STATUS_VALIDATED
             self.save(update_fields=("status",))
-            return instance
+
+        # Notification sent after the transaction is committed, so that both
+        # manual and automatic validations trigger it.
+        from aidants_connect_web import tasks
+
+        tasks.email_co_referent_validated_to_referent(self.pk)
+
+        return instance
 
 
 class ReferentsFormation(models.Model):
