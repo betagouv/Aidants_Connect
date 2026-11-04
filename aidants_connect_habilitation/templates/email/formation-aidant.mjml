@@ -11,12 +11,12 @@
         <p>
           - Organisme : {{ formation.organisation.name }}<br>
           - Type : {{ formation.type.label }}<br>
-          - Date : {{ for  mation.date_range_str|lower }}
+          - Date : {{ formation.date_range_str|lower }}
         </p>
         <p>
         L’organisme de formation vous adressera un devis à lui retourner signé pour valider l’inscription définitive.
         </p>
-        <p> 
+        <p>
         Pour toute demande complémentaire, merci de vous rapprocher de l’organisme de formation à cette adresse :  {{ formation_contacts }}
         </p>
       </mj-text>
