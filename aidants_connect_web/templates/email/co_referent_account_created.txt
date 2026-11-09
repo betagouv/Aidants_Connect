@@ -1,0 +1,35 @@
+{% autoescape off %}Bonjour {{ co_referent.get_full_name }},
+
+🎉 Le référent {{ referent.get_full_name }} vous a désigné co-référent Aidants Connect pour la structure {{ organisation.name }} et vous a associé un moyen de connexion. Votre espace référent Aidants Connect est désormais opérationnel.
+
+Le référent Aidants Connect est garant du déploiement et de l’utilisation de l’outil par les aidants de sa structure. Pour mieux comprendre votre nouveau rôle :
+
+📚 Consultez notre guide du référent : https://docs.numerique.gouv.fr/docs/0c99ee2e-9f58-4bef-ad4d-36a7a2d2e813/
+
+🎥 Participez au webinaire Référent : https://rdv.anct.gouv.fr/prendre_rdv?departement=&public_link_organisation_id=3819
+
+Voici les actions réalisables par un référent :
+
+1. Inscrire les aidants à une formation ou organiser leur formation pair-à-pair :
+Rendez-vous dans l’onglet "Gérer les comptes aidants" puis traitez les "Demandes en cours".
+La procédure étape par étape : https://docs.numerique.gouv.fr/docs/3404efdb-88f1-4073-b413-61ba227b8b3a/
+
+2. Désigner un co-référent (fortement recommandé)
+Nous vous conseillons de désigner un second référent. En cas d’absence ou de départ de votre côté, il pourra gérer la structure et accompagner les aidants.
+La procédure étape par étape : https://docs.numerique.gouv.fr/docs/3404efdb-88f1-4073-b413-61ba227b8b3a/
+
+3. Paramétrer les thématiques d’accompagnements
+Toutes les thématiques d’accompagnements (ex : Famille-Scolarité / Social-Santé / Transport-Mobilité / Logement etc...) sont sélectionnées par défaut. En fonction de l’activité de votre structure et si vous le souhaitez, vous pouvez restreindre le périmètre des accompagnements via Aidants Connect.
+
+4. Ajouter d’autres aidants si besoin
+De nouveaux professionnels souhaitent utiliser l’outil ? Ajoutez-les directement depuis votre espace référent.
+La procédure étape par étape : https://docs.numerique.gouv.fr/docs/ada40f7d-4f5a-4fb3-b7be-7ad7760ea348/
+
+Nous vous remercions de votre implication sur le dispositif et nous tenons à disposition pour toute demande.
+
+À bientôt sur Aidants Connect !
+
+L’équipe Aidants Connect
+Accompagnez vos usagers en toute sécurité
+Pour toute demande : contact@aidantsconnect.beta.gouv.fr
+{% endautoescape %}
