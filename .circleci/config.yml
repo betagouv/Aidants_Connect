@@ -4,7 +4,7 @@
 #
 version: "2.1"
 orbs:
-  browser-tools: circleci/browser-tools@1.5.1
+  browser-tools: circleci/browser-tools@2.4.2
 
 parameters:
   python-img-tag:
@@ -18,7 +18,7 @@ parameters:
     default: "~/repo"
   cache-version:
     type: string
-    default: "v5-dependencies"
+    default: "v6-dependencies"
 
 executors:
   testbed:
@@ -97,8 +97,12 @@ jobs:
 
     steps:
       - checkout
-      - browser-tools/install-firefox
-      - browser-tools/install-geckodriver
+      - browser-tools/install_firefox:
+          timeout: 5m
+          version: "130.0"
+      - browser-tools/install_geckodriver:
+          timeout: 5m
+          version: v0.36.0
 
       - restore_cache:
           keys:
@@ -155,7 +159,7 @@ jobs:
     working_directory: << pipeline.parameters.workingdir >>
     steps:
       - checkout
-      - browser-tools/install-chrome
+      - browser-tools/install_chrome
 
       - restore_cache:
           keys:
