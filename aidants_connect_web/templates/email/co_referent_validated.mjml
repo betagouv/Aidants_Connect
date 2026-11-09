@@ -1,0 +1,28 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% load ac_common %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>Bonjour {{ referent.get_full_name }},</mj-text>
+    <mj-text>
+      👏 {{ co_referent.get_full_name }} a bien été ajouté comme co-référent de la structure {{ organisation.name }}.
+    </mj-text>
+    <mj-text>
+      Pour lui garantir un accès à son espace référent, vous devez maintenant lui associer un moyen de connexion. Pour réaliser cette opération avec vous, il devra avoir son téléphone à disposition.
+    </mj-text>
+  </mj-column>
+</mj-section>
+{% endblock email_body %}
+
+{% block email_signature %}
+<mj-divider border-color="#EEEEEE" border-width="1px" padding="8px 0 16px" />
+<mj-text padding="0" font-size="14px" color="#666666">
+  <span style="font-weight: 700; color: #161616;">L’équipe Aidants Connect</span>
+  <br/>
+  Accompagnez vos usagers en toute sécurité
+  <br/>
+  Pour toute demande : {% mailto "contact@aidantsconnect.beta.gouv.fr" %}
+</mj-text>
+{% endblock email_signature %}

@@ -434,7 +434,9 @@ class OrganisationResponsables(FormView):
                 ),
             )
         else:
-            instance = form.save()
+            instance = form.save(commit=False)
+            instance.created_by = self.referent
+            instance.save()
             django_messages.success(
                 self.request,
                 (
