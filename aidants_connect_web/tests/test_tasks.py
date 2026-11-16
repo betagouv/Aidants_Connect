@@ -5,6 +5,7 @@ from unittest import mock
 from unittest.mock import MagicMock
 from uuid import uuid4
 
+from django.conf import settings
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.utils import timezone
@@ -34,6 +35,7 @@ from aidants_connect_web.models import (
     Mandat,
 )
 from aidants_connect_web.tasks import (
+    email_co_referent_account_created,
     email_old_aidants,
     export_for_bizdevs,
     get_recipient_list_for_organisation,
@@ -265,6 +267,72 @@ class EmailOldAidants(TestCase):
 
         self.aidants_selected.refresh_from_db()
         self.assertEqual(NOW, self.aidants_selected.deactivation_warning_at)
+
+
+class EmailCoReferentAccountCreatedTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.organisation = OrganisationFactory(name="Structure Test")
+        cls.referent = AidantFactory(
+            organisation=cls.organisation,
+            first_name="Jean",
+            last_name="Référent",
+        )
+        cls.referent.responsable_de.add(cls.organisation)
+        cls.co_referent = AidantFactory(
+            organisation=cls.organisation,
+            first_name="Marie",
+            last_name="Co-référente",
+            referent_non_aidant=True,
+            can_create_mandats=False,
+        )
+        cls.co_referent.responsable_de.add(cls.organisation)
+
+    def test_sends_email_to_the_co_referent(self):
+        email_co_referent_account_created(
+            self.co_referent.pk, self.referent.pk, self.organisation.pk
+        )
+
+        self.assertEqual(1, len(mail.outbox))
+        message = mail.outbox[0]
+        self.assertEqual([self.co_referent.email], message.to)
+        self.assertEqual(
+            settings.EMAIL_CO_REFERENT_ACCOUNT_CREATED_SUBJECT, message.subject
+        )
+        self.assertIn(self.referent.get_full_name(), message.body)
+        self.assertIn(self.organisation.name, message.body)
+        self.assertIn("co-référent Aidants Connect", message.body)
+        self.assertIn("désormais opérationnel", message.body)
+        self.assertEqual(1, len(message.alternatives))
+        self.assertEqual("text/html", message.alternatives[0][1])
+
+    def test_sends_email_to_a_co_referent_who_is_also_an_aidant(self):
+        co_referent_aidant = AidantFactory(
+            organisation=self.organisation,
+            first_name="Alain",
+            last_name="Référent-Aidant",
+            referent_non_aidant=False,
+            can_create_mandats=True,
+        )
+        co_referent_aidant.responsable_de.add(self.organisation)
+
+        email_co_referent_account_created(
+            co_referent_aidant.pk, self.referent.pk, self.organisation.pk
+        )
+
+        self.assertEqual(1, len(mail.outbox))
+        message = mail.outbox[0]
+        self.assertEqual([co_referent_aidant.email], message.to)
+        self.assertIn(self.organisation.name, message.body)
+
+    def test_sends_no_email_when_aidant_is_not_a_co_referent(self):
+        aidant = AidantFactory(organisation=self.organisation)
+
+        email_co_referent_account_created(
+            aidant.pk, self.referent.pk, self.organisation.pk
+        )
+
+        self.assertEqual(0, len(mail.outbox))
 
 
 class ExportForBizdevs(TestCase):

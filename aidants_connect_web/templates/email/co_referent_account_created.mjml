@@ -1,0 +1,80 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% load ac_common %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>Bonjour {{ co_referent.get_full_name }},</mj-text>
+    <mj-text>
+      🎉 Le référent {{ referent.get_full_name }} vous a désigné co-référent Aidants Connect
+      pour la structure {{ organisation.name }} et vous a associé un moyen de connexion.
+      <strong>Votre espace référent Aidants Connect est désormais opérationnel.</strong>
+    </mj-text>
+    <mj-text>
+      Le référent Aidants Connect est garant du déploiement et de l’utilisation de l’outil
+      par les aidants de sa structure. Pour mieux comprendre votre nouveau rôle :
+    </mj-text>
+    <mj-text>
+      <ul>
+        <li>📚 Consultez notre <a href="https://docs.numerique.gouv.fr/docs/0c99ee2e-9f58-4bef-ad4d-36a7a2d2e813/">guide du référent</a></li>
+        <li>🎥 Participez au <a href="https://rdv.anct.gouv.fr/prendre_rdv?departement=&public_link_organisation_id=3819">webinaire Référent</a></li>
+      </ul>
+    </mj-text>
+    <mj-text>Voici les actions réalisables par un référent :</mj-text>
+    <mj-text>
+      <ol>
+        <li>
+          <strong>Inscrire les aidants à une formation ou organiser leur formation pair-à-pair :</strong>
+          <br/>
+          Rendez-vous dans l’onglet "Gérer les comptes aidants" puis traitez les "Demandes en cours".
+          <br/>
+          La procédure étape par étape : <a href="https://docs.numerique.gouv.fr/docs/3404efdb-88f1-4073-b413-61ba227b8b3a/">https://docs.numerique.gouv.fr/docs/3404efdb-88f1-4073-b413-61ba227b8b3a/</a>
+        </li>
+        <li>
+          <strong>Désigner un co-référent (fortement recommandé)</strong>
+          <br/>
+          Nous vous conseillons de désigner un second référent. En cas d’absence ou de départ
+          de votre côté, il pourra gérer la structure et accompagner les aidants.
+          <br/>
+          La procédure étape par étape : <a href="https://docs.numerique.gouv.fr/docs/3404efdb-88f1-4073-b413-61ba227b8b3a/">https://docs.numerique.gouv.fr/docs/3404efdb-88f1-4073-b413-61ba227b8b3a/</a>
+        </li>
+        <li>
+          <strong>Paramétrer les thématiques d’accompagnements</strong>
+          <br/>
+          Toutes les thématiques d’accompagnements (ex : Famille-Scolarité / Social-Santé /
+          Transport-Mobilité / Logement etc...) sont sélectionnées par défaut. En fonction de
+          l’activité de votre structure et si vous le souhaitez, vous pouvez restreindre le
+          périmètre des accompagnements via Aidants Connect.
+        </li>
+        <li>
+          <strong>Ajouter d’autres aidants si besoin</strong>
+          <br/>
+          De nouveaux professionnels souhaitent utiliser l’outil ? Ajoutez-les directement
+          depuis votre espace référent.
+          <br/>
+          La procédure étape par étape : <a href="https://docs.numerique.gouv.fr/docs/ada40f7d-4f5a-4fb3-b7be-7ad7760ea348/">https://docs.numerique.gouv.fr/docs/ada40f7d-4f5a-4fb3-b7be-7ad7760ea348/</a>
+        </li>
+      </ol>
+    </mj-text>
+    <mj-text>
+      Nous vous remercions de votre implication sur le dispositif et nous tenons à disposition
+      pour toute demande.
+    </mj-text>
+  </mj-column>
+</mj-section>
+{% endblock email_body %}
+
+{% block email_signature %}
+<mj-divider border-color="#EEEEEE" border-width="1px" padding="8px 0 16px" />
+<mj-text font-weight="700" padding="0 0 8px">
+  À bientôt sur Aidants Connect !
+</mj-text>
+<mj-text padding="0" font-size="14px" color="#666666">
+  <span style="font-weight: 700; color: #161616;">L’équipe Aidants Connect</span>
+  <br/>
+  Accompagnez vos usagers en toute sécurité
+  <br/>
+  Pour toute demande : {% mailto "contact@aidantsconnect.beta.gouv.fr" %}
+</mj-text>
+{% endblock email_signature %}

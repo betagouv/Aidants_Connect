@@ -1,7 +1,9 @@
 from unittest import mock
 from unittest.mock import Mock
 
+from django.conf import settings
 from django.contrib import messages as django_messages
+from django.core import mail
 from django.test import TestCase, tag
 from django.test.client import Client
 from django.urls import resolve, reverse
@@ -173,3 +175,95 @@ class AssociateCarteTOTPTests(TestCase):
             response_content,
             "Organization page should display a warning about activation.",
         )
+
+    def test_associating_carte_to_co_referent_sends_notification_email(self):
+        co_referent = AidantFactory(
+            username="coreferent@coreferent.fr",
+            organisation=self.responsable_tom.organisation,
+            first_name="Co",
+            last_name="Référent",
+            referent_non_aidant=True,
+            can_create_mandats=False,
+        )
+        co_referent.responsable_de.add(self.responsable_tom.organisation)
+        carte = CarteTOTPFactory(seed="yyyy")
+
+        self.client.force_login(self.responsable_tom)
+        response = self.client.post(
+            reverse(
+                "espace_referent:associate_totp",
+                kwargs={"aidant_id": co_referent.pk},
+            ),
+            data={"serial_number": carte.serial_number},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "espace_referent:validate_totp", kwargs={"aidant_id": co_referent.pk}
+            ),
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(1, len(mail.outbox))
+        message = mail.outbox[0]
+        self.assertEqual([co_referent.email], message.to)
+        self.assertEqual(
+            settings.EMAIL_CO_REFERENT_ACCOUNT_CREATED_SUBJECT, message.subject
+        )
+        self.assertIn(self.responsable_tom.get_full_name(), message.body)
+        self.assertIn(self.responsable_tom.organisation.name, message.body)
+        self.assertIn("co-référent Aidants Connect", message.body)
+
+    def test_associating_carte_to_co_referent_aidant_sends_notification_email(self):
+        co_referent_aidant = AidantFactory(
+            username="coreferent-aidant@coreferent.fr",
+            organisation=self.responsable_tom.organisation,
+            first_name="Co",
+            last_name="Référent-Aidant",
+            referent_non_aidant=False,
+            can_create_mandats=True,
+        )
+        co_referent_aidant.responsable_de.add(self.responsable_tom.organisation)
+        carte = CarteTOTPFactory(seed="wwww")
+
+        self.client.force_login(self.responsable_tom)
+        response = self.client.post(
+            reverse(
+                "espace_referent:associate_totp",
+                kwargs={"aidant_id": co_referent_aidant.pk},
+            ),
+            data={"serial_number": carte.serial_number},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "espace_referent:validate_totp",
+                kwargs={"aidant_id": co_referent_aidant.pk},
+            ),
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(1, len(mail.outbox))
+        message = mail.outbox[0]
+        self.assertEqual([co_referent_aidant.email], message.to)
+        self.assertEqual(
+            settings.EMAIL_CO_REFERENT_ACCOUNT_CREATED_SUBJECT, message.subject
+        )
+        self.assertIn(self.responsable_tom.get_full_name(), message.body)
+        self.assertIn(self.responsable_tom.organisation.name, message.body)
+
+    def test_associating_carte_to_regular_aidant_sends_no_co_referent_email(self):
+        carte = CarteTOTPFactory(seed="xxxx")
+
+        self.client.force_login(self.responsable_tom)
+        self.client.post(
+            reverse(
+                "espace_referent:associate_totp",
+                kwargs={"aidant_id": self.aidant_tim.pk},
+            ),
+            data={"serial_number": carte.serial_number},
+        )
+
+        self.aidant_tim.refresh_from_db()
+        self.assertTrue(self.aidant_tim.has_a_carte_totp)
+        self.assertEqual(0, len(mail.outbox))

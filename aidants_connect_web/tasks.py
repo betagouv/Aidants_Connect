@@ -850,6 +850,47 @@ def email_co_rerefent_creation(aidants_ids: List[int], *, logger=None):
 
 
 @shared_task
+def email_co_referent_account_created(
+    aidant_id: int, referent_id: int, organisation_id: int, *, logger=None
+):
+    logger: Logger = logger or get_task_logger(__name__)
+
+    co_referent = Aidant.objects.get(pk=aidant_id)
+    organisation = Organisation.objects.get(pk=organisation_id)
+    if not co_referent.is_responsable_of_organisation(organisation):
+        logger.warning(
+            f"Aidant {aidant_id} is not a co-referent of organisation "
+            f"{organisation_id}. No co-referent account creation email could be sent."
+        )
+        return
+
+    referent = Aidant.objects.get(pk=referent_id)
+
+    text_message, html_message = render_email(
+        "email/co_referent_account_created.mjml",
+        {
+            "email_title": settings.EMAIL_CO_REFERENT_ACCOUNT_CREATED_SUBJECT,
+            "co_referent": co_referent,
+            "referent": referent,
+            "organisation": organisation,
+        },
+    )
+
+    send_mail(
+        from_email=settings.EMAIL_CO_REFERENT_ACCOUNT_CREATED_FROM,
+        recipient_list=[co_referent.email],
+        subject=settings.EMAIL_CO_REFERENT_ACCOUNT_CREATED_SUBJECT,
+        message=text_message,
+        html_message=html_message,
+    )
+
+    logger.info(
+        f"Emailed {co_referent.email} that their co-referent account "
+        f"for {organisation.name} is now operational"
+    )
+
+
+@shared_task
 def create_or_update_aidant_in_sandbox_task(
     habilitation_request_id: int, *, logger=None
 ):

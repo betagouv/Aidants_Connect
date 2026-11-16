@@ -646,6 +646,17 @@ class AddAppOTPToAidant(ReferentCannotManageAidantResponseMixin, FormView):
 
             card_associated_to_aidant.send(None, otp_device=self.otp_device)
 
+            if self.aidant.pk != self.referent.pk and (
+                self.aidant.is_responsable_of_organisation(self.referent.organisation)
+            ):
+                from aidants_connect_web import tasks
+
+                tasks.email_co_referent_account_created(
+                    self.aidant.pk,
+                    self.referent.pk,
+                    self.referent.organisation.pk,
+                )
+
         except Exception:
             message = (
                 "Une erreur s’est produite lors de la sauvegarde de la carte numérique."
@@ -960,6 +971,17 @@ class AssociateAidantCarteTOTP(ReferentCannotManageAidantResponseMixin, FormView
             from aidants_connect_web.signals import card_associated_to_aidant
 
             card_associated_to_aidant.send(None, otp_device=carte_totp.totp_device)
+
+            if self.aidant.pk != self.referent.pk and (
+                self.aidant.is_responsable_of_organisation(self.referent.organisation)
+            ):
+                from aidants_connect_web import tasks
+
+                tasks.email_co_referent_account_created(
+                    self.aidant.pk,
+                    self.referent.pk,
+                    self.referent.organisation.pk,
+                )
 
         except Exception:
             message = "Une erreur s’est produite lors de la sauvegarde de la carte."
