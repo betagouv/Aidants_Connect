@@ -13,13 +13,8 @@
           - Formation : {{ formation.type.label }}<br>
           - Date : {{ formation.date_range_str|lower }}.
         </p>
-        <p>
-        L’organisme en charge de cette formation prendra prochainement contact avec vous.
-        </p>
-        <p>
-        Pour toute demande complémentaire, merci de vous rapprocher de l’organisme de formation à cette adresse :  {{ formation_contacts }}
-        </p>
-        <p>Pour les Conseillers numériques, la formation peut être financée dans le cadre du dispositif si elle correspond au module annuel choisi dans le cadre de la formation continue.</p>
+        <p>Pour les Conseillers numériques, la formation peut être financée via le  dispositif si elle correspond au module annuel choisi dans le cadre de la formation continue.
+         </p>
       </mj-text>
     <mj-text>
     <em>L’organisme de formation se réserve le droit d’annuler ou de reporter une session si le nombre de participants est insuffisant.</em>
