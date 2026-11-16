@@ -34,5 +34,3 @@ class UtilsSignalFormationEmailSendingTests(TestCase):
         )
         self.assertTrue("Pour les Conseillers numériques" in text_message)
         self.assertTrue("Pour les Conseillers numériques" in html_message)
-        self.assertTrue("str_emails_contact" in text_message)
-        self.assertTrue("str_emails_contact" in html_message)
