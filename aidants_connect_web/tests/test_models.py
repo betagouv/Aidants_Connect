@@ -5,6 +5,7 @@ from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
+from django.core import mail
 from django.db import transaction
 from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
@@ -2599,6 +2600,35 @@ class CoReferentNonAidantRequestTests(TestCase):
         self.assertEqual(request.phone, aidant.phone)
         self.assertEqual(request.organisation, aidant.organisation)
         self.assertIn(aidant, request.organisation.responsables.all())
+
+    def test_create_referent_non_aidant_notifies_the_referent_at_the_origin(self):
+        referent = AidantFactory(first_name="Référent", last_name="Origine")
+        request = CoReferentNonAidantRequestFactory(
+            first_name="Jean",
+            last_name="Co-référent",
+            organisation=OrganisationFactory(name="Structure Test"),
+            created_by=referent,
+        )
+
+        aidant = request.create_referent_non_aidant()
+
+        self.assertIsNotNone(aidant)
+        self.assertEqual(1, len(mail.outbox))
+        message = mail.outbox[0]
+        self.assertEqual([referent.email], message.to)
+        self.assertEqual(settings.EMAIL_CO_REFERENT_VALIDATED_SUBJECT, message.subject)
+        self.assertIn(referent.get_full_name(), message.body)
+        self.assertIn(request.get_full_name(), message.body)
+        self.assertIn(request.organisation.name, message.body)
+        self.assertIn("moyen de connexion", message.body)
+
+    def test_create_referent_non_aidant_without_origin_referent_sends_no_email(self):
+        request = CoReferentNonAidantRequestFactory(created_by=None)
+
+        aidant = request.create_referent_non_aidant()
+
+        self.assertIsNotNone(aidant)
+        self.assertEqual(0, len(mail.outbox))
 
 
 class FormationAttendantTests(TestCase):

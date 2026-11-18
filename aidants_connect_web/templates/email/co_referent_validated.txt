@@ -1,0 +1,10 @@
+Bonjour {{ referent.get_full_name }},
+
+👏 {{ co_referent.get_full_name }} a bien été ajouté comme co-référent de la structure {{ organisation.name }}.
+
+Pour lui garantir un accès à son espace référent, vous devez maintenant lui associer un moyen de connexion. Pour réaliser cette opération avec vous, il devra avoir son téléphone à disposition.
+
+
+L’équipe Aidants Connect
+Accompagnez vos usagers en toute sécurité
+Pour toute demande : contact@aidantsconnect.beta.gouv.fr
