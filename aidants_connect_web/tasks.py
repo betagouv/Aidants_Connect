@@ -28,8 +28,8 @@ from aidants_connect_common.constants import JournalActionKeywords
 from aidants_connect_common.models import Commune, Department
 from aidants_connect_common.utils import build_url, model_fields, render_email
 from aidants_connect_web.constants import (
-    HabilitationRequestCourseType,
     OTP_APP_DEVICE_NAME,
+    HabilitationRequestCourseType,
     ReferentRequestStatuses,
 )
 from aidants_connect_web.models import (
