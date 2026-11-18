@@ -1,0 +1,83 @@
+{% extends "layouts/email-base.mjml" %}
+
+{% load ac_common %}
+
+{% block email_body %}
+<mj-section>
+  <mj-column>
+    <mj-text>Bonjour,</mj-text>
+    <mj-text>
+      <p>
+        Vous avez inscrit une ou plusieurs personnes de votre structure à la
+        <strong>formation pair-à-pair il y a 1 mois</strong> mais
+        <strong>le test Pix n’a pas encore été réalisé</strong>.
+        <strong>Sans ce test, leur compte ne peut pas être activé.</strong>
+      </p>
+      <ul>
+        {% for aidant in aidants %}
+        <li>{{ aidant.get_full_name }} ({{ aidant.email }})</li>
+        {% endfor %}
+      </ul>
+    </mj-text>
+    <mj-text>
+      <h2>🤝 Qu’est-ce que la formation pair-à-pair ?</h2>
+      <p>
+        La formation pair-à-pair est une
+        <strong>modalité de formation gratuite et flexible</strong> dispensée
+        <strong>par des aidants déjà formés et utilisateurs de l’outil</strong>
+        à l’aide d’un guide mis à disposition.
+      </p>
+    </mj-text>
+    <mj-text>
+      <h2>⚠️ Prochaines étapes à réaliser :</h2>
+      <ul>
+        <li>
+          <strong>La formation n’a pas encore eu lieu :</strong> mobilisez votre
+          aidant-formateur pour la mettre en place rapidement.
+        </li>
+        <li>
+          <strong>La formation a eu lieu :</strong>
+          <ul>
+            <li>assurez-vous que le test Pix a bien été réalisé ;</li>
+            <li>
+              assurez-vous que l’adresse e-mail utilisée pour le test correspond
+              à celle enregistrée dans la demande d’habilitation.
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </mj-text>
+    <mj-text>
+      <p>
+        <strong>Vous souhaitez annuler la demande ?</strong> Rendez-vous sur
+        votre espace référent &gt; « Gérer les comptes aidants » &gt;
+        « Demandes en cours ».
+      </p>
+    </mj-text>
+    <mj-button href="{{ espace_referent_aidants_url }}">
+      Voir mes demandes en cours
+    </mj-button>
+    <mj-text>
+      <h2>💡 Besoin d’aide ?</h2>
+      <p>
+        Consultez le <a href="{{ guide_formation_url }}">guide de formation (PDF)</a>
+        ou contactez notre support : {% mailto AC_CONTACT_EMAIL %}.
+      </p>
+    </mj-text>
+  </mj-column>
+</mj-section>
+{% endblock email_body %}
+
+{% block email_signature %}
+<mj-divider border-color="#EEEEEE" border-width="1px" padding="8px 0 16px" />
+<mj-text font-weight="700" padding="0 0 8px">
+  À bientôt sur Aidants Connect !
+</mj-text>
+<mj-text padding="0" font-size="14px" color="#666666">
+  <span style="font-weight: 700; color: #161616;">L’équipe Aidants Connect</span>
+  <br/>
+  Accompagnez vos usagers en toute sécurité
+  <br/>
+  Pour toute demande : {% mailto AC_CONTACT_EMAIL %}
+</mj-text>
+{% endblock email_signature %}
