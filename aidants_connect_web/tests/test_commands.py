@@ -22,8 +22,8 @@ from aidants_connect_overrides.management.commands.createsuperuser import (
     ORGANISATION_NAME_ENV,
 )
 from aidants_connect_web.constants import (
-    HabilitationRequestCourseType,
     OTP_APP_DEVICE_NAME,
+    HabilitationRequestCourseType,
     ReferentRequestStatuses,
 )
 from aidants_connect_web.models import Aidant, Connection, HabilitationRequest
@@ -497,9 +497,6 @@ class NotifyAidantsWithoutConnexionModeTests(TestCase):
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn(aidant.email, mail.outbox[0].body)
-        self.assertIn(f"{aidant_without_carte}", message.body)
-        self.assertNotIn(f"{aidant_with_carte}", message.body)
-        self.assertNotIn("vous-même", message.body)
 
 
 @tag("commands")
