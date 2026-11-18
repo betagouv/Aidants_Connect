@@ -890,6 +890,7 @@ def email_co_referent_account_created(
         f"for {organisation.name} is now operational"
     )
 
+
 @shared_task
 def email_co_referent_validated_to_referent(
     co_referent_request_id: int, *, logger=None
@@ -931,6 +932,7 @@ def email_co_referent_validated_to_referent(
         f"Emailed {referent.email} that co-referent "
         f"{co_referent_request.get_full_name()} has been validated"
     )
+
 
 @shared_task
 def create_or_update_aidant_in_sandbox_task(
