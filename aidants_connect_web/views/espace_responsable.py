@@ -273,9 +273,18 @@ class ReferentsView(DetailView, FormView):
 
         organisation_inactive_referents = referents_qs.filter(is_active=False)
 
+        coreferent_requests = [
+            *sorted(
+                CoReferentNonAidantRequest.objects.filter(
+                    organisation=self.organisation
+                ).exclude(status=ReferentRequestStatuses.STATUS_VALIDATED),
+                key=lambda item: item.get_full_name().casefold(),
+            ),
+        ]
         return {
             **super().get_context_data(**kwargs),
             "referent": self.referent,
+            "coreferent_requests": coreferent_requests,
             "referent_notifications": Notification.objects.get_displayable_for_user(
                 self.referent
             ),
