@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Collection, Iterable, Optional
 
 from django.conf import settings
 from django.db import IntegrityError, models
-from django.db.models import Q, QuerySet
+from django.db.models import QuerySet
 
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers import PhoneNumber, PhoneNumberFormat, format_number
@@ -31,62 +31,62 @@ class JournalQuerySet(models.QuerySet):
     def excluding_staff(self):
         return self.exclude(aidant__organisation__name=settings.STAFF_ORGANISATION_NAME)
 
-    def has_user_explicitly_consented(
-        self,
-        user: Usager,
-        aidant: Aidant,
-        remote_constent_method: RemoteConsentMethodChoices,
-        user_phone: str,
-        consent_request_id: str,
-    ) -> JournalQuerySet:
-        return self.filter(
-            action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
-            usager=user,
-            aidant=aidant,
-            remote_constent_method=remote_constent_method,
-            is_remote_mandat=True,
-            user_phone=user_phone,
-            consent_request_id=consent_request_id,
-        ).exists()
-
-    def find_sms_consent_requests(
-        self, user_phone: PhoneNumber, consent_request_id: str | None = None
-    ):
-        return self._find_consent_actions(
-            action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
-            user_phone=user_phone,
-            consent_request_id=consent_request_id,
-        )
-
-    def find_sms_consent_recap(
-        self, user_phone: PhoneNumber, consent_request_id: str | None = None
-    ):
-        return self._find_consent_actions(
-            action=JournalActionKeywords.REMOTE_SMS_RECAP_SENT,
-            user_phone=user_phone,
-            consent_request_id=consent_request_id,
-        )
-
-    def find_sms_user_consent(
-        self, user_phone: PhoneNumber, consent_request_id: str | None = None
-    ):
-        return self._find_consent_actions(
-            action=JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
-            user_phone=user_phone,
-            consent_request_id=consent_request_id,
-        )
-
-    def find_sms_user_consent_or_denial(
-        self, user_phone: PhoneNumber, consent_request_id: str | None = None
-    ):
-        return self._find_consent_actions(
-            action=[
-                JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
-                JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
-            ],
-            user_phone=user_phone,
-            consent_request_id=consent_request_id,
-        )
+    # def has_user_explicitly_consented(
+    #     self,
+    #     user: Usager,
+    #     aidant: Aidant,
+    #     remote_constent_method: RemoteConsentMethodChoices,
+    #     user_phone: str,
+    #     consent_request_id: str,
+    # ) -> JournalQuerySet:
+    #     return self.filter(
+    #         action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
+    #         usager=user,
+    #         aidant=aidant,
+    #         remote_constent_method=remote_constent_method,
+    #         is_remote_mandat=True,
+    #         user_phone=user_phone,
+    #         consent_request_id=consent_request_id,
+    #     ).exists()
+    #
+    # def find_sms_consent_requests(
+    #     self, user_phone: PhoneNumber, consent_request_id: str | None = None
+    # ):
+    #     return self._find_consent_actions(
+    #         action=JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
+    #         user_phone=user_phone,
+    #         consent_request_id=consent_request_id,
+    #     )
+    #
+    # def find_sms_consent_recap(
+    #     self, user_phone: PhoneNumber, consent_request_id: str | None = None
+    # ):
+    #     return self._find_consent_actions(
+    #         action=JournalActionKeywords.REMOTE_SMS_RECAP_SENT,
+    #         user_phone=user_phone,
+    #         consent_request_id=consent_request_id,
+    #     )
+    #
+    # def find_sms_user_consent(
+    #     self, user_phone: PhoneNumber, consent_request_id: str | None = None
+    # ):
+    #     return self._find_consent_actions(
+    #         action=JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
+    #         user_phone=user_phone,
+    #         consent_request_id=consent_request_id,
+    #     )
+    #
+    # def find_sms_user_consent_or_denial(
+    #     self, user_phone: PhoneNumber, consent_request_id: str | None = None
+    # ):
+    #     return self._find_consent_actions(
+    #         action=[
+    #             JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
+    #             JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
+    #         ],
+    #         user_phone=user_phone,
+    #         consent_request_id=consent_request_id,
+    #     )
 
     def _find_consent_actions(
         self,
@@ -182,27 +182,6 @@ class Journal(models.Model):
         verbose_name_plural = "entrées de journal"
         constraints = [
             # All infos are set when creating a journal for remote mandate by SMS
-            models.CheckConstraint(
-                check=(
-                    ~Q(
-                        action__in=[
-                            JournalActionKeywords.REMOTE_SMS_CONSENT_SENT,
-                            JournalActionKeywords.REMOTE_SMS_CONSENT_RECEIVED,
-                            JournalActionKeywords.REMOTE_SMS_DENIAL_RECEIVED,
-                            JournalActionKeywords.REMOTE_SMS_RECAP_SENT,
-                        ]
-                    )
-                    | (
-                        Q(aidant__isnull=False)
-                        & Q(is_remote_mandat=True)
-                        & Q(user_phone__isnull_or_blank=False)
-                        & Q(consent_request_id__isnull_or_blank=False)
-                        & Q(remote_constent_method=RemoteConsentMethodChoices.SMS.name)
-                        & Q(additional_information__isnull_or_blank=False)
-                    )
-                ),
-                name="infos_set_remote_mandate_by_sms",
-            )
         ]
 
     def __str__(self):
