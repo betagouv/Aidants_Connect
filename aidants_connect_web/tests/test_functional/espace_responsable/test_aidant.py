@@ -587,10 +587,10 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
 
         # Vérifier que le référent apparaît dans la liste des référents désactivés
         await expect(
-            self.page.locator("#tab-2-panel").get_by_text("Marie Onier")
+            self.page.locator("#tab-3-panel").get_by_text("Marie Onier")
         ).to_be_visible()
 
-        marie_row = self.page.locator("#tab-2-panel tr").filter(has_text="Marie Onier")
+        marie_row = self.page.locator("#tab-3-panel tr").filter(has_text="Marie Onier")
         aidant_link = marie_row.get_by_role(
             "link", name="Détail et gestion du référent"
         )
@@ -626,5 +626,5 @@ class EspaceResponsableFicheAidantFunctionalTests(FunctionalTestCase):
 
         # Vérifier que le référent n'est plus dans la section des référents désactivés
         await expect(
-            self.page.locator("#tab-2-panel").get_by_text("Marie Onier")
+            self.page.locator("#tab-3-panel").get_by_text("Marie Onier")
         ).not_to_be_visible()
